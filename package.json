@@ -1,0 +1,26 @@
+{
+  "name": "q-stock",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ftTony/q-stock.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ftTony/q-stock/issues"
+  },
+  "homepage": "https://github.com/ftTony/q-stock#readme",
+  "devDependencies": {
+    "webpack": "^4.40.2"
+  },
+  "dependencies": {
+    "koa": "^2.8.1",
+    "save": "^2.4.0"
+  }
+}
