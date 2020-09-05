@@ -21,6 +21,7 @@
   },
   "dependencies": {
     "koa": "^2.8.1",
+    "koa-router": "^9.4.0",
     "save": "^2.4.0"
   }
 }
