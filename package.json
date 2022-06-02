@@ -22,7 +22,7 @@
   "dependencies": {
     "koa": "^2.8.1",
     "koa-router": "^9.4.0",
-    "protobufjs": "^6.10.1",
+    "protobufjs": "^6.11.3",
     "save": "^2.4.0"
   }
 }
