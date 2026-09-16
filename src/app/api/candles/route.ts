@@ -1,0 +1,50 @@
+import { NextResponse } from "next/server";
+import { aggregateCandles } from "@/lib/candles/aggregate";
+import {
+  getDailyCandles,
+  getMonthlyCandles,
+} from "@/lib/finnhub/client";
+import { computeIndicators } from "@/lib/indicators";
+import type { AssetType, CandleResolution } from "@/lib/types";
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const symbol = searchParams.get("symbol");
+    const assetType = (searchParams.get("assetType") || "stock") as AssetType;
+    const resolution = (searchParams.get("resolution") || "D") as CandleResolution;
+    const withIndicators = searchParams.get("indicators") !== "0";
+
+    if (!symbol) {
+      return NextResponse.json({ error: "symbol required" }, { status: 400 });
+    }
+
+    const now = Math.floor(Date.now() / 1000);
+    let bars;
+
+    if (resolution === "Y") {
+      const from = now - 20 * 365 * 24 * 3600;
+      const monthly = await getMonthlyCandles(symbol, assetType, from, now);
+      bars = aggregateCandles(monthly.length ? monthly : await getDailyCandles(symbol, assetType, from, now), "Y");
+    } else if (resolution === "Q") {
+      const from = now - 10 * 365 * 24 * 3600;
+      const monthly = await getMonthlyCandles(symbol, assetType, from, now);
+      bars = aggregateCandles(
+        monthly.length ? monthly : await getDailyCandles(symbol, assetType, from, now),
+        "Q",
+      );
+    } else {
+      const from = now - 3 * 365 * 24 * 3600;
+      bars = await getDailyCandles(symbol, assetType, from, now);
+    }
+
+    const indicators = withIndicators ? computeIndicators(bars) : undefined;
+    return NextResponse.json({ bars, indicators, resolution });
+  } catch (err) {
+    console.error("candles", err);
+    return NextResponse.json(
+      { error: err instanceof Error ? err.message : "Failed to fetch candles" },
+      { status: 502 },
+    );
+  }
+}

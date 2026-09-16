@@ -1,0 +1,289 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>Market Intelligence - Watchlist</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#adc6ff",
+                    "on-primary": "#002e6a",
+                    "error-container": "#93000a",
+                    "outline-variant": "#424754",
+                    "surface-container-high": "#1c2b3c",
+                    "tertiary-fixed": "#ffdcc6",
+                    "primary-container": "#4d8eff",
+                    "primary-fixed": "#d8e2ff",
+                    "inverse-on-surface": "#233143",
+                    "on-error": "#690005",
+                    "on-primary-fixed": "#001a42",
+                    "on-background": "#d4e4fa",
+                    "surface-container": "#122131",
+                    "secondary-fixed": "#d8e3fb",
+                    "on-tertiary-fixed": "#311400",
+                    "background": "#051424",
+                    "on-surface": "#d4e4fa",
+                    "surface-variant": "#273647",
+                    "tertiary": "#ffb786",
+                    "on-tertiary-container": "#461f00",
+                    "secondary-container": "#3e495d",
+                    "on-tertiary": "#502400",
+                    "surface-dim": "#051424",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "surface-container-low": "#0d1c2d",
+                    "on-primary-fixed-variant": "#004395",
+                    "tertiary-container": "#df7412",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "on-secondary-fixed": "#111c2d",
+                    "on-primary-container": "#00285d",
+                    "inverse-surface": "#d4e4fa",
+                    "on-secondary": "#263143",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "surface-container-lowest": "#010f1f",
+                    "secondary": "#bcc7de",
+                    "inverse-primary": "#005ac2",
+                    "error": "#ffb4ab",
+                    "surface-container-highest": "#273647",
+                    "surface-tint": "#adc6ff",
+                    "on-surface-variant": "#c2c6d6",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "surface-bright": "#2c3a4c",
+                    "surface": "#051424",
+                    "outline": "#8c909f",
+                    "primary": "#adc6ff",
+                    "on-error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "margin": "24px",
+                    "gutter": "16px",
+                    "unit": "4px",
+                    "sm": "8px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "data-mono": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "data-mono": ["14px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+        .glass-panel {
+            background: rgba(18, 33, 49, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-24">
+<!-- TopAppBar (Shared Component) -->
+<header class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 flex justify-between items-center px-md py-sm">
+<div class="flex items-center gap-md">
+<button class="hover:bg-surface-variant/50 transition-all duration-200 p-2 rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-primary">search</span>
+</button>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Market Intelligence</h1>
+</div>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a financial analyst in a modern office setting. The lighting is sophisticated, with cool blue tones and soft rim lighting. The subject is wearing a dark, well-tailored business suit, conveying a sense of authority and expertise. The background is a blurred high-tech trading floor with multiple data screens." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD1I10XKBj1Qe5NSM484YfyECD-BpSCZrnKEgokq6cJ7BG-e5bNxr-hz73W2g3iH6RCffBreNU0nfSF-JeRHh1DDXb0rYq_0vRI2_SjLNwYiG__hWjCPWPCzC0mOiktsIWe49U3PM_1uNNxFRLp0tQ2irMrg2h0g3dwAXj12cDynP7E4EAP47tjxHnhiZ8fvhX1nnNj9-r8vYsETzc5ZyoDwncDYq1Lq42wh8yH7-oa3bfoB4g01AS6U-kUdObsvESdxH2Lxe_dehY">
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="px-margin pt-md">
+<!-- Header Actions -->
+<div class="flex justify-between items-end mb-lg">
+<div>
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-widest mb-1 block">Your Assets</span>
+<h2 class="font-headline-md text-headline-md">Watchlist</h2>
+</div>
+<div class="flex gap-sm">
+<button class="glass-panel p-sm rounded-lg hover:bg-surface-variant/50 transition-colors flex items-center">
+<span class="material-symbols-outlined text-on-surface-variant">filter_list</span>
+</button>
+<button class="glass-panel p-sm rounded-lg hover:bg-surface-variant/50 transition-colors flex items-center">
+<span class="material-symbols-outlined text-on-surface-variant">sort</span>
+</button>
+</div>
+</div>
+<!-- Market Status -->
+<div class="mb-lg flex items-center gap-sm px-sm">
+<div class="w-2 h-2 rounded-full bg-[#10B981] shadow-[0_0_8px_#10B981] animate-pulse"></div>
+<span class="font-label-sm text-label-sm text-[#10B981] uppercase font-bold">Market Open</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant opacity-60 ml-auto">Last updated: 14:02 EST</span>
+</div>
+<!-- Stock List -->
+<div class="space-y-md">
+<!-- AAPL - Swipe Action Demonstration (Normal State) -->
+<div class="relative group">
+<div class="glass-panel rounded-xl p-md flex items-center gap-md relative z-10 transition-transform duration-300">
+<div class="flex flex-col flex-1">
+<span class="font-headline-sm text-headline-sm">AAPL</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Apple Inc.</span>
+</div>
+<!-- Sparkline -->
+<div class="hidden sm:block flex-1 max-w-[80px]">
+<svg class="w-full h-8" viewBox="0 0 100 30">
+<path d="M0 25 Q 10 5, 20 20 T 40 10 T 60 25 T 80 5 T 100 15" fill="none" stroke="#adc6ff" stroke-width="2"></path>
+</svg>
+</div>
+<div class="text-right">
+<div class="font-data-mono text-data-mono font-bold">$185.92</div>
+<div class="flex items-center justify-end text-[#10B981] font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">arrow_drop_up</span>
+<span>+1.24%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- MSFT - Partially Swiped State Layout Representation -->
+<div class="relative overflow-hidden rounded-xl">
+<!-- Action Buttons Behind -->
+<div class="absolute inset-0 flex">
+<button class="bg-[#10B981] text-white flex-1 flex flex-col items-center justify-center gap-1">
+<span class="material-symbols-outlined">add_shopping_cart</span>
+<span class="text-[10px] font-bold uppercase">Buy</span>
+</button>
+<div class="w-1/2"></div> <!-- Spacer for swiped content -->
+</div>
+<div class="glass-panel rounded-xl p-md flex items-center gap-md relative z-10 translate-x-1/2">
+<div class="flex flex-col flex-1">
+<span class="font-headline-sm text-headline-sm">MSFT</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Microsoft Corp.</span>
+</div>
+<div class="text-right">
+<div class="font-data-mono text-data-mono font-bold">$402.56</div>
+<div class="flex items-center justify-end text-[#F87171] font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">arrow_drop_down</span>
+<span>-0.45%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- TSLA -->
+<div class="relative">
+<div class="glass-panel rounded-xl p-md flex items-center gap-md relative z-10">
+<div class="flex flex-col flex-1">
+<span class="font-headline-sm text-headline-sm">TSLA</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tesla, Inc.</span>
+</div>
+<!-- Sparkline -->
+<div class="hidden sm:block flex-1 max-w-[80px]">
+<svg class="w-full h-8" viewBox="0 0 100 30">
+<path d="M0 28 L 20 22 L 40 25 L 60 10 L 80 15 L 100 2" fill="none" stroke="#adc6ff" stroke-width="2"></path>
+</svg>
+</div>
+<div class="text-right">
+<div class="font-data-mono text-data-mono font-bold">$193.57</div>
+<div class="flex items-center justify-end text-[#10B981] font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">arrow_drop_up</span>
+<span>+3.12%</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Additional watchlist placeholder -->
+<div class="glass-panel rounded-xl p-md flex items-center gap-md opacity-60">
+<div class="flex flex-col flex-1">
+<span class="font-headline-sm text-headline-sm">NVDA</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant">NVIDIA Corp.</span>
+</div>
+<div class="text-right">
+<div class="font-data-mono text-data-mono font-bold">$875.28</div>
+<div class="flex items-center justify-end text-[#10B981] font-label-sm text-label-sm">
+<span class="material-symbols-outlined text-[14px]">arrow_drop_up</span>
+<span>+0.88%</span>
+</div>
+</div>
+</div>
+<!-- Empty State / Add New -->
+<button class="w-full border-2 border-dashed border-outline-variant/30 rounded-xl p-md flex items-center justify-center gap-sm text-on-surface-variant hover:border-primary/50 hover:text-primary transition-all">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="font-label-sm text-label-sm uppercase tracking-widest">Add Symbol</span>
+</button>
+</div>
+<!-- Market Sentiment Bento Card -->
+<div class="mt-xl glass-panel rounded-2xl p-lg">
+<h3 class="font-headline-sm text-headline-sm mb-md text-primary-fixed-dim">Market Sentiment</h3>
+<div class="grid grid-cols-2 gap-md">
+<div class="bg-surface-variant/30 rounded-lg p-md">
+<div class="text-on-surface-variant font-label-sm text-label-sm mb-xs">Fear &amp; Greed</div>
+<div class="text-xl font-bold">68 <span class="text-sm font-normal text-[#10B981]">Greed</span></div>
+</div>
+<div class="bg-surface-variant/30 rounded-lg p-md">
+<div class="text-on-surface-variant font-label-sm text-label-sm mb-xs">Volatility Index</div>
+<div class="text-xl font-bold">14.2 <span class="text-sm font-normal text-on-surface-variant">Low</span></div>
+</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar (Shared Component) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface/90 backdrop-blur-xl border-t border-outline-variant/20 rounded-t-xl">
+<!-- Market -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-primary-container/10 transition-colors py-2 px-4 rounded-lg" href="#">
+<span class="material-symbols-outlined">show_chart</span>
+<span class="font-label-sm text-label-sm">Market</span>
+</a>
+<!-- Watchlist (Active) -->
+<a class="flex flex-col items-center justify-center text-primary font-bold py-2 px-4 rounded-lg" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">star</span>
+<span class="font-label-sm text-label-sm">Watchlist</span>
+</a>
+<!-- Portfolio -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-primary-container/10 transition-colors py-2 px-4 rounded-lg" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+<span class="font-label-sm text-label-sm">Portfolio</span>
+</a>
+<!-- Profile -->
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-primary-container/10 transition-colors py-2 px-4 rounded-lg" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+</body></html>

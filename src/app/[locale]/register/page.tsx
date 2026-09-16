@@ -1,0 +1,91 @@
+"use client";
+
+import { FormEvent, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
+import { Link, useRouter } from "@/i18n/routing";
+
+export default function RegisterPage() {
+  const t = useTranslations("auth");
+  const tApp = useTranslations("app");
+  const locale = useLocale();
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function onSubmit(e: FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    const res = await fetch("/api/auth/register", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password, name: name || undefined, locale }),
+    });
+    const data = await res.json();
+    setLoading(false);
+    if (!res.ok) {
+      setError(data.error || t("error"));
+      return;
+    }
+    router.push(`/login?registered=1`);
+  }
+
+  return (
+    <div className="qt-panel w-full space-y-5 p-6 sm:p-8">
+      <div>
+        <div className="text-xs tracking-[0.18em] text-[var(--brand-text)] uppercase">
+          {tApp("name")}
+        </div>
+        <h1 className="mt-2 text-2xl font-semibold">{t("registerTitle")}</h1>
+      </div>
+      <form onSubmit={onSubmit} className="space-y-3">
+        <label className="block space-y-1 text-sm">
+          <span className="text-[var(--muted)]">{t("name")}</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="qt-input w-full px-3 py-2.5"
+          />
+        </label>
+        <label className="block space-y-1 text-sm">
+          <span className="text-[var(--muted)]">{t("email")}</span>
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="qt-input w-full px-3 py-2.5"
+          />
+        </label>
+        <label className="block space-y-1 text-sm">
+          <span className="text-[var(--muted)]">{t("password")}</span>
+          <input
+            type="password"
+            required
+            minLength={6}
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="qt-input w-full px-3 py-2.5"
+          />
+        </label>
+        {error && <p className="text-sm text-[var(--down)]">{error}</p>}
+        <button
+          type="submit"
+          disabled={loading}
+          className="qt-btn qt-btn-primary w-full px-3 py-2.5 text-sm disabled:opacity-60"
+        >
+          {t("submitRegister")}
+        </button>
+      </form>
+      <p className="text-sm text-[var(--muted)]">
+        {t("haveAccount")}{" "}
+        <Link href="/login" className="text-[var(--brand-text)]">
+          {t("loginTitle")}
+        </Link>
+      </p>
+    </div>
+  );
+}

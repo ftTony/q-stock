@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Q-Stock
 
-## Getting Started
+美股 / 数字货币行情 Web & H5 系统（一期全量）。
 
-First, run the development server:
+技术栈：Next.js 15、TypeScript、Tailwind CSS、lightweight-charts、Auth.js、Prisma、PostgreSQL、Docker。  
+数据源：Finnhub（行情 / K 线 / 新闻 / 财报 / 公告）+ Adanos（市场情绪 / 舆情）。
+
+## 文档
+
+完整说明见 [`docs/`](./docs/)：
+
+- [需求文档](./docs/requirements.md)
+- [启动与环境](./docs/getting-started.md)
+
+## 最快启动
 
 ```bash
+cp .env.example .env
+# 填写 AUTH_SECRET、FINNHUB_API_KEY、DATABASE_URL
+
+docker compose up -d db
+npm install
+npm run db:migrate
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+另开终端启动提醒 Worker：
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run worker
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+打开 http://localhost:3000 。
 
-## Learn More
+全栈 Docker：
 
-To learn more about Next.js, take a look at the following resources:
+```bash
+docker compose up --build
+```
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 功能摘要
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- 多语言（zh-CN / zh-TW / en）、多主题与涨跌色
+- 登录注册、自选、资产概览、价格邮件提醒
+- 美股 / 加密行情、K 线指标、新闻财报公告评论
+- Adanos 情绪（缓存与降级）
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+更多细节与约束见需求文档。

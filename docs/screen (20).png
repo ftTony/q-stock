@@ -1,0 +1,247 @@
+<!DOCTYPE html><html class="dark" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-secondary": "#263143",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "surface": "#051424",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "primary": "#adc6ff",
+                    "on-surface": "#d4e4fa",
+                    "inverse-primary": "#005ac2",
+                    "tertiary-container": "#df7412",
+                    "on-primary-fixed-variant": "#004395",
+                    "outline-variant": "#424754",
+                    "on-error": "#690005",
+                    "error-container": "#93000a",
+                    "inverse-surface": "#d4e4fa",
+                    "on-background": "#d4e4fa",
+                    "on-primary": "#002e6a",
+                    "on-primary-fixed": "#001a42",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "surface-dim": "#051424",
+                    "tertiary": "#ffb786",
+                    "secondary-container": "#3e495d",
+                    "on-surface-variant": "#c2c6d6",
+                    "background": "#051424",
+                    "primary-container": "#4d8eff",
+                    "on-tertiary-fixed": "#311400",
+                    "inverse-on-surface": "#233143",
+                    "surface-variant": "#273647",
+                    "error": "#ffb4ab",
+                    "secondary": "#bcc7de",
+                    "on-primary-container": "#00285d",
+                    "on-secondary-fixed": "#111c2d",
+                    "surface-container-low": "#0d1c2d",
+                    "surface-container-high": "#1c2b3c",
+                    "surface-container": "#122131",
+                    "on-tertiary-container": "#461f00",
+                    "on-secondary-container": "#aeb9d0",
+                    "on-tertiary": "#502400",
+                    "surface-container-lowest": "#010f1f",
+                    "tertiary-fixed": "#ffdcc6",
+                    "primary-fixed": "#d8e2ff",
+                    "surface-container-highest": "#273647",
+                    "surface-tint": "#adc6ff",
+                    "outline": "#8c909f",
+                    "on-error-container": "#ffdad6",
+                    "primary-fixed-dim": "#adc6ff",
+                    "surface-bright": "#2c3a4c",
+                    "secondary-fixed": "#d8e3fb"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "lg": "24px",
+                    "gutter": "16px",
+                    "sm": "8px",
+                    "md": "16px",
+                    "xs": "4px",
+                    "unit": "4px",
+                    "xl": "32px",
+                    "margin": "24px"
+            },
+            "fontFamily": {
+                    "label-sm": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "body-lg": ["Inter"],
+                    "headline-md": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "data-mono": ["Inter"]
+            },
+            "fontSize": {
+                    "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "data-mono": ["14px", {"lineHeight": "1.4", "fontWeight": "500"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Inter', sans-serif; }
+        .glass-panel {
+            background: rgba(18, 33, 49, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen overflow-hidden flex flex-col">
+<!-- Top App Bar (Shared Component) -->
+<header class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md dark:bg-surface/80 border-b border-outline-variant/30 flex justify-between items-center w-full px-md py-sm max-w-full">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary dark:text-primary-fixed-dim" data-icon="search">search</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary dark:text-primary-fixed-dim">Market Intelligence</h1>
+</div>
+<div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden">
+<img alt="User Profile" class="w-full h-full object-cover" data-alt="A professional headshot of a financial analyst in a modern office environment. The lighting is dramatic and cinematic, focusing on the person's face with a dark, sophisticated tech-themed background. The overall aesthetic is sleek and corporate, with deep blue and charcoal tones." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDUD3Rtb4LrZDBUDGOPNSqGcZgN44fcy6jmJB1195IfdoYmXA_CUWJ3arMgOqAC5tiw_nRZas7XolYloLlPfuUU0r7K5NgTdaVVBLRaVOu_XluISZBkTTe_Q7wEtDpT3DVtLlDi6plHwbi6viJmwJl_97o8BsaKup8XTzAjCEXbWJiFEVm5cer7xYa3rct5Ly93nad9J2nIxyB_MZYfWFvSMkfzMTsq9AV7mWtHvVNgV8DFvOMO3_hWLKRLfN8Xj1LexhvhyFnxAro">
+</div>
+</header>
+<!-- Background Content (Simulated Dashboard) -->
+<main class="flex-1 px-md pt-lg overflow-y-auto">
+<div class="grid grid-cols-12 gap-gutter">
+<!-- Market Status -->
+<div class="col-span-12 flex items-center justify-between mb-sm">
+<div class="flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+<span class="text-emerald-500 font-label-sm text-label-sm">MARKET OPEN</span>
+</div>
+<span class="text-on-surface-variant font-data-mono text-data-mono">NASDAQ: AAPL</span>
+</div>
+<!-- Main Chart Area (Placeholder) -->
+<div class="col-span-12 h-64 glass-panel rounded-xl relative overflow-hidden flex items-end">
+<div class="absolute inset-0 bg-gradient-to-t from-primary/10 to-transparent"></div>
+<!-- Simulated Chart Line -->
+<svg class="w-full h-32" preserveAspectRatio="none" viewBox="0 0 400 100">
+<path d="M0 80 Q 50 20 100 50 T 200 10 T 300 60 T 400 30" fill="none" stroke="#3B82F6" stroke-width="2"></path>
+</svg>
+</div>
+<!-- Order Book Snippet -->
+<div class="col-span-12 glass-panel rounded-xl p-md">
+<h2 class="font-headline-sm text-headline-sm mb-md">Order Book</h2>
+<div class="space-y-sm">
+<div class="flex justify-between font-data-mono text-data-mono">
+<span class="text-error">189.50</span>
+<span class="text-on-surface-variant">2,400</span>
+</div>
+<div class="flex justify-between font-data-mono text-data-mono">
+<span class="text-error">189.48</span>
+<span class="text-on-surface-variant">1,150</span>
+</div>
+<div class="flex justify-between font-data-mono text-data-mono text-body-lg font-bold">
+<span class="text-primary">189.42</span>
+<span class="text-primary">SPREAD 0.02</span>
+</div>
+<div class="flex justify-between font-data-mono text-data-mono">
+<span class="text-emerald-500">189.40</span>
+<span class="text-on-surface-variant">3,820</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Backdrop Overlay for Bottom Sheet -->
+<div class="fixed inset-0 bg-background/60 backdrop-blur-sm z-[60]"></div>
+<!-- Order Confirmation Bottom Sheet -->
+<section class="fixed bottom-0 left-0 right-0 z-[70] bg-surface-container-high rounded-t-full shadow-2xl border-t border-outline-variant/30 px-lg pt-sm pb-xl animate-in slide-in-from-bottom duration-300">
+<!-- Handle -->
+<div class="w-12 h-1 bg-outline-variant/50 rounded-full mx-auto mb-lg"></div>
+<!-- Sheet Header -->
+<div class="flex items-center justify-between mb-xl">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Confirm Buy</h2>
+<p class="font-body-md text-body-md text-on-surface-variant">Apple Inc. • AAPL</p>
+</div>
+<div class="text-right">
+<span class="font-display-lg text-display-lg text-primary">$189.42</span>
+<p class="font-label-sm text-label-sm text-emerald-500">+1.24% TODAY</p>
+</div>
+</div>
+<!-- Transaction Details Bento Grid -->
+<div class="grid grid-cols-2 gap-md mb-xl">
+<div class="glass-panel p-md rounded-xl flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-xs">ORDER TYPE</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">Limit Order</span>
+</div>
+<div class="glass-panel p-md rounded-xl flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-xs">QUANTITY</span>
+<span class="font-headline-sm text-headline-sm text-on-surface">10 Shares</span>
+</div>
+<div class="col-span-2 glass-panel p-md rounded-xl flex justify-between items-center">
+<div class="flex flex-col">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-xs">ESTIMATED TOTAL</span>
+<span class="font-headline-md text-headline-md text-primary">$1,894.20</span>
+</div>
+<div class="text-right">
+<span class="font-label-sm text-label-sm text-on-surface-variant mb-xs">COMMISSION</span>
+<span class="font-data-mono text-data-mono text-on-surface">$0.00</span>
+</div>
+</div>
+</div>
+<!-- Buying Power Summary -->
+<div class="flex items-center justify-between p-md mb-xl bg-primary-container/10 border border-primary-container/20 rounded-xl">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-body-md text-body-md text-on-surface">Buying Power</span>
+</div>
+<div class="text-right">
+<span class="font-headline-sm text-headline-sm text-on-surface">$24,500.00</span>
+<p class="font-label-sm text-label-sm text-on-surface-variant">AFTER: $22,605.80</p>
+</div>
+</div>
+<!-- Action Button -->
+<button class="w-full py-lg bg-primary hover:bg-primary-container transition-all text-on-primary font-headline-sm text-headline-sm rounded-full flex items-center justify-center gap-md active:scale-95 duration-150">
+            Confirm Buy Order
+            <span class="material-symbols-outlined" data-icon="arrow_forward">arrow_forward</span>
+</button>
+<!-- Safe Area Spacer -->
+<div class="h-6"></div>
+</section>
+<!-- Bottom Nav Bar (Shared Component - Hidden behind sheet but structurally present) -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface/90 backdrop-blur-xl dark:bg-surface-container/90 border-t border-outline-variant/20 rounded-t-xl">
+<div class="flex flex-col items-center justify-center text-primary dark:text-primary-fixed-dim font-bold">
+<span class="material-symbols-outlined" data-icon="show_chart">show_chart</span>
+<span class="font-label-sm text-label-sm">Market</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="star">star</span>
+<span class="font-label-sm text-label-sm">Watchlist</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+<span class="font-label-sm text-label-sm">Portfolio</span>
+</div>
+<div class="flex flex-col items-center justify-center text-on-surface-variant dark:text-on-surface-variant">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</div>
+</nav>
+</body></html>

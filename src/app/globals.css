@@ -1,8 +1,56 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #f3f5f9;
+  --foreground: #0b1220;
+  --surface: #ffffff;
+  --surface-2: #eef2f7;
+  --border: #d7dee8;
+  --muted: #64748b;
+  --brand: #5b7cfa;
+  --brand-soft: rgba(91, 124, 250, 0.12);
+  --brand-text: #3b5bdb;
+  --sidebar: #ffffff;
+  --sidebar-hover: #f1f5f9;
+  --sidebar-active: rgba(91, 124, 250, 0.12);
+  --panel: #ffffff;
+  --input: #ffffff;
+  --danger: #f87171;
+  --up: #e11d48;
+  --down: #16a34a;
+  --radius: 14px;
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+}
+
+html[data-change="us"] {
+  --up: #22c55e;
+  --down: #f87171;
+}
+
+html.dark {
+  --background: #06090f;
+  --foreground: #edf2ff;
+  --surface: #0d121b;
+  --surface-2: #121925;
+  --border: #1c2433;
+  --muted: #8b97ad;
+  --brand: #9eb6ff;
+  --brand-soft: rgba(158, 182, 255, 0.14);
+  --brand-text: #c4d2ff;
+  --sidebar: #080c14;
+  --sidebar-hover: #111827;
+  --sidebar-active: rgba(158, 182, 255, 0.12);
+  --panel: #0f1520;
+  --input: #0b1018;
+  --danger: #fb7185;
+  --up: #e11d48;
+  --down: #34d399;
+  --shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+}
+
+html.dark[data-change="us"] {
+  --up: #34d399;
+  --down: #fb7185;
 }
 
 @theme inline {
@@ -12,15 +60,121 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
 }
 
 body {
-  background: var(--background);
+  background:
+    radial-gradient(900px 420px at 12% -8%, color-mix(in srgb, var(--brand) 10%, transparent), transparent),
+    radial-gradient(700px 360px at 100% 0%, rgba(52, 211, 153, 0.05), transparent),
+    var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), "Segoe UI", sans-serif;
+  min-height: 100dvh;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+input,
+select,
+textarea,
+button {
+  font: inherit;
+}
+
+.qt-panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+}
+
+.qt-card {
+  background: linear-gradient(180deg, color-mix(in srgb, var(--surface-2) 70%, transparent), var(--panel));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.qt-input {
+  background: var(--input);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  color: var(--foreground);
+  outline: none;
+}
+
+.qt-input:focus {
+  border-color: color-mix(in srgb, var(--brand) 55%, var(--border));
+  box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.qt-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  border-radius: 12px;
+  font-weight: 600;
+  transition: 0.15s ease;
+}
+
+.qt-btn-primary {
+  background: var(--brand);
+  color: #0b1220;
+}
+
+.qt-btn-primary:hover {
+  filter: brightness(1.05);
+}
+
+.qt-btn-ghost {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--foreground);
+}
+
+.qt-btn-ghost:hover {
+  background: var(--sidebar-hover);
+}
+
+.qt-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  padding: 0.25rem 0.7rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.qt-scroll::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.qt-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted) 35%, transparent);
+  border-radius: 999px;
+}
+
+@keyframes qtFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.qt-panel,
+.qt-card {
+  transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 }

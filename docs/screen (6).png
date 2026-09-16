@@ -1,0 +1,248 @@
+<!DOCTYPE html><html class="dark" lang="en" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "primary-fixed-dim": "#adc6ff",
+                    "on-primary": "#002e6a",
+                    "error-container": "#93000a",
+                    "outline-variant": "#424754",
+                    "surface-container-high": "#1c2b3c",
+                    "tertiary-fixed": "#ffdcc6",
+                    "primary-container": "#4d8eff",
+                    "primary-fixed": "#d8e2ff",
+                    "inverse-on-surface": "#233143",
+                    "on-error": "#690005",
+                    "on-primary-fixed": "#001a42",
+                    "on-background": "#d4e4fa",
+                    "surface-container": "#122131",
+                    "secondary-fixed": "#d8e3fb",
+                    "on-tertiary-fixed": "#311400",
+                    "background": "#051424",
+                    "on-surface": "#d4e4fa",
+                    "surface-variant": "#273647",
+                    "tertiary": "#ffb786",
+                    "on-tertiary-container": "#461f00",
+                    "secondary-container": "#3e495d",
+                    "on-tertiary": "#502400",
+                    "surface-dim": "#051424",
+                    "on-secondary-fixed-variant": "#3c475a",
+                    "surface-container-low": "#0d1c2d",
+                    "on-primary-fixed-variant": "#004395",
+                    "tertiary-container": "#df7412",
+                    "secondary-fixed-dim": "#bcc7de",
+                    "on-secondary-fixed": "#111c2d",
+                    "on-primary-container": "#00285d",
+                    "inverse-surface": "#d4e4fa",
+                    "on-secondary": "#263143",
+                    "tertiary-fixed-dim": "#ffb786",
+                    "surface-container-lowest": "#010f1f",
+                    "secondary": "#bcc7de",
+                    "inverse-primary": "#005ac2",
+                    "error": "#ffb4ab",
+                    "surface-container-highest": "#273647",
+                    "surface-tint": "#adc6ff",
+                    "on-surface-variant": "#c2c6d6",
+                    "on-tertiary-fixed-variant": "#723600",
+                    "surface-bright": "#2c3a4c",
+                    "surface": "#051424",
+                    "outline": "#8c909f",
+                    "primary": "#adc6ff",
+                    "on-error-container": "#ffdad6"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.125rem",
+                    "lg": "0.25rem",
+                    "xl": "0.5rem",
+                    "full": "0.75rem"
+            },
+            "spacing": {
+                    "xs": "4px",
+                    "xl": "32px",
+                    "md": "16px",
+                    "margin": "24px",
+                    "gutter": "16px",
+                    "unit": "4px",
+                    "sm": "8px",
+                    "lg": "24px"
+            },
+            "fontFamily": {
+                    "headline-md": ["Inter"],
+                    "headline-sm": ["Inter"],
+                    "body-md": ["Inter"],
+                    "label-sm": ["Inter"],
+                    "display-lg": ["Inter"],
+                    "data-mono": ["Inter"],
+                    "body-lg": ["Inter"]
+            },
+            "fontSize": {
+                    "headline-md": ["24px", {"lineHeight": "1.3", "fontWeight": "600"}],
+                    "headline-sm": ["18px", {"lineHeight": "1.4", "fontWeight": "600"}],
+                    "body-md": ["14px", {"lineHeight": "1.5", "fontWeight": "400"}],
+                    "label-sm": ["12px", {"lineHeight": "1", "letterSpacing": "0.05em", "fontWeight": "600"}],
+                    "display-lg": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "data-mono": ["14px", {"lineHeight": "1.4", "fontWeight": "500"}],
+                    "body-lg": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .glass-panel {
+            background: rgba(18, 33, 49, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .pulsing-dot {
+            box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7); }
+            70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(16, 185, 129, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-background min-h-screen font-body-md overflow-x-hidden pb-24">
+<!-- Top App Bar -->
+<header class="sticky top-0 w-full z-50 bg-surface/80 backdrop-blur-md border-b border-outline-variant/30 flex justify-between items-center px-md py-sm">
+<div class="flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-icon="search">search</span>
+<h1 class="font-headline-md text-headline-md font-bold text-primary">Market Intelligence</h1>
+</div>
+<div class="flex items-center gap-sm"><button class="w-8 h-8 rounded-full flex items-center justify-center text-on-surface-variant hover:text-primary transition-colors glass-panel active:scale-95"><span class="material-symbols-outlined text-[18px]" data-icon="dark_mode">dark_mode</span></button></div><div class="w-8 h-8 rounded-full bg-surface-variant overflow-hidden border border-outline-variant/30">
+<img alt="User Profile" data-alt="A professional headshot of a corporate financial analyst with a neutral expression, set against a blurred high-end office background with cool blue and deep navy tones. The lighting is crisp and cinematic, emphasizing a professional and authoritative brand identity consistent with a market intelligence platform." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDzBrQaiFy4iRsj_Mi8XvWASj1wGf8Vcur9LUbhhRmQT3rhOTwLfH77-FolMQn2gtBfmf4WVm6ibU696RF_RDBGC5JIE0uehU6tg2Wv27GCG8PCtlv_nfImR_nQD4LweQZG02HfxN3fu_0pgUTYWRFxxMRyPRL7uhFFkPMZD932nrLC5wjM4O6BcyYCbYrpKsF8xHxSWDe_uLT0IkcGqJIOlGaTsUjCCO4CkHAxKo2lCsR2i9sxeLTT_4bMsLM31ZjJiEcwm3yJ5k0">
+</div>
+</header>
+<main class="px-margin py-lg space-y-lg">
+<!-- Total Equity Section -->
+<div class="flex items-center gap-xs overflow-x-hidden pb-1"><button class="px-md py-1.5 rounded-full bg-primary text-on-primary font-label-sm text-label-sm font-bold shadow-sm">All</button><button class="px-md py-1.5 rounded-full glass-panel text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">US Stocks</button><button class="px-md py-1.5 rounded-full glass-panel text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">HK Stocks</button><button class="px-md py-1.5 rounded-full glass-panel text-on-surface-variant hover:text-on-surface font-label-sm text-label-sm transition-colors">Crypto</button></div><section class="space-y-xs">
+<p class="font-label-sm text-label-sm text-on-surface-variant">TOTAL EQUITY VALUE</p>
+<div class="flex items-baseline gap-sm">
+<h2 class="font-display-lg text-display-lg text-on-surface">$142,850.42</h2>
+<span class="font-data-mono text-data-mono text-[#10b981] flex items-center">
+<span class="material-symbols-outlined text-[16px]">arrow_drop_up</span>
+                    2.4%
+                </span>
+</div>
+</section>
+<!-- Daily P/L Card & Quick Actions (Bento Style) -->
+<div class="grid grid-cols-12 gap-gutter">
+<div class="col-span-12 glass-panel p-md rounded-xl space-y-sm">
+<div class="flex justify-between items-center">
+<p class="font-label-sm text-label-sm text-on-surface-variant">DAILY P/L</p>
+<div class="flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-[#10b981] pulsing-dot"></div>
+<span class="font-label-sm text-label-sm text-[#10b981]">LIVE</span>
+</div>
+</div>
+<div class="flex justify-between items-end">
+<h3 class="font-headline-md text-headline-md text-[#10b981]">+$3,412.18</h3>
+<div class="h-12 w-32 opacity-80">
+<!-- Simple Sparkline Representation -->
+<svg class="w-full h-full stroke-[#10b981] fill-none stroke-[2px]" viewBox="0 0 100 40">
+<path d="M0,35 Q10,30 20,32 T40,25 T60,28 T80,15 T100,10"></path>
+</svg>
+</div>
+</div>
+</div>
+<button class="col-span-6 bg-primary text-on-primary font-label-sm text-label-sm py-md rounded-xl flex flex-col items-center justify-center gap-xs active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+                Deposit
+            </button>
+<button class="col-span-6 glass-panel text-on-surface font-label-sm text-label-sm py-md rounded-xl flex flex-col items-center justify-center gap-xs active:scale-95 transition-transform">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+                History
+            </button>
+</div>
+<!-- Asset Allocation & Compact Chart -->
+<section class="glass-panel p-md rounded-xl space-y-md">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Asset Allocation</h4>
+<div class="flex items-center gap-lg">
+<!-- Simple SVG Donut Chart -->
+<div class="relative w-32 h-32">
+<svg class="w-full h-full transform -rotate-90" viewBox="0 0 36 36">
+<circle cx="18" cy="18" fill="transparent" r="15.915" stroke="rgba(255,255,255,0.05)" stroke-width="3"></circle>
+<circle cx="18" cy="18" fill="transparent" r="15.915" stroke="#3B82F6" stroke-dasharray="60 40" stroke-dashoffset="0" stroke-width="3"></circle>
+<circle cx="18" cy="18" fill="transparent" r="15.915" stroke="#ADC6FF" stroke-dasharray="25 75" stroke-dashoffset="-60" stroke-width="3"></circle>
+<circle cx="18" cy="18" fill="transparent" r="15.915" stroke="#FFB786" stroke-dasharray="15 85" stroke-dashoffset="-85" stroke-width="3"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center flex-col">
+<span class="font-label-sm text-[10px] text-on-surface-variant">TOTAL</span>
+<span class="font-data-mono text-label-sm">100%</span>
+</div>
+</div>
+<div class="flex-1 space-y-sm">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-[#3B82F6]"></div>
+<span class="font-body-md text-body-md text-on-surface-variant">Stocks</span>
+</div>
+<span class="font-data-mono text-body-md">60%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-primary-fixed-dim"></div>
+<span class="font-body-md text-body-md text-on-surface-variant">ETFs</span>
+</div>
+<span class="font-data-mono text-body-md">25%</span>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-xs">
+<div class="w-2 h-2 rounded-full bg-tertiary"></div>
+<span class="font-body-md text-body-md text-on-surface-variant">Cash</span>
+</div>
+<span class="font-data-mono text-body-md">15%</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Current Holdings List -->
+<section class="space-y-md">
+<div class="flex justify-between items-end">
+<h4 class="font-headline-sm text-headline-sm text-on-surface">Holdings</h4>
+<button class="font-label-sm text-label-sm text-primary hover:underline transition-all">View All</button>
+</div>
+<div class="space-y-sm"><!-- Holding 1: NVDA (US) --><div class="glass-panel p-md rounded-xl space-y-sm hover:bg-surface-variant/50 transition-all cursor-pointer"><div class="flex items-center justify-between"><div class="flex items-center gap-md"><div class="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">NV</div><div><div class="flex items-center gap-xs"><p class="font-headline-sm text-body-lg text-on-surface font-bold">NVDA</p><span class="font-label-sm text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">US</span></div><p class="font-label-sm text-label-sm text-on-surface-variant">NVIDIA Corporation</p></div></div><div class="text-right"><p class="font-data-mono text-body-md text-on-surface font-bold">$1,452.12</p><p class="font-data-mono text-label-sm text-[#10b981] flex items-center justify-end"><span class="material-symbols-outlined text-[12px]">arrow_drop_up</span>+$284.10 (+24.3%)</p></div></div><div class="grid grid-cols-12 gap-xs pt-2 border-t border-outline-variant/20"><div class="col-span-6"><p class="font-label-sm text-[10px] text-on-surface-variant">Position / Avg Cost</p><p class="font-data-mono text-label-sm text-on-surface">12.5 Shares @ $93.44</p></div><div class="col-span-6 text-right"><p class="font-label-sm text-[10px] text-on-surface-variant">Unrealized P&amp;L</p><p class="font-data-mono text-label-sm text-[#10b981] font-bold">+$284.10 (+24.32%)</p></div></div></div><!-- Holding 2: TSLA (US) --><div class="glass-panel p-md rounded-xl space-y-sm hover:bg-surface-variant/50 transition-all cursor-pointer"><div class="flex items-center justify-between"><div class="flex items-center gap-md"><div class="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center text-on-secondary-container font-bold">TS</div><div><div class="flex items-center gap-xs"><p class="font-headline-sm text-body-lg text-on-surface font-bold">TSLA</p><span class="font-label-sm text-[10px] px-1.5 py-0.5 rounded bg-primary/20 text-primary border border-primary/30">US</span></div><p class="font-label-sm text-label-sm text-on-surface-variant">Tesla Inc</p></div></div><div class="text-right"><p class="font-data-mono text-body-md text-on-surface font-bold">$850.40</p><p class="font-data-mono text-label-sm text-[#f87171] flex items-center justify-end"><span class="material-symbols-outlined text-[12px]">arrow_drop_down</span>-$12.05 (-1.40%)</p></div></div><div class="grid grid-cols-12 gap-xs pt-2 border-t border-outline-variant/20"><div class="col-span-6"><p class="font-label-sm text-[10px] text-on-surface-variant">Position / Avg Cost</p><p class="font-data-mono text-label-sm text-on-surface">4.2 Shares @ $205.35</p></div><div class="col-span-6 text-right"><p class="font-label-sm text-[10px] text-on-surface-variant">Unrealized P&amp;L</p><p class="font-data-mono text-label-sm text-[#f87171] font-bold">-$12.05 (-1.40%)</p></div></div></div><!-- Holding 3: 0700.HK (HK) --><div class="glass-panel p-md rounded-xl space-y-sm hover:bg-surface-variant/50 transition-all cursor-pointer"><div class="flex items-center justify-between"><div class="flex items-center gap-md"><div class="w-10 h-10 rounded-full bg-surface-variant flex items-center justify-center text-primary-fixed-dim font-bold">TC</div><div><div class="flex items-center gap-xs"><p class="font-headline-sm text-body-lg text-on-surface font-bold">0700.HK</p><span class="font-label-sm text-[10px] px-1.5 py-0.5 rounded bg-tertiary/20 text-tertiary border border-tertiary/30">HK</span></div><p class="font-label-sm text-label-sm text-on-surface-variant">Tencent Holdings</p></div></div><div class="text-right"><p class="font-data-mono text-body-md text-on-surface font-bold">$9,840.00</p><p class="font-data-mono text-label-sm text-[#10b981] flex items-center justify-end"><span class="material-symbols-outlined text-[12px]">arrow_drop_up</span>+$186.20 (+1.93%)</p></div></div><div class="grid grid-cols-12 gap-xs pt-2 border-t border-outline-variant/20"><div class="col-span-6"><p class="font-label-sm text-[10px] text-on-surface-variant">Position / Avg Cost</p><p class="font-data-mono text-label-sm text-on-surface">200 Shares @ HK$380.00</p></div><div class="col-span-6 text-right"><p class="font-label-sm text-[10px] text-on-surface-variant">Unrealized P&amp;L</p><p class="font-data-mono text-label-sm text-[#10b981] font-bold">+$680.50 (+7.43%)</p></div></div></div><!-- Holding 4: BTC (Crypto) --><div class="glass-panel p-md rounded-xl space-y-sm hover:bg-surface-variant/50 transition-all cursor-pointer"><div class="flex items-center justify-between"><div class="flex items-center gap-md"><div class="w-10 h-10 rounded-full bg-tertiary/10 flex items-center justify-center text-tertiary font-bold">₿</div><div><div class="flex items-center gap-xs"><p class="font-headline-sm text-body-lg text-on-surface font-bold">BTC</p><span class="font-label-sm text-[10px] px-1.5 py-0.5 rounded bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/30">Crypto</span></div><p class="font-label-sm text-label-sm text-on-surface-variant">Bitcoin</p></div></div><div class="text-right"><p class="font-data-mono text-body-md text-on-surface font-bold">$28,540.20</p><p class="font-data-mono text-label-sm text-[#10b981] flex items-center justify-end"><span class="material-symbols-outlined text-[12px]">arrow_drop_up</span>+$1,420.50 (+5.24%)</p></div></div><div class="grid grid-cols-12 gap-xs pt-2 border-t border-outline-variant/20"><div class="col-span-6"><p class="font-label-sm text-[10px] text-on-surface-variant">Position / Avg Cost</p><p class="font-data-mono text-label-sm text-on-surface">0.42 BTC @ $64,200.00</p></div><div class="col-span-6 text-right"><p class="font-label-sm text-[10px] text-on-surface-variant">Unrealized P&amp;L</p><p class="font-data-mono text-label-sm text-[#10b981] font-bold">+$3,240.20 (+12.8%)</p></div></div></div></div>
+</section>
+</main>
+<!-- Bottom Nav Bar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-2 bg-surface/90 backdrop-blur-xl border-t border-outline-variant/20 rounded-t-xl">
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-primary-container/10 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="show_chart">show_chart</span>
+<span class="font-label-sm text-label-sm">Market</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-primary-container/10 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="star">star</span>
+<span class="font-label-sm text-label-sm">Watchlist</span>
+</a>
+<a class="flex flex-col items-center justify-center text-primary font-bold active:scale-90 duration-150" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet" style="font-variation-settings: 'FILL' 1;">account_balance_wallet</span>
+<span class="font-label-sm text-label-sm">Portfolio</span>
+</a>
+<a class="flex flex-col items-center justify-center text-on-surface-variant hover:bg-primary-container/10 transition-colors" href="#">
+<span class="material-symbols-outlined" data-icon="person">person</span>
+<span class="font-label-sm text-label-sm">Profile</span>
+</a>
+</nav>
+
+
+</body></html>
