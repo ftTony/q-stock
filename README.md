@@ -11,6 +11,8 @@
 
 - [需求文档](./docs/requirements.md)
 - [启动与环境](./docs/getting-started.md)
+- [架构说明](./docs/architecture.md)
+- [API 参考](./docs/api.md)
 
 ## 最快启动
 

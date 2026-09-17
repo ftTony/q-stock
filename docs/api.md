@@ -1,0 +1,271 @@
+# Q-Stock API 参考
+
+Base URL：同源，例如 `http://localhost:3000`。  
+鉴权：Auth.js Session Cookie（浏览器自动携带）。标注 **需登录** 的接口无 Session 时返回 `401`。
+
+通用约定：
+
+- `assetType`：`stock` | `crypto`
+- 错误体常见形态：`{ "error": "..." }`
+- 部分外部依赖失败会返回降级字段：`degraded: true` 或空数组
+
+---
+
+## 健康检查
+
+### `GET /api/health`
+
+无需登录。
+
+**响应示例**
+
+```json
+{ "ok": true, "finnhub": true, "adanos": false }
+```
+
+`ok: false` 通常表示数据库不可用。
+
+---
+
+## 鉴权
+
+### `POST /api/auth/register`
+
+注册。
+
+**Body**
+
+```json
+{
+  "email": "user@example.com",
+  "password": "secret1",
+  "name": "可选昵称",
+  "locale": "zh-CN"
+}
+```
+
+**成功**：`201` + `{ "user": { "id", "email", "name" } }`  
+**冲突**：`409` 邮箱已存在。
+
+### `GET|POST /api/auth/[...nextauth]`
+
+Auth.js 内置路由（Credentials 登录 / Session / CSRF 等）。前端使用 `next-auth/react` 的 `signIn` / `signOut` / `useSession`。
+
+---
+
+## 用户设置
+
+### `GET /api/user/settings`（需登录）
+
+返回当前用户偏好。
+
+### `PATCH /api/user/settings`（需登录）
+
+**Body（字段均可选）**
+
+```json
+{
+  "locale": "zh-CN",
+  "theme": "dark",
+  "changeColorScheme": "us",
+  "name": "Nick"
+}
+```
+
+- `locale`：`zh-CN` | `zh-TW` | `en`
+- `theme`：`light` | `dark` | `system`
+- `changeColorScheme`：`cn` | `us`
+
+---
+
+## 行情
+
+### `GET /api/quotes`
+
+| 参数 | 说明 |
+|---|---|
+| `popular=1` | 返回热门列表；配合 `assetType` |
+| `symbol` | 单标的报价（与 popular 二选一） |
+| `assetType` | 默认 `stock` |
+
+**示例**
+
+- `/api/quotes?popular=1&assetType=stock`
+- `/api/quotes?symbol=AAPL&assetType=stock`
+- `/api/quotes?symbol=BTC&assetType=crypto`
+
+**响应**：`{ "quotes": [...] }` 或 `{ "quote": {...} }`
+
+### `GET /api/search`
+
+| 参数 | 说明 |
+|---|---|
+| `q` | 关键词 |
+| `assetType` | `stock` / `crypto` |
+
+**响应**：`{ "results": [{ symbol, description, assetType, ... }] }`
+
+### `GET /api/candles`
+
+| 参数 | 说明 |
+|---|---|
+| `symbol` | 必填 |
+| `assetType` | 默认 `stock` |
+| `resolution` | `D` / `Q` / `Y`，默认 `D` |
+| `indicators` | 传 `0` 可关闭指标计算 |
+
+**响应**
+
+```json
+{
+  "bars": [{ "time": 0, "open": 0, "high": 0, "low": 0, "close": 0, "volume": 0 }],
+  "indicators": { "ma7": [], "ema12": [], "boll": {}, "rsi": [], "macd": {} },
+  "resolution": "D"
+}
+```
+
+---
+
+## 资讯
+
+### `GET /api/news`
+
+| 参数 | 说明 |
+|---|---|
+| `symbol` | 可选；缺省返回市场新闻 |
+| `assetType` | 影响市场新闻类别 / 过滤 |
+
+### `GET /api/earnings`
+
+| 参数 | 说明 |
+|---|---|
+| `symbol` | 必填（股票） |
+
+失败时可能：`{ "earnings": [], "degraded": true }`
+
+### `GET /api/press`
+
+| 参数 | 说明 |
+|---|---|
+| `symbol` | 必填（股票） |
+
+套餐不足或无数据时可能降级为空列表。
+
+---
+
+## 情绪（Adanos）
+
+### `GET /api/sentiment`
+
+| 参数 | 说明 |
+|---|---|
+| `symbol` | 可选；缺省为市场情绪 |
+| `assetType` | `stock` / `crypto` |
+
+**有 symbol**：`{ "sentiment": { "news"?: {...}, "reddit"?: {...} } }`  
+**无 symbol**：`{ "market": { "available", "bullish_pct", ... } }`
+
+无 Key / 额度不足时 `available: false` 并带 `message`。
+
+---
+
+## 评论
+
+### `GET /api/comments`
+
+| 参数 | 说明 |
+|---|---|
+| `symbol` | 必填 |
+| `assetType` | 默认 `stock` |
+
+### `POST /api/comments`（需登录）
+
+```json
+{ "symbol": "AAPL", "assetType": "stock", "content": "看法…" }
+```
+
+### `DELETE /api/comments?id=`（需登录）
+
+仅作者可软删除。
+
+---
+
+## 自选
+
+### `GET /api/watchlist`（需登录）
+
+| 参数 | 说明 |
+|---|---|
+| `quotes=1` | 附带实时报价 |
+
+**响应**含 `items` 与 `counts: { stock, crypto, total }`。
+
+### `POST /api/watchlist`（需登录）
+
+```json
+{ "symbol": "AAPL", "assetType": "stock" }
+```
+
+幂等 upsert。
+
+### `DELETE /api/watchlist`（需登录）
+
+二选一：
+
+- `?id=<watchlistItemId>`
+- `?symbol=AAPL&assetType=stock`
+
+---
+
+## 价格提醒
+
+### `GET /api/alerts`（需登录）
+
+返回当前用户提醒列表（`triggerPrice` 已转为 number）。
+
+### `POST /api/alerts`（需登录）
+
+```json
+{
+  "symbol": "AAPL",
+  "assetType": "stock",
+  "condition": "gte",
+  "triggerPrice": 200
+}
+```
+
+`condition`：`gte` | `lte`
+
+### `PATCH /api/alerts`（需登录）
+
+```json
+{ "id": "...", "status": "active" }
+```
+
+`status`：`active` | `disabled`（重新启用会清空 `triggeredAt`）
+
+### `DELETE /api/alerts?id=`（需登录）
+
+删除提醒。
+
+---
+
+## Worker（非 HTTP）
+
+进程：`npm run worker` → `src/workers/price-alerts.ts`
+
+行为摘要：
+
+1. 读取 `status=active` 的提醒
+2. 按 symbol 去重请求 Finnhub quote
+3. 满足条件则发邮件并标记 `triggered`，写入 `AlertDeliveryLog`
+
+环境变量见 [启动与环境](./getting-started.md)。
+
+---
+
+## 相关文档
+
+- [架构说明](./architecture.md)
+- [需求文档](./requirements.md)
+- [启动与环境](./getting-started.md)
