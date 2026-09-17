@@ -13,6 +13,8 @@
 - [启动与环境](./docs/getting-started.md)
 - [架构说明](./docs/architecture.md)
 - [API 参考](./docs/api.md)
+- [数据库说明](./docs/database.md)
+- [生产部署](./docs/deployment.md)
 
 ## 最快启动
 
