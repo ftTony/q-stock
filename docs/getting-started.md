@@ -255,5 +255,8 @@ curl http://localhost:3000/api/health
 ## 9. 相关文档
 
 - [需求文档](./requirements.md)
+- [开发指南](./development.md)
+- [排障手册](./troubleshooting.md)
+- [生产部署](./deployment.md)
 - 根目录 [README.md](../README.md)
 - 环境变量模板：[.env.example](../.env.example)

@@ -15,6 +15,8 @@
 - [API 参考](./docs/api.md)
 - [数据库说明](./docs/database.md)
 - [生产部署](./docs/deployment.md)
+- [开发指南](./docs/development.md)
+- [排障手册](./docs/troubleshooting.md)
 
 ## 最快启动
 
