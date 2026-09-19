@@ -1,6 +1,6 @@
 export const locales = ["zh-CN", "zh-TW", "en"] as const;
 export type AppLocale = (typeof locales)[number];
-export const defaultLocale: AppLocale = "zh-CN";
+export const defaultLocale: AppLocale = "en";
 
 export function toDbLocale(locale: string): "zh_CN" | "zh_TW" | "en" {
   if (locale === "zh-TW") return "zh_TW";
