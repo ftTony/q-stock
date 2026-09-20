@@ -10,6 +10,8 @@
 | [生产部署](./deployment.md) | 上线检查清单、反代、容量与回滚 |
 | [开发指南](./development.md) | 如何扩展页面 / API / 指标 / 主题 |
 | [排障手册](./troubleshooting.md) | 按症状排查启动、行情、鉴权、提醒等问题 |
+| [Longbridge 网页交易端技术整理](./longbridge-web-trade-tech.md) | trade.longbridge.com 的渲染、行情、表格、K 线、交易可靠性，以及前端挑战与必处理问题 |
+| [金融图表常用技术](./financial-chart-tech.md) | K 线/分时等金融图的渲染底层、常用库、数据层与选型模板 |
 
 快速入口：复制 [.env.example](../.env.example) 为 `.env` 后，按《启动与环境》操作即可。
 
