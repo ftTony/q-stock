@@ -10,6 +10,12 @@ import {
   type IndicatorFlags,
 } from "@/components/charts/candle-chart";
 import { ChangePct, PriceText } from "@/components/market/price";
+import {
+  EarningsPanel,
+  type EarningsCalendarRow,
+  type EarningsMetric,
+  type EarningsSurprise,
+} from "@/components/market/earnings-panel";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, CandleResolution, OhlcvBar, Quote } from "@/lib/types";
 import type { IndicatorBundle } from "@/lib/indicators";
@@ -24,6 +30,7 @@ export default function SymbolPage() {
   const tCommon = useTranslations("common");
   const tComments = useTranslations("comments");
   const tAlerts = useTranslations("alerts");
+  const tEarnings = useTranslations("earnings");
   const { data: session } = useSession();
 
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -41,9 +48,11 @@ export default function SymbolPage() {
   const [news, setNews] = useState<
     { headline: string; summary?: string; url?: string; datetime?: number; source?: string }[]
   >([]);
-  const [earnings, setEarnings] = useState<
-    { period: string; actual: number | null; estimate: number | null; surprisePercent?: number | null }[]
-  >([]);
+  const [earnings, setEarnings] = useState<EarningsSurprise[]>([]);
+  const [earningsUpcoming, setEarningsUpcoming] = useState<EarningsCalendarRow[]>([]);
+  const [earningsRecent, setEarningsRecent] = useState<EarningsCalendarRow[]>([]);
+  const [earningsMetrics, setEarningsMetrics] = useState<EarningsMetric[]>([]);
+  const [earningsLoading, setEarningsLoading] = useState(false);
   const [press, setPress] = useState<
     { headline?: string; datetime?: string; url?: string; description?: string }[]
   >([]);
@@ -104,12 +113,23 @@ export default function SymbolPage() {
     } else if (tab === "earnings") {
       if (assetType === "crypto") {
         setEarnings([]);
+        setEarningsUpcoming([]);
+        setEarningsRecent([]);
+        setEarningsMetrics([]);
         return;
       }
-      const res = await fetch(`/api/earnings?symbol=${symbol}`);
-      const data = await res.json();
-      setEarnings(data.earnings ?? []);
-      if (data.degraded) setDegraded(true);
+      setEarningsLoading(true);
+      try {
+        const res = await fetch(`/api/earnings?symbol=${symbol}`);
+        const data = await res.json();
+        setEarnings(data.surprises ?? data.earnings ?? []);
+        setEarningsUpcoming(data.calendar?.upcoming ?? []);
+        setEarningsRecent(data.calendar?.recent ?? []);
+        setEarningsMetrics(data.metrics ?? []);
+        if (data.degraded) setDegraded(true);
+      } finally {
+        setEarningsLoading(false);
+      }
     } else if (tab === "press") {
       if (assetType === "crypto") {
         setPress([]);
@@ -460,27 +480,18 @@ export default function SymbolPage() {
         )}
 
         {tab === "earnings" && (
-          <ul className="space-y-2 text-sm">
-            {assetType === "crypto" && (
-              <li className="text-[var(--muted)]">N/A for crypto</li>
-            )}
-            {earnings.map((e, i) => (
-              <li
-                key={i}
-                className="flex flex-wrap justify-between gap-2 border-b border-[var(--border)] py-2"
-              >
-                <span>{e.period}</span>
-                <span>
-                  actual {e.actual ?? "-"} / est {e.estimate ?? "-"}
-                  {e.surprisePercent != null &&
-                    ` (${e.surprisePercent.toFixed(1)}%)`}
-                </span>
-              </li>
-            ))}
-            {assetType === "stock" && earnings.length === 0 && (
-              <li className="text-[var(--muted)]">{tCommon("degraded")}</li>
-            )}
-          </ul>
+          assetType === "crypto" ? (
+            <p className="text-sm text-[var(--muted)]">{tEarnings("cryptoNa")}</p>
+          ) : (
+            <EarningsPanel
+              surprises={earnings}
+              upcoming={earningsUpcoming}
+              recent={earningsRecent}
+              metrics={earningsMetrics}
+              degraded={degraded}
+              loading={earningsLoading}
+            />
+          )
         )}
 
         {tab === "press" && (

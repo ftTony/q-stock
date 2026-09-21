@@ -268,10 +268,94 @@ export interface EarningsItem {
 export async function getEarnings(symbol: string): Promise<EarningsItem[]> {
   const key = `fh:earnings:${symbol}`;
   return cachedFetch(key, 600_000, async () => {
-    return finnhubFetch<EarningsItem[]>("/stock/earnings", {
+    const data = await finnhubFetch<EarningsItem[]>("/stock/earnings", {
       symbol,
-      limit: 12,
+      limit: 16,
     });
+    return Array.isArray(data) ? data : [];
+  });
+}
+
+export interface EarningsCalendarItem {
+  date: string;
+  epsActual: number | null;
+  epsEstimate: number | null;
+  hour: string;
+  quarter: number;
+  revenueActual: number | null;
+  revenueEstimate: number | null;
+  symbol: string;
+  year: number;
+}
+
+export async function getEarningsCalendar(
+  symbol: string,
+  from: string,
+  to: string,
+): Promise<EarningsCalendarItem[]> {
+  const key = `fh:earnings-cal:${symbol}:${from}:${to}`;
+  return cachedFetch(key, 600_000, async () => {
+    const data = await finnhubFetch<{
+      earningsCalendar?: EarningsCalendarItem[];
+    }>("/calendar/earnings", {
+      symbol,
+      from,
+      to,
+      international: "false",
+    });
+    return data.earningsCalendar ?? [];
+  });
+}
+
+export interface BasicFinancialsMetric {
+  [key: string]: number | null | undefined;
+}
+
+export interface BasicFinancials {
+  metric: BasicFinancialsMetric;
+  metricType?: string;
+  series?: unknown;
+  symbol?: string;
+}
+
+/** Key metrics subset for UI (Finnhub /stock/metric). */
+export const BASIC_METRIC_KEYS = [
+  "peNormalizedAnnual",
+  "peTTM",
+  "pbAnnual",
+  "psTTM",
+  "epsAnnual",
+  "epsTTM",
+  "roeTTM",
+  "roaTTM",
+  "grossMarginTTM",
+  "operatingMarginTTM",
+  "netProfitMarginTTM",
+  "revenuePerShareTTM",
+  "dividendYieldIndicatedAnnual",
+  "52WeekHigh",
+  "52WeekLow",
+  "beta",
+  "marketCapitalization",
+] as const;
+
+export async function getBasicFinancials(
+  symbol: string,
+): Promise<BasicFinancials | null> {
+  const key = `fh:basic-fin:${symbol}`;
+  return cachedFetch(key, 600_000, async () => {
+    try {
+      const data = await finnhubFetch<BasicFinancials>("/stock/metric", {
+        symbol,
+        metric: "all",
+      });
+      return data?.metric ? data : null;
+    } catch (err) {
+      if (err instanceof FinnhubError && (err.status === 403 || err.status === 404)) {
+        return null;
+      }
+      throw err;
+    }
   });
 }
 

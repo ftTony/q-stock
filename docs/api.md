@@ -141,7 +141,24 @@ Auth.js 内置路由（Credentials 登录 / Session / CSRF 等）。前端使用
 |---|---|
 | `symbol` | 必填（股票） |
 
-失败时可能：`{ "earnings": [], "degraded": true }`
+聚合 Finnhub：`/stock/earnings`（EPS 惊喜）、`/calendar/earnings`（日历）、`/stock/metric`（基础财务）。
+
+成功示例：
+
+```json
+{
+  "symbol": "AAPL",
+  "surprises": [{ "period": "2024-12-31", "actual": 2.4, "estimate": 2.35, "surprisePercent": 2.1, "quarter": 1, "year": 2025 }],
+  "calendar": {
+    "upcoming": [{ "date": "2025-04-28", "epsEstimate": 1.5, "revenueEstimate": 9e10, "hour": "amc", "quarter": 2, "year": 2025 }],
+    "recent": []
+  },
+  "metrics": [{ "key": "peTTM", "value": 28.5 }],
+  "degraded": false
+}
+```
+
+全部上游失败或无数据时：`degraded: true`，列表可为空。
 
 ### `GET /api/press`
 

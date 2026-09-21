@@ -80,7 +80,7 @@
 | 类型 | 数据来源 | 说明 |
 |---|---|---|
 | 新闻 | Finnhub company-news / market news | 加密以市场新闻过滤 |
-| 财报 | Finnhub earnings | 仅股票；失败降级 |
+| 财报 | Finnhub earnings + calendar + metric | 仅股票：EPS 惊喜、财报日历、关键财务指标；失败降级 |
 | 公告 | Finnhub press-releases | 可能受套餐限制；失败降级 |
 | 评论 | 本系统自建（PostgreSQL） | 登录可发；作者可软删 |
 
