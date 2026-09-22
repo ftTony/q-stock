@@ -4,6 +4,7 @@ import {
   getDailyCandles,
   getMonthlyCandles,
 } from "@/lib/market";
+import { MarketDataError } from "@/lib/market";
 import { computeIndicators } from "@/lib/indicators";
 import type { AssetType, CandleResolution } from "@/lib/types";
 
@@ -42,6 +43,19 @@ export async function GET(req: Request) {
     return NextResponse.json({ bars, indicators, resolution });
   } catch (err) {
     console.error("candles", err);
+    if (
+      err instanceof MarketDataError &&
+      err.message.includes("HTTP 403")
+    ) {
+      return NextResponse.json(
+        {
+          error:
+            "Finnhub 当前 API 套餐没有 K 线权限，请升级套餐或配置支持 K 线的数据源",
+          code: "CANDLE_ACCESS_DENIED",
+        },
+        { status: 503 },
+      );
+    }
     return NextResponse.json(
       { error: err instanceof Error ? err.message : "Failed to fetch candles" },
       { status: 502 },

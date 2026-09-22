@@ -70,6 +70,7 @@ npx prisma generate
 1. `/api/candles?symbol=AAPL&assetType=stock&resolution=D`
 2. 确认 `bars` 非空且 `s` 在上游为 ok
 3. 季 K / 年 K 依赖更长历史；若上游无月 K，会回退日 K 聚合，数据量不足时可能很少
+4. 如果返回 `CANDLE_ACCESS_DENIED`，说明当前 Finnhub API Key 能访问报价，但没有 K 线权限；需要升级 Finnhub 套餐或配置其他 K 线数据源，单纯更换请求参数无法解决
 
 ### 指标不显示
 
@@ -105,19 +106,19 @@ npx prisma generate
 
 ### 提醒不触发
 
-| 检查项 | 说明 |
-|---|---|
-| Worker 是否运行 | `npm run worker` 或 Compose `worker` |
-| 提醒状态 | 必须为 `active` |
-| 条件与现价 | `gte` / `lte` 是否已满足 |
-| Quote 是否成功 | Worker 日志 `quote failed` |
-| 触发后状态 | 变为 `triggered` 后不会再次发送，需「重新启用」 |
+| 检查项          | 说明                                            |
+| --------------- | ----------------------------------------------- |
+| Worker 是否运行 | `npm run worker` 或 Compose `worker`            |
+| 提醒状态        | 必须为 `active`                                 |
+| 条件与现价      | `gte` / `lte` 是否已满足                        |
+| Quote 是否成功  | Worker 日志 `quote failed`                      |
+| 触发后状态      | 变为 `triggered` 后不会再次发送，需「重新启用」 |
 
 ### 触发了但没有邮件
 
-1. 配置 `RESEND_API_KEY` + `EMAIL_FROM`，或 SMTP 全套变量  
-2. Resend 需发件域名 / 地址验证  
-3. 未配置邮件时，Worker 只会 `console` 日志，视为开发回退  
+1. 配置 `RESEND_API_KEY` + `EMAIL_FROM`，或 SMTP 全套变量
+2. Resend 需发件域名 / 地址验证
+3. 未配置邮件时，Worker 只会 `console` 日志，视为开发回退
 4. 查表 `AlertDeliveryLog` 是否已有记录（有记录说明业务侧已走完投递流程）
 
 ## 6. Docker
@@ -146,9 +147,9 @@ Compose 已注入 `DATABASE_URL=...@db:5432...`。不要在容器里用 `localho
 
 ### `npm run build` 失败
 
-1. 阅读 TypeScript / ESLint 报错文件行号  
-2. 确认 Prisma Client 已生成  
-3. Node 版本符合要求  
+1. 阅读 TypeScript / ESLint 报错文件行号
+2. 确认 Prisma Client 已生成
+3. Node 版本符合要求
 
 ### 仅类型错误
 
