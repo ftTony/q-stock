@@ -73,6 +73,7 @@
     "press": "公告",
     "comments": "评论",
     "sentiment": "情绪",
+    "ai": "AI 分析",
     "day": "日K",
     "quarter": "季K",
     "year": "年K",
@@ -232,6 +233,25 @@
     "status_filled": "已成交",
     "status_cancelled": "已撤销",
     "status_rejected": "已拒绝"
+  },
+  "ai": {
+    "loading": "正在结合新闻与财报生成分析…",
+    "unavailable": "AI 分析暂不可用，请配置 OPENAI_API_KEY",
+    "bias": "趋势判断",
+    "biasBullish": "看多",
+    "biasNeutral": "中性",
+    "biasBearish": "看空",
+    "confidence": "信心",
+    "horizon": "展望周期",
+    "horizonShort": "短期",
+    "horizonMedium": "中期",
+    "summary": "综合摘要",
+    "drivers": "驱动因素",
+    "risks": "风险提示",
+    "cached": "缓存结果（约 30 分钟）",
+    "sources": "数据：新闻 {news} 条 · 财报相关 {earnings} · 指标 {metrics}",
+    "withQuote": "含实时报价",
+    "disclaimer": "本分析由 AI 根据公开新闻与财报自动生成，仅供参考，不构成投资建议。"
   },
   "common": {
     "loading": "加载中…",

@@ -73,6 +73,7 @@
     "press": "公告",
     "comments": "評論",
     "sentiment": "情緒",
+    "ai": "AI 分析",
     "day": "日K",
     "quarter": "季K",
     "year": "年K",
@@ -232,6 +233,25 @@
     "status_filled": "已成交",
     "status_cancelled": "已撤銷",
     "status_rejected": "已拒絕"
+  },
+  "ai": {
+    "loading": "正在結合新聞與財報生成分析…",
+    "unavailable": "AI 分析暫不可用，請配置 OPENAI_API_KEY",
+    "bias": "趨勢判斷",
+    "biasBullish": "看多",
+    "biasNeutral": "中性",
+    "biasBearish": "看空",
+    "confidence": "信心",
+    "horizon": "展望週期",
+    "horizonShort": "短期",
+    "horizonMedium": "中期",
+    "summary": "綜合摘要",
+    "drivers": "驅動因素",
+    "risks": "風險提示",
+    "cached": "快取結果（約 30 分鐘）",
+    "sources": "資料：新聞 {news} 條 · 財報相關 {earnings} · 指標 {metrics}",
+    "withQuote": "含即時報價",
+    "disclaimer": "本分析由 AI 根據公開新聞與財報自動生成，僅供參考，不構成投資建議。"
   },
   "common": {
     "loading": "載入中…",

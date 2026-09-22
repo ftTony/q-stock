@@ -31,8 +31,9 @@ Base URL：同源，例如 `http://localhost:3000`。
   "finnhub": true,
   "longbridge": true,
   "futu": false,
-  "adanos": false
-}
+      "adanos": false,
+      "openai": true
+    }
 ```
 
 `ok: false` 通常表示数据库不可用。报价/K 线经 `@/lib/market` 按 `providerPriority` 回退。
@@ -231,6 +232,44 @@ Body：`{ symbol, assetType, side, type, qty, limitPrice?, stopPrice? }`
 **无 symbol**：`{ "market": { "available", "bullish_pct", ... } }`
 
 无 Key / 额度不足时 `available: false` 并带 `message`。
+
+---
+
+## AI 趋势分析
+
+### `GET /api/ai/analyze`
+
+无需登录。综合近期新闻、财报与报价，调用 OpenAI 兼容接口生成结构化趋势判断。结果缓存约 30 分钟。
+
+| 参数 | 说明 |
+|---|---|
+| `symbol` | 必填 |
+| `assetType` | `stock` / `crypto`（加密无财报时仅用新闻+报价） |
+| `locale` | `zh-CN` / `zh-TW` / `en`，影响生成文案语言 |
+
+**响应示例**
+
+```json
+{
+  "available": true,
+  "cached": false,
+  "degraded": false,
+  "symbol": "AAPL",
+  "assetType": "stock",
+  "disclaimer": "…",
+  "analysis": {
+    "bias": "bullish",
+    "confidence": 0.62,
+    "horizon": "short",
+    "summary": "…",
+    "drivers": ["…"],
+    "risks": ["…"],
+    "sourcesUsed": { "news": 10, "earnings": 6, "metrics": 8, "hasQuote": true }
+  }
+}
+```
+
+未配置 `OPENAI_API_KEY` 时：`available: false` + `message`。
 
 ---
 

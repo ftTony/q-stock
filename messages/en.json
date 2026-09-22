@@ -73,6 +73,7 @@
     "press": "Press",
     "comments": "Comments",
     "sentiment": "Sentiment",
+    "ai": "AI Analysis",
     "day": "Daily",
     "quarter": "Quarterly",
     "year": "Yearly",
@@ -232,6 +233,25 @@
     "status_filled": "Filled",
     "status_cancelled": "Cancelled",
     "status_rejected": "Rejected"
+  },
+  "ai": {
+    "loading": "Generating analysis from news and earnings…",
+    "unavailable": "AI analysis unavailable. Configure OPENAI_API_KEY.",
+    "bias": "Bias",
+    "biasBullish": "Bullish",
+    "biasNeutral": "Neutral",
+    "biasBearish": "Bearish",
+    "confidence": "Confidence",
+    "horizon": "Horizon",
+    "horizonShort": "Short-term",
+    "horizonMedium": "Medium-term",
+    "summary": "Summary",
+    "drivers": "Drivers",
+    "risks": "Risks",
+    "cached": "Cached (~30 min)",
+    "sources": "Sources: {news} news · {earnings} earnings · {metrics} metrics",
+    "withQuote": "includes quote",
+    "disclaimer": "AI-generated from public news and earnings. For reference only; not investment advice."
   },
   "common": {
     "loading": "Loading…",

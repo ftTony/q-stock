@@ -2,13 +2,17 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
 import { Link } from "@/i18n/routing";
 import {
   CandleChart,
   type IndicatorFlags,
 } from "@/components/charts/candle-chart";
+import {
+  AiAnalysisPanel,
+  type AiTrendAnalysis,
+} from "@/components/market/ai-analysis-panel";
 import { ChangePct, PriceText } from "@/components/market/price";
 import {
   EarningsPanel,
@@ -21,12 +25,13 @@ import { displayName } from "@/lib/market-names";
 import type { AssetType, CandleResolution, OhlcvBar, Quote } from "@/lib/types";
 import type { IndicatorBundle } from "@/lib/indicators";
 
-type Tab = "news" | "earnings" | "press" | "comments" | "sentiment";
+type Tab = "news" | "earnings" | "press" | "comments" | "sentiment" | "ai";
 
 export default function SymbolPage() {
   const params = useParams<{ assetType: string; symbol: string }>();
   const assetType = (params.assetType === "crypto" ? "crypto" : "stock") as AssetType;
   const symbol = String(params.symbol || "").toUpperCase();
+  const locale = useLocale();
   const t = useTranslations("symbol");
   const tCommon = useTranslations("common");
   const tComments = useTranslations("comments");
@@ -65,6 +70,12 @@ export default function SymbolPage() {
     news?: Record<string, unknown>;
     reddit?: Record<string, unknown>;
   } | null>(null);
+  const [aiAnalysis, setAiAnalysis] = useState<AiTrendAnalysis | null>(null);
+  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
+  const [aiDisclaimer, setAiDisclaimer] = useState<string | null>(null);
+  const [aiCached, setAiCached] = useState(false);
+  const [aiLoading, setAiLoading] = useState(false);
   const [loadingChart, setLoadingChart] = useState(true);
   const [alertPrice, setAlertPrice] = useState("");
   const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
@@ -148,8 +159,28 @@ export default function SymbolPage() {
       const res = await fetch(`/api/sentiment?symbol=${symbol}&assetType=${assetType}`);
       const data = await res.json();
       setSentiment(data.sentiment ?? null);
+    } else if (tab === "ai") {
+      setAiLoading(true);
+      setAiAnalysis(null);
+      setAiAvailable(null);
+      setAiMessage(null);
+      try {
+        const res = await fetch(
+          `/api/ai/analyze?symbol=${symbol}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
+        );
+        const data = await res.json();
+        setAiAvailable(data.available !== false);
+        setAiAnalysis(data.analysis ?? null);
+        setAiMessage(data.message ?? data.error ?? null);
+        setAiDisclaimer(data.disclaimer ?? null);
+        setAiCached(Boolean(data.cached));
+        if (data.degraded) setDegraded(true);
+        if (!res.ok && data.available !== false) setDegraded(true);
+      } finally {
+        setAiLoading(false);
+      }
     }
-  }, [tab, symbol, assetType]);
+  }, [tab, symbol, assetType, locale]);
 
   useEffect(() => {
     setAlertPrice("");
@@ -200,6 +231,7 @@ export default function SymbolPage() {
         { id: "press" as const, label: t("press") },
         { id: "comments" as const, label: t("comments") },
         { id: "sentiment" as const, label: t("sentiment") },
+        { id: "ai" as const, label: t("ai") },
       ] as const,
     [t],
   );
@@ -643,6 +675,18 @@ export default function SymbolPage() {
                   );
                 })}
               </div>
+            )}
+
+            {tab === "ai" && (
+              <AiAnalysisPanel
+                available={aiAvailable}
+                message={aiMessage}
+                analysis={aiAnalysis}
+                disclaimer={aiDisclaimer}
+                cached={aiCached}
+                degraded={degraded}
+                loading={aiLoading}
+              />
             )}
           </div>
         </div>

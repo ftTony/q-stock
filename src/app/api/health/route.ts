@@ -27,6 +27,7 @@ export async function GET() {
             (process.env.FUTU_PRIVATE_KEY || process.env.FUTU_PRIVATE_KEY_PATH)),
       ),
       adanos: Boolean(process.env.ADANOS_API_KEY),
+      openai: Boolean(process.env.OPENAI_API_KEY),
     });
   } catch {
     return NextResponse.json({ ok: false, db: false }, { status: 503 });
