@@ -1,4 +1,4 @@
-﻿-- CreateEnum
+-- CreateEnum
 CREATE TYPE "AssetType" AS ENUM ('stock', 'crypto');
 CREATE TYPE "ThemeMode" AS ENUM ('light', 'dark', 'system');
 CREATE TYPE "ChangeColorScheme" AS ENUM ('cn', 'us');
