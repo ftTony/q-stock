@@ -40,6 +40,24 @@ enum AlertStatus {
   disabled
 }
 
+enum OrderSide {
+  buy
+  sell
+}
+
+enum OrderType {
+  market
+  limit
+  stop
+}
+
+enum OrderStatus {
+  pending
+  filled
+  cancelled
+  rejected
+}
+
 model User {
   id                String            @id @default(cuid())
   email             String            @unique
@@ -51,10 +69,13 @@ model User {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  watchlist      WatchlistItem[]
-  priceAlerts    PriceAlert[]
-  comments       Comment[]
+  watchlist       WatchlistItem[]
+  priceAlerts     PriceAlert[]
+  comments        Comment[]
   alertDeliveries AlertDeliveryLog[]
+  paperAccount    PaperAccount?
+  paperPositions  PaperPosition[]
+  paperOrders     PaperOrder[]
 }
 
 model WatchlistItem {
@@ -127,4 +148,55 @@ model ApiCache {
   createdAt DateTime @default(now())
 
   @@index([expiresAt])
+}
+
+model PaperAccount {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  cashBalance Decimal  @db.Decimal(18, 4)
+  currency    String   @default("USD")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PaperPosition {
+  id        String    @id @default(cuid())
+  userId    String
+  symbol    String
+  assetType AssetType
+  qty       Decimal   @db.Decimal(18, 8)
+  avgCost   Decimal   @db.Decimal(18, 8)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol, assetType])
+  @@index([userId])
+}
+
+model PaperOrder {
+  id           String      @id @default(cuid())
+  userId       String
+  symbol       String
+  assetType    AssetType
+  side         OrderSide
+  type         OrderType
+  qty          Decimal     @db.Decimal(18, 8)
+  limitPrice   Decimal?    @db.Decimal(18, 8)
+  stopPrice    Decimal?    @db.Decimal(18, 8)
+  status       OrderStatus @default(pending)
+  filledPrice  Decimal?    @db.Decimal(18, 8)
+  filledAt     DateTime?
+  rejectReason String?
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@index([userId, status])
+  @@index([symbol, assetType, status])
 }

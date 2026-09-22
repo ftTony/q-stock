@@ -20,10 +20,22 @@ Base URL：同源，例如 `http://localhost:3000`。
 **响应示例**
 
 ```json
-{ "ok": true, "finnhub": true, "adanos": false }
+{
+  "ok": true,
+  "providers": { "longbridge": true, "futu": false, "finnhub": true },
+  "providerPriority": ["longbridge", "finnhub"],
+  "brokers": [
+    { "id": "longbridge", "configured": true, "ready": false },
+    { "id": "futu", "configured": false, "ready": false }
+  ],
+  "finnhub": true,
+  "longbridge": true,
+  "futu": false,
+  "adanos": false
+}
 ```
 
-`ok: false` 通常表示数据库不可用。
+`ok: false` 通常表示数据库不可用。报价/K 线经 `@/lib/market` 按 `providerPriority` 回退。
 
 ---
 
@@ -167,6 +179,42 @@ Auth.js 内置路由（Credentials 登录 / Session / CSRF 等）。前端使用
 | `symbol` | 必填（股票） |
 
 套餐不足或无数据时可能降级为空列表。
+
+---
+
+## 模拟交易（需登录）
+
+仅做多。初始虚拟资金 `$100,000`。市价单按最新报价立即成交；限价 / 止损由 Worker 轮询撮合。
+
+### `GET /api/trading/account`
+
+返回 `{ account: { cashBalance, currency, ... } }`，无账户时自动开户。
+
+### `POST /api/trading/account`
+
+Body：`{ "action": "reset" }` — 清空持仓与订单，现金恢复 `$100,000`。
+
+### `GET /api/trading/positions`
+
+| 参数 | 说明 |
+|---|---|
+| `quotes` | `1` 时附带现价与浮盈 |
+
+### `GET /api/trading/orders`
+
+| 参数 | 说明 |
+|---|---|
+| `status` | `pending` / `filled` / `cancelled` / `rejected` |
+| `symbol` / `assetType` | 可选过滤 |
+
+### `POST /api/trading/orders`
+
+Body：`{ symbol, assetType, side, type, qty, limitPrice?, stopPrice? }`  
+`type`：`market` | `limit` | `stop`；`side`：`buy` | `sell`（卖出不可超过持仓）。
+
+### `DELETE /api/trading/orders?id=`
+
+仅可撤销 `pending` 订单。
 
 ---
 

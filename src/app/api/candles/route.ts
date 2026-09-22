@@ -3,7 +3,7 @@ import { aggregateCandles } from "@/lib/candles/aggregate";
 import {
   getDailyCandles,
   getMonthlyCandles,
-} from "@/lib/finnhub/client";
+} from "@/lib/market";
 import { computeIndicators } from "@/lib/indicators";
 import type { AssetType, CandleResolution } from "@/lib/types";
 

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getQuote, getQuotes } from "@/lib/finnhub/client";
+import { getQuote, getQuotes } from "@/lib/market";
 import type { AssetType } from "@/lib/types";
 import { POPULAR_CRYPTO, POPULAR_STOCKS } from "@/lib/types";
 

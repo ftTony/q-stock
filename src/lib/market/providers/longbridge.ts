@@ -1,0 +1,230 @@
+import { cachedFetch } from "@/lib/cache";
+import { toLongbridgeSymbol, normalizeSymbol } from "@/lib/market/symbols";
+import type { MarketDataProvider, QuoteWithSource } from "@/lib/market/types";
+import { MarketDataError } from "@/lib/market/types";
+import type { AssetType, OhlcvBar, SearchResult } from "@/lib/types";
+
+type LbModule = typeof import("longbridge");
+
+let lbPromise: Promise<LbModule> | null = null;
+let quoteCtx: InstanceType<LbModule["QuoteContext"]> | null = null;
+
+function hasLongbridgeCreds(): boolean {
+  return Boolean(
+    process.env.LONGBRIDGE_APP_KEY &&
+      process.env.LONGBRIDGE_APP_SECRET &&
+      process.env.LONGBRIDGE_ACCESS_TOKEN,
+  );
+}
+
+async function loadLb(): Promise<LbModule> {
+  if (!lbPromise) {
+    lbPromise = import("longbridge");
+  }
+  return lbPromise;
+}
+
+async function getCtx(): Promise<InstanceType<LbModule["QuoteContext"]>> {
+  if (quoteCtx) return quoteCtx;
+  const lb = await loadLb();
+  const config = lb.Config.fromApikey(
+    process.env.LONGBRIDGE_APP_KEY!,
+    process.env.LONGBRIDGE_APP_SECRET!,
+    process.env.LONGBRIDGE_ACCESS_TOKEN!,
+  );
+  quoteCtx = lb.QuoteContext.new(config);
+  return quoteCtx;
+}
+
+function dec(v: { toNumber(): number } | null | undefined): number {
+  if (v == null) return 0;
+  try {
+    return v.toNumber();
+  } catch {
+    return Number(String(v)) || 0;
+  }
+}
+
+export const longbridgeProvider: MarketDataProvider = {
+  id: "longbridge",
+
+  isConfigured() {
+    return hasLongbridgeCreds();
+  },
+
+  supports(assetType) {
+    // Prefer stocks; crypto support is limited — still attempt US tickers
+    return assetType === "stock" || assetType === "crypto";
+  },
+
+  async getQuote(symbol, assetType) {
+    if (assetType === "crypto") {
+      throw new MarketDataError("Longbridge crypto not preferred", "longbridge");
+    }
+    const normalized = normalizeSymbol(symbol, assetType);
+    const lbSym = toLongbridgeSymbol(normalized, assetType);
+    const key = `lb:quote:${assetType}:${normalized}`;
+
+    try {
+      return await cachedFetch(key, 15_000, async () => {
+        const ctx = await getCtx();
+        const rows = await ctx.quote([lbSym]);
+        const q = rows[0];
+        if (!q) {
+          throw new MarketDataError(`No quote for ${lbSym}`, "longbridge");
+        }
+        const price = dec(q.lastDone);
+        const prev = dec(q.prevClose);
+        const change = price - prev;
+        const percentChange = prev ? (change / prev) * 100 : 0;
+        return {
+          symbol: normalized,
+          assetType,
+          price,
+          change,
+          percentChange,
+          high: dec(q.high),
+          low: dec(q.low),
+          open: dec(q.open),
+          previousClose: prev,
+          timestamp: Math.floor((q.timestamp?.getTime?.() ?? Date.now()) / 1000),
+          source: "longbridge" as const,
+        } satisfies QuoteWithSource;
+      });
+    } catch (err) {
+      throw new MarketDataError(
+        err instanceof Error ? err.message : "Longbridge quote failed",
+        "longbridge",
+      );
+    }
+  },
+
+  async getQuotes(items) {
+    const stockItems = items.filter((i) => i.assetType === "stock");
+    if (!stockItems.length) return [];
+
+    try {
+      const ctx = await getCtx();
+      const map = new Map(
+        stockItems.map((i) => {
+          const n = normalizeSymbol(i.symbol, i.assetType);
+          return [toLongbridgeSymbol(n, i.assetType), { ...i, normalized: n }] as const;
+        }),
+      );
+      const rows = await ctx.quote([...map.keys()]);
+      const out: QuoteWithSource[] = [];
+      for (const q of rows) {
+        const meta = map.get(q.symbol);
+        if (!meta) continue;
+        const price = dec(q.lastDone);
+        const prev = dec(q.prevClose);
+        const change = price - prev;
+        out.push({
+          symbol: meta.normalized,
+          assetType: meta.assetType,
+          price,
+          change,
+          percentChange: prev ? (change / prev) * 100 : 0,
+          high: dec(q.high),
+          low: dec(q.low),
+          open: dec(q.open),
+          previousClose: prev,
+          timestamp: Math.floor((q.timestamp?.getTime?.() ?? Date.now()) / 1000),
+          source: "longbridge",
+        });
+      }
+      return out;
+    } catch (err) {
+      // fall back to sequential
+      const results = await Promise.allSettled(
+        stockItems.map((i) => longbridgeProvider.getQuote(i.symbol, i.assetType)),
+      );
+      return results
+        .filter((r): r is PromiseFulfilledResult<QuoteWithSource> => r.status === "fulfilled")
+        .map((r) => r.value);
+    }
+  },
+
+  async getDailyCandles(symbol, assetType, from, to) {
+    if (assetType === "crypto") {
+      throw new MarketDataError("Longbridge crypto candles unsupported", "longbridge");
+    }
+    const normalized = normalizeSymbol(symbol, assetType);
+    const lbSym = toLongbridgeSymbol(normalized, assetType);
+    const key = `lb:candle:D:${normalized}:${from}:${to}`;
+
+    return cachedFetch(key, 60_000, async () => {
+      const ctx = await getCtx();
+      const daySpan = Math.max(1, Math.ceil((to - from) / 86400));
+      const count = Math.min(1000, daySpan + 5);
+      const sticks = await ctx.candlesticks(
+        lbSym,
+        14, // Period.Day
+        count,
+        0, // AdjustType.NoAdjust
+        0, // TradeSessions.Intraday
+      );
+      return sticks
+        .map((c) => ({
+          time: Math.floor(c.timestamp.getTime() / 1000),
+          open: dec(c.open),
+          high: dec(c.high),
+          low: dec(c.low),
+          close: dec(c.close),
+          volume: c.volume ?? 0,
+        }))
+        .filter((b) => b.time >= from && b.time <= to)
+        .sort((a, b) => a.time - b.time) as OhlcvBar[];
+    });
+  },
+
+  async getMonthlyCandles(symbol, assetType, from, to) {
+    if (assetType === "crypto") {
+      throw new MarketDataError("Longbridge crypto candles unsupported", "longbridge");
+    }
+    const normalized = normalizeSymbol(symbol, assetType);
+    const lbSym = toLongbridgeSymbol(normalized, assetType);
+    const key = `lb:candle:M:${normalized}:${from}:${to}`;
+
+    return cachedFetch(key, 120_000, async () => {
+      const ctx = await getCtx();
+      const monthSpan = Math.max(1, Math.ceil((to - from) / (30 * 86400)));
+      const count = Math.min(500, monthSpan + 5);
+      const sticks = await ctx.candlesticks(
+        lbSym,
+        16, // Period.Month
+        count,
+        0, // AdjustType.NoAdjust
+        0, // TradeSessions.Intraday
+      );
+      return sticks
+        .map((c) => ({
+          time: Math.floor(c.timestamp.getTime() / 1000),
+          open: dec(c.open),
+          high: dec(c.high),
+          low: dec(c.low),
+          close: dec(c.close),
+          volume: c.volume ?? 0,
+        }))
+        .filter((b) => b.time >= from && b.time <= to)
+        .sort((a, b) => a.time - b.time) as OhlcvBar[];
+    });
+  },
+
+  async searchSymbols(q, assetType): Promise<SearchResult[]> {
+    if (assetType === "crypto") return [];
+    const query = q.trim().toUpperCase();
+    if (!query) return [];
+    // Longbridge has no free-text search in QuoteContext; return exact ticker hint
+    const sym = normalizeSymbol(query.replace(/\.US$/i, ""), "stock");
+    return [
+      {
+        symbol: sym,
+        displaySymbol: `${sym}.US`,
+        description: `${sym} (Longbridge)`,
+        assetType: "stock",
+        type: "Common Stock",
+      },
+    ];
+  },
+};

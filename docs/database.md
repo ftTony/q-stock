@@ -22,10 +22,13 @@ User 1──* WatchlistItem
 User 1──* PriceAlert 1──* AlertDeliveryLog
 User 1──* Comment
 User 1──* AlertDeliveryLog
+User 1──1 PaperAccount
+User 1──* PaperPosition
+User 1──* PaperOrder
 ApiCache（独立缓存表）
 ```
 
-删除用户会级联删除自选、提醒、评论与投递日志（`onDelete: Cascade`）。
+删除用户会级联删除自选、提醒、评论、投递日志与模拟交易数据（`onDelete: Cascade`）。
 
 ## 3. 枚举
 
@@ -37,6 +40,9 @@ ApiCache（独立缓存表）
 | `LocaleCode` | `zh_CN`, `zh_TW`, `en` | 用户语言（DB 形态） |
 | `AlertCondition` | `gte`, `lte` | 提醒条件 |
 | `AlertStatus` | `active`, `triggered`, `disabled` | 提醒状态 |
+| `OrderSide` | `buy`, `sell` | 模拟交易方向 |
+| `OrderType` | `market`, `limit`, `stop` | 订单类型 |
+| `OrderStatus` | `pending`, `filled`, `cancelled`, `rejected` | 订单状态 |
 
 注意：路由 locale 为 `zh-CN`，入库为 `zh_CN`，转换见 `src/i18n/config.ts`。
 
@@ -90,7 +96,19 @@ ApiCache（独立缓存表）
 
 用于排查重复发送与邮件问题。
 
-### 4.6 ApiCache
+### 4.6 PaperAccount / PaperPosition / PaperOrder
+
+模拟交易（仅做多）：
+
+| 表 | 说明 |
+|---|---|
+| PaperAccount | 每用户一账户；`cashBalance` 初始 `$100,000` USD |
+| PaperPosition | `(userId, symbol, assetType)` 唯一；`qty` + `avgCost` |
+| PaperOrder | 市价/限价/止损；`pending` 由 Worker 撮合 |
+
+索引：`PaperOrder(status)`、`(userId, status)`、`(symbol, assetType, status)`。
+
+### 4.7 ApiCache
 
 | 字段 | 说明 |
 |---|---|
@@ -107,6 +125,8 @@ ApiCache（独立缓存表）
 - 实时报价、K 线 OHLCV
 - 新闻、财报、公告原文
 - 市场情绪原始响应
+
+模拟成交价取触发时行情价，不单独存 tick 流水。
 
 ## 6. 备份与恢复建议
 

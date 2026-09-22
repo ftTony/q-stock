@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getQuotes } from "@/lib/finnhub/client";
+import { getQuotes } from "@/lib/market";
 import { normalizeSymbol } from "@/lib/types";
 
 const upsertSchema = z.object({

@@ -16,6 +16,7 @@ import {
   type EarningsMetric,
   type EarningsSurprise,
 } from "@/components/market/earnings-panel";
+import { TradePanel } from "@/components/trading/trade-panel";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, CandleResolution, OhlcvBar, Quote } from "@/lib/types";
 import type { IndicatorBundle } from "@/lib/indicators";
@@ -334,303 +335,317 @@ export default function SymbolPage() {
         )}
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {(
-          [
-            ["D", t("day")],
-            ["Q", t("quarter")],
-            ["Y", t("year")],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setResolution(key)}
-            className={`rounded-xl px-3 py-1.5 text-sm ${
-              resolution === key
-                ? "bg-[var(--brand)] text-[#0b1220] font-semibold"
-                : "qt-btn-ghost border border-[var(--border)] bg-[var(--panel)]"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+        <div className="space-y-4 min-w-0 lg:col-start-1">
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ["D", t("day")],
+                ["Q", t("quarter")],
+                ["Y", t("year")],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setResolution(key)}
+                className={`rounded-xl px-3 py-1.5 text-sm ${
+                  resolution === key
+                    ? "bg-[var(--brand)] text-[#0b1220] font-semibold"
+                    : "qt-btn-ghost border border-[var(--border)] bg-[var(--panel)]"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-      <div className="flex flex-wrap gap-2 text-xs">
-        <span className="self-center text-[var(--muted)]">{t("indicators")}:</span>
-        {(
-          [
-            ["ma", "MA"],
-            ["ema", "EMA"],
-            ["boll", "BOLL"],
-            ["rsi", "RSI"],
-            ["macd", "MACD"],
-          ] as const
-        ).map(([key, label]) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setFlags((f) => ({ ...f, [key]: !f[key] }))}
-            className={`rounded-full border px-2.5 py-1 ${
-              flags[key]
-                ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                : "border-[var(--border)] text-[var(--muted)]"
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+          <div className="flex flex-wrap gap-2 text-xs">
+            <span className="self-center text-[var(--muted)]">{t("indicators")}:</span>
+            {(
+              [
+                ["ma", "MA"],
+                ["ema", "EMA"],
+                ["boll", "BOLL"],
+                ["rsi", "RSI"],
+                ["macd", "MACD"],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => setFlags((f) => ({ ...f, [key]: !f[key] }))}
+                className={`rounded-full border px-2.5 py-1 ${
+                  flags[key]
+                    ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
+                    : "border-[var(--border)] text-[var(--muted)]"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-      {loadingChart ? (
-        <div className="qt-panel flex h-[360px] items-center justify-center text-sm text-[var(--muted)] sm:h-[440px]">
-          {tCommon("loading")}
+          {loadingChart ? (
+            <div className="qt-panel flex h-[360px] items-center justify-center text-sm text-[var(--muted)] sm:h-[440px]">
+              {tCommon("loading")}
+            </div>
+          ) : (
+            <CandleChart bars={bars} indicators={indicators} flags={flags} />
+          )}
         </div>
-      ) : (
-        <CandleChart bars={bars} indicators={indicators} flags={flags} />
-      )}
 
-      <form
-        onSubmit={createAlert}
-        className="qt-panel flex flex-wrap items-end gap-2 p-4"
-      >
-        <div className="text-sm font-medium">{t("setAlert")}</div>
-        <select
-          value={alertCondition}
-          onChange={(e) => setAlertCondition(e.target.value as "gte" | "lte")}
-          className="qt-input px-2 py-1.5 text-sm"
-        >
-          <option value="gte">{tAlerts("gte")}</option>
-          <option value="lte">{tAlerts("lte")}</option>
-        </select>
-        <input
-          type="number"
-          step="any"
-          required
-          value={alertPrice}
-          onChange={(e) => setAlertPrice(e.target.value)}
-          placeholder={tAlerts("triggerPrice")}
-          className="qt-input w-32 px-2 py-1.5 text-sm"
-        />
-        <button
-          type="submit"
-          className="qt-btn qt-btn-primary px-3 py-1.5 text-sm"
-        >
-          {tAlerts("create")}
-        </button>
-        {alertMsg && (
-          <span className="text-xs text-[var(--muted)]">{alertMsg}</span>
-        )}
-      </form>
+        <aside className="lg:col-start-2 lg:row-span-2 lg:sticky lg:top-20">
+          <TradePanel
+            symbol={symbol}
+            assetType={assetType}
+            lastPrice={quote?.price ?? null}
+          />
+        </aside>
 
-      <div className="overflow-x-auto">
-        <div className="flex min-w-max gap-1 border-b border-[var(--border)]">
-          {tabs.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => setTab(item.id)}
-              className={`px-3 py-2 text-sm ${
-                tab === item.id
-                  ? "border-b-2 border-[var(--brand)] font-medium text-[var(--foreground)]"
-                  : "text-[var(--muted)]"
-              }`}
+        <div className="space-y-4 min-w-0 lg:col-start-1">
+          <form
+            onSubmit={createAlert}
+            className="qt-panel flex flex-wrap items-end gap-2 p-4"
+          >
+            <div className="text-sm font-medium">{t("setAlert")}</div>
+            <select
+              value={alertCondition}
+              onChange={(e) => setAlertCondition(e.target.value as "gte" | "lte")}
+              className="qt-input px-2 py-1.5 text-sm"
             >
-              {item.label}
+              <option value="gte">{tAlerts("gte")}</option>
+              <option value="lte">{tAlerts("lte")}</option>
+            </select>
+            <input
+              type="number"
+              step="any"
+              required
+              value={alertPrice}
+              onChange={(e) => setAlertPrice(e.target.value)}
+              placeholder={tAlerts("triggerPrice")}
+              className="qt-input w-32 px-2 py-1.5 text-sm"
+            />
+            <button
+              type="submit"
+              className="qt-btn qt-btn-primary px-3 py-1.5 text-sm"
+            >
+              {tAlerts("create")}
             </button>
-          ))}
-        </div>
-      </div>
-
-      {degraded && (
-        <p className="text-xs text-[var(--muted)]">{tCommon("degraded")}</p>
-      )}
-
-      <div className="qt-panel p-4">
-        {tab === "news" && (
-          <ul className="space-y-3">
-            {news.length === 0 && (
-              <li className="text-sm text-[var(--muted)]">{tCommon("error")}</li>
+            {alertMsg && (
+              <span className="text-xs text-[var(--muted)]">{alertMsg}</span>
             )}
-            {news.map((n, i) => (
-              <li key={i} className="border-b border-[var(--border)] pb-3 last:border-0">
-                <a
-                  href={n.url || "#"}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium hover:text-[var(--brand)]"
+          </form>
+
+          <div className="overflow-x-auto">
+            <div className="flex min-w-max gap-1 border-b border-[var(--border)]">
+              {tabs.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => setTab(item.id)}
+                  className={`px-3 py-2 text-sm ${
+                    tab === item.id
+                      ? "border-b-2 border-[var(--brand)] font-medium text-[var(--foreground)]"
+                      : "text-[var(--muted)]"
+                  }`}
                 >
-                  {n.headline}
-                </a>
-                {n.summary && (
-                  <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
-                    {n.summary}
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {degraded && (
+            <p className="text-xs text-[var(--muted)]">{tCommon("degraded")}</p>
+          )}
+
+          <div className="qt-panel p-4">
+            {tab === "news" && (
+              <ul className="space-y-3">
+                {news.length === 0 && (
+                  <li className="text-sm text-[var(--muted)]">{tCommon("error")}</li>
+                )}
+                {news.map((n, i) => (
+                  <li key={i} className="border-b border-[var(--border)] pb-3 last:border-0">
+                    <a
+                      href={n.url || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium hover:text-[var(--brand)]"
+                    >
+                      {n.headline}
+                    </a>
+                    {n.summary && (
+                      <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
+                        {n.summary}
+                      </p>
+                    )}
+                    <div className="mt-1 text-xs text-[var(--muted)]">
+                      {n.source}
+                      {n.datetime
+                        ? ` · ${new Date(n.datetime * 1000).toLocaleDateString()}`
+                        : ""}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {tab === "earnings" && (
+              assetType === "crypto" ? (
+                <p className="text-sm text-[var(--muted)]">{tEarnings("cryptoNa")}</p>
+              ) : (
+                <EarningsPanel
+                  surprises={earnings}
+                  upcoming={earningsUpcoming}
+                  recent={earningsRecent}
+                  metrics={earningsMetrics}
+                  degraded={degraded}
+                  loading={earningsLoading}
+                />
+              )
+            )}
+
+            {tab === "press" && (
+              <ul className="space-y-3">
+                {assetType === "crypto" && (
+                  <li className="text-sm text-[var(--muted)]">N/A for crypto</li>
+                )}
+                {press.map((p, i) => (
+                  <li key={i} className="border-b border-[var(--border)] pb-3">
+                    <a
+                      href={p.url || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="font-medium hover:text-[var(--brand)]"
+                    >
+                      {p.headline || p.description || "Press release"}
+                    </a>
+                    <div className="text-xs text-[var(--muted)]">{p.datetime}</div>
+                  </li>
+                ))}
+                {assetType === "stock" && press.length === 0 && (
+                  <li className="text-sm text-[var(--muted)]">{tCommon("degraded")}</li>
+                )}
+              </ul>
+            )}
+
+            {tab === "comments" && (
+              <div className="space-y-3">
+                {session?.user ? (
+                  <form onSubmit={postComment} className="flex gap-2">
+                    <input
+                      value={commentText}
+                      onChange={(e) => setCommentText(e.target.value)}
+                      placeholder={tComments("placeholder")}
+                      className="flex-1 qt-input px-3 py-2 text-sm"
+                    />
+                    <button
+                      type="submit"
+                      className="qt-btn qt-btn-primary px-3 py-2 text-sm"
+                    >
+                      {tComments("post")}
+                    </button>
+                  </form>
+                ) : (
+                  <p className="text-sm text-[var(--muted)]">
+                    {tComments("loginRequired")}
                   </p>
                 )}
-                <div className="mt-1 text-xs text-[var(--muted)]">
-                  {n.source}
-                  {n.datetime
-                    ? ` · ${new Date(n.datetime * 1000).toLocaleDateString()}`
-                    : ""}
-                </div>
-              </li>
-            ))}
-          </ul>
-        )}
-
-        {tab === "earnings" && (
-          assetType === "crypto" ? (
-            <p className="text-sm text-[var(--muted)]">{tEarnings("cryptoNa")}</p>
-          ) : (
-            <EarningsPanel
-              surprises={earnings}
-              upcoming={earningsUpcoming}
-              recent={earningsRecent}
-              metrics={earningsMetrics}
-              degraded={degraded}
-              loading={earningsLoading}
-            />
-          )
-        )}
-
-        {tab === "press" && (
-          <ul className="space-y-3">
-            {assetType === "crypto" && (
-              <li className="text-sm text-[var(--muted)]">N/A for crypto</li>
-            )}
-            {press.map((p, i) => (
-              <li key={i} className="border-b border-[var(--border)] pb-3">
-                <a
-                  href={p.url || "#"}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium hover:text-[var(--brand)]"
-                >
-                  {p.headline || p.description || "Press release"}
-                </a>
-                <div className="text-xs text-[var(--muted)]">{p.datetime}</div>
-              </li>
-            ))}
-            {assetType === "stock" && press.length === 0 && (
-              <li className="text-sm text-[var(--muted)]">{tCommon("degraded")}</li>
-            )}
-          </ul>
-        )}
-
-        {tab === "comments" && (
-          <div className="space-y-3">
-            {session?.user ? (
-              <form onSubmit={postComment} className="flex gap-2">
-                <input
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  placeholder={tComments("placeholder")}
-                  className="flex-1 qt-input px-3 py-2 text-sm"
-                />
-                <button
-                  type="submit"
-                  className="qt-btn qt-btn-primary px-3 py-2 text-sm"
-                >
-                  {tComments("post")}
-                </button>
-              </form>
-            ) : (
-              <p className="text-sm text-[var(--muted)]">
-                {tComments("loginRequired")}
-              </p>
-            )}
-            <ul className="space-y-3">
-              {comments.length === 0 && (
-                <li className="text-sm text-[var(--muted)]">
-                  {tComments("empty")}
-                </li>
-              )}
-              {comments.map((c) => (
-                <li key={c.id} className="border-b border-[var(--border)] pb-2">
-                  <div className="flex items-center justify-between gap-2 text-xs text-[var(--muted)]">
-                    <span>
-                      {c.author} · {new Date(c.createdAt).toLocaleString()}
-                    </span>
-                    {session?.user?.id === c.userId && (
-                      <button
-                        type="button"
-                        className="text-[var(--down)]"
-                        onClick={() => void deleteComment(c.id)}
-                      >
-                        {tComments("delete")}
-                      </button>
-                    )}
-                  </div>
-                  <p className="mt-1 text-sm whitespace-pre-wrap">{c.content}</p>
-                </li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {tab === "sentiment" && (
-          <div className="grid gap-3 sm:grid-cols-2">
-            {(["news", "reddit"] as const).map((key) => {
-              const s = sentiment?.[key] as
-                | {
-                    available?: boolean;
-                    message?: string;
-                    buzz_score?: number;
-                    sentiment_score?: number;
-                    bullish_pct?: number;
-                    bearish_pct?: number;
-                    trend?: string | null;
-                    source?: string;
-                  }
-                | undefined;
-              if (!s) {
-                return (
-                  <div
-                    key={key}
-                    className="rounded-md border border-[var(--border)] p-3 text-sm text-[var(--muted)]"
-                  >
-                    {key}: N/A
-                  </div>
-                );
-              }
-              return (
-                <div
-                  key={key}
-                  className="rounded-md border border-[var(--border)] p-3 text-sm"
-                >
-                  <div className="mb-2 font-medium capitalize">
-                    {s.source || key}
-                  </div>
-                  {s.available === false ? (
-                    <p className="text-[var(--muted)]">
-                      {s.message || tCommon("degraded")}
-                    </p>
-                  ) : (
-                    <dl className="grid grid-cols-2 gap-2">
-                      <div>
-                        <dt className="text-xs text-[var(--muted)]">Buzz</dt>
-                        <dd>{s.buzz_score?.toFixed?.(1) ?? "-"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-[var(--muted)]">Score</dt>
-                        <dd>{s.sentiment_score?.toFixed?.(3) ?? "-"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-[var(--muted)]">Bullish %</dt>
-                        <dd>{s.bullish_pct?.toFixed?.(1) ?? "-"}</dd>
-                      </div>
-                      <div>
-                        <dt className="text-xs text-[var(--muted)]">Trend</dt>
-                        <dd>{s.trend ?? "-"}</dd>
-                      </div>
-                    </dl>
+                <ul className="space-y-3">
+                  {comments.length === 0 && (
+                    <li className="text-sm text-[var(--muted)]">
+                      {tComments("empty")}
+                    </li>
                   )}
-                </div>
-              );
-            })}
+                  {comments.map((c) => (
+                    <li key={c.id} className="border-b border-[var(--border)] pb-2">
+                      <div className="flex items-center justify-between gap-2 text-xs text-[var(--muted)]">
+                        <span>
+                          {c.author} · {new Date(c.createdAt).toLocaleString()}
+                        </span>
+                        {session?.user?.id === c.userId && (
+                          <button
+                            type="button"
+                            className="text-[var(--down)]"
+                            onClick={() => void deleteComment(c.id)}
+                          >
+                            {tComments("delete")}
+                          </button>
+                        )}
+                      </div>
+                      <p className="mt-1 text-sm whitespace-pre-wrap">{c.content}</p>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {tab === "sentiment" && (
+              <div className="grid gap-3 sm:grid-cols-2">
+                {(["news", "reddit"] as const).map((key) => {
+                  const s = sentiment?.[key] as
+                    | {
+                        available?: boolean;
+                        message?: string;
+                        buzz_score?: number;
+                        sentiment_score?: number;
+                        bullish_pct?: number;
+                        bearish_pct?: number;
+                        trend?: string | null;
+                        source?: string;
+                      }
+                    | undefined;
+                  if (!s) {
+                    return (
+                      <div
+                        key={key}
+                        className="rounded-md border border-[var(--border)] p-3 text-sm text-[var(--muted)]"
+                      >
+                        {key}: N/A
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={key}
+                      className="rounded-md border border-[var(--border)] p-3 text-sm"
+                    >
+                      <div className="mb-2 font-medium capitalize">
+                        {s.source || key}
+                      </div>
+                      {s.available === false ? (
+                        <p className="text-[var(--muted)]">
+                          {s.message || tCommon("degraded")}
+                        </p>
+                      ) : (
+                        <dl className="grid grid-cols-2 gap-2">
+                          <div>
+                            <dt className="text-xs text-[var(--muted)]">Buzz</dt>
+                            <dd>{s.buzz_score?.toFixed?.(1) ?? "-"}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-xs text-[var(--muted)]">Score</dt>
+                            <dd>{s.sentiment_score?.toFixed?.(3) ?? "-"}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-xs text-[var(--muted)]">Bullish %</dt>
+                            <dd>{s.bullish_pct?.toFixed?.(1) ?? "-"}</dd>
+                          </div>
+                          <div>
+                            <dt className="text-xs text-[var(--muted)]">Trend</dt>
+                            <dd>{s.trend ?? "-"}</dd>
+                          </div>
+                        </dl>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </div>
   );

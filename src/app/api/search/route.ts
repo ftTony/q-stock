@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { searchSymbols } from "@/lib/finnhub/client";
+import { searchSymbols } from "@/lib/market";
 import type { AssetType } from "@/lib/types";
 
 export async function GET(req: Request) {

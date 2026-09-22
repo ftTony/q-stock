@@ -5,6 +5,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  serverExternalPackages: ["longbridge"],
 };
 
 export default withNextIntl(nextConfig);

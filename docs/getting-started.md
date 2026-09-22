@@ -13,7 +13,9 @@
 
 外部账号（按需）：
 
-- [Finnhub](https://finnhub.io/) API Key（必填，行情核心）
+- [Longbridge OpenAPI](https://open.longbridge.com/) App Key / Secret / Access Token（推荐，美股行情）
+- [Futu OpenAPI](https://open.futunn.com/zh-cn/api/overview/) Access Token 或 AppKey+私钥（云端 REST，无需 OpenD）
+- [Finnhub](https://finnhub.io/) API Key（回退行情 + 新闻/财报/公告）
 - [Adanos](https://adanos.org/) API Key（可选，情绪）
 - [Resend](https://resend.com/) 或自有 SMTP（可选，提醒邮件）
 
@@ -40,16 +42,24 @@ cp .env.example .env
 APP_URL=http://localhost:3000
 AUTH_SECRET=请替换为足够长的随机字符串
 DATABASE_URL=postgresql://qstock:qstock@localhost:5432/qstock?schema=public
-FINNHUB_API_KEY=你的_finnhub_key
+# 至少配置一个行情源（推荐长桥或 Finnhub）
+LONGBRIDGE_APP_KEY=
+LONGBRIDGE_APP_SECRET=
+LONGBRIDGE_ACCESS_TOKEN=
+# 或 FUTU_ACCESS_TOKEN=
+# 或 FINNHUB_API_KEY=
 ```
 
 可选：
 
 ```env
+FUTU_ACCESS_TOKEN=你的_futu_oauth_access_token
+FINNHUB_API_KEY=你的_finnhub_key
 ADANOS_API_KEY=你的_adanos_key
 EMAIL_FROM=alerts@example.com
 RESEND_API_KEY=re_xxx
 ALERT_POLL_INTERVAL_MS=45000
+MARKET_DATA_PROVIDERS=longbridge,futu,finnhub
 ```
 
 ### 2.3 启动数据库
@@ -103,7 +113,11 @@ Worker 按 `ALERT_POLL_INTERVAL_MS`（默认 45000ms）轮询 `active` 提醒并
 | `AUTH_SECRET` | 是 | Auth.js 密钥 |
 | `AUTH_TRUST_HOST` | 建议 | Docker / 代理场景设为 `true` |
 | `DATABASE_URL` | 是 | Prisma PostgreSQL 连接串 |
-| `FINNHUB_API_KEY` | 是 | Finnhub 行情密钥 |
+| `MARKET_DATA_PROVIDERS` | 否 | 行情源优先级 CSV，默认 `longbridge,futu,finnhub`；省略则按已配置凭证自动探测 |
+| `LONGBRIDGE_APP_KEY` / `SECRET` / `ACCESS_TOKEN` | 否* | 长桥 OpenAPI；三键齐全即启用 |
+| `FUTU_ACCESS_TOKEN` | 否* | 富途云端 Bearer Token（推荐） |
+| `FUTU_APP_KEY` + `FUTU_PRIVATE_KEY`(/`_PATH`) | 否* | 富途 Legacy AppKey 签名鉴权 |
+| `FINNHUB_API_KEY` | 否* | Finnhub；回退行情 + 新闻/财报/公告 |
 | `ADANOS_API_KEY` | 否 | 缺失时情绪区降级 |
 | `EMAIL_FROM` | 发信时 | 发件人地址 |
 | `RESEND_API_KEY` | 否 | 优先邮件通道 |

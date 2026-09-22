@@ -15,29 +15,35 @@
 └───────┬─────────────────┬─────────────────┬─────────────┘
         │                 │                 │
         ▼                 ▼                 ▼
-   PostgreSQL        Finnhub REST      Adanos REST
-   (Prisma)          (quotes/candles/  (sentiment)
-                      news/earnings…)
+   PostgreSQL        Market facade     Adanos REST
+   (Prisma)          (@/lib/market)    (sentiment)
+                          │
+              ┌───────────┼───────────┐
+              ▼           ▼           ▼
+         Longbridge    Futu OpenAPI  Finnhub
+         (quotes)      (云端 REST)   (quotes+news)
         ▲
         │
 ┌───────┴────────┐
-│ Alert Worker   │──► Finnhub /quote ──► Resend / SMTP
-│ price-alerts   │
+│ Alert Worker   │──► market.getQuote ──► Resend / SMTP
+│ price-alerts   │    (+ paper limit/stop fill)
 └────────────────┘
 ```
 
 原则：
 
-- 浏览器不直连 Finnhub / Adanos，密钥仅在服务端
-- 业务数据（用户、自选、评论、提醒）落 Postgres
+- 浏览器不直连券商 / Finnhub / Adanos，密钥仅在服务端
+- 行情经 `MARKET_DATA_PROVIDERS` 优先级路由（默认 longbridge → futu → finnhub）
+- 业务数据（用户、自选、评论、提醒、模拟交易）落 Postgres
 - 行情类数据以短时缓存为主，不落库
+- 真实券商下单预留 `@/lib/broker`（本阶段未接通）
 
 ## 2. 进程与部署单元
 
 | 单元 | 入口 | 职责 |
 |---|---|---|
 | web | Next.js `server.js`（Docker）或 `next dev` | UI + BFF + Auth |
-| worker | `src/workers/price-alerts.ts` | 轮询价格提醒并发邮件 |
+| worker | `src/workers/price-alerts.ts` | 轮询价格提醒并发邮件；撮合模拟限价/止损单 |
 | db | PostgreSQL 16 | 持久化 |
 
 Docker Compose 中三者同启；本地开发通常只 Compose 起 `db`，本机跑 web + worker。
@@ -55,7 +61,10 @@ src/
     charts/            # lightweight-charts
     providers/         # Session / Theme / 涨跌色
   lib/
-    finnhub/           # Finnhub 客户端
+    market/            # 多行情源 facade + longbridge/futu/finnhub providers
+    broker/            # 真实下单扩展点（Phase 2 stub）
+    trading/           # 模拟交易撮合
+    finnhub/           # Finnhub 资讯（新闻/财报/公告）
     adanos/            # Adanos 客户端
     indicators/        # MA/EMA/BOLL/RSI/MACD
     candles/           # 季K/年K 聚合
@@ -126,6 +135,18 @@ Worker 定时：
 
 同一提醒触发后不再重复发送，除非用户重新启用。
 
+### 6.5 模拟交易
+
+```text
+用户下单 → market：即时按 quote 成交更新现金/持仓
+         → limit/stop：写入 pending
+Worker 同进程：
+  查 pending limit/stop → 拉 quote → 触发则成交
+  资金/持仓不足则 status=rejected
+```
+
+仅做多；初始现金 $100,000。
+
 ## 7. 数据模型（摘要）
 
 | Model | 用途 |
@@ -135,9 +156,12 @@ Worker 定时：
 | PriceAlert | 价格提醒 |
 | AlertDeliveryLog | 发信审计 |
 | Comment | 标的评论（软删） |
+| PaperAccount | 模拟账户现金 |
+| PaperPosition | 模拟持仓 |
+| PaperOrder | 模拟委托 |
 | ApiCache | 外部 API 结果缓存 |
 
-枚举：`AssetType`、`ThemeMode`、`ChangeColorScheme`、`LocaleCode`、`AlertCondition`、`AlertStatus`。
+枚举：`AssetType`、`ThemeMode`、`ChangeColorScheme`、`LocaleCode`、`AlertCondition`、`AlertStatus`、`OrderSide`、`OrderType`、`OrderStatus`。
 
 ## 8. 国际化与主题
 

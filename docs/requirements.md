@@ -24,7 +24,8 @@
 | 鉴权 | Auth.js（邮箱密码 Credentials + JWT Session） |
 | 校验 | Zod |
 | 部署 | Docker / Docker Compose（web + db + worker） |
-| 行情数据 | Finnhub REST |
+| 行情数据 | 多源：长桥 / 富途 OpenAPI / Finnhub（优先级可配，失败自动回退） |
+| 资讯 | Finnhub（新闻 / 财报 / 公告） |
 | 情绪 / 舆情 | Adanos Market Sentiment API |
 | 邮件 | Resend（优先）或 SMTP / Nodemailer |
 
@@ -68,10 +69,11 @@
 - 报价条（开高低、昨收、涨跌幅）
 - 加自选 / 已在自选
 - K 线周期：日 K、季 K、年 K
-  - 日 K：Finnhub `resolution=D`
+  - 日 K：统一行情门面（长桥/富途/Finnhub）
   - 季 K / 年 K：由日 K 或月 K 本地聚合
 - 技术指标：MA / EMA / BOLL / RSI / MACD
 - Tab：新闻、财报、公告、评论、情绪
+- 右侧模拟交易面板：市价 / 限价 / 止损（仅做多）
 - 价格提醒快捷创建（触发价可预填现价）
 - 报价约 20 秒轮询
 
@@ -96,7 +98,7 @@
 
 - 条件：价格 ≥ 或 ≤ 触发价
 - 状态：active / triggered / disabled
-- 后台 Worker 轮询活跃提醒，拉取 Finnhub quote
+- 后台 Worker 轮询活跃提醒，拉取统一 `market.getQuote`
 - 触发后发邮件，写投递日志，状态改为 triggered（幂等，不重复发送）
 - 邮件通道：Resend 或 SMTP；均未配置时仅打日志
 
@@ -136,6 +138,9 @@
 | `GET /api/sentiment` | Adanos 情绪 |
 | `GET/POST/PATCH/DELETE /api/alerts` | 价格提醒 |
 | `GET/POST/DELETE /api/watchlist` | 自选 |
+| `GET/POST /api/trading/account` | 模拟账户（含 reset） |
+| `GET /api/trading/positions` | 模拟持仓 |
+| `GET/POST/DELETE /api/trading/orders` | 模拟下单 / 撤单 |
 | `GET/PATCH /api/user/settings` | 用户设置 |
 | `POST /api/auth/register` | 注册 |
 | `GET /api/health` | 健康检查 |
@@ -152,10 +157,11 @@
 
 ## 7. 约束与已知限制
 
-1. Finnhub 免费档有 rate limit；部分公告 / 基本面接口可能需付费
-2. 季 K / 年 K 为本地聚合，可能与券商软件存在差异
-3. Adanos 免费额度极低，生产建议 Hobby 及以上，并依赖缓存
-4. 「买入 / 卖出」为界面操作入口（跳转详情 / 提醒），不提供真实交易撮合
+1. 行情源需至少配置长桥 / 富途 / Finnhub 之一；Finnhub 免费档有 rate limit；部分公告 / 基本面接口可能需付费
+2. 富途使用云端 OpenAPI（`webapi.futunn.com`），配置 `FUTU_ACCESS_TOKEN` 或 AppKey+私钥，无需本机 OpenD
+3. 季 K / 年 K 为本地聚合，可能与券商软件存在差异
+4. Adanos 免费额度极低，生产建议 Hobby 及以上，并依赖缓存
+5. 真实券商撮合预留 `@/lib/broker`（本阶段未接通）；提供**模拟交易**（仅做多），资金为虚拟 `$100,000`
 
 ## 8. 验收要点（一期）
 

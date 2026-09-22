@@ -25,11 +25,46 @@ type NewsItem = {
   image?: string;
 };
 
+type PaperPosition = {
+  id: string;
+  symbol: string;
+  assetType: AssetType;
+  qty: number;
+  avgCost: number;
+  price: number | null;
+  marketValue: number | null;
+  unrealizedPnl: number | null;
+  unrealizedPnlPct: number | null;
+};
+
+type PaperOrder = {
+  id: string;
+  symbol: string;
+  assetType: AssetType;
+  side: "buy" | "sell";
+  type: "market" | "limit" | "stop";
+  qty: number;
+  limitPrice: number | null;
+  stopPrice: number | null;
+  status: string;
+  filledPrice: number | null;
+  filledAt: string | null;
+  createdAt: string;
+};
+
+function fmtMoney(n: number): string {
+  return n.toLocaleString(undefined, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
+}
+
 export default function PortfolioPage() {
   const t = useTranslations("portfolio");
   const tMarket = useTranslations("market");
   const tAlerts = useTranslations("alerts");
   const tCommon = useTranslations("common");
+  const tTrade = useTranslations("trading");
   const { data: session, status } = useSession();
 
   const [rows, setRows] = useState<Row[]>([]);
@@ -38,6 +73,12 @@ export default function PortfolioPage() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [seeding, setSeeding] = useState(false);
+  const [cash, setCash] = useState(0);
+  const [positions, setPositions] = useState<PaperPosition[]>([]);
+  const [pendingOrders, setPendingOrders] = useState<PaperOrder[]>([]);
+  const [fills, setFills] = useState<PaperOrder[]>([]);
+  const [tradeMsg, setTradeMsg] = useState<string | null>(null);
+  const [resetting, setResetting] = useState(false);
   const [sentiment, setSentiment] = useState<{
     bullish_pct?: number;
     bearish_pct?: number;
@@ -48,11 +89,15 @@ export default function PortfolioPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const [w, a, s, n] = await Promise.all([
+      const [w, a, s, n, acc, pos, pend, filled] = await Promise.all([
         fetch("/api/watchlist?quotes=1"),
         fetch("/api/alerts"),
         fetch("/api/sentiment?assetType=stock"),
         fetch("/api/news?assetType=stock"),
+        fetch("/api/trading/account"),
+        fetch("/api/trading/positions?quotes=1"),
+        fetch("/api/trading/orders?status=pending"),
+        fetch("/api/trading/orders?status=filled"),
       ]);
       if (w.ok) {
         const wj = await w.json();
@@ -73,6 +118,22 @@ export default function PortfolioPage() {
       if (n.ok) {
         const nj = await n.json();
         setNews((nj.news ?? []).slice(0, 3));
+      }
+      if (acc.ok) {
+        const aj = await acc.json();
+        setCash(aj.account?.cashBalance ?? 0);
+      }
+      if (pos.ok) {
+        const pj = await pos.json();
+        setPositions(pj.positions ?? []);
+      }
+      if (pend.ok) {
+        const oj = await pend.json();
+        setPendingOrders(oj.orders ?? []);
+      }
+      if (filled.ok) {
+        const fj = await filled.json();
+        setFills((fj.orders ?? []).slice(0, 10));
       }
     } finally {
       setLoading(false);
@@ -101,6 +162,17 @@ export default function PortfolioPage() {
     return [...quotes].sort((a, b) => b.percentChange - a.percentChange)[0];
   }, [quotes]);
 
+  const positionsValue = useMemo(
+    () =>
+      positions.reduce(
+        (s, p) => s + (p.marketValue ?? p.qty * p.avgCost),
+        0,
+      ),
+    [positions],
+  );
+
+  const equity = cash + positionsValue;
+
   const bullish = sentiment?.bullish_pct ?? 0;
   const bearish = sentiment?.bearish_pct ?? 0;
   const neutral = Math.max(0, 100 - bullish - bearish);
@@ -122,6 +194,30 @@ export default function PortfolioPage() {
     } finally {
       setSeeding(false);
     }
+  }
+
+  async function resetAccount() {
+    if (!window.confirm(tTrade("resetConfirm"))) return;
+    setResetting(true);
+    setTradeMsg(null);
+    try {
+      const res = await fetch("/api/trading/account", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reset" }),
+      });
+      if (res.ok) {
+        setTradeMsg(tTrade("resetDone"));
+        await load();
+      }
+    } finally {
+      setResetting(false);
+    }
+  }
+
+  async function cancelOrder(id: string) {
+    await fetch(`/api/trading/orders?id=${id}`, { method: "DELETE" });
+    await load();
   }
 
   if (status === "loading") {
@@ -153,6 +249,186 @@ export default function PortfolioPage() {
           <Link href="/alerts" className="qt-btn qt-btn-primary h-10 px-3 text-sm">
             + {tMarket("create")}
           </Link>
+        </div>
+      </section>
+
+      <section className="qt-panel space-y-4 p-4 sm:p-5">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 className="text-lg font-semibold">{tTrade("accountTitle")}</h2>
+            <p className="text-sm text-[var(--muted)]">{tTrade("accountDesc")}</p>
+          </div>
+          <button
+            type="button"
+            disabled={resetting}
+            onClick={() => void resetAccount()}
+            className="qt-btn qt-btn-ghost border border-[var(--border)] px-3 py-1.5 text-sm disabled:opacity-50"
+          >
+            {resetting ? tTrade("loading") : tTrade("reset")}
+          </button>
+        </div>
+        {tradeMsg && (
+          <p className="text-xs text-[var(--muted)]">{tradeMsg}</p>
+        )}
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-3">
+            <div className="text-[11px] text-[var(--muted)]">{tTrade("cash")}</div>
+            <div className="mt-1 text-xl font-semibold tabular-nums">
+              ${fmtMoney(cash)}
+            </div>
+          </div>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-3">
+            <div className="text-[11px] text-[var(--muted)]">{tTrade("marketValue")}</div>
+            <div className="mt-1 text-xl font-semibold tabular-nums">
+              ${fmtMoney(positionsValue)}
+            </div>
+          </div>
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-3 col-span-2 sm:col-span-1">
+            <div className="text-[11px] text-[var(--muted)]">{tTrade("equity")}</div>
+            <div className="mt-1 text-xl font-semibold tabular-nums text-[var(--brand-text)]">
+              ${fmtMoney(equity)}
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <h3 className="mb-2 text-sm font-semibold">{tTrade("positions")}</h3>
+          {positions.length === 0 ? (
+            <p className="text-sm text-[var(--muted)]">{tTrade("emptyPositions")}</p>
+          ) : (
+            <div className="overflow-x-auto qt-scroll">
+              <table className="min-w-[640px] w-full text-sm">
+                <thead>
+                  <tr className="border-b border-[var(--border)] text-left text-[11px] text-[var(--muted)] uppercase">
+                    <th className="pb-2 pr-3 font-semibold">{tMarket("symbol")}</th>
+                    <th className="pb-2 pr-3 font-semibold">{tTrade("qty")}</th>
+                    <th className="pb-2 pr-3 font-semibold">{tTrade("avgCost")}</th>
+                    <th className="pb-2 pr-3 font-semibold">{tMarket("price")}</th>
+                    <th className="pb-2 pr-3 font-semibold">{tTrade("marketValue")}</th>
+                    <th className="pb-2 font-semibold">{tTrade("pnl")}</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {positions.map((p) => (
+                    <tr
+                      key={p.id}
+                      className="border-b border-[var(--border)]/70 last:border-0"
+                    >
+                      <td className="py-2.5 pr-3">
+                        <Link
+                          href={`/symbol/${p.assetType}/${p.symbol}`}
+                          className="font-semibold hover:text-[var(--brand-text)]"
+                        >
+                          {p.symbol}
+                        </Link>
+                      </td>
+                      <td className="py-2.5 pr-3 tabular-nums">{p.qty}</td>
+                      <td className="py-2.5 pr-3 tabular-nums">
+                        ${fmtMoney(p.avgCost)}
+                      </td>
+                      <td className="py-2.5 pr-3 tabular-nums">
+                        {p.price != null ? `$${fmtMoney(p.price)}` : "-"}
+                      </td>
+                      <td className="py-2.5 pr-3 tabular-nums">
+                        {p.marketValue != null
+                          ? `$${fmtMoney(p.marketValue)}`
+                          : "-"}
+                      </td>
+                      <td
+                        className={`py-2.5 tabular-nums font-medium ${
+                          (p.unrealizedPnl ?? 0) >= 0
+                            ? "text-[var(--up)]"
+                            : "text-[var(--down)]"
+                        }`}
+                      >
+                        {p.unrealizedPnl != null
+                          ? `${p.unrealizedPnl >= 0 ? "+" : ""}$${fmtMoney(p.unrealizedPnl)}${
+                              p.unrealizedPnlPct != null
+                                ? ` (${p.unrealizedPnlPct.toFixed(1)}%)`
+                                : ""
+                            }`
+                          : "-"}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="grid gap-4 lg:grid-cols-2">
+          <div>
+            <h3 className="mb-2 text-sm font-semibold">{tTrade("pendingOrders")}</h3>
+            {pendingOrders.length === 0 ? (
+              <p className="text-sm text-[var(--muted)]">{tTrade("emptyOrders")}</p>
+            ) : (
+              <ul className="space-y-2 text-sm">
+                {pendingOrders.map((o) => (
+                  <li
+                    key={o.id}
+                    className="flex items-center justify-between gap-2 border-b border-[var(--border)]/70 pb-2"
+                  >
+                    <div>
+                      <Link
+                        href={`/symbol/${o.assetType}/${o.symbol}`}
+                        className="font-medium hover:text-[var(--brand-text)]"
+                      >
+                        {o.symbol}
+                      </Link>
+                      <span className="text-[var(--muted)]">
+                        {" "}
+                        · {tTrade(o.side)} · {tTrade(o.type)} · {o.qty}
+                        {o.limitPrice != null && ` @ $${fmtMoney(o.limitPrice)}`}
+                        {o.stopPrice != null &&
+                          ` stop $${fmtMoney(o.stopPrice)}`}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => void cancelOrder(o.id)}
+                      className="text-xs text-[var(--brand-text)] hover:underline"
+                    >
+                      {tTrade("cancel")}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <div>
+            <h3 className="mb-2 text-sm font-semibold">{tTrade("recentFills")}</h3>
+            {fills.length === 0 ? (
+              <p className="text-sm text-[var(--muted)]">{tTrade("emptyFills")}</p>
+            ) : (
+              <ul className="space-y-2 text-sm">
+                {fills.map((o) => (
+                  <li
+                    key={o.id}
+                    className="flex justify-between gap-2 border-b border-[var(--border)]/70 pb-2"
+                  >
+                    <span>
+                      <Link
+                        href={`/symbol/${o.assetType}/${o.symbol}`}
+                        className="font-medium hover:text-[var(--brand-text)]"
+                      >
+                        {o.symbol}
+                      </Link>
+                      <span className="text-[var(--muted)]">
+                        {" "}
+                        · {tTrade(o.side)} · {o.qty}
+                      </span>
+                    </span>
+                    <span className="tabular-nums text-[var(--muted)]">
+                      {o.filledPrice != null
+                        ? `$${fmtMoney(o.filledPrice)}`
+                        : "-"}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
         </div>
       </section>
 
