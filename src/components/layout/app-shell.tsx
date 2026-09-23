@@ -284,44 +284,44 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               >
                 <IconMenu />
               </button>
-              <nav className="hidden items-center gap-4 text-sm md:flex">
+              <nav className="hidden items-center gap-1 text-sm md:flex">
                 <Link
                   href="/watchlist"
-                  className={
+                  className={`rounded-lg px-3 py-1.5 transition ${
                     isWatchlist
-                      ? "text-[var(--foreground)] underline decoration-[var(--brand)] underline-offset-8"
-                      : "text-[var(--muted)] hover:text-[var(--foreground)]"
-                  }
+                      ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
+                      : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+                  }`}
                 >
                   {t("watchlist")}
                 </Link>
                 <Link
                   href="/analysis"
-                  className={
+                  className={`rounded-lg px-3 py-1.5 transition ${
                     isAnalysis
-                      ? "text-[var(--foreground)] underline decoration-[var(--brand)] underline-offset-8"
-                      : "text-[var(--muted)] hover:text-[var(--foreground)]"
-                  }
+                      ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
+                      : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+                  }`}
                 >
                   {t("analysis")}
                 </Link>
                 <Link
                   href="/portfolio"
-                  className={
+                  className={`rounded-lg px-3 py-1.5 transition ${
                     isPortfolio
-                      ? "text-[var(--foreground)] underline decoration-[var(--brand)] underline-offset-8"
-                      : "text-[var(--muted)] hover:text-[var(--foreground)]"
-                  }
+                      ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
+                      : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+                  }`}
                 >
                   {t("portfolio")}
                 </Link>
                 <Link
                   href="/alerts"
-                  className={
+                  className={`rounded-lg px-3 py-1.5 transition ${
                     isAlerts
-                      ? "text-[var(--foreground)] underline decoration-[var(--brand)] underline-offset-8"
-                      : "text-[var(--muted)] hover:text-[var(--foreground)]"
-                  }
+                      ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
+                      : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+                  }`}
                 >
                   {t("alerts")}
                 </Link>
