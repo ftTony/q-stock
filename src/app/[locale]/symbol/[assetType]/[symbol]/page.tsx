@@ -62,7 +62,13 @@ export default function SymbolPage() {
   const [earningsMetrics, setEarningsMetrics] = useState<EarningsMetric[]>([]);
   const [earningsLoading, setEarningsLoading] = useState(false);
   const [press, setPress] = useState<
-    { headline?: string; datetime?: string; url?: string; description?: string }[]
+    {
+      headline?: string;
+      datetime?: string;
+      url?: string;
+      description?: string;
+      source?: string;
+    }[]
   >([]);
   const [comments, setComments] = useState<
     { id: string; content: string; author: string; userId: string; createdAt: string }[]
@@ -105,15 +111,17 @@ export default function SymbolPage() {
     }
   }, [symbol, assetType]);
 
-  /** Prefetch earnings for quote panel (stocks only); shared with earnings tab. */
+  /** Prefetch earnings for quote panel (stock/hk); shared with earnings tab. */
   const loadEarningsMetrics = useCallback(async () => {
-    if (assetType !== "stock") {
+    if (assetType !== "stock" && assetType !== "hk") {
       setEarningsMetrics([]);
       earningsLoadedRef.current = false;
       return;
     }
     try {
-      const res = await fetch(`/api/earnings?symbol=${symbol}`);
+      const res = await fetch(
+        `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+      );
       const data = await res.json();
       if (!res.ok) return;
       setEarnings(data.surprises ?? data.earnings ?? []);
@@ -199,9 +207,9 @@ export default function SymbolPage() {
       const res = await fetch(`/api/news?symbol=${symbol}&assetType=${assetType}`);
       const data = await res.json();
       setNews(data.news ?? []);
-      if (!res.ok) setDegraded(true);
+      if (!res.ok || data.degraded) setDegraded(true);
     } else if (tab === "earnings") {
-      if (assetType !== "stock") {
+      if (assetType === "crypto") {
         setEarnings([]);
         setEarningsUpcoming([]);
         setEarningsRecent([]);
@@ -211,7 +219,9 @@ export default function SymbolPage() {
       if (earningsLoadedRef.current) return;
       setEarningsLoading(true);
       try {
-        const res = await fetch(`/api/earnings?symbol=${symbol}`);
+        const res = await fetch(
+          `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+        );
         const data = await res.json();
         setEarnings(data.surprises ?? data.earnings ?? []);
         setEarningsUpcoming(data.calendar?.upcoming ?? []);
@@ -223,11 +233,13 @@ export default function SymbolPage() {
         setEarningsLoading(false);
       }
     } else if (tab === "press") {
-      if (assetType !== "stock") {
+      if (assetType === "crypto") {
         setPress([]);
         return;
       }
-      const res = await fetch(`/api/press?symbol=${symbol}`);
+      const res = await fetch(
+        `/api/press?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+      );
       const data = await res.json();
       setPress(data.press ?? []);
       if (data.degraded) setDegraded(true);
@@ -581,7 +593,9 @@ export default function SymbolPage() {
             {tab === "news" && (
               <ul className="space-y-3">
                 {news.length === 0 && (
-                  <li className="text-sm text-[var(--muted)]">{tCommon("error")}</li>
+                  <li className="text-sm text-[var(--muted)]">
+                    {degraded ? tCommon("degraded") : tCommon("error")}
+                  </li>
                 )}
                 {news.map((n, i) => (
                   <li key={i} className="border-b border-[var(--border)] pb-3 last:border-0">
@@ -601,7 +615,9 @@ export default function SymbolPage() {
                     <div className="mt-1 text-xs text-[var(--muted)]">
                       {n.source}
                       {n.datetime
-                        ? ` · ${new Date(n.datetime * 1000).toLocaleDateString()}`
+                        ? ` · ${new Date(
+                            n.datetime > 1e12 ? n.datetime : n.datetime * 1000,
+                          ).toLocaleDateString()}`
                         : ""}
                     </div>
                   </li>
@@ -609,11 +625,9 @@ export default function SymbolPage() {
               </ul>
             )}
 
-            {tab === "earnings" && (
-              assetType !== "stock" ? (
-                <p className="text-sm text-[var(--muted)]">
-                  {assetType === "hk" ? tEarnings("hkNa") : tEarnings("cryptoNa")}
-                </p>
+            {tab === "earnings" &&
+              (assetType === "crypto" ? (
+                <p className="text-sm text-[var(--muted)]">{tEarnings("cryptoNa")}</p>
               ) : (
                 <EarningsPanel
                   surprises={earnings}
@@ -623,18 +637,15 @@ export default function SymbolPage() {
                   degraded={degraded}
                   loading={earningsLoading}
                 />
-              )
-            )}
+              ))}
 
             {tab === "press" && (
               <ul className="space-y-3">
-                {assetType !== "stock" && (
-                  <li className="text-sm text-[var(--muted)]">
-                    {assetType === "hk" ? tEarnings("hkNa") : "N/A for crypto"}
-                  </li>
+                {assetType === "crypto" && (
+                  <li className="text-sm text-[var(--muted)]">N/A for crypto</li>
                 )}
                 {press.map((p, i) => (
-                  <li key={i} className="border-b border-[var(--border)] pb-3">
+                  <li key={i} className="border-b border-[var(--border)] pb-3 last:border-0">
                     <a
                       href={p.url || "#"}
                       target="_blank"
@@ -643,10 +654,20 @@ export default function SymbolPage() {
                     >
                       {p.headline || p.description || "Press release"}
                     </a>
-                    <div className="text-xs text-[var(--muted)]">{p.datetime}</div>
+                    {p.description && p.headline && (
+                      <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
+                        {p.description}
+                      </p>
+                    )}
+                    <div className="mt-1 text-xs text-[var(--muted)]">
+                      {p.datetime
+                        ? new Date(p.datetime).toLocaleString()
+                        : ""}
+                      {p.source ? ` · ${p.source}` : ""}
+                    </div>
                   </li>
                 ))}
-                {assetType === "stock" && press.length === 0 && (
+                {assetType !== "crypto" && press.length === 0 && (
                   <li className="text-sm text-[var(--muted)]">{tCommon("degraded")}</li>
                 )}
               </ul>

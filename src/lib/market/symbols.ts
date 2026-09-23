@@ -1,7 +1,7 @@
 import type { AssetType } from "@/lib/types";
 import { normalizeSymbol, toFinnhubSymbol } from "@/lib/types";
 
-/** Longbridge: AAPL → AAPL.US ; 00700 → 00700.HK ; BTC → BTC.US */
+/** Longbridge: AAPL → AAPL.US ; 00700 → 700.HK ; BTC → BTC.US */
 export function toLongbridgeSymbol(
   symbol: string,
   assetType: AssetType,
@@ -11,7 +11,9 @@ export function toLongbridgeSymbol(
     return `${s}.US`;
   }
   if (assetType === "hk") {
-    return `${s}.HK`;
+    // OpenAPI expects unpadded codes: 700.HK (not 00700.HK)
+    const bare = s.replace(/^0+/, "") || "0";
+    return `${bare}.HK`;
   }
   if (s.includes(".")) return s;
   return `${s}.US`;

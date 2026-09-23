@@ -1,17 +1,23 @@
 import { NextResponse } from "next/server";
-import { getPressReleases } from "@/lib/finnhub/client";
+import { getPress } from "@/lib/press";
+import { parseAssetType } from "@/lib/types";
 
 export async function GET(req: Request) {
   try {
-    const symbol = new URL(req.url).searchParams.get("symbol");
+    const { searchParams } = new URL(req.url);
+    const symbol = searchParams.get("symbol");
+    const assetType = parseAssetType(searchParams.get("assetType"));
     if (!symbol) {
       return NextResponse.json({ error: "symbol required" }, { status: 400 });
     }
-    const press = await getPressReleases(symbol.toUpperCase());
-    return NextResponse.json({
-      press,
-      degraded: press.length === 0,
-    });
+    if (assetType === "crypto") {
+      return NextResponse.json({ press: [], degraded: true, source: null });
+    }
+    const { press, source, degraded } = await getPress(
+      symbol.toUpperCase(),
+      assetType,
+    );
+    return NextResponse.json({ press, source, degraded });
   } catch (err) {
     console.error("press", err);
     return NextResponse.json(
@@ -19,6 +25,7 @@ export async function GET(req: Request) {
         error: err instanceof Error ? err.message : "Press releases failed",
         press: [],
         degraded: true,
+        source: null,
       },
       { status: 200 },
     );

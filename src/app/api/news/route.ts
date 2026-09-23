@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
-import { format, subDays } from "date-fns";
-import { getCompanyNews, getMarketNews } from "@/lib/finnhub/client";
-import { parseAssetType, toFinnhubSymbol } from "@/lib/types";
+import { getMarketNews } from "@/lib/finnhub/client";
+import { getSymbolNews } from "@/lib/news";
+import { parseAssetType } from "@/lib/types";
 
 export async function GET(req: Request) {
   try {
@@ -16,26 +16,11 @@ export async function GET(req: Request) {
       return NextResponse.json({ news });
     }
 
-    if (assetType === "crypto") {
-      const news = await getMarketNews("crypto");
-      const filtered = news.filter(
-        (n) =>
-          n.headline?.toUpperCase().includes(symbol.toUpperCase()) ||
-          n.related?.toUpperCase().includes(symbol.toUpperCase()),
-      );
-      return NextResponse.json({
-        news: filtered.length ? filtered : news.slice(0, 20),
-      });
-    }
-
-    const to = format(new Date(), "yyyy-MM-dd");
-    const from = format(subDays(new Date(), 30), "yyyy-MM-dd");
-    const fhSym =
-      assetType === "hk"
-        ? toFinnhubSymbol(symbol, "hk")
-        : symbol.toUpperCase();
-    const news = await getCompanyNews(fhSym, from, to);
-    return NextResponse.json({ news, degraded: assetType === "hk" && news.length === 0 });
+    const { news, source, degraded } = await getSymbolNews(
+      symbol.toUpperCase(),
+      assetType,
+    );
+    return NextResponse.json({ news, source, degraded });
   } catch (err) {
     console.error("news", err);
     return NextResponse.json(
