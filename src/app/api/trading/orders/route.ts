@@ -36,7 +36,7 @@ export async function GET(req: Request) {
           }
         : {}),
       ...(symbol ? { symbol: symbol.toUpperCase() } : {}),
-      ...(assetType === "stock" || assetType === "crypto"
+      ...(assetType === "stock" || assetType === "hk" || assetType === "crypto"
         ? { assetType }
         : {}),
     },
@@ -51,7 +51,7 @@ export async function GET(req: Request) {
 
 const createSchema = z.object({
   symbol: z.string().min(1).max(20),
-  assetType: z.enum(["stock", "crypto"]),
+  assetType: z.enum(["stock", "hk", "crypto"]),
   side: z.enum(["buy", "sell"]),
   type: z.enum(["market", "limit", "stop"]),
   qty: z.number().positive(),

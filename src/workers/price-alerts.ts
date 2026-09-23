@@ -22,7 +22,7 @@ async function tickAlerts() {
     return;
   }
 
-  const unique = new Map<string, { symbol: string; assetType: "stock" | "crypto" }>();
+  const unique = new Map<string, { symbol: string; assetType: "stock" | "hk" | "crypto" }>();
   for (const a of alerts) {
     unique.set(`${a.assetType}:${a.symbol}`, {
       symbol: a.symbol,
@@ -95,7 +95,7 @@ async function tickPaperOrders() {
     return;
   }
 
-  const unique = new Map<string, { symbol: string; assetType: "stock" | "crypto" }>();
+  const unique = new Map<string, { symbol: string; assetType: "stock" | "hk" | "crypto" }>();
   for (const o of pending) {
     unique.set(`${o.assetType}:${o.symbol}`, {
       symbol: o.symbol,

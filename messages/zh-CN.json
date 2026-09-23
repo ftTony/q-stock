@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Q-Stock",
-    "tagline": "美股与数字货币行情",
+    "tagline": "美股、港股与数字货币行情",
     "terminal": "Terminal v1.0"
   },
   "nav": {
@@ -22,10 +22,12 @@
   },
   "market": {
     "stocks": "美股",
+    "hk": "港股",
     "crypto": "数字货币",
     "stocksPlaylist": "美股热门",
+    "hkPlaylist": "港股热门",
     "cryptoPlaylist": "加密脉搏",
-    "search": "添加代码（如 NVDA）…",
+    "search": "添加代码（如 NVDA / 00700）…",
     "filter": "筛选",
     "filterAll": "全部",
     "gainers": "涨幅榜",
@@ -51,8 +53,10 @@
     "viewAll": "查看全部",
     "unavailable": "数据暂时不可用",
     "titleStock": "美股热门自选",
+    "titleHk": "港股热门自选",
     "titleCrypto": "加密脉搏自选",
     "descStock": "实时跟踪高市值科技股与主流美股",
+    "descHk": "实时跟踪恒生成分与热门港股",
     "descCrypto": "实时跟踪主流数字货币行情",
     "kpiTickers": "活跃标的",
     "kpiAvgChange": "平均涨跌幅",
@@ -120,10 +124,15 @@
     "themeDark": "深色",
     "themeSystem": "跟随系统",
     "changeColor": "涨跌色",
+    "changeColorHint": "影响行情价格、涨跌幅、K 线与涨跌榜配色",
     "changeCn": "中国习惯（红涨绿跌）",
     "changeUs": "国际习惯（绿涨红跌）",
     "save": "保存",
-    "saved": "已保存"
+    "saved": "已保存",
+    "savedLocal": "已保存到本机（登录后可同步到账户）",
+    "saveError": "保存失败",
+    "guestHint": "未登录也可调整涨跌色与主题；登录后可同步到账户。",
+    "login": "去登录"
   },
   "alerts": {
     "title": "价格提醒",
@@ -151,6 +160,7 @@
   "earnings": {
     "empty": "暂无财报数据",
     "cryptoNa": "加密资产无财报信息",
+    "hkNa": "港股财报/公告暂未接入（行情与 AI 仍可用）",
     "metrics": "关键财务指标",
     "upcoming": "即将公布",
     "recent": "近期财报",

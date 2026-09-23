@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { analyzeTrend } from "@/lib/ai/analyze-trend";
 import { isAiConfigured } from "@/lib/ai/client";
 import { cachedFetch, getCached } from "@/lib/cache";
-import type { AssetType } from "@/lib/types";
+import { parseAssetType } from "@/lib/types";
 
 const TTL_MS = 30 * 60_000;
 
@@ -14,9 +14,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "symbol required" }, { status: 400 });
     }
 
-    const assetType = (
-      searchParams.get("assetType") === "crypto" ? "crypto" : "stock"
-    ) as AssetType;
+    const assetType = parseAssetType(searchParams.get("assetType"));
     const locale = searchParams.get("locale") || "zh-CN";
     const sym = symbol.toUpperCase();
     const cacheKey = `ai:trend:${assetType}:${sym}:${locale}`;

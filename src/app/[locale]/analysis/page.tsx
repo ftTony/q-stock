@@ -41,7 +41,7 @@ export default function AnalysisPage() {
       </section>
 
       <div className="flex rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1 w-fit">
-        {(["stock", "crypto"] as AssetType[]).map((key) => (
+        {(["stock", "hk", "crypto"] as AssetType[]).map((key) => (
           <button
             key={key}
             type="button"
@@ -52,7 +52,7 @@ export default function AnalysisPage() {
                 : "text-[var(--muted)]"
             }`}
           >
-            {key === "stock" ? t("stocks") : t("crypto")}
+            {key === "stock" ? t("stocks") : key === "hk" ? t("hk") : t("crypto")}
           </button>
         ))}
       </div>
@@ -83,7 +83,8 @@ export default function AnalysisPage() {
               </div>
               <div className="flex items-end justify-between">
                 <div className="text-xl font-semibold tabular-nums">
-                  $<PriceText value={q.price} />
+                  $
+                  <PriceText value={q.price} change={q.percentChange} />
                 </div>
                 <ChangePct value={q.percentChange} />
               </div>

@@ -7,7 +7,7 @@ import { normalizeSymbol } from "@/lib/types";
 
 const upsertSchema = z.object({
   symbol: z.string().min(1).max(20),
-  assetType: z.enum(["stock", "crypto"]),
+  assetType: z.enum(["stock", "hk", "crypto"]),
 });
 
 export async function GET(req: Request) {
@@ -27,6 +27,7 @@ export async function GET(req: Request) {
       items,
       counts: {
         stock: items.filter((i) => i.assetType === "stock").length,
+        hk: items.filter((i) => i.assetType === "hk").length,
         crypto: items.filter((i) => i.assetType === "crypto").length,
         total: items.length,
       },
@@ -45,6 +46,7 @@ export async function GET(req: Request) {
     })),
     counts: {
       stock: items.filter((i) => i.assetType === "stock").length,
+      hk: items.filter((i) => i.assetType === "hk").length,
       crypto: items.filter((i) => i.assetType === "crypto").length,
       total: items.length,
     },
@@ -102,7 +104,7 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ ok: true });
   }
 
-  if (symbol && (assetType === "stock" || assetType === "crypto")) {
+  if (symbol && (assetType === "stock" || assetType === "hk" || assetType === "crypto")) {
     const normalized = normalizeSymbol(symbol, assetType);
     await prisma.watchlistItem.deleteMany({
       where: {

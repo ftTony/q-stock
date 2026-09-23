@@ -6,13 +6,13 @@ import {
 } from "@/lib/market";
 import { MarketDataError } from "@/lib/market";
 import { computeIndicators } from "@/lib/indicators";
-import type { AssetType, CandleResolution } from "@/lib/types";
+import { parseAssetType, type CandleResolution } from "@/lib/types";
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const symbol = searchParams.get("symbol");
-    const assetType = (searchParams.get("assetType") || "stock") as AssetType;
+    const assetType = parseAssetType(searchParams.get("assetType"));
     const resolution = (searchParams.get("resolution") || "D") as CandleResolution;
     const withIndicators = searchParams.get("indicators") !== "0";
 

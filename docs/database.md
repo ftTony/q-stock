@@ -34,7 +34,7 @@ ApiCache（独立缓存表）
 
 | 枚举 | 取值 | 用途 |
 |---|---|---|
-| `AssetType` | `stock`, `crypto` | 标的类型 |
+| `AssetType` | `stock`, `hk`, `crypto` | 标的类型（美股 / 港股 / 加密） |
 | `ThemeMode` | `light`, `dark`, `system` | 主题 |
 | `ChangeColorScheme` | `cn`, `us` | 涨跌色（红涨 / 绿涨） |
 | `LocaleCode` | `zh_CN`, `zh_TW`, `en` | 用户语言（DB 形态） |

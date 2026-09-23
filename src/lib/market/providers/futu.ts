@@ -186,12 +186,12 @@ export const futuProvider: MarketDataProvider = {
   },
 
   supports(assetType) {
-    return assetType === "stock";
+    return assetType === "stock" || assetType === "hk";
   },
 
   async getQuote(symbol, assetType) {
-    if (assetType !== "stock") {
-      throw new MarketDataError("Futu supports stocks only", "futu");
+    if (assetType !== "stock" && assetType !== "hk") {
+      throw new MarketDataError("Futu supports equities only", "futu");
     }
     const normalized = normalizeSymbol(symbol, assetType);
     const code = toFutuSymbol(normalized, assetType);
@@ -234,11 +234,13 @@ export const futuProvider: MarketDataProvider = {
   },
 
   async getQuotes(items) {
-    const stockItems = items.filter((i) => i.assetType === "stock");
-    if (!stockItems.length) return [];
+    const equityItems = items.filter(
+      (i) => i.assetType === "stock" || i.assetType === "hk",
+    );
+    if (!equityItems.length) return [];
 
     try {
-      const codes = stockItems.map((i) =>
+      const codes = equityItems.map((i) =>
         toFutuSymbol(normalizeSymbol(i.symbol, i.assetType), i.assetType),
       );
       const data = await futuRequest<{ snapshot_list?: SnapshotRow[] }>(
@@ -250,7 +252,7 @@ export const futuProvider: MarketDataProvider = {
         (data.snapshot_list ?? []).map((s) => [s.code, s]),
       );
       const out: QuoteWithSource[] = [];
-      for (const item of stockItems) {
+      for (const item of equityItems) {
         const normalized = normalizeSymbol(item.symbol, item.assetType);
         const code = toFutuSymbol(normalized, item.assetType);
         const snap = byCode.get(code);
@@ -275,7 +277,7 @@ export const futuProvider: MarketDataProvider = {
       return out;
     } catch {
       const results = await Promise.allSettled(
-        stockItems.map((i) => futuProvider.getQuote(i.symbol, i.assetType)),
+        equityItems.map((i) => futuProvider.getQuote(i.symbol, i.assetType)),
       );
       return results
         .filter(
@@ -298,13 +300,17 @@ export const futuProvider: MarketDataProvider = {
     if (assetType === "crypto") return [];
     const query = q.trim().toUpperCase();
     if (!query) return [];
-    const sym = normalizeSymbol(query.replace(/^(US|HK|SH|SZ)\./, ""), "stock");
+    const type: AssetType = assetType === "hk" ? "hk" : "stock";
+    const sym = normalizeSymbol(
+      query.replace(/^(US|HK|SH|SZ|BJ)\./, "").replace(/\.(US|HK)$/, ""),
+      type,
+    );
     return [
       {
         symbol: sym,
-        displaySymbol: toFutuSymbol(sym, "stock"),
+        displaySymbol: toFutuSymbol(sym, type),
         description: `${sym} (Futu)`,
-        assetType: "stock",
+        assetType: type,
         type: "Common Stock",
       },
     ];
@@ -318,8 +324,8 @@ async function fetchKlines(
   to: number,
   ktype: number,
 ): Promise<OhlcvBar[]> {
-  if (assetType !== "stock") {
-    throw new MarketDataError("Futu supports stocks only", "futu");
+  if (assetType !== "stock" && assetType !== "hk") {
+    throw new MarketDataError("Futu supports equities only", "futu");
   }
   const normalized = normalizeSymbol(symbol, assetType);
   const code = toFutuSymbol(normalized, assetType);

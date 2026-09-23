@@ -118,7 +118,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
-  const [counts, setCounts] = useState({ stock: 0, crypto: 0 });
+  const [counts, setCounts] = useState({ stock: 0, hk: 0, crypto: 0 });
 
   const isHome = pathname === "/";
   const isAnalysis = pathname.startsWith("/analysis");
@@ -131,7 +131,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!session?.user) {
-      setCounts({ stock: 0, crypto: 0 });
+      setCounts({ stock: 0, hk: 0, crypto: 0 });
       return;
     }
     let cancelled = false;
@@ -141,6 +141,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       const data = await res.json();
       setCounts({
         stock: data.counts?.stock ?? 0,
+        hk: data.counts?.hk ?? 0,
         crypto: data.counts?.crypto ?? 0,
       });
     })();
@@ -203,6 +204,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <span>{tMarket("stocksPlaylist")}</span>
             <span className="rounded-md bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px]">
               {counts.stock}
+            </span>
+          </Link>
+          <Link
+            href="/watchlist?list=hk"
+            onClick={close}
+            className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+          >
+            <span>{tMarket("hkPlaylist")}</span>
+            <span className="rounded-md bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px]">
+              {counts.hk}
             </span>
           </Link>
           <Link

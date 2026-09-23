@@ -5,11 +5,13 @@ import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import type { AssetType } from "@/lib/types";
+import { parseAssetType } from "@/lib/types";
 
 type AlertRow = {
   id: string;
   symbol: string;
-  assetType: "stock" | "crypto";
+  assetType: AssetType;
   condition: "gte" | "lte";
   triggerPrice: number;
   status: "active" | "triggered" | "disabled";
@@ -17,12 +19,13 @@ type AlertRow = {
 
 function AlertsContent() {
   const t = useTranslations("alerts");
+  const tMarket = useTranslations("market");
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [symbol, setSymbol] = useState(searchParams.get("symbol") || "AAPL");
-  const [assetType, setAssetType] = useState<"stock" | "crypto">(
-    searchParams.get("assetType") === "crypto" ? "crypto" : "stock",
+  const [assetType, setAssetType] = useState<AssetType>(
+    parseAssetType(searchParams.get("assetType")),
   );
   const [condition, setCondition] = useState<"gte" | "lte">("gte");
   const [triggerPrice, setTriggerPrice] = useState("");
@@ -43,7 +46,7 @@ function AlertsContent() {
     const s = searchParams.get("symbol");
     const a = searchParams.get("assetType");
     if (s) setSymbol(s.toUpperCase());
-    if (a === "crypto" || a === "stock") setAssetType(a);
+    if (a === "crypto" || a === "stock" || a === "hk") setAssetType(a);
   }, [searchParams]);
 
   if (status === "loading") {
@@ -114,11 +117,12 @@ function AlertsContent() {
           <span className="text-[var(--muted)]">Type</span>
           <select
             value={assetType}
-            onChange={(e) => setAssetType(e.target.value as "stock" | "crypto")}
+            onChange={(e) => setAssetType(e.target.value as AssetType)}
             className="qt-input w-full px-3 py-2.5"
           >
-            <option value="stock">stock</option>
-            <option value="crypto">crypto</option>
+            <option value="stock">{tMarket("stocks")}</option>
+            <option value="hk">{tMarket("hk")}</option>
+            <option value="crypto">{tMarket("crypto")}</option>
           </select>
         </label>
         <label className="space-y-1 text-sm">

@@ -5,7 +5,7 @@ Base URL：同源，例如 `http://localhost:3000`。
 
 通用约定：
 
-- `assetType`：`stock` | `crypto`
+- `assetType`：`stock` | `hk` | `crypto`
 - 错误体常见形态：`{ "error": "..." }`
 - 部分外部依赖失败会返回降级字段：`degraded: true` 或空数组
 
@@ -104,7 +104,9 @@ Auth.js 内置路由（Credentials 登录 / Session / CSRF 等）。前端使用
 **示例**
 
 - `/api/quotes?popular=1&assetType=stock`
+- `/api/quotes?popular=1&assetType=hk`
 - `/api/quotes?symbol=AAPL&assetType=stock`
+- `/api/quotes?symbol=00700&assetType=hk`
 - `/api/quotes?symbol=BTC&assetType=crypto`
 
 **响应**：`{ "quotes": [...] }` 或 `{ "quote": {...} }`
@@ -114,7 +116,7 @@ Auth.js 内置路由（Credentials 登录 / Session / CSRF 等）。前端使用
 | 参数 | 说明 |
 |---|---|
 | `q` | 关键词 |
-| `assetType` | `stock` / `crypto` |
+| `assetType` | `stock` / `hk` / `crypto` |
 
 **响应**：`{ "results": [{ symbol, description, assetType, ... }] }`
 
@@ -152,9 +154,11 @@ Auth.js 内置路由（Credentials 登录 / Session / CSRF 等）。前端使用
 
 | 参数 | 说明 |
 |---|---|
-| `symbol` | 必填（股票） |
+| `symbol` | 必填（**美股**） |
 
 聚合 Finnhub：`/stock/earnings`（EPS 惊喜）、`/calendar/earnings`（日历）、`/stock/metric`（基础财务）。
+
+**港股 / 加密**：前端不调用本接口（详情页展示 N/A）；本接口按美股 Finnhub 符号处理，未针对 `assetType=hk` 做适配。
 
 成功示例：
 
@@ -177,9 +181,9 @@ Auth.js 内置路由（Credentials 登录 / Session / CSRF 等）。前端使用
 
 | 参数 | 说明 |
 |---|---|
-| `symbol` | 必填（股票） |
+| `symbol` | 必填（**美股**） |
 
-套餐不足或无数据时可能降级为空列表。
+套餐不足或无数据时可能降级为空列表。**港股 / 加密**详情页不调用本接口（N/A）。
 
 ---
 
@@ -226,7 +230,7 @@ Body：`{ symbol, assetType, side, type, qty, limitPrice?, stopPrice? }`
 | 参数 | 说明 |
 |---|---|
 | `symbol` | 可选；缺省为市场情绪 |
-| `assetType` | `stock` / `crypto` |
+| `assetType` | `stock` / `hk` / `crypto` |
 
 **有 symbol**：`{ "sentiment": { "news"?: {...}, "reddit"?: {...} } }`  
 **无 symbol**：`{ "market": { "available", "bullish_pct", ... } }`
@@ -244,7 +248,7 @@ Body：`{ symbol, assetType, side, type, qty, limitPrice?, stopPrice? }`
 | 参数 | 说明 |
 |---|---|
 | `symbol` | 必填 |
-| `assetType` | `stock` / `crypto`（加密无财报时仅用新闻+报价） |
+| `assetType` | `stock` / `hk` / `crypto`（港股/加密无 Finnhub 财报时仅用新闻+报价） |
 | `locale` | `zh-CN` / `zh-TW` / `en`，影响生成文案语言 |
 
 **响应示例**

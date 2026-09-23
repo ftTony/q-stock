@@ -2,10 +2,11 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { normalizeSymbol } from "@/lib/types";
 
 const createSchema = z.object({
   symbol: z.string().min(1).max(20),
-  assetType: z.enum(["stock", "crypto"]),
+  assetType: z.enum(["stock", "hk", "crypto"]),
   condition: z.enum(["gte", "lte"]),
   triggerPrice: z.number().positive(),
 });
@@ -43,7 +44,7 @@ export async function POST(req: Request) {
   const alert = await prisma.priceAlert.create({
     data: {
       userId: session.user.id,
-      symbol: parsed.data.symbol.toUpperCase(),
+      symbol: normalizeSymbol(parsed.data.symbol, parsed.data.assetType),
       assetType: parsed.data.assetType,
       condition: parsed.data.condition,
       triggerPrice: parsed.data.triggerPrice,

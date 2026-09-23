@@ -16,6 +16,7 @@ import {
 } from "lightweight-charts";
 import type { OhlcvBar } from "@/lib/types";
 import type { IndicatorBundle } from "@/lib/indicators";
+import { usePreference } from "@/components/providers/preference-provider";
 
 export type IndicatorFlags = {
   ma: boolean;
@@ -57,6 +58,7 @@ export function CandleChart({
   flags: IndicatorFlags;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const { changeColorScheme } = usePreference();
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -203,7 +205,7 @@ export function CandleChart({
     return () => {
       chart.remove();
     };
-  }, [bars, indicators, flags]);
+  }, [bars, indicators, flags, changeColorScheme]);
 
   return (
     <div

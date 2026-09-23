@@ -69,6 +69,11 @@ export async function getSymbolSentiment(
   const cacheKey = `adanos:sentiment:${assetType}:${sym}`;
 
   return cachedFetch(cacheKey, 30 * 60_000, async () => {
+    if (assetType === "hk") {
+      return {
+        news: emptySentiment("hk", "HK sentiment not available via Adanos"),
+      };
+    }
     if (assetType === "crypto") {
       try {
         const data = await adanosFetch<SentimentSnapshot>(
@@ -121,6 +126,9 @@ export async function getMarketSentiment(
 ): Promise<SentimentSnapshot> {
   const cacheKey = `adanos:market:${assetType}`;
   return cachedFetch(cacheKey, 30 * 60_000, async () => {
+    if (assetType === "hk") {
+      return emptySentiment("hk", "HK market sentiment not available via Adanos");
+    }
     try {
       const path =
         assetType === "crypto"

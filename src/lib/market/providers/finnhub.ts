@@ -128,8 +128,9 @@ export const finnhubProvider: MarketDataProvider = {
     return Boolean(process.env.FINNHUB_API_KEY);
   },
 
-  supports() {
-    return true;
+  supports(assetType) {
+    // Prefer US + crypto; HK quotes via Finnhub are best-effort (.HK suffix)
+    return assetType === "stock" || assetType === "crypto" || assetType === "hk";
   },
 
   async getQuote(symbol, assetType) {
@@ -199,6 +200,18 @@ export const finnhubProvider: MarketDataProvider = {
             description: `${normalizeSymbol(upper, "crypto")} / USDT`,
             assetType: "crypto" as const,
             type: "Crypto",
+          },
+        ] satisfies SearchResult[];
+      }
+      if (assetType === "hk") {
+        const sym = normalizeSymbol(query, "hk");
+        return [
+          {
+            symbol: sym,
+            displaySymbol: `${sym}.HK`,
+            description: `${sym} (HK)`,
+            assetType: "hk" as const,
+            type: "Common Stock",
           },
         ] satisfies SearchResult[];
       }

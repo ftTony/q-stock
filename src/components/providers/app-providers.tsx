@@ -2,14 +2,18 @@
 
 import { SessionProvider } from "next-auth/react";
 import { ThemeProvider } from "next-themes";
-import { PreferenceProvider } from "@/components/providers/preference-provider";
+import {
+  PreferenceProvider,
+  type ChangeColorScheme,
+} from "@/components/providers/preference-provider";
 
 export function AppProviders({
   children,
-  changeColorScheme = "cn",
+  changeColorScheme = null,
 }: {
   children: React.ReactNode;
-  changeColorScheme?: "cn" | "us";
+  /** Session preference when logged in; null → localStorage / default cn */
+  changeColorScheme?: ChangeColorScheme | null;
 }) {
   return (
     <SessionProvider>

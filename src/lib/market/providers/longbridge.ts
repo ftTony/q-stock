@@ -53,8 +53,7 @@ export const longbridgeProvider: MarketDataProvider = {
   },
 
   supports(assetType) {
-    // Prefer stocks; crypto support is limited — still attempt US tickers
-    return assetType === "stock" || assetType === "crypto";
+    return assetType === "stock" || assetType === "hk" || assetType === "crypto";
   },
 
   async getQuote(symbol, assetType) {
@@ -100,13 +99,15 @@ export const longbridgeProvider: MarketDataProvider = {
   },
 
   async getQuotes(items) {
-    const stockItems = items.filter((i) => i.assetType === "stock");
-    if (!stockItems.length) return [];
+    const equityItems = items.filter(
+      (i) => i.assetType === "stock" || i.assetType === "hk",
+    );
+    if (!equityItems.length) return [];
 
     try {
       const ctx = await getCtx();
       const map = new Map(
-        stockItems.map((i) => {
+        equityItems.map((i) => {
           const n = normalizeSymbol(i.symbol, i.assetType);
           return [toLongbridgeSymbol(n, i.assetType), { ...i, normalized: n }] as const;
         }),
@@ -137,7 +138,7 @@ export const longbridgeProvider: MarketDataProvider = {
     } catch (err) {
       // fall back to sequential
       const results = await Promise.allSettled(
-        stockItems.map((i) => longbridgeProvider.getQuote(i.symbol, i.assetType)),
+        equityItems.map((i) => longbridgeProvider.getQuote(i.symbol, i.assetType)),
       );
       return results
         .filter((r): r is PromiseFulfilledResult<QuoteWithSource> => r.status === "fulfilled")
@@ -215,14 +216,17 @@ export const longbridgeProvider: MarketDataProvider = {
     if (assetType === "crypto") return [];
     const query = q.trim().toUpperCase();
     if (!query) return [];
-    // Longbridge has no free-text search in QuoteContext; return exact ticker hint
-    const sym = normalizeSymbol(query.replace(/\.US$/i, ""), "stock");
+    const type: AssetType = assetType === "hk" ? "hk" : "stock";
+    const sym = normalizeSymbol(
+      query.replace(/\.US$/i, "").replace(/\.HK$/i, "").replace(/^HK\./, ""),
+      type,
+    );
     return [
       {
         symbol: sym,
-        displaySymbol: `${sym}.US`,
+        displaySymbol: type === "hk" ? `${sym}.HK` : `${sym}.US`,
         description: `${sym} (Longbridge)`,
-        assetType: "stock",
+        assetType: type,
         type: "Common Stock",
       },
     ];

@@ -2,13 +2,13 @@
 
 **Languages:** [简体中文](./README.md) · [English](./README.en.md) · [繁體中文](./README.zh-TW.md)
 
-A Web & H5 market terminal for **US stocks** and **crypto**: multi-source quotes, candlestick charts with indicators, news & earnings, paper trading, price email alerts, and market sentiment.
+A Web & H5 market terminal for **US stocks**, **HK stocks**, and **crypto**: multi-source quotes, candlestick charts with indicators, news & earnings, paper trading, price email alerts, and market sentiment.
 
 ## Features
 
 | Area | What you get |
 |---|---|
-| Markets | Popular lists, search, gainers/losers, quiet polling refresh |
+| Markets | Popular lists (US / HK / crypto), search, gainers/losers, quiet polling refresh |
 | Multi-source quotes | **Longbridge → Futu OpenAPI → Finnhub**, configurable priority with automatic failover |
 | Symbol detail | Daily / quarterly / yearly candles; MA / EMA / BOLL / RSI / MACD |
 | News & filings | News, earnings (surprises / calendar / metrics), press releases |
@@ -110,7 +110,7 @@ npm run lint
 ## How to use the product
 
 1. **Sign up / sign in** — email + password; required for watchlist, comments, alerts, paper trading.
-2. **Markets** — switch stocks / crypto, search into a symbol.
+2. **Markets** — switch US / HK / crypto, search into a symbol (HK e.g. `00700`).
 3. **Symbol page** — charts & indicators; paper trade on the right; news / earnings / press / comments / sentiment / AI analysis tabs.
 4. **Watchlist / Portfolio** — manage symbols; view paper cash, P&L, open orders.
 5. **Alerts** — set price ≥ / ≤; needs email config + running worker.

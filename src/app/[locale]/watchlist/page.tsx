@@ -27,7 +27,7 @@ function WatchlistContent() {
   const searchParams = useSearchParams();
   const list = searchParams.get("list");
   const [filter, setFilter] = useState<AssetType | "all">(
-    list === "crypto" || list === "stock" ? list : "all",
+    list === "crypto" || list === "stock" || list === "hk" ? list : "all",
   );
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,7 +40,7 @@ function WatchlistContent() {
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
-    if (list === "crypto" || list === "stock") setFilter(list);
+    if (list === "crypto" || list === "stock" || list === "hk") setFilter(list);
   }, [list]);
 
   const load = useCallback(async () => {
@@ -74,8 +74,11 @@ function WatchlistContent() {
       const list =
         filter === "crypto"
           ? ["BTC", "ETH", "SOL", "BNB"]
-          : ["AAPL", "MSFT", "NVDA", "TSLA", "META", "AMZN"];
-      const assetType: AssetType = filter === "crypto" ? "crypto" : "stock";
+          : filter === "hk"
+            ? ["00700", "09988", "03690", "01810"]
+            : ["AAPL", "MSFT", "NVDA", "TSLA", "META", "AMZN"];
+      const assetType: AssetType =
+        filter === "crypto" ? "crypto" : filter === "hk" ? "hk" : "stock";
       await Promise.all(
         list.map((symbol) =>
           fetch("/api/watchlist", {
@@ -159,6 +162,7 @@ function WatchlistContent() {
             [
               ["all", t("popular")],
               ["stock", t("stocks")],
+              ["hk", t("hk")],
               ["crypto", t("crypto")],
             ] as const
           ).map(([key, label]) => (
@@ -186,6 +190,7 @@ function WatchlistContent() {
             className="qt-input px-3 py-2.5 text-sm"
           >
             <option value="stock">{t("stocks")}</option>
+            <option value="hk">{t("hk")}</option>
             <option value="crypto">{t("crypto")}</option>
           </select>
           <input
@@ -274,7 +279,10 @@ function WatchlistContent() {
                         {q ? (
                           <>
                             $
-                            <PriceText value={q.price} />
+                            <PriceText
+                              value={q.price}
+                              change={q.percentChange}
+                            />
                           </>
                         ) : (
                           "-"

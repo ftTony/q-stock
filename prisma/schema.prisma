@@ -9,6 +9,7 @@ datasource db {
 
 enum AssetType {
   stock
+  hk
   crypto
 }
 

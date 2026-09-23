@@ -1,6 +1,7 @@
 import type { AssetType, OrderSide, OrderType, PaperOrder } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getQuote } from "@/lib/market";
+import { normalizeSymbol } from "@/lib/types";
 import { ensureAccount } from "@/lib/trading/account";
 import { TradingError, applyFillInTx, fillPendingOrder, shouldTriggerPending } from "@/lib/trading/execute";
 
@@ -36,7 +37,7 @@ export function serializeOrder(order: PaperOrder) {
 }
 
 export async function placeOrder(input: PlaceOrderInput) {
-  const symbol = input.symbol.toUpperCase();
+  const symbol = normalizeSymbol(input.symbol, input.assetType);
   const qty = input.qty;
 
   if (!(qty > 0) || !Number.isFinite(qty)) {

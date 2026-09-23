@@ -5,12 +5,29 @@ import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter, Link } from "@/i18n/routing";
-import { usePreference } from "@/components/providers/preference-provider";
+import {
+  usePreference,
+  type ChangeColorScheme,
+} from "@/components/providers/preference-provider";
 import type { AppLocale } from "@/i18n/config";
+
+function SchemePreview({ scheme }: { scheme: ChangeColorScheme }) {
+  const up = scheme === "cn" ? "#e11d48" : "#22c55e";
+  const down = scheme === "cn" ? "#16a34a" : "#f87171";
+  return (
+    <div className="mt-2 flex items-center gap-3 text-sm tabular-nums">
+      <span className="font-semibold" style={{ color: up }}>
+        ▲ 128.50 +1.24%
+      </span>
+      <span className="font-semibold" style={{ color: down }}>
+        ▼ 96.20 −0.85%
+      </span>
+    </div>
+  );
+}
 
 export default function SettingsPage() {
   const t = useTranslations("settings");
-  const tAlerts = useTranslations("alerts");
   const locale = useLocale();
   const router = useRouter();
   const { data: session, status, update } = useSession();
@@ -19,6 +36,7 @@ export default function SettingsPage() {
   const [lang, setLang] = useState<AppLocale>(locale as AppLocale);
   const [message, setMessage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const loggedIn = Boolean(session?.user);
 
   useEffect(() => {
     setLang(locale as AppLocale);
@@ -28,21 +46,23 @@ export default function SettingsPage() {
     return <p className="text-sm text-[var(--muted)]">…</p>;
   }
 
-  if (!session?.user) {
-    return (
-      <div className="qt-panel p-6 text-sm">
-        <p>{tAlerts("loginRequired")}</p>
-        <Link href="/login" className="mt-3 inline-block text-[var(--brand-text)]">
-          Login
-        </Link>
-      </div>
-    );
-  }
-
   async function onSave(e: FormEvent) {
     e.preventDefault();
     setSaving(true);
     setMessage(null);
+
+    // Color scheme applies immediately via PreferenceProvider; persist locally always.
+    setChangeColorScheme(changeColorScheme);
+
+    if (!loggedIn) {
+      setSaving(false);
+      setMessage(t("savedLocal"));
+      if (lang !== locale) {
+        router.replace("/settings", { locale: lang });
+      }
+      return;
+    }
+
     const res = await fetch("/api/user/settings", {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
@@ -54,7 +74,7 @@ export default function SettingsPage() {
     });
     setSaving(false);
     if (!res.ok) {
-      setMessage("Error");
+      setMessage(t("saveError"));
       return;
     }
     await update({
@@ -71,7 +91,15 @@ export default function SettingsPage() {
   return (
     <div className="mx-auto max-w-lg space-y-4">
       <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-      <form onSubmit={onSave} className="qt-panel space-y-4 p-5 sm:p-6">
+      {!loggedIn && (
+        <p className="text-sm text-[var(--muted)]">
+          {t("guestHint")}{" "}
+          <Link href="/login" className="text-[var(--brand-text)]">
+            {t("login")}
+          </Link>
+        </p>
+      )}
+      <form onSubmit={onSave} className="qt-panel space-y-5 p-5 sm:p-6">
         <label className="block space-y-1 text-sm">
           <span className="text-[var(--muted)]">{t("language")}</span>
           <select
@@ -98,24 +126,35 @@ export default function SettingsPage() {
           </select>
         </label>
 
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("changeColor")}</span>
-          <select
-            value={changeColorScheme}
-            onChange={(e) =>
-              setChangeColorScheme(e.target.value as "cn" | "us")
-            }
-            className="qt-input w-full px-3 py-2.5"
-          >
-            <option value="cn">{t("changeCn")}</option>
-            <option value="us">{t("changeUs")}</option>
-          </select>
-        </label>
-
-        <div className="flex items-center gap-4 text-sm">
-          <span className="text-[var(--up)]">▲ Up</span>
-          <span className="text-[var(--down)]">▼ Down</span>
-        </div>
+        <fieldset className="space-y-2">
+          <legend className="text-sm text-[var(--muted)]">{t("changeColor")}</legend>
+          <p className="text-xs text-[var(--muted)]">{t("changeColorHint")}</p>
+          <div className="grid gap-3 sm:grid-cols-2">
+            {(
+              [
+                { id: "cn" as const, label: t("changeCn") },
+                { id: "us" as const, label: t("changeUs") },
+              ] as const
+            ).map((opt) => {
+              const selected = changeColorScheme === opt.id;
+              return (
+                <button
+                  key={opt.id}
+                  type="button"
+                  onClick={() => setChangeColorScheme(opt.id)}
+                  className={`rounded-xl border p-3 text-left transition ${
+                    selected
+                      ? "border-[var(--brand)] bg-[var(--brand-soft)] ring-1 ring-[var(--brand)]"
+                      : "border-[var(--border)] hover:bg-[var(--sidebar-hover)]"
+                  }`}
+                >
+                  <div className="text-sm font-medium">{opt.label}</div>
+                  <SchemePreview scheme={opt.id} />
+                </button>
+              );
+            })}
+          </div>
+        </fieldset>
 
         {message && <p className="text-sm text-[var(--brand-text)]">{message}</p>}
 

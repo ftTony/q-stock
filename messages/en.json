@@ -1,7 +1,7 @@
 {
   "app": {
     "name": "Q-Stock",
-    "tagline": "US stocks & crypto markets",
+    "tagline": "US stocks, HK stocks & crypto markets",
     "terminal": "Terminal v1.0"
   },
   "nav": {
@@ -22,10 +22,12 @@
   },
   "market": {
     "stocks": "US Stocks",
+    "hk": "HK Stocks",
     "crypto": "Crypto",
     "stocksPlaylist": "Tech Giants",
+    "hkPlaylist": "HK Leaders",
     "cryptoPlaylist": "Crypto Pulse",
-    "search": "Add ticker (e.g. NVDA)...",
+    "search": "Add ticker (e.g. NVDA / 00700)...",
     "filter": "Filter",
     "filterAll": "All",
     "gainers": "Gainers",
@@ -51,8 +53,10 @@
     "viewAll": "View All",
     "unavailable": "Data temporarily unavailable",
     "titleStock": "Tech Giants Watchlist",
+    "titleHk": "HK Leaders Watchlist",
     "titleCrypto": "Crypto Pulse Watchlist",
     "descStock": "Real-time monitoring of high-cap technology stocks",
+    "descHk": "Real-time monitoring of Hang Seng leaders and HK names",
     "descCrypto": "Real-time monitoring of major cryptocurrencies",
     "kpiTickers": "Active Tickers",
     "kpiAvgChange": "Avg. Daily Change",
@@ -120,10 +124,15 @@
     "themeDark": "Dark",
     "themeSystem": "System",
     "changeColor": "Up/Down colors",
+    "changeColorHint": "Applies to prices, percent change, candles, and gainers/losers",
     "changeCn": "CN style (red up / green down)",
     "changeUs": "US style (green up / red down)",
     "save": "Save",
-    "saved": "Saved"
+    "saved": "Saved",
+    "savedLocal": "Saved on this device (sign in to sync to your account)",
+    "saveError": "Save failed",
+    "guestHint": "You can change colors and theme without signing in; sign in to sync to your account.",
+    "login": "Sign in"
   },
   "alerts": {
     "title": "Price alerts",
@@ -151,6 +160,7 @@
   "earnings": {
     "empty": "No earnings data",
     "cryptoNa": "Earnings are not available for crypto",
+    "hkNa": "HK earnings/press not wired yet (quotes & AI still work)",
     "metrics": "Key metrics",
     "upcoming": "Upcoming",
     "recent": "Recent reports",

@@ -2,25 +2,27 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { normalizeSymbol, parseAssetType } from "@/lib/types";
 
 const createSchema = z.object({
   symbol: z.string().min(1).max(20),
-  assetType: z.enum(["stock", "crypto"]),
+  assetType: z.enum(["stock", "hk", "crypto"]),
   content: z.string().min(1).max(2000),
 });
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
   const symbol = searchParams.get("symbol");
-  const assetType = searchParams.get("assetType") || "stock";
+  const assetType = parseAssetType(searchParams.get("assetType"));
   if (!symbol) {
     return NextResponse.json({ error: "symbol required" }, { status: 400 });
   }
 
+  const normalized = normalizeSymbol(symbol, assetType);
   const comments = await prisma.comment.findMany({
     where: {
-      symbol: symbol.toUpperCase(),
-      assetType: assetType as "stock" | "crypto",
+      symbol: normalized,
+      assetType,
       deletedAt: null,
     },
     orderBy: { createdAt: "desc" },
@@ -52,10 +54,11 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
+  const symbol = normalizeSymbol(parsed.data.symbol, parsed.data.assetType);
   const comment = await prisma.comment.create({
     data: {
       userId: session.user.id,
-      symbol: parsed.data.symbol.toUpperCase(),
+      symbol,
       assetType: parsed.data.assetType,
       content: parsed.data.content.trim(),
     },

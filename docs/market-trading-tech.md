@@ -104,15 +104,25 @@ interface MarketDataProvider {
 
 ### 3.3 符号映射
 
-内部统一用短码（如 `AAPL`、`BTC`），出站再映射：
+`AssetType`：`stock`（美股）| `hk`（港股）| `crypto`。
 
-| 源 | 股票示例 | 说明 |
+内部短码约定：
+
+| 类型 | 内部形式 | 示例 |
 |---|---|---|
-| Longbridge | `AAPL.US` | 港股数字码 → `00700.HK` |
-| Futu | `US.AAPL` | 港股 → `HK.00700` |
-| Finnhub | `AAPL` | 加密 → `BINANCE:BTCUSDT` |
+| 美股 | 裸 ticker | `AAPL` |
+| 港股 | **5 位补零**，无 `.HK` | `00700` |
+| 加密 | 基础币种 | `BTC` |
 
-实现：[`src/lib/market/symbols.ts`](../src/lib/market/symbols.ts)
+出站再按源映射（仅当 `assetType === "hk"` 才走港股后缀，美股路径不再把数字码误判为港股）：
+
+| 源 | 美股 | 港股 | 加密 |
+|---|---|---|---|
+| Longbridge | `AAPL.US` | `00700.HK` | `BTC.US` |
+| Futu | `US.AAPL` | `HK.00700` | 不支持 |
+| Finnhub | `AAPL` | `700.HK` | `BINANCE:BTCUSDT` |
+
+实现：[`src/lib/market/symbols.ts`](../src/lib/market/symbols.ts)、[`src/lib/types.ts`](../src/lib/types.ts)（`normalizeSymbol` / `toFinnhubSymbol`）
 
 ### 3.4 各 Provider 要点
 

@@ -3,13 +3,13 @@ import {
   getMarketSentiment,
   getSymbolSentiment,
 } from "@/lib/adanos/client";
-import type { AssetType } from "@/lib/types";
+import { parseAssetType } from "@/lib/types";
 
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const symbol = searchParams.get("symbol");
-    const assetType = (searchParams.get("assetType") || "stock") as AssetType;
+    const assetType = parseAssetType(searchParams.get("assetType"));
 
     if (!symbol) {
       const market = await getMarketSentiment(assetType);

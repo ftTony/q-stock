@@ -24,7 +24,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
   const session = await auth();
   const scheme =
-    (session?.user?.changeColorScheme as "cn" | "us" | undefined) ?? "us";
+    (session?.user?.changeColorScheme as "cn" | "us" | undefined) ?? null;
 
   return (
     <NextIntlClientProvider messages={messages}>

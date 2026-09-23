@@ -8,7 +8,7 @@ export type BrokerId = "longbridge" | "futu";
 
 export type BrokerOrderRequest = {
   symbol: string;
-  assetType: "stock" | "crypto";
+  assetType: "stock" | "hk" | "crypto";
   side: "buy" | "sell";
   type: "market" | "limit" | "stop";
   qty: number;

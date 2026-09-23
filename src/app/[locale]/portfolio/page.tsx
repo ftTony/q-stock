@@ -530,7 +530,10 @@ export default function PortfolioPage() {
                         {q ? (
                           <>
                             $
-                            <PriceText value={q.price} />
+                            <PriceText
+                              value={q.price}
+                              change={q.percentChange}
+                            />
                           </>
                         ) : (
                           "-"

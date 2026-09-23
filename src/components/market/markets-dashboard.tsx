@@ -28,7 +28,8 @@ export default function MarketsDashboard() {
   const { data: session } = useSession();
   const searchParams = useSearchParams();
   const listParam = searchParams.get("list");
-  const initialTab: Tab = listParam === "crypto" ? "crypto" : "stock";
+  const initialTab: Tab =
+    listParam === "crypto" ? "crypto" : listParam === "hk" ? "hk" : "stock";
 
   const [tab, setTab] = useState<Tab>(initialTab);
   const [q, setQ] = useState("");
@@ -198,16 +199,24 @@ export default function MarketsDashboard() {
       <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-            {tab === "stock" ? t("titleStock") : t("titleCrypto")}
+            {tab === "crypto"
+              ? t("titleCrypto")
+              : tab === "hk"
+                ? t("titleHk")
+                : t("titleStock")}
           </h1>
           <p className="text-sm text-[var(--muted)]">
-            {tab === "stock" ? t("descStock") : t("descCrypto")}
+            {tab === "crypto"
+              ? t("descCrypto")
+              : tab === "hk"
+                ? t("descHk")
+                : t("descStock")}
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1">
-            {(["stock", "crypto"] as Tab[]).map((key) => (
+            {(["stock", "hk", "crypto"] as Tab[]).map((key) => (
               <button
                 key={key}
                 type="button"
@@ -221,7 +230,11 @@ export default function MarketsDashboard() {
                     : "text-[var(--muted)] hover:text-[var(--foreground)]"
                 }`}
               >
-                {key === "stock" ? t("stocks") : t("crypto")}
+                {key === "stock"
+                  ? t("stocks")
+                  : key === "hk"
+                    ? t("hk")
+                    : t("crypto")}
               </button>
             ))}
           </div>
@@ -392,7 +405,10 @@ export default function MarketsDashboard() {
                       </td>
                       <td className="px-4 py-3 font-medium tabular-nums">
                         $
-                        <PriceText value={item.price} />
+                        <PriceText
+                          value={item.price}
+                          change={item.percentChange}
+                        />
                       </td>
                       <td className="px-4 py-3">
                         <span className="inline-flex items-center gap-1 font-medium">

@@ -23,13 +23,14 @@ import {
 import { TradePanel } from "@/components/trading/trade-panel";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, CandleResolution, OhlcvBar, Quote } from "@/lib/types";
+import { parseAssetType } from "@/lib/types";
 import type { IndicatorBundle } from "@/lib/indicators";
 
 type Tab = "news" | "earnings" | "press" | "comments" | "sentiment" | "ai";
 
 export default function SymbolPage() {
   const params = useParams<{ assetType: string; symbol: string }>();
-  const assetType = (params.assetType === "crypto" ? "crypto" : "stock") as AssetType;
+  const assetType = parseAssetType(params.assetType);
   const symbol = String(params.symbol || "").toUpperCase();
   const locale = useLocale();
   const t = useTranslations("symbol");
@@ -123,7 +124,7 @@ export default function SymbolPage() {
       setNews(data.news ?? []);
       if (!res.ok) setDegraded(true);
     } else if (tab === "earnings") {
-      if (assetType === "crypto") {
+      if (assetType !== "stock") {
         setEarnings([]);
         setEarningsUpcoming([]);
         setEarningsRecent([]);
@@ -143,7 +144,7 @@ export default function SymbolPage() {
         setEarningsLoading(false);
       }
     } else if (tab === "press") {
-      if (assetType === "crypto") {
+      if (assetType !== "stock") {
         setPress([]);
         return;
       }
@@ -525,8 +526,10 @@ export default function SymbolPage() {
             )}
 
             {tab === "earnings" && (
-              assetType === "crypto" ? (
-                <p className="text-sm text-[var(--muted)]">{tEarnings("cryptoNa")}</p>
+              assetType !== "stock" ? (
+                <p className="text-sm text-[var(--muted)]">
+                  {assetType === "hk" ? tEarnings("hkNa") : tEarnings("cryptoNa")}
+                </p>
               ) : (
                 <EarningsPanel
                   surprises={earnings}
@@ -541,8 +544,10 @@ export default function SymbolPage() {
 
             {tab === "press" && (
               <ul className="space-y-3">
-                {assetType === "crypto" && (
-                  <li className="text-sm text-[var(--muted)]">N/A for crypto</li>
+                {assetType !== "stock" && (
+                  <li className="text-sm text-[var(--muted)]">
+                    {assetType === "hk" ? tEarnings("hkNa") : "N/A for crypto"}
+                  </li>
                 )}
                 {press.map((p, i) => (
                   <li key={i} className="border-b border-[var(--border)] pb-3">

@@ -14,6 +14,7 @@ import {
 } from "@/lib/finnhub/client";
 import { getQuote } from "@/lib/market";
 import type { AssetType } from "@/lib/types";
+import { isUsEquity, toFinnhubSymbol } from "@/lib/types";
 
 export type TrendBias = "bullish" | "neutral" | "bearish";
 export type TrendHorizon = "short" | "medium";
@@ -105,28 +106,31 @@ export async function analyzeTrend(opts: {
       : (() => {
           const to = format(new Date(), "yyyy-MM-dd");
           const from = format(subDays(new Date(), 30), "yyyy-MM-dd");
-          return getCompanyNews(symbol, from, to).then((n) => n.slice(0, 12));
+          const fhSym =
+            assetType === "hk" ? toFinnhubSymbol(symbol, "hk") : symbol;
+          return getCompanyNews(fhSym, from, to).then((n) => n.slice(0, 12));
         })();
 
   const today = new Date();
   const calFrom = format(subMonths(today, 3), "yyyy-MM-dd");
   const calTo = format(addMonths(today, 9), "yyyy-MM-dd");
+  const usEquity = isUsEquity(assetType);
 
   const [newsRes, quoteRes, earningsRes, calendarRes, metricsRes] =
     await Promise.allSettled([
       newsPromise,
       getQuote(symbol, assetType),
-      assetType === "stock" ? getEarnings(symbol) : Promise.resolve([]),
-      assetType === "stock"
+      usEquity ? getEarnings(symbol) : Promise.resolve([]),
+      usEquity
         ? getEarningsCalendar(symbol, calFrom, calTo)
         : Promise.resolve([]),
-      assetType === "stock" ? getBasicFinancials(symbol) : Promise.resolve(null),
+      usEquity ? getBasicFinancials(symbol) : Promise.resolve(null),
     ]);
 
   if (newsRes.status === "rejected") degraded = true;
   if (quoteRes.status === "rejected") degraded = true;
   if (
-    assetType === "stock" &&
+    usEquity &&
     earningsRes.status === "rejected" &&
     calendarRes.status === "rejected" &&
     metricsRes.status === "rejected"
