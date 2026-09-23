@@ -135,11 +135,23 @@ export const binanceProvider: MarketDataProvider = {
         openPrice?: string;
         prevClosePrice?: string;
         closeTime?: number;
+        volume?: string;
+        quoteVolume?: string;
+        bidPrice?: string;
+        askPrice?: string;
+        bidQty?: string;
+        askQty?: string;
       }>("/api/v3/ticker/24hr", { symbol: pair });
 
       const price = Number(raw.lastPrice ?? 0);
       const prev = Number(raw.prevClosePrice ?? raw.openPrice ?? price);
       const change = Number(raw.priceChange ?? price - prev);
+      const volume = Number(raw.volume);
+      const turnover = Number(raw.quoteVolume);
+      const bid = Number(raw.bidPrice);
+      const ask = Number(raw.askPrice);
+      const bidSize = Number(raw.bidQty);
+      const askSize = Number(raw.askQty);
       return {
         symbol: normalized,
         assetType: "crypto",
@@ -151,6 +163,12 @@ export const binanceProvider: MarketDataProvider = {
         open: Number(raw.openPrice ?? price),
         previousClose: prev,
         timestamp: Math.floor((raw.closeTime ?? Date.now()) / 1000),
+        ...(Number.isFinite(volume) && volume > 0 ? { volume } : {}),
+        ...(Number.isFinite(turnover) && turnover > 0 ? { turnover } : {}),
+        ...(Number.isFinite(bid) && bid > 0 ? { bid } : {}),
+        ...(Number.isFinite(ask) && ask > 0 ? { ask } : {}),
+        ...(Number.isFinite(bidSize) && bidSize > 0 ? { bidSize } : {}),
+        ...(Number.isFinite(askSize) && askSize > 0 ? { askSize } : {}),
         source: "binance",
       } satisfies QuoteWithSource;
     });

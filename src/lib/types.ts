@@ -24,6 +24,15 @@ export interface Quote {
   open: number;
   previousClose: number;
   timestamp: number;
+  /** Traded volume (shares / base asset). */
+  volume?: number;
+  /** Notional turnover (quote currency). */
+  turnover?: number;
+  /** Best bid / ask (L1). */
+  bid?: number;
+  ask?: number;
+  bidSize?: number;
+  askSize?: number;
 }
 
 export interface SearchResult {

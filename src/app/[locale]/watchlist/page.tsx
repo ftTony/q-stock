@@ -143,8 +143,8 @@ function WatchlistContent() {
     return (
       <div className="qt-panel p-6 text-sm">
         <p>{tAlerts("loginRequired")}</p>
-        <Link href="/login" className="mt-3 inline-block text-[var(--brand-text)]">
-          Login
+        <Link href="/login" className="qt-btn qt-btn-primary mt-3 inline-flex px-3 py-1.5 text-sm">
+          {tNav("login")}
         </Link>
       </div>
     );

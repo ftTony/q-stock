@@ -73,7 +73,8 @@
   - 季 K / 年 K：由日 K 或月 K 本地聚合
 - 技术指标：MA / EMA / BOLL / RSI / MACD
 - Tab：新闻、财报、公告、评论、情绪、AI 分析
-  - 港股：财报 / 公告 / Adanos 情绪暂不接入，UI 友好降级；AI 以新闻+报价为主
+  - 美股财报 Tab：EPS/惊喜%/营收 SVG 图 + 表格；港股：财报 / 公告 / Adanos 情绪暂不接入，UI 友好降级；AI 以新闻+报价为主
+- 详情报价盘口：开高低昨收、涨跌、振幅、量/额、买卖一/价差；美股复用财报 metrics（52 周、市值、PE、Beta）
 - 右侧模拟交易面板：市价 / 限价 / 止损（仅做多）
 - 价格提醒快捷创建（触发价可预填现价）
 - 报价约 20 秒轮询
@@ -83,7 +84,7 @@
 | 类型 | 数据来源 | 说明 |
 |---|---|---|
 | 新闻 | Finnhub company-news / market news | 加密以市场新闻过滤 |
-| 财报 | Finnhub earnings + calendar + metric | 仅股票：EPS 惊喜、财报日历、关键财务指标；失败降级 |
+| 财报 | Finnhub earnings + calendar + metric | 仅股票：EPS 惊喜（含 SVG 图）、财报日历、关键财务指标；失败降级 |
 | 公告 | Finnhub press-releases | 可能受套餐限制；失败降级 |
 | 评论 | 本系统自建（PostgreSQL） | 登录可发；作者可软删 |
 

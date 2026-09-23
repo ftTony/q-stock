@@ -10,6 +10,7 @@
   --brand: #5b7cfa;
   --brand-soft: rgba(91, 124, 250, 0.12);
   --brand-text: #3b5bdb;
+  --on-brand: #ffffff;
   --sidebar: #ffffff;
   --sidebar-hover: #f1f5f9;
   --sidebar-active: rgba(91, 124, 250, 0.12);
@@ -37,6 +38,7 @@ html.dark {
   --brand: #9eb6ff;
   --brand-soft: rgba(158, 182, 255, 0.14);
   --brand-text: #c4d2ff;
+  --on-brand: #0b1220;
   --sidebar: #080c14;
   --sidebar-hover: #111827;
   --sidebar-active: rgba(158, 182, 255, 0.12);
@@ -118,27 +120,37 @@ button {
   justify-content: center;
   gap: 0.4rem;
   border-radius: 12px;
+  border: 1px solid transparent;
   font-weight: 600;
   transition: 0.15s ease;
 }
 
-.qt-btn-primary {
-  background: var(--brand);
-  color: #0b1220;
+button.qt-btn-primary,
+a.qt-btn-primary,
+.qt-btn.qt-btn-primary {
+  background-color: var(--brand);
+  color: var(--on-brand);
+  border-color: color-mix(in srgb, var(--brand) 80%, transparent);
 }
 
-.qt-btn-primary:hover {
-  filter: brightness(1.05);
+button.qt-btn-primary:hover,
+a.qt-btn-primary:hover,
+.qt-btn.qt-btn-primary:hover {
+  filter: brightness(1.06);
 }
 
-.qt-btn-ghost {
-  background: transparent;
-  border: 1px solid var(--border);
+button.qt-btn-ghost,
+a.qt-btn-ghost,
+.qt-btn.qt-btn-ghost {
+  background-color: var(--surface-2);
+  border-color: var(--border);
   color: var(--foreground);
 }
 
-.qt-btn-ghost:hover {
-  background: var(--sidebar-hover);
+button.qt-btn-ghost:hover,
+a.qt-btn-ghost:hover,
+.qt-btn.qt-btn-ghost:hover {
+  background-color: var(--sidebar-hover);
 }
 
 .qt-chip {

@@ -10,8 +10,8 @@ A Web & H5 market terminal for **US stocks**, **HK stocks**, and **crypto**: mul
 |---|---|
 | Markets | Popular lists (US / HK / crypto), search, gainers/losers, quiet polling refresh |
 | Multi-source quotes | **Longbridge → Futu OpenAPI → Finnhub**, configurable priority with automatic failover |
-| Symbol detail | Daily / quarterly / yearly candles; MA / EMA / BOLL / RSI / MACD |
-| News & filings | News, earnings (surprises / calendar / metrics), press releases |
+| Symbol detail | Daily / quarterly / yearly candles; MA / EMA / BOLL / RSI / MACD; rich quote panel (amplitude / volume / bid-ask) |
+| News & filings | News, earnings (surprises / calendar / metrics + EPS SVG charts), press releases |
 | Paper trading | Long-only; market / limit / stop; side panel on symbol page; Portfolio cash & positions |
 | Watchlist & portfolio | CRUD watchlist, sparklines, overview KPIs |
 | Price alerts | Email on ≥ / ≤ trigger (Resend / SMTP); background worker |
@@ -111,7 +111,7 @@ npm run lint
 
 1. **Sign up / sign in** — email + password; required for watchlist, comments, alerts, paper trading.
 2. **Markets** — switch US / HK / crypto, search into a symbol (HK e.g. `00700`).
-3. **Symbol page** — charts & indicators; paper trade on the right; news / earnings / press / comments / sentiment / AI analysis tabs.
+3. **Symbol page** — charts & indicators, rich quote panel; paper trade on the right; news / earnings (with SVG charts) / press / comments / sentiment / AI analysis tabs.
 4. **Watchlist / Portfolio** — manage symbols; view paper cash, P&L, open orders.
 5. **Alerts** — set price ≥ / ≤; needs email config + running worker.
 6. **Settings** — language, theme, up/down color scheme (persisted).

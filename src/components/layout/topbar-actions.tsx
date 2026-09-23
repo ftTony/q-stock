@@ -223,7 +223,7 @@ export function TopBarActions() {
           )}
         </div>
       ) : (
-        <Link href="/login" className="qt-btn qt-btn-ghost h-9 px-3 text-xs">
+        <Link href="/login" className="qt-btn qt-btn-primary h-9 px-3 text-xs">
           {t("login")}
         </Link>
       )}

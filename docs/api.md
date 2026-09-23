@@ -112,6 +112,8 @@ Auth.js 内置路由（Credentials 登录 / Session / CSRF 等）。前端使用
 
 **响应**：`{ "quotes": [...] }` 或 `{ "quote": {...} }`
 
+单标的 `quote` 字段含 `price` / `change` / `percentChange` / `open` / `high` / `low` / `previousClose`；可选 `volume` / `turnover` / `bid` / `ask` / `bidSize` / `askSize`（视数据源而定）。
+
 ### `GET /api/search`
 
 | 参数 | 说明 |

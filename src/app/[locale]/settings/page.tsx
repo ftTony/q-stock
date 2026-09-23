@@ -94,7 +94,7 @@ export default function SettingsPage() {
       {!loggedIn && (
         <p className="text-sm text-[var(--muted)]">
           {t("guestHint")}{" "}
-          <Link href="/login" className="text-[var(--brand-text)]">
+          <Link href="/login" className="qt-btn qt-btn-primary ml-2 inline-flex h-8 px-3 text-xs align-middle">
             {t("login")}
           </Link>
         </p>

@@ -158,7 +158,48 @@ type SnapshotRow = {
   low_price?: number;
   prev_close_price?: number;
   update_time?: number;
+  volume?: number;
+  turnover?: number;
+  bid_price?: number;
+  ask_price?: number;
+  bid_vol?: number;
+  ask_vol?: number;
 };
+
+function mapFutuSnapshot(
+  snap: SnapshotRow,
+  normalized: string,
+  assetType: AssetType,
+): QuoteWithSource {
+  const price = Number(snap.last_price);
+  const prev = Number(snap.prev_close_price ?? 0);
+  const change = price - prev;
+  const volume = Number(snap.volume ?? 0);
+  const turnover = Number(snap.turnover ?? 0);
+  const bid = Number(snap.bid_price ?? 0);
+  const ask = Number(snap.ask_price ?? 0);
+  const bidSize = Number(snap.bid_vol ?? 0);
+  const askSize = Number(snap.ask_vol ?? 0);
+  return {
+    symbol: normalized,
+    assetType,
+    price,
+    change,
+    percentChange: prev ? (change / prev) * 100 : 0,
+    high: Number(snap.high_price ?? 0),
+    low: Number(snap.low_price ?? 0),
+    open: Number(snap.open_price ?? 0),
+    previousClose: prev,
+    timestamp: msToSec(snap.update_time),
+    ...(volume > 0 ? { volume } : {}),
+    ...(turnover > 0 ? { turnover } : {}),
+    ...(bid > 0 ? { bid } : {}),
+    ...(ask > 0 ? { ask } : {}),
+    ...(bidSize > 0 ? { bidSize } : {}),
+    ...(askSize > 0 ? { askSize } : {}),
+    source: "futu" as const,
+  };
+}
 
 type KlineRow = {
   time_key?: number;
@@ -208,22 +249,7 @@ export const futuProvider: MarketDataProvider = {
         if (!snap || !(Number(snap.last_price) > 0)) {
           throw new MarketDataError(`No Futu snapshot for ${code}`, "futu");
         }
-        const price = Number(snap.last_price);
-        const prev = Number(snap.prev_close_price ?? 0);
-        const change = price - prev;
-        return {
-          symbol: normalized,
-          assetType,
-          price,
-          change,
-          percentChange: prev ? (change / prev) * 100 : 0,
-          high: Number(snap.high_price ?? 0),
-          low: Number(snap.low_price ?? 0),
-          open: Number(snap.open_price ?? 0),
-          previousClose: prev,
-          timestamp: msToSec(snap.update_time),
-          source: "futu" as const,
-        } satisfies QuoteWithSource;
+        return mapFutuSnapshot(snap, normalized, assetType);
       });
     } catch (err) {
       throw new MarketDataError(
@@ -257,22 +283,7 @@ export const futuProvider: MarketDataProvider = {
         const code = toFutuSymbol(normalized, item.assetType);
         const snap = byCode.get(code);
         if (!snap || !(Number(snap.last_price) > 0)) continue;
-        const price = Number(snap.last_price);
-        const prev = Number(snap.prev_close_price ?? 0);
-        const change = price - prev;
-        out.push({
-          symbol: normalized,
-          assetType: item.assetType,
-          price,
-          change,
-          percentChange: prev ? (change / prev) * 100 : 0,
-          high: Number(snap.high_price ?? 0),
-          low: Number(snap.low_price ?? 0),
-          open: Number(snap.open_price ?? 0),
-          previousClose: prev,
-          timestamp: msToSec(snap.update_time),
-          source: "futu",
-        });
+        out.push(mapFutuSnapshot(snap, normalized, item.assetType));
       }
       return out;
     } catch {

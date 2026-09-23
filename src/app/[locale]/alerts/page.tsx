@@ -19,6 +19,7 @@ type AlertRow = {
 
 function AlertsContent() {
   const t = useTranslations("alerts");
+  const tNav = useTranslations("nav");
   const tMarket = useTranslations("market");
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
@@ -57,8 +58,8 @@ function AlertsContent() {
     return (
       <div className="qt-panel p-6 text-sm">
         <p>{t("loginRequired")}</p>
-        <Link href="/login" className="mt-3 inline-block text-[var(--brand-text)]">
-          Login
+        <Link href="/login" className="qt-btn qt-btn-primary mt-3 inline-flex px-3 py-1.5 text-sm">
+          {tNav("login")}
         </Link>
       </div>
     );

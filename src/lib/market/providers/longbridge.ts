@@ -77,6 +77,41 @@ export const longbridgeProvider: MarketDataProvider = {
         const prev = dec(q.prevClose);
         const change = price - prev;
         const percentChange = prev ? (change / prev) * 100 : 0;
+        const volume = Number(q.volume ?? 0);
+        const turnover = dec(
+          (q as { turnover?: { toNumber(): number } | null }).turnover,
+        );
+        let bid: number | undefined;
+        let ask: number | undefined;
+        let bidSize: number | undefined;
+        let askSize: number | undefined;
+        try {
+          const depthFn = (
+            ctx as {
+              depth?: (symbol: string) => Promise<{
+                bid?: { price?: { toNumber(): number }; volume?: number }[];
+                ask?: { price?: { toNumber(): number }; volume?: number }[];
+              }>;
+            }
+          ).depth;
+          if (typeof depthFn === "function") {
+            const depth = await depthFn.call(ctx, lbSym);
+            const b0 = depth?.bid?.[0];
+            const a0 = depth?.ask?.[0];
+            const bp = b0?.price != null ? dec(b0.price) : 0;
+            const ap = a0?.price != null ? dec(a0.price) : 0;
+            if (bp > 0) bid = bp;
+            if (ap > 0) ask = ap;
+            if (b0?.volume != null && Number(b0.volume) > 0) {
+              bidSize = Number(b0.volume);
+            }
+            if (a0?.volume != null && Number(a0.volume) > 0) {
+              askSize = Number(a0.volume);
+            }
+          }
+        } catch {
+          /* depth optional */
+        }
         return {
           symbol: normalized,
           assetType,
@@ -88,6 +123,12 @@ export const longbridgeProvider: MarketDataProvider = {
           open: dec(q.open),
           previousClose: prev,
           timestamp: Math.floor((q.timestamp?.getTime?.() ?? Date.now()) / 1000),
+          ...(volume > 0 ? { volume } : {}),
+          ...(turnover > 0 ? { turnover } : {}),
+          ...(bid != null ? { bid } : {}),
+          ...(ask != null ? { ask } : {}),
+          ...(bidSize != null ? { bidSize } : {}),
+          ...(askSize != null ? { askSize } : {}),
           source: "longbridge" as const,
         } satisfies QuoteWithSource;
       });
@@ -121,6 +162,10 @@ export const longbridgeProvider: MarketDataProvider = {
         const price = dec(q.lastDone);
         const prev = dec(q.prevClose);
         const change = price - prev;
+        const volume = Number(q.volume ?? 0);
+        const turnover = dec(
+          (q as { turnover?: { toNumber(): number } | null }).turnover,
+        );
         out.push({
           symbol: meta.normalized,
           assetType: meta.assetType,
@@ -132,6 +177,8 @@ export const longbridgeProvider: MarketDataProvider = {
           open: dec(q.open),
           previousClose: prev,
           timestamp: Math.floor((q.timestamp?.getTime?.() ?? Date.now()) / 1000),
+          ...(volume > 0 ? { volume } : {}),
+          ...(turnover > 0 ? { turnover } : {}),
           source: "longbridge",
         });
       }

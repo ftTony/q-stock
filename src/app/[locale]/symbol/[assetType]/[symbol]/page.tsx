@@ -20,6 +20,7 @@ import {
   type EarningsMetric,
   type EarningsSurprise,
 } from "@/components/market/earnings-panel";
+import { QuoteStatsPanel } from "@/components/market/quote-stats";
 import { TradePanel } from "@/components/trading/trade-panel";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, CandleResolution, OhlcvBar, Quote } from "@/lib/types";
@@ -81,6 +82,7 @@ export default function SymbolPage() {
   const [loadingMoreCandles, setLoadingMoreCandles] = useState(false);
   const [hasMoreCandles, setHasMoreCandles] = useState(true);
   const loadMoreLock = useRef(false);
+  const earningsLoadedRef = useRef(false);
   const [alertPrice, setAlertPrice] = useState("");
   const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
@@ -100,6 +102,28 @@ export default function SymbolPage() {
         const p = data.quote?.price;
         return p ? String(Number(p.toFixed(4))) : prev;
       });
+    }
+  }, [symbol, assetType]);
+
+  /** Prefetch earnings for quote panel (stocks only); shared with earnings tab. */
+  const loadEarningsMetrics = useCallback(async () => {
+    if (assetType !== "stock") {
+      setEarningsMetrics([]);
+      earningsLoadedRef.current = false;
+      return;
+    }
+    try {
+      const res = await fetch(`/api/earnings?symbol=${symbol}`);
+      const data = await res.json();
+      if (!res.ok) return;
+      setEarnings(data.surprises ?? data.earnings ?? []);
+      setEarningsUpcoming(data.calendar?.upcoming ?? []);
+      setEarningsRecent(data.calendar?.recent ?? []);
+      setEarningsMetrics(data.metrics ?? []);
+      earningsLoadedRef.current = true;
+      if (data.degraded) setDegraded(true);
+    } catch {
+      /* optional for quote panel */
     }
   }, [symbol, assetType]);
 
@@ -184,6 +208,7 @@ export default function SymbolPage() {
         setEarningsMetrics([]);
         return;
       }
+      if (earningsLoadedRef.current) return;
       setEarningsLoading(true);
       try {
         const res = await fetch(`/api/earnings?symbol=${symbol}`);
@@ -192,6 +217,7 @@ export default function SymbolPage() {
         setEarningsUpcoming(data.calendar?.upcoming ?? []);
         setEarningsRecent(data.calendar?.recent ?? []);
         setEarningsMetrics(data.metrics ?? []);
+        earningsLoadedRef.current = true;
         if (data.degraded) setDegraded(true);
       } finally {
         setEarningsLoading(false);
@@ -240,6 +266,11 @@ export default function SymbolPage() {
     setAlertPrice("");
     setAlertMsg(null);
     setQuote(null);
+    setEarnings([]);
+    setEarningsUpcoming([]);
+    setEarningsRecent([]);
+    setEarningsMetrics([]);
+    earningsLoadedRef.current = false;
   }, [symbol, assetType]);
 
   useEffect(() => {
@@ -247,6 +278,10 @@ export default function SymbolPage() {
     const timer = setInterval(() => void loadQuote(), 20000);
     return () => clearInterval(timer);
   }, [loadQuote]);
+
+  useEffect(() => {
+    void loadEarningsMetrics();
+  }, [loadEarningsMetrics]);
 
   useEffect(() => {
     void loadCandles();
@@ -391,20 +426,7 @@ export default function SymbolPage() {
         </div>
         {quote && (
           <div className="flex flex-col items-end gap-3">
-            <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-[var(--muted)] sm:text-sm">
-              <div>
-                {t("open")}: {quote.open}
-              </div>
-              <div>
-                {t("high")}: {quote.high}
-              </div>
-              <div>
-                {t("low")}: {quote.low}
-              </div>
-              <div>
-                {t("prevClose")}: {quote.previousClose}
-              </div>
-            </div>
+            <QuoteStatsPanel quote={quote} metrics={earningsMetrics} />
             <button
               type="button"
               disabled={watchBusy}

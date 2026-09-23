@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { EarningsCharts } from "@/components/market/earnings-charts";
 
 export type EarningsSurprise = {
   actual: number | null;
@@ -115,6 +116,18 @@ export function EarningsPanel({
 
   return (
     <div className="space-y-6">
+      <EarningsCharts
+        surprises={surprises}
+        recent={recent}
+        labels={{
+          chartEps: t("chartEps"),
+          chartSurprise: t("chartSurprise"),
+          chartRevenue: t("chartRevenue"),
+          actual: t("epsActual"),
+          estimate: t("epsEst"),
+        }}
+      />
+
       {metrics.length > 0 && (
         <section>
           <h3 className="mb-3 text-sm font-semibold tracking-wide text-[var(--muted)] uppercase">
