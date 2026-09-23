@@ -114,7 +114,25 @@
     "week52Low": "52 週最低",
     "mktCap": "市值",
     "peTtm": "市盈率 TTM",
-    "beta": "Beta"
+    "beta": "Beta",
+    "profile": "公司概況",
+    "officers": "高管團隊"
+  },
+  "company": {
+    "na": "該資產暫無公司概況",
+    "noOfficers": "暫無高管資料",
+    "name": "公司名稱",
+    "website": "官網",
+    "industry": "行業",
+    "listed": "上市日期",
+    "founded": "成立時間",
+    "market": "上市市場",
+    "country": "國家/地區",
+    "employees": "員工人數",
+    "chairman": "董事長",
+    "manager": "總裁/CEO",
+    "secretary": "董秘",
+    "age": "年齡"
   },
   "portfolio": {
     "title": "資產概覽",

@@ -160,3 +160,65 @@ export async function getPressReleases(
     }
   });
 }
+
+export interface CompanyProfile {
+  country?: string;
+  currency?: string;
+  exchange?: string;
+  ipo?: string;
+  marketCapitalization?: number;
+  name?: string;
+  phone?: string;
+  shareOutstanding?: number;
+  ticker?: string;
+  weburl?: string;
+  logo?: string;
+  finnhubIndustry?: string;
+  employees?: number;
+  description?: string;
+}
+
+export async function getCompanyProfile2(
+  symbol: string,
+): Promise<CompanyProfile | null> {
+  return cachedFetch(`fh:profile2:${symbol}`, 86400_000, async () => {
+    try {
+      const data = await finnhubFetch<CompanyProfile>("/stock/profile2", {
+        symbol,
+      });
+      return data && data.name ? data : null;
+    } catch (err) {
+      if (err instanceof FinnhubError && (err.status === 403 || err.status === 404)) {
+        return null;
+      }
+      throw err;
+    }
+  });
+}
+
+export interface CompanyExecutiveItem {
+  name?: string;
+  title?: string;
+  born?: string;
+  gender?: string;
+  age?: number;
+}
+
+export async function getCompanyExecutives(
+  symbol: string,
+): Promise<CompanyExecutiveItem[]> {
+  return cachedFetch(`fh:executive:${symbol}`, 86400_000, async () => {
+    try {
+      const data = await finnhubFetch<{ executive?: CompanyExecutiveItem[] }>(
+        "/stock/executive",
+        { symbol },
+      );
+      return data.executive ?? [];
+    } catch (err) {
+      if (err instanceof FinnhubError && (err.status === 403 || err.status === 404)) {
+        return [];
+      }
+      throw err;
+    }
+  });
+}

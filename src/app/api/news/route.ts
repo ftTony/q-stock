@@ -8,6 +8,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const symbol = searchParams.get("symbol");
     const assetType = parseAssetType(searchParams.get("assetType"));
+    const locale = searchParams.get("locale") ?? undefined;
 
     if (!symbol) {
       const news = await getMarketNews(
@@ -19,6 +20,7 @@ export async function GET(req: Request) {
     const { news, source, degraded } = await getSymbolNews(
       symbol.toUpperCase(),
       assetType,
+      locale,
     );
     return NextResponse.json({ news, source, degraded });
   } catch (err) {

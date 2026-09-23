@@ -114,7 +114,25 @@
     "week52Low": "52 周最低",
     "mktCap": "市值",
     "peTtm": "市盈率 TTM",
-    "beta": "Beta"
+    "beta": "Beta",
+    "profile": "公司概况",
+    "officers": "高管团队"
+  },
+  "company": {
+    "na": "该资产暂无公司概况",
+    "noOfficers": "暂无高管数据",
+    "name": "公司名称",
+    "website": "官网",
+    "industry": "行业",
+    "listed": "上市日期",
+    "founded": "成立时间",
+    "market": "上市市场",
+    "country": "国家/地区",
+    "employees": "员工数",
+    "chairman": "董事长",
+    "manager": "总裁/CEO",
+    "secretary": "董秘",
+    "age": "年龄"
   },
   "portfolio": {
     "title": "资产概览",

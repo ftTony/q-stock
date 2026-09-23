@@ -52,12 +52,13 @@ function mapFhNews(items: CompanyNewsItem[]): NewsItem[] {
 export async function getSymbolNews(
   symbol: string,
   assetType: AssetType,
+  locale?: string,
 ): Promise<{ news: NewsItem[]; source: string | null; degraded: boolean }> {
   const sym = symbol.toUpperCase();
 
   if (assetType === "stock" || assetType === "hk") {
     try {
-      const lb = await getLongbridgeNews(sym, assetType);
+      const lb = await getLongbridgeNews(sym, assetType, locale);
       if (lb.length > 0) {
         return { news: mapLbNews(lb), source: "longbridge", degraded: false };
       }

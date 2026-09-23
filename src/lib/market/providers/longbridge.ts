@@ -362,47 +362,74 @@ export type LongbridgeNewsItem = {
   source: "longbridge";
 };
 
-let contentCtx: InstanceType<LbModule["ContentContext"]> | null = null;
-let fundamentalCtx: InstanceType<LbModule["FundamentalContext"]> | null = null;
+const contentCtxCache = new Map<
+  LbLanguageId,
+  InstanceType<LbModule["ContentContext"]>
+>();
 
-async function getContentCtx() {
-  if (contentCtx) return contentCtx;
-  const lb = await loadLb();
-  const config = lb.Config.fromApikey(
-    process.env.LONGBRIDGE_APP_KEY!,
-    process.env.LONGBRIDGE_APP_SECRET!,
-    process.env.LONGBRIDGE_ACCESS_TOKEN!,
-  );
-  contentCtx = lb.ContentContext.new(config);
-  return contentCtx;
+const fundamentalCtxCache = new Map<
+  LbLanguageId,
+  InstanceType<LbModule["FundamentalContext"]>
+>();
+
+/** Longbridge Language enum: 0=zh-CN, 1=zh-HK, 2=en. */
+type LbLanguageId = 0 | 1 | 2 | "default";
+
+/** Map UI locale to Longbridge language id (default keeps env `LONGBRIDGE_LANGUAGE`). */
+function lbLanguage(locale?: string): LbLanguageId {
+  const l = (locale || "").toLowerCase();
+  if (l.startsWith("zh-cn")) return 0;
+  if (l.startsWith("zh")) return 1;
+  if (l === "en") return 2;
+  return "default";
 }
 
-async function getFundamentalCtx() {
-  if (fundamentalCtx) return fundamentalCtx;
+async function getContentCtx(language: LbLanguageId = "default") {
+  const cached = contentCtxCache.get(language);
+  if (cached) return cached;
   const lb = await loadLb();
   const config = lb.Config.fromApikey(
     process.env.LONGBRIDGE_APP_KEY!,
     process.env.LONGBRIDGE_APP_SECRET!,
     process.env.LONGBRIDGE_ACCESS_TOKEN!,
+    language === "default" ? undefined : { language },
   );
-  fundamentalCtx = lb.FundamentalContext.new(config);
-  return fundamentalCtx;
+  const ctx = lb.ContentContext.new(config);
+  contentCtxCache.set(language, ctx);
+  return ctx;
+}
+
+async function getFundamentalCtx(language: LbLanguageId = "default") {
+  const cached = fundamentalCtxCache.get(language);
+  if (cached) return cached;
+  const lb = await loadLb();
+  const config = lb.Config.fromApikey(
+    process.env.LONGBRIDGE_APP_KEY!,
+    process.env.LONGBRIDGE_APP_SECRET!,
+    process.env.LONGBRIDGE_ACCESS_TOKEN!,
+    language === "default" ? undefined : { language },
+  );
+  const ctx = lb.FundamentalContext.new(config);
+  fundamentalCtxCache.set(language, ctx);
+  return ctx;
 }
 
 /** Company news via Longbridge ContentContext.news */
 export async function getLongbridgeNews(
   symbol: string,
   assetType: AssetType,
+  locale?: string,
 ): Promise<LongbridgeNewsItem[]> {
   if (!hasLongbridgeCreds()) return [];
   if (assetType !== "stock" && assetType !== "hk") return [];
 
   const normalized = normalizeSymbol(symbol, assetType);
   const lbSym = toLongbridgeSymbol(normalized, assetType);
-  const key = `lb:news:${assetType}:${normalized}`;
+  const lang = lbLanguage(locale);
+  const key = `lb:news:${assetType}:${normalized}:${lang}`;
 
   return cachedFetch(key, 300_000, async () => {
-    const ctx = await getContentCtx();
+    const ctx = await getContentCtx(lang);
     const rows = await ctx.news(lbSym);
     return (rows ?? []).slice(0, 40).map((n) => {
       const published = n.publishedAt;
@@ -418,6 +445,128 @@ export async function getLongbridgeNews(
         source: "longbridge" as const,
       };
     });
+  });
+}
+
+export type LongbridgeCompanyProfile = {
+  name?: string;
+  companyName?: string;
+  ticker?: string;
+  logo?: string;
+  website?: string;
+  category?: string;
+  founded?: string;
+  listingDate?: string;
+  market?: string;
+  region?: string;
+  address?: string;
+  employees?: string;
+  chairman?: string;
+  manager?: string;
+  secretary?: string;
+  brief?: string;
+};
+
+export type LongbridgeOfficer = {
+  name?: string;
+  nameZhcn?: string;
+  nameEn?: string;
+  title?: string;
+  bio?: string;
+  photo?: string;
+  wikiUrl?: string;
+};
+
+function strOrUndef(v: unknown): string | undefined {
+  if (v == null || v === "") return undefined;
+  return String(v);
+}
+
+function toPlainCompany(c: unknown): LongbridgeCompanyProfile {
+  const o = (c ?? {}) as Record<string, unknown>;
+  return {
+    name: strOrUndef(o.name),
+    companyName: strOrUndef(o.companyName),
+    ticker: strOrUndef(o.ticker),
+    logo: strOrUndef(o.icon),
+    website: strOrUndef(o.website),
+    category: strOrUndef(o.category),
+    founded: strOrUndef(o.founded),
+    listingDate: strOrUndef(o.listingDate),
+    market: strOrUndef(o.market),
+    region: strOrUndef(o.region),
+    address: strOrUndef(o.address),
+    employees: strOrUndef(o.employees),
+    chairman: strOrUndef(o.chairman),
+    manager: strOrUndef(o.manager),
+    secretary: strOrUndef(o.secretary),
+    brief: strOrUndef(o.profile),
+  };
+}
+
+/** Company overview via Longbridge (US + HK). */
+export async function getLongbridgeCompany(
+  symbol: string,
+  assetType: AssetType,
+  locale?: string,
+): Promise<LongbridgeCompanyProfile | null> {
+  if (!hasLongbridgeCreds()) return null;
+  if (assetType !== "stock" && assetType !== "hk") return null;
+
+  const normalized = normalizeSymbol(symbol, assetType);
+  const lbSym = toLongbridgeSymbol(normalized, assetType);
+  const lang = lbLanguage(locale);
+  const key = `lb:company:v2:${assetType}:${normalized}:${lang}`;
+
+  return cachedFetch(key, 86400_000, async () => {
+    const fund = await getFundamentalCtx(lang);
+    const data = await fund.company(lbSym);
+    const profile = toPlainCompany(data);
+    if (!profile.name && !profile.companyName) return null;
+    return profile;
+  });
+}
+
+/** Executive / board members via Longbridge (US + HK). */
+export async function getLongbridgeExecutive(
+  symbol: string,
+  assetType: AssetType,
+  locale?: string,
+): Promise<LongbridgeOfficer[]> {
+  if (!hasLongbridgeCreds()) return [];
+  if (assetType !== "stock" && assetType !== "hk") return [];
+
+  const normalized = normalizeSymbol(symbol, assetType);
+  const lbSym = toLongbridgeSymbol(normalized, assetType);
+  const lang = lbLanguage(locale);
+  const key = `lb:executive:v2:${assetType}:${normalized}:${lang}`;
+
+  return cachedFetch(key, 86400_000, async () => {
+    const fund = await getFundamentalCtx(lang);
+    const data = await fund.executive(lbSym);
+    const officers: LongbridgeOfficer[] = [];
+    const zh = lang === 0 || lang === 1;
+    for (const group of data?.professionalList ?? []) {
+      for (const p of group?.professionals ?? []) {
+        if (!p) continue;
+        // Longbridge provides explicit zh-cn / en variants — pick by UI locale
+        // (do not rely on `name`, which may ignore the SDK language setting).
+        const localized = zh
+          ? strOrUndef(p.nameZhcn) ?? strOrUndef(p.name)
+          : strOrUndef(p.nameEn) ?? strOrUndef(p.name);
+        officers.push({
+          name:
+            localized ?? strOrUndef(p.nameEn) ?? strOrUndef(p.nameZhcn),
+          nameZhcn: strOrUndef(p.nameZhcn),
+          nameEn: strOrUndef(p.nameEn),
+          title: strOrUndef(p.title),
+          bio: strOrUndef(p.biography),
+          photo: strOrUndef(p.photo),
+          wikiUrl: strOrUndef(p.wikiUrl),
+        });
+      }
+    }
+    return officers;
   });
 }
 

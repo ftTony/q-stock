@@ -114,7 +114,25 @@
     "week52Low": "52W low",
     "mktCap": "Market cap",
     "peTtm": "P/E TTM",
-    "beta": "Beta"
+    "beta": "Beta",
+    "profile": "Company Profile",
+    "officers": "Executives"
+  },
+  "company": {
+    "na": "No company profile available for this asset",
+    "noOfficers": "No executives data available",
+    "name": "Company",
+    "website": "Website",
+    "industry": "Industry",
+    "listed": "Listed",
+    "founded": "Founded",
+    "market": "Market",
+    "country": "Country",
+    "employees": "Employees",
+    "chairman": "Chairman",
+    "manager": "President/CEO",
+    "secretary": "Secretary",
+    "age": "Age"
   },
   "portfolio": {
     "title": "Portfolio",

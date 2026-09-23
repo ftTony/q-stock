@@ -21,13 +21,34 @@ import {
   type EarningsSurprise,
 } from "@/components/market/earnings-panel";
 import { QuoteStatsPanel } from "@/components/market/quote-stats";
+import {
+  CompanyProfilePanel,
+  OfficersPanel,
+} from "@/components/market/company-panel";
+import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
 import { TradePanel } from "@/components/trading/trade-panel";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, CandleResolution, OhlcvBar, Quote } from "@/lib/types";
 import { parseAssetType } from "@/lib/types";
 import { computeIndicators, type IndicatorBundle } from "@/lib/indicators";
 
-type Tab = "news" | "earnings" | "press" | "comments" | "sentiment" | "ai";
+type Tab =
+  | "news"
+  | "earnings"
+  | "press"
+  | "profile"
+  | "officers"
+  | "comments"
+  | "sentiment"
+  | "ai";
+
+const TAB_LOADING: ReadonlySet<Tab> = new Set([
+  "news",
+  "earnings",
+  "press",
+  "profile",
+  "officers",
+]);
 
 export default function SymbolPage() {
   const params = useParams<{ assetType: string; symbol: string }>();
@@ -74,6 +95,9 @@ export default function SymbolPage() {
     { id: string; content: string; author: string; userId: string; createdAt: string }[]
   >([]);
   const [commentText, setCommentText] = useState("");
+  const [company, setCompany] = useState<CompanyProfile | null>(null);
+  const [officers, setOfficers] = useState<CompanyOfficer[]>([]);
+  const [tabLoading, setTabLoading] = useState(false);
   const [sentiment, setSentiment] = useState<{
     news?: Record<string, unknown>;
     reddit?: Record<string, unknown>;
@@ -203,74 +227,91 @@ export default function SymbolPage() {
   );
   const loadTab = useCallback(async () => {
     setDegraded(false);
-    if (tab === "news") {
-      const res = await fetch(`/api/news?symbol=${symbol}&assetType=${assetType}`);
-      const data = await res.json();
-      setNews(data.news ?? []);
-      if (!res.ok || data.degraded) setDegraded(true);
-    } else if (tab === "earnings") {
-      if (assetType === "crypto") {
-        setEarnings([]);
-        setEarningsUpcoming([]);
-        setEarningsRecent([]);
-        setEarningsMetrics([]);
-        return;
-      }
-      if (earningsLoadedRef.current) return;
-      setEarningsLoading(true);
-      try {
+    const showLoading =
+      TAB_LOADING.has(tab) && !(tab === "earnings" && earningsLoadedRef.current);
+    if (showLoading) setTabLoading(true);
+    try {
+      if (tab === "news") {
         const res = await fetch(
-          `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+          `/api/news?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
         );
         const data = await res.json();
-        setEarnings(data.surprises ?? data.earnings ?? []);
-        setEarningsUpcoming(data.calendar?.upcoming ?? []);
-        setEarningsRecent(data.calendar?.recent ?? []);
-        setEarningsMetrics(data.metrics ?? []);
-        earningsLoadedRef.current = true;
-        if (data.degraded) setDegraded(true);
-      } finally {
-        setEarningsLoading(false);
-      }
-    } else if (tab === "press") {
-      if (assetType === "crypto") {
-        setPress([]);
-        return;
-      }
-      const res = await fetch(
-        `/api/press?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-      );
-      const data = await res.json();
-      setPress(data.press ?? []);
-      if (data.degraded) setDegraded(true);
-    } else if (tab === "comments") {
-      const res = await fetch(`/api/comments?symbol=${symbol}&assetType=${assetType}`);
-      const data = await res.json();
-      setComments(data.comments ?? []);
-    } else if (tab === "sentiment") {
-      const res = await fetch(`/api/sentiment?symbol=${symbol}&assetType=${assetType}`);
-      const data = await res.json();
-      setSentiment(data.sentiment ?? null);
-    } else if (tab === "ai") {
-      setAiLoading(true);
-      setAiAnalysis(null);
-      setAiAvailable(null);
-      setAiMessage(null);
-      try {
+        setNews(data.news ?? []);
+        if (!res.ok || data.degraded) setDegraded(true);
+      } else if (tab === "earnings") {
+        if (assetType === "crypto") {
+          setEarnings([]);
+          setEarningsUpcoming([]);
+          setEarningsRecent([]);
+          setEarningsMetrics([]);
+          return;
+        }
+        if (earningsLoadedRef.current) return;
+        setEarningsLoading(true);
+        try {
+          const res = await fetch(
+            `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+          );
+          const data = await res.json();
+          setEarnings(data.surprises ?? data.earnings ?? []);
+          setEarningsUpcoming(data.calendar?.upcoming ?? []);
+          setEarningsRecent(data.calendar?.recent ?? []);
+          setEarningsMetrics(data.metrics ?? []);
+          earningsLoadedRef.current = true;
+          if (data.degraded) setDegraded(true);
+        } finally {
+          setEarningsLoading(false);
+        }
+      } else if (tab === "press") {
+        if (assetType === "crypto") {
+          setPress([]);
+          return;
+        }
         const res = await fetch(
-          `/api/ai/analyze?symbol=${symbol}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
+          `/api/press?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
         );
         const data = await res.json();
-        setAiAvailable(data.available !== false);
-        setAiAnalysis(data.analysis ?? null);
-        setAiMessage(data.message ?? data.error ?? null);
-        setAiDisclaimer(data.disclaimer ?? null);
-        setAiCached(Boolean(data.cached));
+        setPress(data.press ?? []);
         if (data.degraded) setDegraded(true);
-        if (!res.ok && data.available !== false) setDegraded(true);
-      } finally {
-        setAiLoading(false);
+      } else if (tab === "profile" || tab === "officers") {
+        const res = await fetch(
+          `/api/company?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
+        );
+        const data = await res.json();
+        setCompany(data.profile ?? null);
+        setOfficers(data.officers ?? []);
+        if (!res.ok || data.degraded) setDegraded(true);
+      } else if (tab === "comments") {
+        const res = await fetch(`/api/comments?symbol=${symbol}&assetType=${assetType}`);
+        const data = await res.json();
+        setComments(data.comments ?? []);
+      } else if (tab === "sentiment") {
+        const res = await fetch(`/api/sentiment?symbol=${symbol}&assetType=${assetType}`);
+        const data = await res.json();
+        setSentiment(data.sentiment ?? null);
+      } else if (tab === "ai") {
+        setAiLoading(true);
+        setAiAnalysis(null);
+        setAiAvailable(null);
+        setAiMessage(null);
+        try {
+          const res = await fetch(
+            `/api/ai/analyze?symbol=${symbol}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
+          );
+          const data = await res.json();
+          setAiAvailable(data.available !== false);
+          setAiAnalysis(data.analysis ?? null);
+          setAiMessage(data.message ?? data.error ?? null);
+          setAiDisclaimer(data.disclaimer ?? null);
+          setAiCached(Boolean(data.cached));
+          if (data.degraded) setDegraded(true);
+          if (!res.ok && data.available !== false) setDegraded(true);
+        } finally {
+          setAiLoading(false);
+        }
       }
+    } finally {
+      setTabLoading(false);
     }
   }, [tab, symbol, assetType, locale]);
 
@@ -282,7 +323,10 @@ export default function SymbolPage() {
     setEarningsUpcoming([]);
     setEarningsRecent([]);
     setEarningsMetrics([]);
+    setCompany(null);
+    setOfficers([]);
     earningsLoadedRef.current = false;
+    setTab("news");
   }, [symbol, assetType]);
 
   useEffect(() => {
@@ -324,18 +368,28 @@ export default function SymbolPage() {
     };
   }, [session, symbol, assetType]);
 
-  const tabs = useMemo(
-    () =>
-      [
-        { id: "news" as const, label: t("news") },
-        { id: "earnings" as const, label: t("earnings") },
-        { id: "press" as const, label: t("press") },
-        { id: "comments" as const, label: t("comments") },
-        { id: "sentiment" as const, label: t("sentiment") },
-        { id: "ai" as const, label: t("ai") },
-      ] as const,
-    [t],
-  );
+  const tabs = useMemo(() => {
+    const all: { id: Tab; label: string }[] = [
+      { id: "news", label: t("news") },
+      { id: "earnings", label: t("earnings") },
+      { id: "press", label: t("press") },
+      { id: "profile", label: t("profile") },
+      { id: "officers", label: t("officers") },
+      { id: "comments", label: t("comments") },
+      { id: "sentiment", label: t("sentiment") },
+      { id: "ai", label: t("ai") },
+    ];
+    if (assetType === "crypto") {
+      return all.filter(
+        (x) =>
+          x.id !== "earnings" &&
+          x.id !== "press" &&
+          x.id !== "profile" &&
+          x.id !== "officers",
+      );
+    }
+    return all;
+  }, [t, assetType]);
 
   async function postComment(e: FormEvent) {
     e.preventDefault();
@@ -590,6 +644,12 @@ export default function SymbolPage() {
           )}
 
           <div className="qt-panel p-4">
+            {tabLoading ? (
+              <div className="flex h-40 items-center justify-center text-sm text-[var(--muted)]">
+                {tCommon("loading")}
+              </div>
+            ) : (
+              <>
             {tab === "news" && (
               <ul className="space-y-3">
                 {news.length === 0 && (
@@ -672,6 +732,10 @@ export default function SymbolPage() {
                 )}
               </ul>
             )}
+
+            {tab === "profile" && <CompanyProfilePanel profile={company} />}
+
+            {tab === "officers" && <OfficersPanel officers={officers} />}
 
             {tab === "comments" && (
               <div className="space-y-3">
@@ -797,6 +861,8 @@ export default function SymbolPage() {
                 degraded={degraded}
                 loading={aiLoading}
               />
+            )}
+              </>
             )}
           </div>
         </div>
