@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
@@ -24,7 +24,7 @@ import { TradePanel } from "@/components/trading/trade-panel";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, CandleResolution, OhlcvBar, Quote } from "@/lib/types";
 import { parseAssetType } from "@/lib/types";
-import type { IndicatorBundle } from "@/lib/indicators";
+import { computeIndicators, type IndicatorBundle } from "@/lib/indicators";
 
 type Tab = "news" | "earnings" | "press" | "comments" | "sentiment" | "ai";
 
@@ -78,6 +78,9 @@ export default function SymbolPage() {
   const [aiCached, setAiCached] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [loadingChart, setLoadingChart] = useState(true);
+  const [loadingMoreCandles, setLoadingMoreCandles] = useState(false);
+  const [hasMoreCandles, setHasMoreCandles] = useState(true);
+  const loadMoreLock = useRef(false);
   const [alertPrice, setAlertPrice] = useState("");
   const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
@@ -102,20 +105,70 @@ export default function SymbolPage() {
 
   const loadCandles = useCallback(async () => {
     setLoadingChart(true);
+    setHasMoreCandles(true);
+    loadMoreLock.current = false;
     try {
       const res = await fetch(
         `/api/candles?symbol=${symbol}&assetType=${assetType}&resolution=${resolution}`,
       );
       const data = await res.json();
       if (res.ok) {
-        setBars(data.bars ?? []);
+        const next = (data.bars ?? []) as OhlcvBar[];
+        setBars(next);
         setIndicators(data.indicators);
+        setHasMoreCandles(next.length > 0);
       }
     } finally {
       setLoadingChart(false);
     }
   }, [symbol, assetType, resolution]);
 
+  const loadMoreCandles = useCallback(
+    async (earliestTime: number): Promise<OhlcvBar[]> => {
+      if (loadMoreLock.current || !hasMoreCandles || !earliestTime) return [];
+      loadMoreLock.current = true;
+      setLoadingMoreCandles(true);
+      try {
+        const chunkDays =
+          resolution === "D" ? 280 : resolution === "Q" ? 1200 : 2500;
+        const to = earliestTime - 86400;
+        const from = to - chunkDays * 86400;
+        if (to <= 0 || from >= to) {
+          setHasMoreCandles(false);
+          return [];
+        }
+        const res = await fetch(
+          `/api/candles?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&resolution=${resolution}&from=${from}&to=${to}&indicators=0`,
+        );
+        const data = await res.json();
+        if (!res.ok) {
+          setHasMoreCandles(false);
+          return [];
+        }
+        const older = (data.bars ?? []) as OhlcvBar[];
+        if (!older.length) {
+          setHasMoreCandles(false);
+          return [];
+        }
+        setBars((prev) => {
+          const byTime = new Map<number, OhlcvBar>();
+          for (const b of older) byTime.set(b.time, b);
+          for (const b of prev) byTime.set(b.time, b);
+          const merged = [...byTime.values()].sort((a, b) => a.time - b.time);
+          setIndicators(computeIndicators(merged));
+          if (older.length < 5) setHasMoreCandles(false);
+          return merged;
+        });
+        return older;
+      } finally {
+        setLoadingMoreCandles(false);
+        setTimeout(() => {
+          loadMoreLock.current = false;
+        }, 400);
+      }
+    },
+    [symbol, assetType, resolution, hasMoreCandles],
+  );
   const loadTab = useCallback(async () => {
     setDegraded(false);
     if (tab === "news") {
@@ -424,7 +477,16 @@ export default function SymbolPage() {
               {tCommon("loading")}
             </div>
           ) : (
-            <CandleChart bars={bars} indicators={indicators} flags={flags} />
+            <CandleChart
+              bars={bars}
+              flags={flags}
+              resetKey={`${assetType}:${symbol}:${resolution}`}
+              resolution={resolution}
+              symbol={symbol}
+              onLoadMore={loadMoreCandles}
+              loadingMore={loadingMoreCandles}
+              hasMore={hasMoreCandles}
+            />
           )}
         </div>
 

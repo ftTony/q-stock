@@ -19,7 +19,7 @@ A Web & H5 market terminal for **US stocks**, **HK stocks**, and **crypto**: mul
 | AI analysis | Vercel AI SDK + DeepSeek; news + earnings + quote → bullish / neutral / bearish (~30 min cache) |
 | UX | zh-CN / zh-TW / en, light/dark theme, CN or US up/down colors |
 
-Stack: Next.js 15 · TypeScript · Tailwind · lightweight-charts · Auth.js · Prisma · PostgreSQL · Docker.
+Stack: Next.js 15 · TypeScript · Tailwind · KLineChart · Auth.js · Prisma · PostgreSQL · Docker.
 
 ## Requirements
 

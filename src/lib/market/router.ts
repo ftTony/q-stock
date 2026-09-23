@@ -1,3 +1,4 @@
+import { binanceProvider } from "@/lib/market/providers/binance";
 import { finnhubProvider } from "@/lib/market/providers/finnhub";
 import { futuProvider } from "@/lib/market/providers/futu";
 import { longbridgeProvider } from "@/lib/market/providers/longbridge";
@@ -12,9 +13,18 @@ const REGISTRY: Record<MarketProviderId, MarketDataProvider> = {
   longbridge: longbridgeProvider,
   futu: futuProvider,
   finnhub: finnhubProvider,
+  binance: binanceProvider,
 };
 
-const DEFAULT_ORDER: MarketProviderId[] = ["longbridge", "futu", "finnhub"];
+/** Equity preference. Crypto prefers Binance public klines (no key). */
+const DEFAULT_ORDER: MarketProviderId[] = [
+  "longbridge",
+  "futu",
+  "finnhub",
+  "binance",
+];
+
+const CRYPTO_ORDER: MarketProviderId[] = ["binance", "finnhub", "longbridge"];
 
 export function getProviderPriority(): MarketProviderId[] {
   const raw = process.env.MARKET_DATA_PROVIDERS?.trim();
@@ -24,7 +34,6 @@ export function getProviderPriority(): MarketProviderId[] {
       .map((s) => s.trim().toLowerCase())
       .filter((s): s is MarketProviderId => s in REGISTRY);
   }
-  // Auto-detect: configured providers in default preference order
   return DEFAULT_ORDER.filter((id) => REGISTRY[id].isConfigured());
 }
 
@@ -41,18 +50,24 @@ export function getActiveProviders(): {
 export function listProvidersFor(
   assetType: AssetType,
 ): MarketDataProvider[] {
-  const order = getProviderPriority();
-  const configured = order
+  const raw = process.env.MARKET_DATA_PROVIDERS?.trim();
+  const preferred = assetType === "crypto" && !raw ? CRYPTO_ORDER : getProviderPriority();
+
+  const configured = preferred
     .map((id) => REGISTRY[id])
     .filter((p) => p.isConfigured());
 
-  // If nothing configured via auto-detect empty list, try all that have creds
   const pool =
     configured.length > 0
       ? configured
       : DEFAULT_ORDER.map((id) => REGISTRY[id]).filter((p) =>
           p.isConfigured(),
         );
+
+  // For crypto, always ensure Binance is tried if not already in the list
+  if (assetType === "crypto" && !pool.some((p) => p.id === "binance")) {
+    pool.push(binanceProvider);
+  }
 
   return pool.filter((p) => p.supports?.(assetType) !== false);
 }
@@ -65,7 +80,7 @@ export async function withProviderFailover<T>(
   const providers = listProvidersFor(assetType);
   if (!providers.length) {
     throw new MarketDataError(
-      "No market data providers configured. Set LONGBRIDGE_*, FUTU_OPEND_HOST, or FINNHUB_API_KEY.",
+      "No market data providers configured. Set LONGBRIDGE_*, FUTU_*, FINNHUB_API_KEY, or use Binance for crypto.",
     );
   }
 

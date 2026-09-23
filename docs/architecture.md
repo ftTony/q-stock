@@ -58,7 +58,7 @@ src/
   components/
     layout/            # AppShell / TopBar
     market/            # 行情表、sparkline
-    charts/            # lightweight-charts
+    charts/            # KLineChart
     providers/         # Session / Theme / 涨跌色
   lib/
     market/            # 多行情源 facade + longbridge/futu/finnhub providers
@@ -115,7 +115,7 @@ docs/                  # 项目文档
 - 日 K：Finnhub `D`
 - 季 / 年：月 K 或日 K → `aggregateCandles`
 - 指标：服务端 `computeIndicators`，随 candles 响应返回
-- 图表：客户端 lightweight-charts v5 `addSeries(...)`
+- 图表：客户端 KLineChart（`klinecharts`）+ 内置指标与画线 Overlay
 
 ### 6.3 情绪
 

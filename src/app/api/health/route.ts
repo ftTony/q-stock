@@ -28,6 +28,7 @@ export async function GET() {
       ),
       adanos: Boolean(process.env.ADANOS_API_KEY),
       deepseek: Boolean(process.env.DEEPSEEK_API_KEY),
+      binance: true,
     });
   } catch {
     return NextResponse.json({ ok: false, db: false }, { status: 503 });

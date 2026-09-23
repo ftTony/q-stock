@@ -17,7 +17,7 @@
 |---|---|
 | 框架 | Next.js 15（App Router）+ TypeScript |
 | UI | Tailwind CSS + 深色终端风格主题 |
-| 图表 | TradingView lightweight-charts |
+| 图表 | KLineChart（含画线工具） |
 | 国际化 | next-intl（简体中文 / 繁体中文 / English） |
 | 主题 | next-themes（亮 / 暗 / 跟随系统）+ 涨跌色方案 |
 | 数据库 | PostgreSQL + Prisma |

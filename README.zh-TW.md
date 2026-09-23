@@ -19,7 +19,7 @@
 | AI 分析 | Vercel AI SDK + DeepSeek；結合新聞 / 財報 / 報價輸出看多·中性·看空（約 30 分鐘快取） |
 | 體驗 | 簡/繁/英、亮暗主題、紅漲綠跌 / 綠漲紅跌 |
 
-技術棧：Next.js 15 · TypeScript · Tailwind · lightweight-charts · Auth.js · Prisma · PostgreSQL · Docker。
+技術棧：Next.js 15 · TypeScript · Tailwind · KLineChart · Auth.js · Prisma · PostgreSQL · Docker。
 
 ## 環境需求
 

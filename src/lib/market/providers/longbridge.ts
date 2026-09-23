@@ -53,7 +53,8 @@ export const longbridgeProvider: MarketDataProvider = {
   },
 
   supports(assetType) {
-    return assetType === "stock" || assetType === "hk" || assetType === "crypto";
+    // Crypto quotes/candles go through Binance / Finnhub
+    return assetType === "stock" || assetType === "hk";
   },
 
   async getQuote(symbol, assetType) {
@@ -165,7 +166,7 @@ export const longbridgeProvider: MarketDataProvider = {
         0, // AdjustType.NoAdjust
         0, // TradeSessions.Intraday
       );
-      return sticks
+      const bars = sticks
         .map((c) => ({
           time: Math.floor(c.timestamp.getTime() / 1000),
           open: dec(c.open),
@@ -176,6 +177,14 @@ export const longbridgeProvider: MarketDataProvider = {
         }))
         .filter((b) => b.time >= from && b.time <= to)
         .sort((a, b) => a.time - b.time) as OhlcvBar[];
+      // Latest-N API cannot serve older windows — failover to Futu/Finnhub
+      if (!bars.length && daySpan > 10) {
+        throw new MarketDataError(
+          "Longbridge has no daily candles in requested window",
+          "longbridge",
+        );
+      }
+      return bars;
     });
   },
 
@@ -198,7 +207,7 @@ export const longbridgeProvider: MarketDataProvider = {
         0, // AdjustType.NoAdjust
         0, // TradeSessions.Intraday
       );
-      return sticks
+      const bars = sticks
         .map((c) => ({
           time: Math.floor(c.timestamp.getTime() / 1000),
           open: dec(c.open),
@@ -209,6 +218,13 @@ export const longbridgeProvider: MarketDataProvider = {
         }))
         .filter((b) => b.time >= from && b.time <= to)
         .sort((a, b) => a.time - b.time) as OhlcvBar[];
+      if (!bars.length && monthSpan > 2) {
+        throw new MarketDataError(
+          "Longbridge has no monthly candles in requested window",
+          "longbridge",
+        );
+      }
+      return bars;
     });
   },
 

@@ -339,7 +339,7 @@ async function fetchKlines(
         end: toDateYmd(to),
         ktype,
         autype: 0,
-        num: 370,
+        num: 1000,
       },
     });
     return (data.kline_list ?? [])

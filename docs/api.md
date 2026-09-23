@@ -22,8 +22,8 @@ Base URL：同源，例如 `http://localhost:3000`。
 ```json
 {
   "ok": true,
-  "providers": { "longbridge": true, "futu": false, "finnhub": true },
-  "providerPriority": ["longbridge", "finnhub"],
+  "providers": { "longbridge": true, "futu": false, "finnhub": true, "binance": true },
+  "providerPriority": ["longbridge", "finnhub", "binance"],
   "brokers": [
     { "id": "longbridge", "configured": true, "ready": false },
     { "id": "futu", "configured": false, "ready": false }
@@ -31,12 +31,13 @@ Base URL：同源，例如 `http://localhost:3000`。
   "finnhub": true,
   "longbridge": true,
   "futu": false,
-      "adanos": false,
-      "deepseek": true
-    }
+  "adanos": false,
+  "deepseek": true,
+  "binance": true
+}
 ```
 
-`ok: false` 通常表示数据库不可用。报价/K 线经 `@/lib/market` 按 `providerPriority` 回退。
+`ok: false` 通常表示数据库不可用。报价/K 线经 `@/lib/market` 按资产类型选择源并回退（加密优先 Binance 公共行情）。
 
 ---
 
@@ -127,7 +128,10 @@ Auth.js 内置路由（Credentials 登录 / Session / CSRF 等）。前端使用
 | `symbol` | 必填 |
 | `assetType` | 默认 `stock` |
 | `resolution` | `D` / `Q` / `Y`，默认 `D` |
+| `from` / `to` | 可选 Unix 秒；用于拖动图表时分页拉取更早历史 |
 | `indicators` | 传 `0` 可关闭指标计算 |
+
+默认窗口：日 K 约 1.5 年；未传 `from`/`to` 时按周期回退。左滑加载更早数据时前端传入更早的 `from`/`to` 并合并。
 
 **响应**
 
@@ -135,7 +139,10 @@ Auth.js 内置路由（Credentials 登录 / Session / CSRF 等）。前端使用
 {
   "bars": [{ "time": 0, "open": 0, "high": 0, "low": 0, "close": 0, "volume": 0 }],
   "indicators": { "ma7": [], "ema12": [], "boll": {}, "rsi": [], "macd": {} },
-  "resolution": "D"
+  "resolution": "D",
+  "from": 0,
+  "to": 0,
+  "hasMore": true
 }
 ```
 

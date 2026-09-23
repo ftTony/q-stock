@@ -63,7 +63,7 @@ npm run worker
 
 - 指标：`src/lib/indicators/index.ts`
 - 季年聚合：`src/lib/candles/aggregate.ts`
-- 图表渲染：`src/components/charts/candle-chart.tsx`（lightweight-charts v5 使用 `addSeries`）
+- 图表渲染：`src/components/charts/candle-chart.tsx`（KLineChart，支持画线 Overlay）
 
 ### 3.6 改主题视觉
 

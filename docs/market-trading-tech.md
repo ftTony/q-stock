@@ -17,7 +17,7 @@
 
 ### 1.1 已实现
 
-- 多行情源统一接入：**长桥 → 富途 → Finnhub**（可 env 调整优先级）
+- 多行情源统一接入：**长桥 → 富途 → Finnhub**（股票/港股；可 env 调整）；加密默认 **Binance 公共 API → Finnhub**
 - 单源失败自动回退到下一源
 - 资讯（新闻 / 财报 / 公告）仍走 **Finnhub**
 - **模拟交易**（仅做多）：市价 / 限价 / 止损；个股右侧面板 + Portfolio 账户视图
@@ -84,7 +84,7 @@ interface MarketDataProvider {
 }
 ```
 
-- `supports`：例如富途 / 长桥侧重股票，加密可跳过并交给 Finnhub
+- `supports`：例如富途 / 长桥侧重股票；加密优先 Binance 公共行情（无需 Key）
 - `QuoteWithSource` 在标准 `Quote` 上增加可选 `source`，便于排查当前命中哪一路
 
 ### 3.2 路由与回退
@@ -121,6 +121,7 @@ interface MarketDataProvider {
 | Longbridge | `AAPL.US` | `00700.HK` | `BTC.US` |
 | Futu | `US.AAPL` | `HK.00700` | 不支持 |
 | Finnhub | `AAPL` | `700.HK` | `BINANCE:BTCUSDT` |
+| Binance | — | — | `BTCUSDT`（公共 kline，无需 Key） |
 
 实现：[`src/lib/market/symbols.ts`](../src/lib/market/symbols.ts)、[`src/lib/types.ts`](../src/lib/types.ts)（`normalizeSymbol` / `toFinnhubSymbol`）
 
@@ -290,7 +291,7 @@ FINNHUB_API_KEY=
 ## 8. 已知限制
 
 1. 富途 / 长桥搜索能力弱时，搜索可能回退到 Finnhub 或仅返回「精确 ticker」提示
-2. 加密行情以 Finnhub 为主；券商源对 crypto 会 `supports=false` 或主动失败以触发回退
+2. 加密行情默认走 **Binance 公共 kline/ticker**（无需 Key）；Finnhub 作为回退；券商源对 crypto 会 `supports=false`
 3. 模拟挂单依赖 Worker 轮询间隔（默认约 45s），非交易所级实时撮合
 4. 富途 AppKey 模式需妥善保管私钥，勿提交仓库
 

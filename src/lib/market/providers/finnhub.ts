@@ -165,7 +165,14 @@ export const finnhubProvider: MarketDataProvider = {
         from,
         to,
       });
-      return mapCandles(raw);
+      const bars = mapCandles(raw);
+      if (!bars.length) {
+        throw new MarketDataError(
+          `Finnhub returned no daily candles for ${fh}`,
+          "finnhub",
+        );
+      }
+      return bars;
     });
   },
 

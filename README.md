@@ -9,8 +9,8 @@
 | 模块 | 说明 |
 |---|---|
 | 行情浏览 | 美股 / 港股 / 加密热门列表、搜索、涨跌榜、静默刷新 |
-| 多源行情 | **长桥 → 富途 OpenAPI → Finnhub** 可配置优先级，失败自动回退 |
-| 个股详情 | 日/季/年 K、MA / EMA / BOLL / RSI / MACD、开高低昨收 |
+| 多源行情 | **长桥 → 富途 OpenAPI → Finnhub**（股票/港股）；加密默认 **Binance 公共行情**（无需 Key） |
+| 个股详情 | 日/季/年 K（KLineChart）、画线工具、MA / EMA / BOLL / RSI / MACD、开高低昨收 |
 | 资讯 | 新闻、财报（惊喜/日历/财务指标）、公告；加密无财报时友好提示 |
 | 模拟交易 | 仅做多；市价 / 限价 / 止损；个股右侧下单；Portfolio 资金/持仓/挂单 |
 | 自选 & 资产 | 自选 CRUD、sparkline、资产概览 KPI |
@@ -19,7 +19,7 @@
 | AI 分析 | Vercel AI SDK + DeepSeek；结合新闻 / 财报 / 报价输出看多·中性·看空（约 30 分钟缓存） |
 | 体验 | 简/繁/英、亮暗主题、红涨绿跌 / 绿涨红跌 |
 
-技术栈：Next.js 15 · TypeScript · Tailwind · lightweight-charts · Auth.js · Prisma · PostgreSQL · Docker。
+技术栈：Next.js 15 · TypeScript · Tailwind · KLineChart · Auth.js · Prisma · PostgreSQL · Docker。
 
 ## 环境要求
 

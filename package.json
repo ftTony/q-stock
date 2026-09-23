@@ -21,7 +21,7 @@
     "ai": "^7.0.111",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.4.0",
-    "lightweight-charts": "^5.2.1",
+    "klinecharts": "^10.0.3",
     "longbridge": "^5.1.0",
     "next": "15.5.25",
     "next-auth": "^5.0.0-beta.32",

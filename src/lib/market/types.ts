@@ -1,6 +1,6 @@
 import type { AssetType, OhlcvBar, Quote, SearchResult } from "@/lib/types";
 
-export type MarketProviderId = "longbridge" | "futu" | "finnhub";
+export type MarketProviderId = "longbridge" | "futu" | "finnhub" | "binance";
 
 export type QuoteWithSource = Quote & { source?: MarketProviderId };
 
