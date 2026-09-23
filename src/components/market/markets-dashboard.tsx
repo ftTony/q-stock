@@ -113,6 +113,7 @@ export default function MarketsDashboard() {
       if (!silent) {
         setLoading(true);
         setError(null);
+        setQuotes([]);
       }
       try {
         const [qr, sr, nr, ar] = await Promise.all([
@@ -374,6 +375,41 @@ export default function MarketsDashboard() {
                 </tr>
               </thead>
               <tbody>
+                {loading && list.length === 0 && (
+                  <>
+                    {Array.from({ length: 8 }).map((_, i) => (
+                      <tr
+                        key={`sk-${i}`}
+                        className="border-b border-[var(--border)]/70 last:border-0"
+                      >
+                        <td className="px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <span className="h-9 w-9 animate-pulse rounded-lg bg-[var(--surface-2)]" />
+                            <span className="space-y-1.5">
+                              <span className="block h-3.5 w-14 animate-pulse rounded bg-[var(--surface-2)]" />
+                              <span className="block h-3 w-24 animate-pulse rounded bg-[var(--surface-2)]" />
+                            </span>
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-block h-4 w-16 animate-pulse rounded bg-[var(--surface-2)]" />
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-block h-4 w-14 animate-pulse rounded bg-[var(--surface-2)]" />
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-block h-4 w-24 animate-pulse rounded bg-[var(--surface-2)]" />
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-block h-8 w-20 animate-pulse rounded bg-[var(--surface-2)]" />
+                        </td>
+                        <td className="px-4 py-3">
+                          <span className="inline-block h-4 w-28 animate-pulse rounded bg-[var(--surface-2)]" />
+                        </td>
+                      </tr>
+                    ))}
+                  </>
+                )}
                 {list.map((item) => {
                   const up = item.percentChange >= 0;
                   const range =
@@ -383,7 +419,9 @@ export default function MarketsDashboard() {
                   return (
                     <tr
                       key={item.symbol}
-                      className="border-b border-[var(--border)]/70 last:border-0 hover:bg-[var(--sidebar-hover)]/60"
+                      className={`border-b border-[var(--border)]/70 last:border-0 hover:bg-[var(--sidebar-hover)]/60 ${
+                        loading ? "opacity-60" : ""
+                      }`}
                     >
                       <td className="px-4 py-3">
                         <Link

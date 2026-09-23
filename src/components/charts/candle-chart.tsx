@@ -246,31 +246,36 @@ export function CandleChart({
 
       chart.setDataLoader({
         getBars: async ({ type, timestamp, callback }) => {
-          if (type === "init" || type === "forward" || type === "update") {
+          // KLineChart v10: forward = older (left), backward = newer (right)
+          if (type === "init" || type === "update") {
             const list = toKLineData(barsRef.current);
             callback(list, {
-              backward: hasMoreRef.current && list.length > 0,
-              forward: false,
+              forward: hasMoreRef.current && list.length > 0,
+              backward: false,
             });
             return;
           }
-          if (type === "backward") {
+          if (type === "forward") {
             const oldestSec = timestamp
               ? Math.floor(timestamp / 1000)
               : barsRef.current[0]?.time;
             if (!oldestSec || !onLoadMoreRef.current) {
-              callback([], { backward: false });
+              callback([], { forward: false });
               return;
             }
             try {
               const older = await onLoadMoreRef.current(oldestSec);
               const chunk = Array.isArray(older) ? older : [];
               callback(toKLineData(chunk), {
-                backward: chunk.length > 0 && hasMoreRef.current,
+                forward: chunk.length > 0 && hasMoreRef.current,
               });
             } catch {
-              callback([], { backward: false });
+              callback([], { forward: false });
             }
+            return;
+          }
+          if (type === "backward") {
+            callback([], { backward: false });
             return;
           }
           callback([]);

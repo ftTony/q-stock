@@ -72,11 +72,11 @@ export function QuoteStatsPanel({
   const showFund = metrics.length > 0;
 
   return (
-    <div className="w-full max-w-md rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 p-3">
+    <div className="qt-panel w-full p-3 sm:p-4">
       <div className="mb-2 text-[11px] font-semibold tracking-wide text-[var(--muted)] uppercase">
         {t("quotePanel")}
       </div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 sm:grid-cols-3">
+      <div className="grid grid-cols-2 gap-x-3 gap-y-2.5">
         <StatCell label={t("open")}>{fmt(quote.open)}</StatCell>
         <StatCell label={t("high")}>{fmt(quote.high)}</StatCell>
         <StatCell label={t("low")}>{fmt(quote.low)}</StatCell>

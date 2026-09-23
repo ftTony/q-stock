@@ -397,53 +397,50 @@ export default function SymbolPage() {
 
   return (
     <div className="space-y-4 animate-[qtFade_0.45s_ease]">
-      <div className="qt-panel flex flex-wrap items-start justify-between gap-3 p-4 sm:p-5">
-        <div>
+      <div className="qt-panel flex flex-wrap items-center justify-between gap-3 p-4 sm:px-5 sm:py-4">
+        <div className="min-w-0">
           <div className="text-xs text-[var(--muted)]">
             <Link href="/" className="hover:text-[var(--brand-text)]">
               ← Markets
             </Link>
           </div>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-            {symbol}{" "}
-            <span className="text-sm font-normal text-[var(--muted)]">
-              {displayName(symbol, assetType)}
-            </span>
-          </h1>
-          {quote && (
-            <div className="mt-1 flex flex-wrap items-baseline gap-3">
-              <span className="text-3xl font-semibold">
-                <PriceText value={quote.price} change={quote.change} />
+          <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+            <h1 className="text-2xl font-semibold tracking-tight">
+              {symbol}{" "}
+              <span className="text-sm font-normal text-[var(--muted)]">
+                {displayName(symbol, assetType)}
               </span>
-              <ChangePct value={quote.percentChange} />
-              {updatedAt && (
-                <span className="text-xs text-[var(--muted)]">
-                  {updatedAt.toLocaleTimeString()}
+            </h1>
+            {quote && (
+              <>
+                <span className="text-2xl font-semibold sm:text-3xl">
+                  <PriceText value={quote.price} change={quote.change} />
                 </span>
-              )}
-            </div>
-          )}
-        </div>
-        {quote && (
-          <div className="flex flex-col items-end gap-3">
-            <QuoteStatsPanel quote={quote} metrics={earningsMetrics} />
-            <button
-              type="button"
-              disabled={watchBusy}
-              onClick={() => void toggleWatchlist()}
-              className={`qt-btn px-3 py-1.5 text-xs ${
-                inWatchlist
-                  ? "qt-btn-ghost text-[var(--brand-text)]"
-                  : "qt-btn-primary"
-              }`}
-            >
-              {inWatchlist ? t("inWatchlist") : t("addWatchlist")}
-            </button>
+                <ChangePct value={quote.percentChange} />
+                {updatedAt && (
+                  <span className="text-xs text-[var(--muted)]">
+                    {updatedAt.toLocaleTimeString()}
+                  </span>
+                )}
+              </>
+            )}
           </div>
-        )}
+        </div>
+        <button
+          type="button"
+          disabled={watchBusy}
+          onClick={() => void toggleWatchlist()}
+          className={`qt-btn shrink-0 px-3 py-1.5 text-xs ${
+            inWatchlist
+              ? "qt-btn-ghost text-[var(--brand-text)]"
+              : "qt-btn-primary"
+          }`}
+        >
+          {inWatchlist ? t("inWatchlist") : t("addWatchlist")}
+        </button>
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_340px] lg:items-start">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
         <div className="space-y-4 min-w-0 lg:col-start-1">
           <div className="flex flex-wrap gap-2">
             {(
@@ -512,7 +509,10 @@ export default function SymbolPage() {
           )}
         </div>
 
-        <aside className="lg:col-start-2 lg:row-span-2 lg:sticky lg:top-20">
+        <aside className="flex flex-col gap-3 lg:col-start-2 lg:row-span-2 lg:sticky lg:top-20">
+          {quote && (
+            <QuoteStatsPanel quote={quote} metrics={earningsMetrics} />
+          )}
           <TradePanel
             symbol={symbol}
             assetType={assetType}
@@ -523,13 +523,13 @@ export default function SymbolPage() {
         <div className="space-y-4 min-w-0 lg:col-start-1">
           <form
             onSubmit={createAlert}
-            className="qt-panel flex flex-wrap items-end gap-2 p-4"
+            className="qt-panel flex flex-wrap items-center gap-2 p-4"
           >
-            <div className="text-sm font-medium">{t("setAlert")}</div>
+            <div className="text-sm font-medium leading-none">{t("setAlert")}</div>
             <select
               value={alertCondition}
               onChange={(e) => setAlertCondition(e.target.value as "gte" | "lte")}
-              className="qt-input px-2 py-1.5 text-sm"
+              className="qt-input h-9 px-2 text-sm"
             >
               <option value="gte">{tAlerts("gte")}</option>
               <option value="lte">{tAlerts("lte")}</option>
@@ -541,11 +541,11 @@ export default function SymbolPage() {
               value={alertPrice}
               onChange={(e) => setAlertPrice(e.target.value)}
               placeholder={tAlerts("triggerPrice")}
-              className="qt-input w-32 px-2 py-1.5 text-sm"
+              className="qt-input h-9 w-32 px-2 text-sm"
             />
             <button
               type="submit"
-              className="qt-btn qt-btn-primary px-3 py-1.5 text-sm"
+              className="qt-btn qt-btn-primary h-9 px-3 text-sm"
             >
               {tAlerts("create")}
             </button>

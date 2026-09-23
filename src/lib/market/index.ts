@@ -1,4 +1,8 @@
-import { listProvidersFor, withProviderFailover } from "@/lib/market/router";
+import {
+  listProvidersFor,
+  listProvidersForCandles,
+  withProviderFailover,
+} from "@/lib/market/router";
 import type { QuoteWithSource } from "@/lib/market/types";
 import type { AssetType, OhlcvBar, SearchResult } from "@/lib/types";
 
@@ -6,6 +10,7 @@ export {
   getActiveProviders,
   getProviderPriority,
   listProvidersFor,
+  listProvidersForCandles,
 } from "@/lib/market/router";
 export type { MarketProviderId, QuoteWithSource } from "@/lib/market/types";
 export { MarketDataError } from "@/lib/market/types";
@@ -80,6 +85,7 @@ export async function getDailyCandles(
     assetType,
     (p) => p.getDailyCandles(symbol, assetType, from, to),
     `daily ${symbol}`,
+    listProvidersForCandles(assetType),
   );
 }
 
@@ -93,6 +99,7 @@ export async function getMonthlyCandles(
     assetType,
     (p) => p.getMonthlyCandles(symbol, assetType, from, to),
     `monthly ${symbol}`,
+    listProvidersForCandles(assetType),
   );
 }
 

@@ -77,22 +77,20 @@ export async function GET(req: Request) {
     });
   } catch (err) {
     console.error("candles", err);
-    if (
-      err instanceof MarketDataError &&
-      err.message.includes("HTTP 403")
-    ) {
+    const msg = err instanceof Error ? err.message : "Failed to fetch candles";
+    if (err instanceof MarketDataError && /HTTP 403/.test(msg)) {
+      const hasLb = /longbridge:/i.test(msg);
       return NextResponse.json(
         {
-          error:
-            "Finnhub 当前 API 套餐没有 K 线权限，请升级套餐或配置支持 K 线的数据源",
+          error: hasLb
+            ? "K 线拉取失败（Finnhub 无权限）。请确认 LONGBRIDGE_* 已配置且有行情权限，或检查富途配置"
+            : "Finnhub 当前套餐无 K 线权限。请配置 LONGBRIDGE_*（优先）或 FUTU_*，或升级 Finnhub 套餐",
           code: "CANDLE_ACCESS_DENIED",
+          detail: msg,
         },
         { status: 503 },
       );
     }
-    return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to fetch candles" },
-      { status: 502 },
-    );
+    return NextResponse.json({ error: msg }, { status: 502 });
   }
 }

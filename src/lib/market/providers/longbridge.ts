@@ -45,6 +45,88 @@ function dec(v: { toNumber(): number } | null | undefined): number {
   }
 }
 
+function unixToNaiveDate(
+  lb: LbModule,
+  unixSec: number,
+): InstanceType<LbModule["NaiveDate"]> {
+  const d = new Date(unixSec * 1000);
+  return new lb.NaiveDate(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate());
+}
+
+function mapLbCandles(
+  sticks: {
+    timestamp: { getTime(): number };
+    open: { toNumber(): number } | null;
+    high: { toNumber(): number } | null;
+    low: { toNumber(): number } | null;
+    close: { toNumber(): number } | null;
+    volume?: number | null;
+  }[],
+  from: number,
+  to: number,
+): OhlcvBar[] {
+  return sticks
+    .map((c) => ({
+      time: Math.floor(c.timestamp.getTime() / 1000),
+      open: dec(c.open),
+      high: dec(c.high),
+      low: dec(c.low),
+      close: dec(c.close),
+      volume: c.volume ?? 0,
+    }))
+    .filter((b) => b.time >= from && b.time <= to)
+    .sort((a, b) => a.time - b.time);
+}
+
+async function fetchLbHistoryBars(
+  symbol: string,
+  assetType: AssetType,
+  from: number,
+  to: number,
+  period: number,
+): Promise<OhlcvBar[]> {
+  if (assetType === "crypto") {
+    throw new MarketDataError("Longbridge crypto candles unsupported", "longbridge");
+  }
+  const normalized = normalizeSymbol(symbol, assetType);
+  const lbSym = toLongbridgeSymbol(normalized, assetType);
+  const lb = await loadLb();
+  const ctx = await getCtx();
+  const start = unixToNaiveDate(lb, from);
+  const end = unixToNaiveDate(lb, to);
+
+  try {
+    const sticks = await ctx.historyCandlesticksByDate(
+      lbSym,
+      period,
+      0, // AdjustType.NoAdjust
+      start,
+      end,
+      0, // TradeSessions.Intraday
+    );
+    const bars = mapLbCandles(sticks, from, to);
+    if (bars.length) return bars;
+  } catch (err) {
+    console.warn(
+      "[longbridge] historyCandlesticksByDate failed, fallback to candlesticks:",
+      err instanceof Error ? err.message : err,
+    );
+  }
+
+  // Fallback: latest-N window (works near "now", not deep history)
+  const daySpan = Math.max(1, Math.ceil((to - from) / 86400));
+  const count = Math.min(1000, daySpan + 5);
+  const sticks = await ctx.candlesticks(lbSym, period, count, 0, 0);
+  const bars = mapLbCandles(sticks, from, to);
+  if (!bars.length) {
+    throw new MarketDataError(
+      `Longbridge has no candles for ${lbSym} in ${from}-${to}`,
+      "longbridge",
+    );
+  }
+  return bars;
+}
+
 export const longbridgeProvider: MarketDataProvider = {
   id: "longbridge",
 
@@ -195,84 +277,19 @@ export const longbridgeProvider: MarketDataProvider = {
   },
 
   async getDailyCandles(symbol, assetType, from, to) {
-    if (assetType === "crypto") {
-      throw new MarketDataError("Longbridge crypto candles unsupported", "longbridge");
-    }
     const normalized = normalizeSymbol(symbol, assetType);
-    const lbSym = toLongbridgeSymbol(normalized, assetType);
     const key = `lb:candle:D:${normalized}:${from}:${to}`;
-
-    return cachedFetch(key, 60_000, async () => {
-      const ctx = await getCtx();
-      const daySpan = Math.max(1, Math.ceil((to - from) / 86400));
-      const count = Math.min(1000, daySpan + 5);
-      const sticks = await ctx.candlesticks(
-        lbSym,
-        14, // Period.Day
-        count,
-        0, // AdjustType.NoAdjust
-        0, // TradeSessions.Intraday
-      );
-      const bars = sticks
-        .map((c) => ({
-          time: Math.floor(c.timestamp.getTime() / 1000),
-          open: dec(c.open),
-          high: dec(c.high),
-          low: dec(c.low),
-          close: dec(c.close),
-          volume: c.volume ?? 0,
-        }))
-        .filter((b) => b.time >= from && b.time <= to)
-        .sort((a, b) => a.time - b.time) as OhlcvBar[];
-      // Latest-N API cannot serve older windows — failover to Futu/Finnhub
-      if (!bars.length && daySpan > 10) {
-        throw new MarketDataError(
-          "Longbridge has no daily candles in requested window",
-          "longbridge",
-        );
-      }
-      return bars;
-    });
+    return cachedFetch(key, 60_000, () =>
+      fetchLbHistoryBars(symbol, assetType, from, to, 14),
+    );
   },
 
   async getMonthlyCandles(symbol, assetType, from, to) {
-    if (assetType === "crypto") {
-      throw new MarketDataError("Longbridge crypto candles unsupported", "longbridge");
-    }
     const normalized = normalizeSymbol(symbol, assetType);
-    const lbSym = toLongbridgeSymbol(normalized, assetType);
     const key = `lb:candle:M:${normalized}:${from}:${to}`;
-
-    return cachedFetch(key, 120_000, async () => {
-      const ctx = await getCtx();
-      const monthSpan = Math.max(1, Math.ceil((to - from) / (30 * 86400)));
-      const count = Math.min(500, monthSpan + 5);
-      const sticks = await ctx.candlesticks(
-        lbSym,
-        16, // Period.Month
-        count,
-        0, // AdjustType.NoAdjust
-        0, // TradeSessions.Intraday
-      );
-      const bars = sticks
-        .map((c) => ({
-          time: Math.floor(c.timestamp.getTime() / 1000),
-          open: dec(c.open),
-          high: dec(c.high),
-          low: dec(c.low),
-          close: dec(c.close),
-          volume: c.volume ?? 0,
-        }))
-        .filter((b) => b.time >= from && b.time <= to)
-        .sort((a, b) => a.time - b.time) as OhlcvBar[];
-      if (!bars.length && monthSpan > 2) {
-        throw new MarketDataError(
-          "Longbridge has no monthly candles in requested window",
-          "longbridge",
-        );
-      }
-      return bars;
-    });
+    return cachedFetch(key, 120_000, () =>
+      fetchLbHistoryBars(symbol, assetType, from, to, 16),
+    );
   },
 
   async searchSymbols(q, assetType): Promise<SearchResult[]> {

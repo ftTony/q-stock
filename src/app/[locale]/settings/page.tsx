@@ -89,7 +89,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="mx-auto max-w-lg space-y-4">
+    <div className="w-full space-y-4 animate-[qtFade_0.45s_ease]">
       <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
       {!loggedIn && (
         <p className="text-sm text-[var(--muted)]">
@@ -99,32 +99,34 @@ export default function SettingsPage() {
           </Link>
         </p>
       )}
-      <form onSubmit={onSave} className="qt-panel space-y-5 p-5 sm:p-6">
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("language")}</span>
-          <select
-            value={lang}
-            onChange={(e) => setLang(e.target.value as AppLocale)}
-            className="qt-input w-full px-3 py-2.5"
-          >
-            <option value="zh-CN">简体中文</option>
-            <option value="zh-TW">繁體中文</option>
-            <option value="en">English</option>
-          </select>
-        </label>
+      <form onSubmit={onSave} className="qt-panel w-full space-y-5 p-5 sm:p-6 lg:p-8">
+        <div className="grid gap-5 lg:grid-cols-2 lg:gap-8">
+          <label className="block space-y-1 text-sm">
+            <span className="text-[var(--muted)]">{t("language")}</span>
+            <select
+              value={lang}
+              onChange={(e) => setLang(e.target.value as AppLocale)}
+              className="qt-input w-full px-3 py-2.5"
+            >
+              <option value="zh-CN">简体中文</option>
+              <option value="zh-TW">繁體中文</option>
+              <option value="en">English</option>
+            </select>
+          </label>
 
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("theme")}</span>
-          <select
-            value={theme ?? "dark"}
-            onChange={(e) => setTheme(e.target.value)}
-            className="qt-input w-full px-3 py-2.5"
-          >
-            <option value="light">{t("themeLight")}</option>
-            <option value="dark">{t("themeDark")}</option>
-            <option value="system">{t("themeSystem")}</option>
-          </select>
-        </label>
+          <label className="block space-y-1 text-sm">
+            <span className="text-[var(--muted)]">{t("theme")}</span>
+            <select
+              value={theme ?? "dark"}
+              onChange={(e) => setTheme(e.target.value)}
+              className="qt-input w-full px-3 py-2.5"
+            >
+              <option value="light">{t("themeLight")}</option>
+              <option value="dark">{t("themeDark")}</option>
+              <option value="system">{t("themeSystem")}</option>
+            </select>
+          </label>
+        </div>
 
         <fieldset className="space-y-2">
           <legend className="text-sm text-[var(--muted)]">{t("changeColor")}</legend>
@@ -142,7 +144,7 @@ export default function SettingsPage() {
                   key={opt.id}
                   type="button"
                   onClick={() => setChangeColorScheme(opt.id)}
-                  className={`rounded-xl border p-3 text-left transition ${
+                  className={`rounded-xl border p-3 text-left transition sm:p-4 ${
                     selected
                       ? "border-[var(--brand)] bg-[var(--brand-soft)] ring-1 ring-[var(--brand)]"
                       : "border-[var(--border)] hover:bg-[var(--sidebar-hover)]"

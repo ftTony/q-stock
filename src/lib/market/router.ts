@@ -72,12 +72,33 @@ export function listProvidersFor(
   return pool.filter((p) => p.supports?.(assetType) !== false);
 }
 
+/**
+ * Candles: prefer Longbridge / Futu before Finnhub (free Finnhub often lacks candle ACL).
+ * Crypto still prefers Binance.
+ */
+export function listProvidersForCandles(
+  assetType: AssetType,
+): MarketDataProvider[] {
+  if (assetType === "crypto") {
+    return listProvidersFor(assetType);
+  }
+  const base = listProvidersFor(assetType);
+  const prefer: MarketProviderId[] = ["longbridge", "futu", "finnhub"];
+  const ranked = [...base].sort((a, b) => {
+    const ia = prefer.indexOf(a.id);
+    const ib = prefer.indexOf(b.id);
+    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+  });
+  return ranked;
+}
+
 export async function withProviderFailover<T>(
   assetType: AssetType,
   fn: (provider: MarketDataProvider) => Promise<T>,
   label: string,
+  providersOverride?: MarketDataProvider[],
 ): Promise<T> {
-  const providers = listProvidersFor(assetType);
+  const providers = providersOverride ?? listProvidersFor(assetType);
   if (!providers.length) {
     throw new MarketDataError(
       "No market data providers configured. Set LONGBRIDGE_*, FUTU_*, FINNHUB_API_KEY, or use Binance for crypto.",
