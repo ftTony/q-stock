@@ -236,7 +236,7 @@
   },
   "ai": {
     "loading": "正在結合新聞與財報生成分析…",
-    "unavailable": "AI 分析暫不可用，請配置 OPENAI_API_KEY",
+    "unavailable": "AI 分析暫不可用，請配置 DEEPSEEK_API_KEY",
     "bias": "趨勢判斷",
     "biasBullish": "看多",
     "biasNeutral": "中性",

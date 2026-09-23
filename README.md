@@ -16,7 +16,7 @@
 | 自选 & 资产 | 自选 CRUD、sparkline、资产概览 KPI |
 | 价格提醒 | 条件触发邮件（Resend / SMTP）；后台 Worker 轮询 |
 | 情绪 | Adanos 舆情（长缓存，额度不足时降级） |
-| AI 分析 | OpenAI 兼容接口；结合新闻 / 财报 / 报价输出看多·中性·看空（约 30 分钟缓存） |
+| AI 分析 | Vercel AI SDK + DeepSeek；结合新闻 / 财报 / 报价输出看多·中性·看空（约 30 分钟缓存） |
 | 体验 | 简/繁/英、亮暗主题、红涨绿跌 / 绿涨红跌 |
 
 技术栈：Next.js 15 · TypeScript · Tailwind · lightweight-charts · Auth.js · Prisma · PostgreSQL · Docker。
@@ -27,7 +27,7 @@
 - npm 10+
 - Docker（可选，用于 Postgres 或全栈）
 
-至少配置 **一个** 行情源凭证（长桥 / 富途 / Finnhub）。资讯依赖 Finnhub；情绪依赖 Adanos（可选）；AI 分析依赖 `OPENAI_API_KEY`（可选）。
+至少配置 **一个** 行情源凭证（长桥 / 富途 / Finnhub）。资讯依赖 Finnhub；情绪依赖 Adanos（可选）；AI 分析依赖 `DEEPSEEK_API_KEY`（可选）。
 
 ## 快速开始
 
@@ -89,9 +89,9 @@ postgresql://qstock:qstock@localhost:5432/qstock?schema=public
 | 变量 | 说明 |
 |---|---|
 | `ADANOS_API_KEY` | 市场情绪；缺失则 UI 降级 |
-| `OPENAI_API_KEY` | AI 趋势分析（OpenAI 兼容）；缺失则 Tab 降级 |
-| `OPENAI_BASE_URL` | 可选，默认 `https://api.openai.com` |
-| `OPENAI_MODEL` | 可选，默认 `gpt-4o-mini` |
+| `DEEPSEEK_API_KEY` | AI 趋势分析（Vercel AI SDK + DeepSeek）；缺失则 Tab 降级 |
+| `DEEPSEEK_MODEL` | 可选，默认 `deepseek-v4-flash` |
+| `DEEPSEEK_BASE_URL` | 可选，默认 DeepSeek 官方 API |
 | `EMAIL_FROM` / `RESEND_API_KEY` | 提醒邮件（优先 Resend） |
 | `SMTP_*` | Resend 不可用时的 SMTP 回退 |
 | `ALERT_POLL_INTERVAL_MS` | Worker 轮询间隔，默认 `45000` |

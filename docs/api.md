@@ -32,7 +32,7 @@ Base URL：同源，例如 `http://localhost:3000`。
   "longbridge": true,
   "futu": false,
       "adanos": false,
-      "openai": true
+      "deepseek": true
     }
 ```
 
@@ -239,7 +239,7 @@ Body：`{ symbol, assetType, side, type, qty, limitPrice?, stopPrice? }`
 
 ### `GET /api/ai/analyze`
 
-无需登录。综合近期新闻、财报与报价，调用 OpenAI 兼容接口生成结构化趋势判断。结果缓存约 30 分钟。
+无需登录。综合近期新闻、财报与报价，经 **Vercel AI SDK + DeepSeek**（`generateObject`）生成结构化趋势判断。结果缓存约 30 分钟。
 
 | 参数 | 说明 |
 |---|---|
@@ -269,7 +269,7 @@ Body：`{ symbol, assetType, side, type, qty, limitPrice?, stopPrice? }`
 }
 ```
 
-未配置 `OPENAI_API_KEY` 时：`available: false` + `message`。
+未配置 `DEEPSEEK_API_KEY` 时：`available: false` + `message`。
 
 ---
 

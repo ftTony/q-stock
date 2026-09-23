@@ -15,8 +15,10 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@ai-sdk/deepseek": "^3.0.50",
     "@auth/prisma-adapter": "^2.11.3",
     "@prisma/client": "^6.19.3",
+    "ai": "^7.0.111",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.4.0",
     "lightweight-charts": "^5.2.1",

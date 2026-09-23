@@ -236,7 +236,7 @@
   },
   "ai": {
     "loading": "Generating analysis from news and earnings…",
-    "unavailable": "AI analysis unavailable. Configure OPENAI_API_KEY.",
+    "unavailable": "AI analysis unavailable. Configure DEEPSEEK_API_KEY.",
     "bias": "Bias",
     "biasBullish": "Bullish",
     "biasNeutral": "Neutral",

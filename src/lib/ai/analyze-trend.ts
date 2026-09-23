@@ -1,5 +1,9 @@
 import { format, subDays, subMonths, addMonths } from "date-fns";
-import { AiError, chatJson, isAiConfigured } from "@/lib/ai/client";
+import {
+  AiError,
+  generateTrendObject,
+  isAiConfigured,
+} from "@/lib/ai/client";
 import {
   BASIC_METRIC_KEYS,
   getBasicFinancials,
@@ -61,46 +65,10 @@ function truncate(s: string | undefined, max: number): string {
   return t.length <= max ? t : `${t.slice(0, max)}…`;
 }
 
-function parseAnalysis(
-  raw: string,
-  sourcesUsed: TrendAnalysis["sourcesUsed"],
-): TrendAnalysis {
-  let parsed: Record<string, unknown>;
-  try {
-    parsed = JSON.parse(raw) as Record<string, unknown>;
-  } catch {
-    const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new AiError("AI response is not valid JSON");
-    parsed = JSON.parse(match[0]) as Record<string, unknown>;
-  }
-
-  const biasRaw = String(parsed.bias ?? "neutral").toLowerCase();
-  const bias: TrendBias =
-    biasRaw === "bullish" || biasRaw === "bearish" ? biasRaw : "neutral";
-
-  const horizonRaw = String(parsed.horizon ?? "short").toLowerCase();
-  const horizon: TrendHorizon = horizonRaw === "medium" ? "medium" : "short";
-
-  let confidence = Number(parsed.confidence);
-  if (!Number.isFinite(confidence)) confidence = 0.5;
-  confidence = Math.max(0, Math.min(1, confidence));
-
-  const drivers = Array.isArray(parsed.drivers)
-    ? parsed.drivers.map((d) => String(d)).filter(Boolean).slice(0, 8)
-    : [];
-  const risks = Array.isArray(parsed.risks)
-    ? parsed.risks.map((r) => String(r)).filter(Boolean).slice(0, 8)
-    : [];
-
-  return {
-    bias,
-    confidence,
-    horizon,
-    summary: truncate(String(parsed.summary ?? ""), 800) || "—",
-    drivers,
-    risks,
-    sourcesUsed,
-  };
+function notConfiguredMessage(locale: string): string {
+  if (locale === "zh-TW") return "未配置 DEEPSEEK_API_KEY，無法生成 AI 分析";
+  if (locale === "en") return "DEEPSEEK_API_KEY is not configured";
+  return "未配置 DEEPSEEK_API_KEY，无法生成 AI 分析";
 }
 
 export async function analyzeTrend(opts: {
@@ -116,12 +84,7 @@ export async function analyzeTrend(opts: {
   if (!isAiConfigured()) {
     return {
       available: false,
-      message:
-        locale === "zh-TW"
-          ? "未配置 OPENAI_API_KEY，無法生成 AI 分析"
-          : locale === "en"
-            ? "OPENAI_API_KEY is not configured"
-            : "未配置 OPENAI_API_KEY，无法生成 AI 分析",
+      message: notConfiguredMessage(locale),
       degraded: false,
       disclaimer,
     };
@@ -251,20 +214,23 @@ export async function analyzeTrend(opts: {
     metrics: metrics.slice(0, 12),
   };
 
-  const system = `You are a cautious equity/crypto market analyst. Analyze near-term price trend using ONLY the provided news, earnings, and quote data. Output a single JSON object with keys:
-bias ("bullish"|"neutral"|"bearish"),
-confidence (number 0-1),
-horizon ("short"|"medium"),
-summary (string, 2-4 sentences),
-drivers (string array, 2-5 bullet points),
-risks (string array, 2-5 bullet points).
-Do not invent facts not supported by the data. If data is sparse, lower confidence and prefer "neutral". Write summary/drivers/risks in ${langLabel(locale)}. No markdown, JSON only.`;
+  const system = `You are a cautious equity/crypto market analyst. Analyze near-term price trend using ONLY the provided news, earnings, and quote data.
+Do not invent facts not supported by the data. If data is sparse, lower confidence and prefer "neutral".
+Write summary, drivers, and risks in ${langLabel(locale)}.`;
 
-  const user = `Analyze trend for ${symbol} (${assetType}).\n\nDATA:\n${JSON.stringify(context)}`;
+  const user = `Analyze trend for ${symbol} (${assetType}). Return structured JSON fields (bias, confidence, horizon, summary, drivers, risks).\n\nDATA:\n${JSON.stringify(context)}`;
 
   try {
-    const raw = await chatJson({ system, user });
-    const analysis = parseAnalysis(raw, sourcesUsed);
+    const object = await generateTrendObject({ system, user });
+    const analysis: TrendAnalysis = {
+      bias: object.bias,
+      confidence: Math.max(0, Math.min(1, object.confidence)),
+      horizon: object.horizon,
+      summary: truncate(object.summary, 800) || "—",
+      drivers: object.drivers.filter(Boolean).slice(0, 8),
+      risks: object.risks.filter(Boolean).slice(0, 8),
+      sourcesUsed,
+    };
     return {
       available: true,
       analysis,

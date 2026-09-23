@@ -1,3 +1,7 @@
+import { createDeepSeek } from "@ai-sdk/deepseek";
+import { generateObject } from "ai";
+import { z } from "zod";
+
 export class AiError extends Error {
   constructor(
     message: string,
@@ -9,61 +13,60 @@ export class AiError extends Error {
 }
 
 export function isAiConfigured(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY?.trim());
+  return Boolean(process.env.DEEPSEEK_API_KEY?.trim());
 }
 
-function baseUrl(): string {
-  const raw = process.env.OPENAI_BASE_URL?.trim() || "https://api.openai.com";
-  return raw.replace(/\/+$/, "");
+function modelId(): string {
+  return process.env.DEEPSEEK_MODEL?.trim() || "deepseek-v4-flash";
 }
 
-function model(): string {
-  return process.env.OPENAI_MODEL?.trim() || "gpt-4o-mini";
-}
+const trendSchema = z.object({
+  bias: z.enum(["bullish", "neutral", "bearish"]),
+  confidence: z.number().min(0).max(1),
+  horizon: z.enum(["short", "medium"]),
+  summary: z.string().min(1),
+  drivers: z.array(z.string()).min(1).max(8),
+  risks: z.array(z.string()).min(1).max(8),
+});
 
-export async function chatJson(opts: {
+export type TrendObject = z.infer<typeof trendSchema>;
+
+export async function generateTrendObject(opts: {
   system: string;
   user: string;
   temperature?: number;
-}): Promise<string> {
-  const key = process.env.OPENAI_API_KEY?.trim();
-  if (!key) {
-    throw new AiError("OPENAI_API_KEY is not configured");
+}): Promise<TrendObject> {
+  const apiKey = process.env.DEEPSEEK_API_KEY?.trim();
+  if (!apiKey) {
+    throw new AiError("DEEPSEEK_API_KEY is not configured");
   }
 
-  const url = `${baseUrl()}/v1/chat/completions`;
-  const res = await fetch(url, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${key}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: model(),
-      temperature: opts.temperature ?? 0.3,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: opts.system },
-        { role: "user", content: opts.user },
-      ],
-    }),
-    signal: AbortSignal.timeout(60_000),
+  const deepseek = createDeepSeek({
+    apiKey,
+    ...(process.env.DEEPSEEK_BASE_URL?.trim()
+      ? { baseURL: process.env.DEEPSEEK_BASE_URL.trim().replace(/\/+$/, "") }
+      : {}),
   });
 
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    throw new AiError(
-      `AI HTTP ${res.status}${body ? `: ${body.slice(0, 200)}` : ""}`,
-      res.status,
-    );
+  try {
+    const { object } = await generateObject({
+      model: deepseek(modelId()),
+      schema: trendSchema,
+      system: opts.system,
+      prompt: opts.user,
+      temperature: opts.temperature ?? 0.3,
+      providerOptions: {
+        deepseek: {
+          // Structured JSON is more reliable with thinking off on V4 models
+          thinking: { type: "disabled" },
+        },
+      },
+      abortSignal: AbortSignal.timeout(60_000),
+    });
+    return object;
+  } catch (err) {
+    const msg =
+      err instanceof Error ? err.message : "DeepSeek generateObject failed";
+    throw new AiError(msg);
   }
-
-  const data = (await res.json()) as {
-    choices?: Array<{ message?: { content?: string } }>;
-  };
-  const content = data.choices?.[0]?.message?.content?.trim();
-  if (!content) {
-    throw new AiError("AI returned empty content");
-  }
-  return content;
 }

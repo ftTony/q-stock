@@ -16,7 +16,7 @@ A Web & H5 market terminal for **US stocks** and **crypto**: multi-source quotes
 | Watchlist & portfolio | CRUD watchlist, sparklines, overview KPIs |
 | Price alerts | Email on ≥ / ≤ trigger (Resend / SMTP); background worker |
 | Sentiment | Adanos (cached; degrades gracefully without a key) |
-| AI analysis | OpenAI-compatible API; news + earnings + quote → bullish / neutral / bearish (~30 min cache) |
+| AI analysis | Vercel AI SDK + DeepSeek; news + earnings + quote → bullish / neutral / bearish (~30 min cache) |
 | UX | zh-CN / zh-TW / en, light/dark theme, CN or US up/down colors |
 
 Stack: Next.js 15 · TypeScript · Tailwind · lightweight-charts · Auth.js · Prisma · PostgreSQL · Docker.
@@ -27,7 +27,7 @@ Stack: Next.js 15 · TypeScript · Tailwind · lightweight-charts · Auth.js · 
 - npm 10+
 - Docker (optional, for Postgres or full stack)
 
-Configure **at least one** quote provider (Longbridge / Futu / Finnhub). News & earnings need Finnhub. Sentiment needs Adanos (optional). AI analysis needs `OPENAI_API_KEY` (optional).
+Configure **at least one** quote provider (Longbridge / Futu / Finnhub). News & earnings need Finnhub. Sentiment needs Adanos (optional). AI analysis needs `DEEPSEEK_API_KEY` (optional).
 
 ## Quick start
 
@@ -89,9 +89,9 @@ postgresql://qstock:qstock@localhost:5432/qstock?schema=public
 | Variable | Notes |
 |---|---|
 | `ADANOS_API_KEY` | Sentiment; UI degrades if missing |
-| `OPENAI_API_KEY` | AI trend analysis (OpenAI-compatible); Tab degrades if missing |
-| `OPENAI_BASE_URL` | Optional, default `https://api.openai.com` |
-| `OPENAI_MODEL` | Optional, default `gpt-4o-mini` |
+| `DEEPSEEK_API_KEY` | AI trend analysis (Vercel AI SDK + DeepSeek); Tab degrades if missing |
+| `DEEPSEEK_MODEL` | Optional, default `deepseek-v4-flash` |
+| `DEEPSEEK_BASE_URL` | Optional, default DeepSeek official API |
 | `EMAIL_FROM` / `RESEND_API_KEY` | Alert email (Resend preferred) |
 | `SMTP_*` | SMTP fallback |
 | `ALERT_POLL_INTERVAL_MS` | Worker interval, default `45000` |

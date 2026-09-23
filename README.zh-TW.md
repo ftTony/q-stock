@@ -16,7 +16,7 @@
 | 自選 & 資產 | 自選 CRUD、sparkline、資產概覽 KPI |
 | 價格提醒 | 條件觸發郵件（Resend / SMTP）；後台 Worker 輪詢 |
 | 情緒 | Adanos 輿情（長快取，額度不足時降級） |
-| AI 分析 | OpenAI 相容介面；結合新聞 / 財報 / 報價輸出看多·中性·看空（約 30 分鐘快取） |
+| AI 分析 | Vercel AI SDK + DeepSeek；結合新聞 / 財報 / 報價輸出看多·中性·看空（約 30 分鐘快取） |
 | 體驗 | 簡/繁/英、亮暗主題、紅漲綠跌 / 綠漲紅跌 |
 
 技術棧：Next.js 15 · TypeScript · Tailwind · lightweight-charts · Auth.js · Prisma · PostgreSQL · Docker。
@@ -27,7 +27,7 @@
 - npm 10+
 - Docker（可選，用於 Postgres 或全棧）
 
-至少設定 **一個** 行情源憑證（長橋 / 富途 / Finnhub）。資訊依賴 Finnhub；情緒依賴 Adanos（可選）；AI 分析依賴 `OPENAI_API_KEY`（可選）。
+至少設定 **一個** 行情源憑證（長橋 / 富途 / Finnhub）。資訊依賴 Finnhub；情緒依賴 Adanos（可選）；AI 分析依賴 `DEEPSEEK_API_KEY`（可選）。
 
 ## 快速開始
 
@@ -89,9 +89,9 @@ postgresql://qstock:qstock@localhost:5432/qstock?schema=public
 | 變數 | 說明 |
 |---|---|
 | `ADANOS_API_KEY` | 市場情緒；缺失則 UI 降級 |
-| `OPENAI_API_KEY` | AI 趨勢分析（OpenAI 相容）；缺失則 Tab 降級 |
-| `OPENAI_BASE_URL` | 可選，預設 `https://api.openai.com` |
-| `OPENAI_MODEL` | 可選，預設 `gpt-4o-mini` |
+| `DEEPSEEK_API_KEY` | AI 趨勢分析（Vercel AI SDK + DeepSeek）；缺失則 Tab 降級 |
+| `DEEPSEEK_MODEL` | 可選，預設 `deepseek-v4-flash` |
+| `DEEPSEEK_BASE_URL` | 可選，預設 DeepSeek 官方 API |
 | `EMAIL_FROM` / `RESEND_API_KEY` | 提醒郵件（優先 Resend） |
 | `SMTP_*` | Resend 不可用時的 SMTP 回退 |
 | `ALERT_POLL_INTERVAL_MS` | Worker 輪詢間隔，預設 `45000` |
