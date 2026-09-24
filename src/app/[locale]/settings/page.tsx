@@ -42,12 +42,32 @@ export default function SettingsPage() {
   const { changeColorScheme, setChangeColorScheme } = usePreference();
   const [lang, setLang] = useState<AppLocale>(locale as AppLocale);
   const [message, setMessage] = useState<string | null>(null);
+  const [messageKind, setMessageKind] = useState<"ok" | "error">("ok");
   const [saving, setSaving] = useState(false);
   const loggedIn = Boolean(session?.user);
 
   useEffect(() => {
     setLang(locale as AppLocale);
   }, [locale]);
+
+  useEffect(() => {
+    try {
+      const flash = sessionStorage.getItem("settings-flash");
+      if (flash) {
+        sessionStorage.removeItem("settings-flash");
+        setMessageKind("ok");
+        setMessage(flash);
+      }
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(null), 3500);
+    return () => clearTimeout(timer);
+  }, [message]);
 
   if (status === "loading") {
     return <p className="text-sm text-[var(--muted)]">…</p>;
@@ -63,35 +83,53 @@ export default function SettingsPage() {
 
     if (!loggedIn) {
       setSaving(false);
-      setMessage(t("savedLocal"));
+      const tip = t("savedLocal");
+      setMessageKind("ok");
+      setMessage(tip);
       if (lang !== locale) {
+        try {
+          sessionStorage.setItem("settings-flash", tip);
+        } catch {
+          /* ignore */
+        }
         router.replace("/settings", { locale: lang });
       }
       return;
     }
 
-    const res = await fetch("/api/user/settings", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const res = await fetch("/api/user/settings", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          locale: lang,
+          theme: theme === "light" || theme === "dark" ? theme : "system",
+          changeColorScheme,
+        }),
+      });
+      if (!res.ok) {
+        setMessageKind("error");
+        setMessage(t("saveError"));
+        return;
+      }
+      await update({
         locale: lang,
-        theme: theme === "light" || theme === "dark" ? theme : "system",
+        theme,
         changeColorScheme,
-      }),
-    });
-    setSaving(false);
-    if (!res.ok) {
-      setMessage(t("saveError"));
-      return;
-    }
-    await update({
-      locale: lang,
-      theme,
-      changeColorScheme,
-    });
-    setMessage(t("saved"));
-    if (lang !== locale) {
-      router.replace("/settings", { locale: lang });
+      });
+      const tip = t("saved");
+      setMessageKind("ok");
+      setMessage(tip);
+      if (lang !== locale) {
+        try {
+          sessionStorage.setItem("settings-flash", tip);
+        } catch {
+          /* ignore */
+        }
+        router.replace("/settings", { locale: lang });
+      }
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -167,15 +205,37 @@ export default function SettingsPage() {
           </div>
         </fieldset>
 
-        {message && <p className="text-sm text-[var(--brand-text)]">{message}</p>}
-
-        <SubmitButton
-          loading={saving}
-          loadingLabel={tCommon("loading")}
-          className="qt-btn-primary px-4 py-2.5 text-sm"
-        >
-          {t("save")}
-        </SubmitButton>
+        <div className="flex flex-wrap items-center gap-3">
+          <SubmitButton
+            loading={saving}
+            loadingLabel={tCommon("loading")}
+            className="qt-btn-primary px-4 py-2.5 text-sm"
+          >
+            {t("save")}
+          </SubmitButton>
+          {message && (
+            <p
+              role="status"
+              className="animate-[qtFade_0.25s_ease] rounded-lg px-3 py-2 text-sm"
+              style={
+                messageKind === "ok"
+                  ? {
+                      background:
+                        "color-mix(in srgb, var(--up) 12%, transparent)",
+                      color: "var(--up)",
+                    }
+                  : {
+                      background:
+                        "color-mix(in srgb, var(--down) 12%, transparent)",
+                      color: "var(--down)",
+                    }
+              }
+            >
+              {messageKind === "ok" ? "✓ " : ""}
+              {message}
+            </p>
+          )}
+        </div>
       </form>
     </div>
   );
