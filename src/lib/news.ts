@@ -1,13 +1,14 @@
-import { cachedFetch } from "@/lib/cache";
 import {
   getLongbridgeNews,
   type LongbridgeNewsItem,
 } from "@/lib/market/providers/longbridge";
+import { getFutuNews } from "@/lib/market/providers/futu-content";
 import {
   getCompanyNews,
   getMarketNews,
   type CompanyNewsItem,
 } from "@/lib/finnhub/client";
+import { isProviderEnabled } from "@/lib/market/router";
 import type { AssetType } from "@/lib/types";
 import { toFinnhubSymbol } from "@/lib/types";
 import { format, subDays } from "date-fns";
@@ -47,7 +48,7 @@ function mapFhNews(items: CompanyNewsItem[]): NewsItem[] {
 }
 
 /**
- * Company news: Longbridge first for stock/hk; Finnhub fallback (esp. US).
+ * Company news: Longbridge → Futu → Finnhub (respect MARKET_DATA_PROVIDERS).
  */
 export async function getSymbolNews(
   symbol: string,
@@ -57,16 +58,42 @@ export async function getSymbolNews(
   const sym = symbol.toUpperCase();
 
   if (assetType === "stock" || assetType === "hk") {
-    try {
-      const lb = await getLongbridgeNews(sym, assetType, locale);
-      if (lb.length > 0) {
-        return { news: mapLbNews(lb), source: "longbridge", degraded: false };
+    if (isProviderEnabled("longbridge")) {
+      try {
+        const lb = await getLongbridgeNews(sym, assetType, locale);
+        if (lb.length > 0) {
+          return { news: mapLbNews(lb), source: "longbridge", degraded: false };
+        }
+      } catch (err) {
+        console.warn(
+          "[news] longbridge failed:",
+          err instanceof Error ? err.message : err,
+        );
       }
-    } catch (err) {
-      console.warn(
-        "[news] longbridge failed:",
-        err instanceof Error ? err.message : err,
-      );
+    }
+
+    if (isProviderEnabled("futu")) {
+      try {
+        const futu = await getFutuNews(sym, assetType, locale);
+        if (futu.length > 0) {
+          return {
+            news: futu.map((n) => ({
+              headline: n.headline,
+              url: n.url,
+              datetime: n.datetime,
+              image: n.image,
+              source: n.source,
+            })),
+            source: "futu",
+            degraded: false,
+          };
+        }
+      } catch (err) {
+        console.warn(
+          "[news] futu failed:",
+          err instanceof Error ? err.message : err,
+        );
+      }
     }
   }
 
@@ -85,11 +112,14 @@ export async function getSymbolNews(
     };
   }
 
+  if (!isProviderEnabled("finnhub")) {
+    return { news: [], source: null, degraded: true };
+  }
+
   try {
     const to = format(new Date(), "yyyy-MM-dd");
     const from = format(subDays(new Date(), 30), "yyyy-MM-dd");
-    const fhSym =
-      assetType === "hk" ? toFinnhubSymbol(sym, "hk") : sym;
+    const fhSym = assetType === "hk" ? toFinnhubSymbol(sym, "hk") : sym;
     const fh = await getCompanyNews(fhSym, from, to);
     const mapped = mapFhNews(fh);
     return {

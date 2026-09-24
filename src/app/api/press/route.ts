@@ -7,6 +7,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const symbol = searchParams.get("symbol");
     const assetType = parseAssetType(searchParams.get("assetType"));
+    const locale = searchParams.get("locale") ?? undefined;
     if (!symbol) {
       return NextResponse.json({ error: "symbol required" }, { status: 400 });
     }
@@ -16,6 +17,7 @@ export async function GET(req: Request) {
     const { press, source, degraded } = await getPress(
       symbol.toUpperCase(),
       assetType,
+      locale,
     );
     return NextResponse.json({ press, source, degraded });
   } catch (err) {

@@ -24,16 +24,47 @@ const DEFAULT_ORDER: MarketProviderId[] = [
   "binance",
 ];
 
+/** Content / IPO: Longbridge → Futu → Finnhub (no binance). */
+export const CONTENT_PROVIDER_ORDER = [
+  "longbridge",
+  "futu",
+  "finnhub",
+] as const satisfies readonly MarketProviderId[];
+
+export type ContentProviderId = (typeof CONTENT_PROVIDER_ORDER)[number];
+
 const CRYPTO_ORDER: MarketProviderId[] = ["binance", "finnhub", "longbridge"];
 
-export function getProviderPriority(): MarketProviderId[] {
+function envProviderList(): MarketProviderId[] | null {
   const raw = process.env.MARKET_DATA_PROVIDERS?.trim();
-  if (raw) {
-    return raw
-      .split(",")
-      .map((s) => s.trim().toLowerCase())
-      .filter((s): s is MarketProviderId => s in REGISTRY);
-  }
+  if (!raw) return null;
+  return raw
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter((s): s is MarketProviderId => s in REGISTRY);
+}
+
+/**
+ * Whether a provider is allowed by MARKET_DATA_PROVIDERS.
+ * If the env is unset, all providers are allowed (gated only by credentials).
+ * Omitting `longbridge` from the CSV disables Longbridge → Futu is used next.
+ */
+export function isProviderEnabled(id: MarketProviderId): boolean {
+  const list = envProviderList();
+  if (!list) return true;
+  return list.includes(id);
+}
+
+/** Enabled + configured content providers in Longbridge → Futu → Finnhub order. */
+export function listContentProviders(): ContentProviderId[] {
+  return CONTENT_PROVIDER_ORDER.filter(
+    (id) => isProviderEnabled(id) && REGISTRY[id].isConfigured(),
+  );
+}
+
+export function getProviderPriority(): MarketProviderId[] {
+  const fromEnv = envProviderList();
+  if (fromEnv) return fromEnv;
   return DEFAULT_ORDER.filter((id) => REGISTRY[id].isConfigured());
 }
 
@@ -51,7 +82,8 @@ export function listProvidersFor(
   assetType: AssetType,
 ): MarketDataProvider[] {
   const raw = process.env.MARKET_DATA_PROVIDERS?.trim();
-  const preferred = assetType === "crypto" && !raw ? CRYPTO_ORDER : getProviderPriority();
+  const preferred =
+    assetType === "crypto" && !raw ? CRYPTO_ORDER : getProviderPriority();
 
   const configured = preferred
     .map((id) => REGISTRY[id])
@@ -64,7 +96,6 @@ export function listProvidersFor(
           p.isConfigured(),
         );
 
-  // For crypto, always ensure Binance is tried if not already in the list
   if (assetType === "crypto" && !pool.some((p) => p.id === "binance")) {
     pool.push(binanceProvider);
   }
@@ -73,7 +104,7 @@ export function listProvidersFor(
 }
 
 /**
- * Candles: prefer Longbridge / Futu before Finnhub (free Finnhub often lacks candle ACL).
+ * Candles: prefer Longbridge / Futu before Finnhub.
  * Crypto still prefers Binance.
  */
 export function listProvidersForCandles(

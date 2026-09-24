@@ -9,9 +9,12 @@ import type { AssetType, OhlcvBar, SearchResult } from "@/lib/types";
 export {
   getActiveProviders,
   getProviderPriority,
+  isProviderEnabled,
+  listContentProviders,
   listProvidersFor,
   listProvidersForCandles,
 } from "@/lib/market/router";
+export type { ContentProviderId } from "@/lib/market/router";
 export type { MarketProviderId, QuoteWithSource } from "@/lib/market/types";
 export { MarketDataError } from "@/lib/market/types";
 

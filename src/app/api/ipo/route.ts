@@ -1,9 +1,6 @@
 import { NextResponse } from "next/server";
-import {
-  getIpoList,
-  parseIpoStatus,
-} from "@/lib/market/providers/longbridge-ipo";
-import { hasLongbridgeHttpCreds } from "@/lib/market/providers/longbridge-http";
+import { getIpoList, parseIpoStatus } from "@/lib/market/ipo";
+import { isProviderEnabled } from "@/lib/market/router";
 import { parseAssetType } from "@/lib/types";
 
 export async function GET(req: Request) {
@@ -13,7 +10,7 @@ export async function GET(req: Request) {
     if (assetType !== "hk") {
       return NextResponse.json({ items: [], source: null });
     }
-    if (!hasLongbridgeHttpCreds()) {
+    if (!isProviderEnabled("longbridge") && !isProviderEnabled("futu")) {
       return NextResponse.json({
         items: [],
         source: null,
@@ -25,11 +22,11 @@ export async function GET(req: Request) {
       20,
       Math.max(4, Number(searchParams.get("limit") || 4) || 4),
     );
-    const items = await getIpoList(status, limit);
+    const { items, source } = await getIpoList(status, limit);
     return NextResponse.json({
       items,
       status,
-      source: "longbridge",
+      source,
       degraded: items.length === 0,
     });
   } catch (err) {

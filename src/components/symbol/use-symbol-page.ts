@@ -161,7 +161,7 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
           return;
         }
         const res = await fetch(
-          `/api/press?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+          `/api/press?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
         );
         const data = await res.json();
         setPress(data.press ?? []);

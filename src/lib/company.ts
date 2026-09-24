@@ -10,6 +10,13 @@ import {
   type LongbridgeCompanyProfile,
   type LongbridgeOfficer,
 } from "@/lib/market/providers/longbridge";
+import {
+  getFutuCompany,
+  getFutuExecutives,
+  type FutuCompanyProfile,
+  type FutuOfficer,
+} from "@/lib/market/providers/futu-content";
+import { isProviderEnabled } from "@/lib/market/router";
 import type { AssetType } from "@/lib/types";
 
 export type CompanyOfficer = {
@@ -83,6 +90,34 @@ function mapLbOfficers(list: LongbridgeOfficer[]): CompanyOfficer[] {
   }));
 }
 
+function mapFutuProfile(p: FutuCompanyProfile): CompanyProfile {
+  return {
+    name: p.name,
+    companyName: p.companyName,
+    ticker: p.ticker,
+    website: p.website,
+    industry: p.industry,
+    country: p.country,
+    exchange: p.exchange,
+    founded: p.founded,
+    listed: p.listed,
+    employees: p.employees,
+    chairman: p.chairman,
+    manager: p.manager,
+    secretary: p.secretary,
+    brief: p.brief,
+  };
+}
+
+function mapFutuOfficers(list: FutuOfficer[]): CompanyOfficer[] {
+  return list.map((o) => ({
+    name: o.name,
+    nameEn: o.nameEn,
+    title: o.title,
+    age: o.age,
+  }));
+}
+
 function mapFhProfile(fh: FinnhubCompanyProfile): CompanyProfile {
   return {
     name: fh.name,
@@ -115,8 +150,8 @@ function isPresent(c: CompanyProfile | null, officers: CompanyOfficer[]): boolea
 }
 
 /**
- * Company profile + executive team. Longbridge covers US & HK first;
- * Finnhub `/stock/profile2` + `/stock/executive` as US fallback.
+ * Company profile + executives.
+ * Priority: Longbridge → Futu → Finnhub (respect MARKET_DATA_PROVIDERS).
  */
 export async function getCompanyData(
   symbol: string,
@@ -134,32 +169,60 @@ export async function getCompanyData(
   if (assetType === "crypto") return { ...empty };
 
   if (assetType === "stock" || assetType === "hk") {
-    try {
-      const [profileRes, officersRes] = await Promise.allSettled([
-        getLongbridgeCompany(sym, assetType, locale),
-        getLongbridgeExecutive(sym, assetType, locale),
-      ]);
-      const profile =
-        profileRes.status === "fulfilled" ? profileRes.value : null;
-      const officers =
-        officersRes.status === "fulfilled" ? officersRes.value : [];
-      if (isPresent(profile, officers)) {
-        return {
-          profile: profile ? mapLbProfile(profile) : null,
-          officers: mapLbOfficers(officers),
-          source: "longbridge",
-          degraded: false,
-        };
+    if (isProviderEnabled("longbridge")) {
+      try {
+        const [profileRes, officersRes] = await Promise.allSettled([
+          getLongbridgeCompany(sym, assetType, locale),
+          getLongbridgeExecutive(sym, assetType, locale),
+        ]);
+        const profile =
+          profileRes.status === "fulfilled" ? profileRes.value : null;
+        const officers =
+          officersRes.status === "fulfilled" ? officersRes.value : [];
+        if (isPresent(profile, officers)) {
+          return {
+            profile: profile ? mapLbProfile(profile) : null,
+            officers: mapLbOfficers(officers),
+            source: "longbridge",
+            degraded: false,
+          };
+        }
+      } catch (err) {
+        console.warn(
+          "[company] longbridge failed:",
+          err instanceof Error ? err.message : err,
+        );
       }
-    } catch (err) {
-      console.warn(
-        "[company] longbridge failed:",
-        err instanceof Error ? err.message : err,
-      );
+    }
+
+    if (isProviderEnabled("futu")) {
+      try {
+        const [profileRes, officersRes] = await Promise.allSettled([
+          getFutuCompany(sym, assetType),
+          getFutuExecutives(sym, assetType),
+        ]);
+        const profile =
+          profileRes.status === "fulfilled" ? profileRes.value : null;
+        const officers =
+          officersRes.status === "fulfilled" ? officersRes.value : [];
+        if (isPresent(profile, officers)) {
+          return {
+            profile: profile ? mapFutuProfile(profile) : null,
+            officers: mapFutuOfficers(officers),
+            source: "futu",
+            degraded: false,
+          };
+        }
+      } catch (err) {
+        console.warn(
+          "[company] futu failed:",
+          err instanceof Error ? err.message : err,
+        );
+      }
     }
   }
 
-  if (assetType === "stock") {
+  if (assetType === "stock" && isProviderEnabled("finnhub")) {
     try {
       const [profileRes, officersRes] = await Promise.allSettled([
         getFinnhubProfile(sym),

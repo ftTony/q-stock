@@ -4,6 +4,8 @@ import {
   type PressReleaseItem,
 } from "@/lib/finnhub/client";
 import { getLongbridgeFilings } from "@/lib/market/providers/longbridge";
+import { getFutuPress } from "@/lib/market/providers/futu-content";
+import { isProviderEnabled } from "@/lib/market/router";
 import type { AssetType } from "@/lib/types";
 
 export type PressItem = {
@@ -25,29 +27,46 @@ function mapFinnhub(items: PressReleaseItem[]): PressItem[] {
 }
 
 /**
- * Announcements / filings: Longbridge first, Finnhub press-releases as fallback (US only).
+ * Announcements: Longbridge → Futu → Finnhub (respect MARKET_DATA_PROVIDERS).
  */
 export async function getPress(
   symbol: string,
   assetType: AssetType = "stock",
+  locale?: string,
 ): Promise<{ press: PressItem[]; source: string | null; degraded: boolean }> {
   const sym = symbol.toUpperCase();
 
   if (assetType === "stock" || assetType === "hk") {
-    try {
-      const lb = await getLongbridgeFilings(sym, assetType);
-      if (lb.length > 0) {
-        return { press: lb, source: "longbridge", degraded: false };
+    if (isProviderEnabled("longbridge")) {
+      try {
+        const lb = await getLongbridgeFilings(sym, assetType);
+        if (lb.length > 0) {
+          return { press: lb, source: "longbridge", degraded: false };
+        }
+      } catch (err) {
+        console.warn(
+          "[press] longbridge filings failed:",
+          err instanceof Error ? err.message : err,
+        );
       }
-    } catch (err) {
-      console.warn(
-        "[press] longbridge filings failed:",
-        err instanceof Error ? err.message : err,
-      );
+    }
+
+    if (isProviderEnabled("futu")) {
+      try {
+        const futu = await getFutuPress(sym, assetType, locale);
+        if (futu.length > 0) {
+          return { press: futu, source: "futu", degraded: false };
+        }
+      } catch (err) {
+        console.warn(
+          "[press] futu failed:",
+          err instanceof Error ? err.message : err,
+        );
+      }
     }
   }
 
-  if (assetType === "stock") {
+  if (assetType === "stock" && isProviderEnabled("finnhub")) {
     try {
       const fh = await cachedFetch(`press:fh:${sym}`, 600_000, () =>
         getFinnhubPress(sym),

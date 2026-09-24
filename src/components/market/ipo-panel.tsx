@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import type { IpoStatus } from "@/lib/market/providers/longbridge-ipo";
+import type { IpoStatus } from "@/lib/market/ipo-types";
 import type { AssetType } from "@/lib/types";
 
 export type IpoRow = {

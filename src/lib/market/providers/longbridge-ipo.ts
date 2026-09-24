@@ -3,23 +3,11 @@ import {
   hasLongbridgeHttpCreds,
   longbridgeHttpGet,
 } from "@/lib/market/providers/longbridge-http";
+import type { IpoItem, IpoStatus } from "@/lib/market/ipo-types";
 import { normalizeSymbol } from "@/lib/market/symbols";
-import type { AssetType } from "@/lib/types";
 
-/** 上市中 / 已上市 / 提交中 */
-export type IpoStatus = "listing" | "listed" | "filing";
-
-export type IpoItem = {
-  id: string;
-  symbol: string;
-  name: string;
-  date: string;
-  content?: string;
-  assetType: AssetType;
-  /** Only listed IPOs can open the symbol page */
-  linkable: boolean;
-  status: IpoStatus;
-};
+export type { IpoItem, IpoStatus } from "@/lib/market/ipo-types";
+export { parseIpoStatus } from "@/lib/market/ipo-types";
 
 type RawRow = Record<string, unknown>;
 
@@ -45,16 +33,13 @@ function str(v: unknown): string {
 function formatDate(raw: unknown): string {
   if (raw == null || raw === "") return "";
   if (typeof raw === "number" && Number.isFinite(raw)) {
-    // unix seconds
     const ms = raw > 1e12 ? raw : raw * 1000;
     return new Date(ms).toISOString().slice(0, 10);
   }
   const s = str(raw);
-  // "20260922"
   if (/^\d{8}$/.test(s)) {
     return `${s.slice(0, 4)}-${s.slice(4, 6)}-${s.slice(6, 8)}`;
   }
-  // "2026.09.25" / "2026-09-25"
   return s.replace(/\./g, "-").slice(0, 10);
 }
 
@@ -71,9 +56,8 @@ function mapRow(row: RawRow, status: IpoStatus): IpoItem | null {
   const rawSym = str(row.symbol) || code;
   if (!name && !rawSym) return null;
 
-  const assetType: AssetType = "hk";
   const bare = rawSym.replace(/\.HK$/i, "").replace(/\.US$/i, "") || code;
-  const symbol = normalizeSymbol(bare, assetType);
+  const symbol = normalizeSymbol(bare, "hk");
 
   const date =
     formatDate(row.ipo_date) ||
@@ -102,7 +86,7 @@ function mapRow(row: RawRow, status: IpoStatus): IpoItem | null {
     name: name || symbol,
     date,
     content,
-    assetType,
+    assetType: "hk",
     linkable: status === "listed",
     status,
   };
@@ -116,13 +100,8 @@ function rowsOf(body: ListResponse): RawRow[] {
   return [];
 }
 
-/**
- * HK IPO lists by stage:
- * - listing  上市中  → /v1/ipo/wait-listing
- * - listed   已上市  → /v1/ipo/listed
- * - filing   提交中  → /v1/ipo/subscriptions
- */
-export async function getIpoList(
+/** Longbridge HK IPO lists by stage (fallback / 已上市). */
+export async function getLongbridgeIpoList(
   status: IpoStatus,
   limit = 4,
 ): Promise<IpoItem[]> {
@@ -132,7 +111,9 @@ export async function getIpoList(
   return cachedFetch(key, 180_000, async () => {
     const path = ENDPOINTS[status];
     const params =
-      status === "listed" ? { page: 1, limit } : ({} as Record<string, number>);
+      status === "listed"
+        ? { page: 1, size: limit }
+        : ({} as Record<string, number>);
     const body = await longbridgeHttpGet<ListResponse>(path, params);
     if (body.code != null && body.code !== 0) {
       throw new Error(body.message || `ipo ${status} code ${body.code}`);
@@ -144,7 +125,5 @@ export async function getIpoList(
   });
 }
 
-export function parseIpoStatus(raw: string | null | undefined): IpoStatus {
-  if (raw === "listed" || raw === "filing" || raw === "listing") return raw;
-  return "listing";
-}
+/** @deprecated use getLongbridgeIpoList — kept for older imports */
+export const getIpoList = getLongbridgeIpoList;

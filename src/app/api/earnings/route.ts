@@ -7,7 +7,9 @@ import {
   getEarningsCalendar,
 } from "@/lib/finnhub/client";
 import { getLongbridgeEarnings } from "@/lib/market/providers/longbridge";
+import { getFutuEarnings } from "@/lib/market/providers/futu-content";
 import { getDailyCandles } from "@/lib/market";
+import { isProviderEnabled } from "@/lib/market/router";
 import { parseAssetType, type AssetType } from "@/lib/types";
 
 type MetricRow = { key: string; value: number | null };
@@ -36,7 +38,6 @@ async function finnhubBasicMetrics(sym: string): Promise<MetricRow[]> {
   }
 }
 
-/** Fallback 52-week range from daily candles when Finnhub lacks data. */
 async function week52FromCandles(
   symbol: string,
   assetType: AssetType,
@@ -50,7 +51,7 @@ async function week52FromCandles(
     let low = Infinity;
     for (const b of bars) {
       if (b.high > high) high = b.high;
-      if (b.low < low && b.low > 0) low = b.low;
+      if (b.low > 0 && b.low < low) low = b.low;
     }
     const out: MetricRow[] = [];
     if (Number.isFinite(high) && high > 0) {
@@ -65,6 +66,44 @@ async function week52FromCandles(
   }
 }
 
+type EarningsBundle = NonNullable<
+  Awaited<ReturnType<typeof getLongbridgeEarnings>>
+>;
+
+async function enrichBundle(
+  bundle: EarningsBundle,
+  sym: string,
+  assetType: AssetType,
+  source: string,
+) {
+  const fh = await finnhubBasicMetrics(sym);
+  let metrics = mergeMetrics(bundle.metrics, fh);
+  const needWeek =
+    !metrics.some((m) => m.key === "52WeekHigh") ||
+    !metrics.some((m) => m.key === "52WeekLow");
+  if (needWeek) {
+    metrics = mergeMetrics(metrics, await week52FromCandles(sym, assetType));
+  }
+  return {
+    symbol: sym,
+    surprises: bundle.surprises,
+    calendar: bundle.calendar,
+    metrics,
+    source: fh.length ? `${source}+finnhub` : source,
+    degraded: false,
+  };
+}
+
+function hasBundleData(lb: EarningsBundle | null): lb is EarningsBundle {
+  return Boolean(
+    lb &&
+      (lb.metrics.length ||
+        lb.surprises.length ||
+        lb.calendar.upcoming.length ||
+        lb.calendar.recent.length),
+  );
+}
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
@@ -77,63 +116,60 @@ export async function GET(req: Request) {
     const sym = symbol.toUpperCase();
 
     if (assetType === "hk" || assetType === "stock") {
-      try {
-        const lb = await getLongbridgeEarnings(sym, assetType);
-        if (
-          lb &&
-          (lb.metrics.length ||
-            lb.surprises.length ||
-            lb.calendar.upcoming.length ||
-            lb.calendar.recent.length)
-        ) {
-          const fh = await finnhubBasicMetrics(sym);
-          let metrics = mergeMetrics(lb.metrics, fh);
-          const needWeek =
-            !metrics.some((m) => m.key === "52WeekHigh") ||
-            !metrics.some((m) => m.key === "52WeekLow");
-          if (needWeek) {
-            metrics = mergeMetrics(
-              metrics,
-              await week52FromCandles(sym, assetType),
+      if (isProviderEnabled("longbridge")) {
+        try {
+          const lb = await getLongbridgeEarnings(sym, assetType);
+          if (hasBundleData(lb)) {
+            return NextResponse.json(
+              await enrichBundle(lb, sym, assetType, "longbridge"),
             );
           }
-          return NextResponse.json({
-            symbol: sym,
-            surprises: lb.surprises,
-            calendar: lb.calendar,
-            metrics,
-            source: fh.length ? "longbridge+finnhub" : "longbridge",
-            degraded: false,
-          });
+        } catch (err) {
+          console.warn(
+            "[earnings] longbridge failed:",
+            err instanceof Error ? err.message : err,
+          );
         }
-      } catch (err) {
-        console.warn(
-          "[earnings] longbridge failed:",
-          err instanceof Error ? err.message : err,
-        );
-        if (assetType === "hk") {
-          const fh = await finnhubBasicMetrics(sym);
-          const week = await week52FromCandles(sym, assetType);
-          return NextResponse.json({
-            symbol: sym,
-            surprises: [],
-            calendar: { upcoming: [], recent: [] },
-            metrics: mergeMetrics(fh, week),
-            source: fh.length || week.length ? "fallback" : null,
-            degraded: true,
-          });
+      }
+
+      if (isProviderEnabled("futu")) {
+        try {
+          const futu = await getFutuEarnings(sym, assetType);
+          if (hasBundleData(futu)) {
+            return NextResponse.json(
+              await enrichBundle(futu, sym, assetType, "futu"),
+            );
+          }
+        } catch (err) {
+          console.warn(
+            "[earnings] futu failed:",
+            err instanceof Error ? err.message : err,
+          );
         }
+      }
+
+      if (assetType === "hk") {
+        const fh = isProviderEnabled("finnhub")
+          ? await finnhubBasicMetrics(sym)
+          : [];
+        const week = await week52FromCandles(sym, assetType);
+        return NextResponse.json({
+          symbol: sym,
+          surprises: [],
+          calendar: { upcoming: [], recent: [] },
+          metrics: mergeMetrics(fh, week),
+          source: fh.length || week.length ? "fallback" : null,
+          degraded: true,
+        });
       }
     }
 
-    if (assetType === "hk") {
-      const fh = await finnhubBasicMetrics(sym);
-      const week = await week52FromCandles(sym, assetType);
+    if (!isProviderEnabled("finnhub")) {
       return NextResponse.json({
         symbol: sym,
         surprises: [],
         calendar: { upcoming: [], recent: [] },
-        metrics: mergeMetrics(fh, week),
+        metrics: await week52FromCandles(sym, assetType),
         source: null,
         degraded: true,
       });
