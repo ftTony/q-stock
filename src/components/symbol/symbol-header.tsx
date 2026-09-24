@@ -213,6 +213,7 @@ export function SymbolHeader({
             <QuoteStatsGrid
               quote={quote}
               metrics={metrics}
+              assetType={assetType}
               className="border-t border-[var(--border)]/70 pt-3"
             />
           )}

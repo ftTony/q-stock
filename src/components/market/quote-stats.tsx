@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { EarningsMetric } from "@/components/market/earnings-panel";
 import { ChangeAbs, ChangePct } from "@/components/market/price";
-import type { Quote } from "@/lib/types";
+import type { AssetType, Quote } from "@/lib/types";
 
 function fmt(v: number | null | undefined, digits = 2): string {
   if (v == null || Number.isNaN(v)) return "-";
@@ -52,13 +52,16 @@ function StatCell({
 export function QuoteStatsGrid({
   quote,
   metrics = [],
+  assetType = "stock",
   className = "",
 }: {
   quote: Quote;
   metrics?: EarningsMetric[];
+  assetType?: AssetType;
   className?: string;
 }) {
   const t = useTranslations("symbol");
+  const isCrypto = assetType === "crypto";
 
   const amplitude =
     quote.previousClose > 0
@@ -88,15 +91,19 @@ export function QuoteStatsGrid({
       <StatCell label={t("amplitude")}>
         {amplitude != null ? `${amplitude.toFixed(2)}%` : "-"}
       </StatCell>
-      <StatCell label={t("volume")}>{fmtCompact(quote.volume)}</StatCell>
-      <StatCell label={t("turnover")}>{fmtCompact(quote.turnover)}</StatCell>
-      <StatCell label={t("week52High")}>{fmt(weekHigh)}</StatCell>
-      <StatCell label={t("week52Low")}>{fmt(weekLow)}</StatCell>
-      <StatCell label={t("mktCap")}>
-        {mktCap != null ? fmtCompact(mktCap * 1e6) : "-"}
-      </StatCell>
-      <StatCell label={t("peTtm")}>{fmt(pe)}</StatCell>
-      <StatCell label={t("beta")}>{fmt(beta)}</StatCell>
+      {!isCrypto && (
+        <>
+          <StatCell label={t("volume")}>{fmtCompact(quote.volume)}</StatCell>
+          <StatCell label={t("turnover")}>{fmtCompact(quote.turnover)}</StatCell>
+          <StatCell label={t("week52High")}>{fmt(weekHigh)}</StatCell>
+          <StatCell label={t("week52Low")}>{fmt(weekLow)}</StatCell>
+          <StatCell label={t("mktCap")}>
+            {mktCap != null ? fmtCompact(mktCap * 1e6) : "-"}
+          </StatCell>
+          <StatCell label={t("peTtm")}>{fmt(pe)}</StatCell>
+          <StatCell label={t("beta")}>{fmt(beta)}</StatCell>
+        </>
+      )}
     </div>
   );
 }
@@ -105,9 +112,11 @@ export function QuoteStatsGrid({
 export function QuoteStatsPanel({
   quote,
   metrics = [],
+  assetType = "stock",
 }: {
   quote: Quote;
   metrics?: EarningsMetric[];
+  assetType?: AssetType;
 }) {
   const t = useTranslations("symbol");
   return (
@@ -115,7 +124,7 @@ export function QuoteStatsPanel({
       <div className="mb-2.5 text-base font-semibold tracking-tight text-[var(--foreground)] sm:text-lg">
         {t("quotePanel")}
       </div>
-      <QuoteStatsGrid quote={quote} metrics={metrics} />
+      <QuoteStatsGrid quote={quote} metrics={metrics} assetType={assetType} />
     </div>
   );
 }
