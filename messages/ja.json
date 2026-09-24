@@ -81,7 +81,12 @@
     "industryByChange": "当日騰落率",
     "industryAllSectors": "全セクター",
     "industryChange": "騰落率",
-    "industryVolume": "出来高"
+    "industryVolume": "出来高",
+    "ipo": "IPOカレンダー",
+    "ipoEmpty": "直近のIPOはありません",
+    "ipoListing": "上場中",
+    "ipoListed": "上場済",
+    "ipoFiling": "申請中"
   },
   "symbol": {
     "chart": "チャート",

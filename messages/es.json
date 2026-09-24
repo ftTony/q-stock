@@ -81,7 +81,12 @@
     "industryByChange": "Por cambio diario",
     "industryAllSectors": "Todos los sectores",
     "industryChange": "Cambio",
-    "industryVolume": "Volumen"
+    "industryVolume": "Volumen",
+    "ipo": "Calendario IPO",
+    "ipoEmpty": "Sin IPOs recientes",
+    "ipoListing": "En listado",
+    "ipoListed": "Listado",
+    "ipoFiling": "Presentado"
   },
   "symbol": {
     "chart": "Gráfico",

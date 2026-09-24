@@ -81,7 +81,12 @@
     "industryByChange": "Par variation du jour",
     "industryAllSectors": "Tous les secteurs",
     "industryChange": "Variation",
-    "industryVolume": "Volume"
+    "industryVolume": "Volume",
+    "ipo": "Calendrier IPO",
+    "ipoEmpty": "Aucune IPO récente",
+    "ipoListing": "En cotation",
+    "ipoListed": "Coté",
+    "ipoFiling": "Déposé"
   },
   "symbol": {
     "chart": "Graphique",

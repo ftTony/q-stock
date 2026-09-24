@@ -81,7 +81,12 @@
     "industryByChange": "ตามการเปลี่ยนแปลงรายวัน",
     "industryAllSectors": "ทุกกลุ่มอุตสาหกรรม",
     "industryChange": "เปลี่ยนแปลง",
-    "industryVolume": "ปริมาณ"
+    "industryVolume": "ปริมาณ",
+    "ipo": "ปฏิทิน IPO",
+    "ipoEmpty": "ไม่มี IPO ล่าสุด",
+    "ipoListing": "กำลังเข้าจด",
+    "ipoListed": "จดทะเบียนแล้ว",
+    "ipoFiling": "ยื่นแล้ว"
   },
   "symbol": {
     "chart": "กราฟ",

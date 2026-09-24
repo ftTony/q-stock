@@ -1,157 +1,22 @@
-import crypto from "crypto";
-import fs from "fs";
 import { cachedFetch } from "@/lib/cache";
+import {
+  futuRequest,
+  isFutuConfigured,
+} from "@/lib/market/providers/futu-http";
 import { normalizeSymbol, toFutuSymbol } from "@/lib/market/symbols";
 import type { MarketDataProvider, QuoteWithSource } from "@/lib/market/types";
 import { MarketDataError } from "@/lib/market/types";
 import type { AssetType, OhlcvBar, SearchResult } from "@/lib/types";
 
-/**
- * Futu OpenAPI (cloud REST) — https://open.futunn.com/zh-cn/api/overview/
- * Host: https://webapi.futunn.com
- * Auth: Bearer access token OR legacy AppKey + private-key signature.
- */
-
-const FUTU_HOST = process.env.FUTU_HTTP_URL || "https://webapi.futunn.com";
-
-function hasBearerAuth(): boolean {
-  return Boolean(process.env.FUTU_ACCESS_TOKEN?.trim());
-}
-
-function hasAppKeyAuth(): boolean {
-  return Boolean(
-    process.env.FUTU_APP_KEY?.trim() &&
-      (process.env.FUTU_PRIVATE_KEY?.trim() ||
-        process.env.FUTU_PRIVATE_KEY_PATH?.trim()),
-  );
-}
-
-function isFutuConfigured(): boolean {
-  return hasBearerAuth() || hasAppKeyAuth();
-}
-
-function loadPrivateKeyPem(): string {
-  const inline = process.env.FUTU_PRIVATE_KEY?.trim();
-  if (inline) {
-    return inline.replace(/\\n/g, "\n");
-  }
-  const path = process.env.FUTU_PRIVATE_KEY_PATH?.trim();
-  if (path) {
-    return fs.readFileSync(path, "utf8");
-  }
-  throw new Error("FUTU_PRIVATE_KEY or FUTU_PRIVATE_KEY_PATH required");
-}
-
-function signPayload(payload: string): string {
-  const alg = (process.env.FUTU_SIGN_ALG || "ed25519").toLowerCase();
-  const pem = loadPrivateKeyPem();
-  if (alg === "rsa-sha256" || alg === "rsa") {
-    const sig = crypto.sign("sha256", Buffer.from(payload, "utf8"), {
-      key: pem,
-      padding: crypto.constants.RSA_PKCS1_PADDING,
-    });
-    return sig.toString("base64");
-  }
-  // Ed25519
-  const keyObj = crypto.createPrivateKey(pem);
-  const sig = crypto.sign(null, Buffer.from(payload, "utf8"), keyObj);
-  return sig.toString("base64");
-}
-
-function buildAuthHeaders(
-  method: string,
-  requestPath: string,
-  queryString: string,
-  body: string | null,
-): Record<string, string> {
-  if (hasBearerAuth()) {
-    return {
-      Authorization: `Bearer ${process.env.FUTU_ACCESS_TOKEN!.trim()}`,
-      "Content-Type": "application/json",
-    };
-  }
-
-  const timestampMs = String(Date.now());
-  const nonce = crypto.randomBytes(12).toString("hex");
-  const bodyPart = body
-    ? crypto.createHash("sha256").update(body, "utf8").digest("hex")
-    : "";
-  const payload = [
-    timestampMs,
-    method.toUpperCase(),
-    requestPath,
-    queryString,
-    bodyPart,
-  ].join("\n");
-  const signature = signPayload(payload);
-
-  return {
-    "X-Api-Key": process.env.FUTU_APP_KEY!.trim(),
-    Authorization: signature,
-    "X-Timestamp": timestampMs,
-    "X-Nonce": nonce,
-    "Content-Type": "application/json",
-  };
-}
-
-type FutuEnvelope<T> = {
-  ret_code?: number;
-  ret_msg?: string;
-  data?: T;
-};
-
-async function futuRequest<T>(
-  method: "GET" | "POST",
-  requestPath: string,
-  opts?: { query?: Record<string, string | number | undefined>; body?: unknown },
-): Promise<T> {
-  const queryEntries = Object.entries(opts?.query ?? {}).filter(
-    ([, v]) => v !== undefined && v !== "",
-  );
-  const queryString = queryEntries
-    .map(
-      ([k, v]) =>
-        `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`,
-    )
-    .join("&");
-  const bodyStr =
-    opts?.body !== undefined ? JSON.stringify(opts.body) : null;
-  const url =
-    queryString.length > 0
-      ? `${FUTU_HOST}${requestPath}?${queryString}`
-      : `${FUTU_HOST}${requestPath}`;
-
-  const headers = buildAuthHeaders(method, requestPath, queryString, bodyStr);
-  const res = await fetch(url, {
-    method,
-    headers,
-    body: bodyStr,
-    signal: AbortSignal.timeout(20000),
-  });
-
-  if (!res.ok) {
-    const text = await res.text().catch(() => "");
-    throw new MarketDataError(
-      `Futu HTTP ${res.status}: ${text.slice(0, 200)}`,
-      "futu",
-    );
-  }
-
-  const json = (await res.json()) as FutuEnvelope<T>;
-  if (json.ret_code != null && json.ret_code !== 0) {
-    throw new MarketDataError(
-      `Futu ${json.ret_code}: ${json.ret_msg || "request failed"}`,
-      "futu",
-    );
-  }
-  if (json.data === undefined) {
-    throw new MarketDataError("Futu empty response", "futu");
-  }
-  return json.data;
-}
+/** History K-line: default/max num is 370 per docs. */
+const KLINE_PAGE_SIZE = 370;
+const KLINE_MAX_PAGES = 20;
 
 type SnapshotRow = {
   code?: string;
+  name?: string;
+  sc_name?: string;
+  tc_name?: string;
   last_price?: number;
   open_price?: number;
   high_price?: number;
@@ -165,41 +30,6 @@ type SnapshotRow = {
   bid_vol?: number;
   ask_vol?: number;
 };
-
-function mapFutuSnapshot(
-  snap: SnapshotRow,
-  normalized: string,
-  assetType: AssetType,
-): QuoteWithSource {
-  const price = Number(snap.last_price);
-  const prev = Number(snap.prev_close_price ?? 0);
-  const change = price - prev;
-  const volume = Number(snap.volume ?? 0);
-  const turnover = Number(snap.turnover ?? 0);
-  const bid = Number(snap.bid_price ?? 0);
-  const ask = Number(snap.ask_price ?? 0);
-  const bidSize = Number(snap.bid_vol ?? 0);
-  const askSize = Number(snap.ask_vol ?? 0);
-  return {
-    symbol: normalized,
-    assetType,
-    price,
-    change,
-    percentChange: prev ? (change / prev) * 100 : 0,
-    high: Number(snap.high_price ?? 0),
-    low: Number(snap.low_price ?? 0),
-    open: Number(snap.open_price ?? 0),
-    previousClose: prev,
-    timestamp: msToSec(snap.update_time),
-    ...(volume > 0 ? { volume } : {}),
-    ...(turnover > 0 ? { turnover } : {}),
-    ...(bid > 0 ? { bid } : {}),
-    ...(ask > 0 ? { ask } : {}),
-    ...(bidSize > 0 ? { bidSize } : {}),
-    ...(askSize > 0 ? { askSize } : {}),
-    source: "futu" as const,
-  };
-}
 
 type KlineRow = {
   time_key?: number;
@@ -219,6 +49,54 @@ function toDateYmd(unixSec: number): string {
   return new Date(unixSec * 1000).toISOString().slice(0, 10);
 }
 
+function displayName(snap: SnapshotRow): string | undefined {
+  const n = (snap.sc_name || snap.name || snap.tc_name || "").trim();
+  return n || undefined;
+}
+
+function mapFutuSnapshot(
+  snap: SnapshotRow,
+  normalized: string,
+  assetType: AssetType,
+): QuoteWithSource {
+  const price = Number(snap.last_price);
+  const prev = Number(snap.prev_close_price ?? 0);
+  const change = price - prev;
+  const volume = Number(snap.volume ?? 0);
+  const turnover = Number(snap.turnover ?? 0);
+  const bid = Number(snap.bid_price ?? 0);
+  const ask = Number(snap.ask_price ?? 0);
+  const bidSize = Number(snap.bid_vol ?? 0);
+  const askSize = Number(snap.ask_vol ?? 0);
+  const name = displayName(snap);
+  return {
+    symbol: normalized,
+    assetType,
+    price,
+    change,
+    percentChange: prev ? (change / prev) * 100 : 0,
+    high: Number(snap.high_price ?? 0),
+    low: Number(snap.low_price ?? 0),
+    open: Number(snap.open_price ?? 0),
+    previousClose: prev,
+    timestamp: msToSec(snap.update_time),
+    ...(volume > 0 ? { volume } : {}),
+    ...(turnover > 0 ? { turnover } : {}),
+    ...(bid > 0 ? { bid } : {}),
+    ...(ask > 0 ? { ask } : {}),
+    ...(bidSize > 0 ? { bidSize } : {}),
+    ...(askSize > 0 ? { askSize } : {}),
+    ...(name ? { name } : {}),
+    source: "futu" as const,
+  };
+}
+
+function assertEquity(assetType: AssetType): void {
+  if (assetType !== "stock" && assetType !== "hk") {
+    throw new MarketDataError("Futu supports equities only", "futu");
+  }
+}
+
 export const futuProvider: MarketDataProvider = {
   id: "futu",
 
@@ -231,16 +109,14 @@ export const futuProvider: MarketDataProvider = {
   },
 
   async getQuote(symbol, assetType) {
-    if (assetType !== "stock" && assetType !== "hk") {
-      throw new MarketDataError("Futu supports equities only", "futu");
-    }
+    assertEquity(assetType);
     const normalized = normalizeSymbol(symbol, assetType);
     const code = toFutuSymbol(normalized, assetType);
-    const key = `futu:quote:${normalized}`;
+    const key = `futu:quote:v2:${normalized}`;
 
     try {
       return await cachedFetch(key, 15_000, async () => {
-        const data = await futuRequest<{ snapshot_list?: SnapshotRow[] }>(
+        const { data } = await futuRequest<{ snapshot_list?: SnapshotRow[] }>(
           "POST",
           "/api/v1.0/quote/snapshot",
           { body: { code_list: [code] } },
@@ -269,14 +145,20 @@ export const futuProvider: MarketDataProvider = {
       const codes = equityItems.map((i) =>
         toFutuSymbol(normalizeSymbol(i.symbol, i.assetType), i.assetType),
       );
-      const data = await futuRequest<{ snapshot_list?: SnapshotRow[] }>(
-        "POST",
-        "/api/v1.0/quote/snapshot",
-        { body: { code_list: codes } },
-      );
-      const byCode = new Map(
-        (data.snapshot_list ?? []).map((s) => [s.code, s]),
-      );
+      // API max 400 symbols per request
+      const chunkSize = 400;
+      const byCode = new Map<string, SnapshotRow>();
+      for (let i = 0; i < codes.length; i += chunkSize) {
+        const chunk = codes.slice(i, i + chunkSize);
+        const { data } = await futuRequest<{ snapshot_list?: SnapshotRow[] }>(
+          "POST",
+          "/api/v1.0/quote/snapshot",
+          { body: { code_list: chunk } },
+        );
+        for (const s of data.snapshot_list ?? []) {
+          if (s.code) byCode.set(s.code, s);
+        }
+      }
       const out: QuoteWithSource[] = [];
       for (const item of equityItems) {
         const normalized = normalizeSymbol(item.symbol, item.assetType);
@@ -312,15 +194,36 @@ export const futuProvider: MarketDataProvider = {
     const query = q.trim().toUpperCase();
     if (!query) return [];
     const type: AssetType = assetType === "hk" ? "hk" : "stock";
-    const sym = normalizeSymbol(
-      query.replace(/^(US|HK|SH|SZ|BJ)\./, "").replace(/\.(US|HK)$/, ""),
-      type,
-    );
+    const bare = query
+      .replace(/^(US|HK|SH|SZ|BJ)\./, "")
+      .replace(/\.(US|HK)$/, "");
+    const sym = normalizeSymbol(bare, type);
+    const code = toFutuSymbol(sym, type);
+
+    let description = `${sym} (Futu)`;
+    try {
+      const { data } = await futuRequest<{
+        basic_list?: Array<{
+          code?: string;
+          name?: string;
+          sc_name?: string;
+          tc_name?: string;
+        }>;
+      }>("POST", "/api/v1.0/quote/stock-basicinfo", {
+        body: { code_list: [code] },
+      });
+      const row = data.basic_list?.[0];
+      const name = (row?.sc_name || row?.name || row?.tc_name || "").trim();
+      if (name) description = name;
+    } catch {
+      /* search still returns the synthesized code */
+    }
+
     return [
       {
         symbol: sym,
-        displaySymbol: toFutuSymbol(sym, type),
-        description: `${sym} (Futu)`,
+        displaySymbol: code,
+        description,
         assetType: type,
         type: "Common Stock",
       },
@@ -335,36 +238,57 @@ async function fetchKlines(
   to: number,
   ktype: number,
 ): Promise<OhlcvBar[]> {
-  if (assetType !== "stock" && assetType !== "hk") {
-    throw new MarketDataError("Futu supports equities only", "futu");
-  }
+  assertEquity(assetType);
   const normalized = normalizeSymbol(symbol, assetType);
   const code = toFutuSymbol(normalized, assetType);
-  const key = `futu:candle:${ktype}:${normalized}:${from}:${to}`;
+  const key = `futu:candle:v2:${ktype}:${normalized}:${from}:${to}`;
 
   return cachedFetch(key, ktype === 2 ? 60_000 : 120_000, async () => {
     const path = `/api/v1.0/quote/${encodeURIComponent(code)}/history-kline`;
-    const data = await futuRequest<{ kline_list?: KlineRow[] }>("GET", path, {
-      query: {
-        start: toDateYmd(from),
-        end: toDateYmd(to),
-        ktype,
-        autype: 0,
-        num: 1000,
-      },
-    });
-    return (data.kline_list ?? [])
-      .map(
-        (k): OhlcvBar => ({
-          time: msToSec(k.time_key),
+    const byTime = new Map<number, OhlcvBar>();
+    let endYmd = toDateYmd(to);
+    const startYmd = toDateYmd(from);
+
+    for (let page = 0; page < KLINE_MAX_PAGES; page++) {
+      const { data, nextTime, hasMore } = await futuRequest<{
+        kline_list?: KlineRow[];
+        next_time?: number;
+      }>("GET", path, {
+        query: {
+          start: startYmd,
+          end: endYmd,
+          ktype,
+          autype: 1,
+          num: KLINE_PAGE_SIZE,
+        },
+      });
+
+      const rows = data.kline_list ?? [];
+      for (const k of rows) {
+        const time = msToSec(k.time_key);
+        if (time < from || time > to) continue;
+        byTime.set(time, {
+          time,
           open: Number(k.open ?? 0),
           high: Number(k.high ?? 0),
           low: Number(k.low ?? 0),
           close: Number(k.close ?? 0),
           volume: Number(k.volume ?? 0),
-        }),
-      )
-      .filter((b) => b.time >= from && b.time <= to)
-      .sort((a, b) => a.time - b.time);
+        });
+      }
+
+      const cursor = nextTime ?? Number(data.next_time ?? 0);
+      const more =
+        hasMore === true ||
+        (cursor > 0 && rows.length >= KLINE_PAGE_SIZE);
+      if (!more || !cursor) break;
+
+      // Paginate backward: next_time → next page's end
+      const nextEnd = toDateYmd(msToSec(cursor));
+      if (nextEnd >= endYmd || nextEnd < startYmd) break;
+      endYmd = nextEnd;
+    }
+
+    return [...byTime.values()].sort((a, b) => a.time - b.time);
   });
 }

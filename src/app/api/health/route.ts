@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { listBrokerGateways } from "@/lib/broker";
 import { prisma } from "@/lib/db";
 import { getActiveProviders, getProviderPriority } from "@/lib/market";
+import { isFutuConfigured } from "@/lib/market/providers/futu-http";
 
 export async function GET() {
   try {
@@ -21,11 +22,7 @@ export async function GET() {
           process.env.LONGBRIDGE_APP_SECRET &&
           process.env.LONGBRIDGE_ACCESS_TOKEN,
       ),
-      futu: Boolean(
-        process.env.FUTU_ACCESS_TOKEN ||
-          (process.env.FUTU_APP_KEY &&
-            (process.env.FUTU_PRIVATE_KEY || process.env.FUTU_PRIVATE_KEY_PATH)),
-      ),
+      futu: isFutuConfigured(),
       adanos: Boolean(process.env.ADANOS_API_KEY),
       deepseek: Boolean(process.env.DEEPSEEK_API_KEY),
       binance: true,

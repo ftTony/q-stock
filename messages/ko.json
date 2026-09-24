@@ -81,7 +81,12 @@
     "industryByChange": "일간 등락률",
     "industryAllSectors": "전체 업종",
     "industryChange": "등락률",
-    "industryVolume": "거래량"
+    "industryVolume": "거래량",
+    "ipo": "IPO 일정",
+    "ipoEmpty": "최근 IPO가 없습니다",
+    "ipoListing": "상장중",
+    "ipoListed": "상장완료",
+    "ipoFiling": "제출중"
   },
   "symbol": {
     "chart": "차트",

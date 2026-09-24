@@ -282,6 +282,9 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
           x.id !== "officers",
       );
     }
+    if (assetType === "hk") {
+      return all.filter((x) => x.id !== "sentiment");
+    }
     return all;
   }, [t, assetType, isIndex]);
 
@@ -293,6 +296,9 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
         tab === "profile" ||
         tab === "officers")
     ) {
+      setTab("news");
+    }
+    if (assetType === "hk" && tab === "sentiment") {
       setTab("news");
     }
   }, [assetType, isIndex, tab]);

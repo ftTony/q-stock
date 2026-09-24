@@ -8,6 +8,7 @@ import { Link } from "@/i18n/routing";
 import { CryptoPopularTable } from "@/components/market/crypto-popular-table";
 import { IndexStrip } from "@/components/market/index-strip";
 import { IndustryHeatmap } from "@/components/market/industry-heatmap";
+import { IpoPanel } from "@/components/market/ipo-panel";
 import { KpiCard } from "@/components/market/kpi-card";
 import { RankBoardPanel } from "@/components/market/rank-board-panel";
 import type { IndexQuote, RankQuote } from "@/components/market/markets-types";
@@ -135,13 +136,15 @@ export default function MarketsDashboard() {
             : fetch(`/api/indices?assetType=${assetType}`).catch(() => null);
         const [qr, sr, nr, ar, ir] = await Promise.all([
           fetch(quoteUrl),
-          fetch(`/api/sentiment?assetType=${assetType}`),
+          assetType === "hk"
+            ? Promise.resolve(null)
+            : fetch(`/api/sentiment?assetType=${assetType}`),
           fetch(`/api/news?assetType=${assetType}`),
           fetch("/api/alerts").catch(() => null),
           indexPromise,
         ]);
         const qj = await qr.json();
-        const sj = await sr.json();
+        const sj = sr ? await sr.json() : null;
         const nj = await nr.json();
         if (!qr.ok) throw new Error(qj.error || "quotes failed");
         if (assetType === "crypto") {
@@ -159,7 +162,7 @@ export default function MarketsDashboard() {
             setIndices(ij.indices ?? []);
           }
         }
-        setSentiment(sj.market ?? null);
+        setSentiment(assetType === "hk" ? null : (sj?.market ?? null));
         setNews((nj.news ?? []).slice(0, 4));
         setUpdatedAt(new Date());
         if (ar && ar.ok) {
@@ -389,8 +392,8 @@ export default function MarketsDashboard() {
           ))}
       </section>
 
-      <section className="grid gap-4 lg:grid-cols-2">
-        <div className="qt-panel p-4">
+      <section className="grid items-stretch gap-4 lg:grid-cols-2">
+        <div className="qt-panel flex h-full flex-col p-4">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="font-semibold">{t("narrative")}</h2>
             <span className="text-xs text-[var(--brand-text)]">{t("viewAll")}</span>
@@ -441,51 +444,61 @@ export default function MarketsDashboard() {
           </ul>
         </div>
 
-        <div className="qt-panel p-4">
-          <h2 className="mb-4 font-semibold">{t("sentiment")}</h2>
-          {sentiment?.available === false ? (
-            <p className="text-sm text-[var(--muted)]">
-              {sentiment.message || t("unavailable")}
-            </p>
-          ) : (
-            <>
-              <div className="mb-4 flex h-3 overflow-hidden rounded-full bg-[var(--surface-2)]">
-                <div className="bg-[var(--up)]" style={{ width: `${bullish}%` }} />
-                <div className="bg-[var(--muted)]" style={{ width: `${neutral}%` }} />
-                <div className="bg-[var(--down)]" style={{ width: `${bearish}%` }} />
-              </div>
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div>
-                  <div className="text-xl font-semibold text-[var(--up)]">
-                    {bullish.toFixed(0)}%
-                  </div>
-                  <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
-                    {t("bullish")}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xl font-semibold text-[var(--muted)]">
-                    {neutral.toFixed(0)}%
-                  </div>
-                  <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
-                    {t("neutral")}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-xl font-semibold text-[var(--down)]">
-                    {bearish.toFixed(0)}%
-                  </div>
-                  <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
-                    {t("bearish")}
-                  </div>
-                </div>
-              </div>
-              <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
-                {t("sentimentHint")}
+        {tab === "hk" ? (
+          <IpoPanel assetType="hk" />
+        ) : (
+          <div className="qt-panel flex h-full flex-col p-4">
+            <h2 className="mb-4 font-semibold">{t("sentiment")}</h2>
+            {sentiment?.available === false ? (
+              <p className="text-sm text-[var(--muted)]">
+                {sentiment.message || t("unavailable")}
               </p>
-            </>
-          )}
-        </div>
+            ) : (
+              <>
+                <div className="mb-4 flex h-3 overflow-hidden rounded-full bg-[var(--surface-2)]">
+                  <div className="bg-[var(--up)]" style={{ width: `${bullish}%` }} />
+                  <div
+                    className="bg-[var(--muted)]"
+                    style={{ width: `${neutral}%` }}
+                  />
+                  <div
+                    className="bg-[var(--down)]"
+                    style={{ width: `${bearish}%` }}
+                  />
+                </div>
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div>
+                    <div className="text-xl font-semibold text-[var(--up)]">
+                      {bullish.toFixed(0)}%
+                    </div>
+                    <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
+                      {t("bullish")}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-semibold text-[var(--muted)]">
+                      {neutral.toFixed(0)}%
+                    </div>
+                    <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
+                      {t("neutral")}
+                    </div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-semibold text-[var(--down)]">
+                      {bearish.toFixed(0)}%
+                    </div>
+                    <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
+                      {t("bearish")}
+                    </div>
+                  </div>
+                </div>
+                <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
+                  {t("sentimentHint")}
+                </p>
+              </>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );

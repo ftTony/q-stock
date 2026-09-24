@@ -81,7 +81,12 @@
     "industryByChange": "按當日漲跌幅",
     "industryAllSectors": "全部板塊",
     "industryChange": "漲跌幅",
-    "industryVolume": "成交量"
+    "industryVolume": "成交量",
+    "ipo": "IPO 日曆",
+    "ipoEmpty": "暫無近期 IPO 資料",
+    "ipoListing": "上市中",
+    "ipoListed": "已上市",
+    "ipoFiling": "提交中"
   },
   "symbol": {
     "chart": "K線",

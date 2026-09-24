@@ -49,7 +49,7 @@ export const INDEX_LONGBRIDGE: Record<string, string> = {
   HSCEI: "HSCEI.HK",
 };
 
-/** Futu OpenD index wire codes. */
+/** Futu OpenAPI index wire codes. */
 export const INDEX_FUTU: Record<string, string> = {
   SPX: "US..SPX",
   IXIC: "US..IXIC",

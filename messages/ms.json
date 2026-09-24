@@ -81,7 +81,12 @@
     "industryByChange": "Mengikut perubahan harian",
     "industryAllSectors": "Semua sektor",
     "industryChange": "Perubahan",
-    "industryVolume": "Volum"
+    "industryVolume": "Volum",
+    "ipo": "Kalendar IPO",
+    "ipoEmpty": "Tiada IPO terkini",
+    "ipoListing": "Menyenarai",
+    "ipoListed": "Tersenarai",
+    "ipoFiling": "Dihantar"
   },
   "symbol": {
     "chart": "Carta",

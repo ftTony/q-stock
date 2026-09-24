@@ -1,7 +1,9 @@
+import { isFutuConfigured } from "@/lib/market/providers/futu-http";
+
 /**
  * Broker trading gateway (Phase 2).
  * Market data uses `@/lib/market`; live order placement will plug in here
- * via Longbridge TradeContext / Futu OpenD TrdPlaceOrder.
+ * via Longbridge TradeContext / Futu OpenAPI trade endpoints.
  */
 
 export type BrokerId = "longbridge" | "futu";
@@ -51,11 +53,7 @@ export function listBrokerGateways(): {
     },
     {
       id: "futu",
-      configured: Boolean(
-        process.env.FUTU_ACCESS_TOKEN ||
-          (process.env.FUTU_APP_KEY &&
-            (process.env.FUTU_PRIVATE_KEY || process.env.FUTU_PRIVATE_KEY_PATH)),
-      ),
+      configured: isFutuConfigured(),
       ready: false, // Futu OpenAPI trade wiring is Phase 2
     },
   ];
