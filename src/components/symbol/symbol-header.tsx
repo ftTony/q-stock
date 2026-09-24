@@ -110,17 +110,17 @@ export function SymbolHeader({
 }: Props) {
   const sentinelRef = useRef<HTMLDivElement>(null);
   const [showDock, setShowDock] = useState(false);
+  /** 0 = just stuck (panel white) → 1 = fully match nav background */
+  const [dockBlend, setDockBlend] = useState(0);
 
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
     const io = new IntersectionObserver(
       ([entry]) => {
-        // When the main header block leaves the viewport (below top bar), show dock
         setShowDock(!entry.isIntersecting);
       },
       {
-        // Account for sticky app header (h-14 = 56px)
         root: null,
         rootMargin: "-56px 0px 0px 0px",
         threshold: 0,
@@ -129,6 +129,23 @@ export function SymbolHeader({
     io.observe(el);
     return () => io.disconnect();
   }, []);
+
+  useEffect(() => {
+    if (!showDock) {
+      setDockBlend(0);
+      return;
+    }
+    const update = () => {
+      const el = sentinelRef.current;
+      if (!el) return;
+      // After header (56px): blend over next ~72px of scroll
+      const past = 56 - el.getBoundingClientRect().bottom;
+      setDockBlend(Math.min(1, Math.max(0, past / 72)));
+    };
+    update();
+    window.addEventListener("scroll", update, { passive: true });
+    return () => window.removeEventListener("scroll", update);
+  }, [showDock]);
 
   const watchProps = {
     inWatchlist,
@@ -139,12 +156,16 @@ export function SymbolHeader({
     onToggleWatchlist,
   };
 
+  const dockBg = `color-mix(in srgb, var(--panel) ${Math.round((1 - dockBlend) * 100)}%, var(--background) ${Math.round(dockBlend * 100)}%)`;
+
   return (
     <>
-      {/* Floating dock: only after 盘口 header scrolls away */}
       {showDock && (
-        <div className="fixed inset-x-0 top-14 z-30 px-4 sm:px-6 lg:left-[260px]">
-          <div className="flex flex-wrap items-center justify-between gap-3 rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)]/95 p-3 shadow-md backdrop-blur-xl sm:px-5 sm:py-3">
+        <div
+          className="fixed inset-x-0 top-14 z-30 border-b border-[var(--border)] backdrop-blur-xl lg:left-[260px]"
+          style={{ backgroundColor: dockBg }}
+        >
+          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 sm:px-6 sm:py-3">
             <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
               <Link
                 href="/"
@@ -198,7 +219,6 @@ export function SymbolHeader({
           </Link>
         </div>
 
-        {/* Sentinel: when this block leaves view, dock appears */}
         <div ref={sentinelRef} className="qt-panel space-y-3 p-3 sm:px-5 sm:py-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <SymbolPriceRow
@@ -222,3 +242,4 @@ export function SymbolHeader({
     </>
   );
 }
+

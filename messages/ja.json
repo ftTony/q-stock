@@ -76,7 +76,12 @@
     "bearish": "弱気",
     "sentimentHint": "Adanosの話題性と討論の熱量に基づく集計（約30分キャッシュ）",
     "symbol": "銘柄コード",
-    "today": "今日"
+    "today": "今日",
+    "industryHeatmap": "業種別ヒートマップ",
+    "industryByChange": "当日騰落率",
+    "industryAllSectors": "全セクター",
+    "industryChange": "騰落率",
+    "industryVolume": "出来高"
   },
   "symbol": {
     "chart": "チャート",

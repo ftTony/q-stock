@@ -76,7 +76,12 @@
     "bearish": "하락 전망",
     "sentimentHint": "Adanos 버즈 및 토론 열기에 기반 (캐시 약 30분)",
     "symbol": "종목 코드",
-    "today": "오늘"
+    "today": "오늘",
+    "industryHeatmap": "업종 히트맵",
+    "industryByChange": "일간 등락률",
+    "industryAllSectors": "전체 업종",
+    "industryChange": "등락률",
+    "industryVolume": "거래량"
   },
   "symbol": {
     "chart": "차트",

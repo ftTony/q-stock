@@ -76,7 +76,12 @@
     "bearish": "Baissier",
     "sentimentHint": "Basé sur le buzz Adanos et la chaleur des discussions (cache ~30 min)",
     "symbol": "Code",
-    "today": "Aujourd'hui"
+    "today": "Aujourd'hui",
+    "industryHeatmap": "Carte thermique des secteurs",
+    "industryByChange": "Par variation du jour",
+    "industryAllSectors": "Tous les secteurs",
+    "industryChange": "Variation",
+    "industryVolume": "Volume"
   },
   "symbol": {
     "chart": "Graphique",

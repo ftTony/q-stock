@@ -76,7 +76,12 @@
     "bearish": "Menjangkakan Turun",
     "sentimentHint": "Berasaskan buzz Adanos dan kepanasan perbincangan (cache ~30 min)",
     "symbol": "Simbol",
-    "today": "Hari Ini"
+    "today": "Hari Ini",
+    "industryHeatmap": "Peta haba industri",
+    "industryByChange": "Mengikut perubahan harian",
+    "industryAllSectors": "Semua sektor",
+    "industryChange": "Perubahan",
+    "industryVolume": "Volum"
   },
   "symbol": {
     "chart": "Carta",

@@ -76,7 +76,12 @@
     "bearish": "看空",
     "sentimentHint": "基于 Adanos 舆情与讨论热度汇总（缓存约 30 分钟）",
     "symbol": "代码",
-    "today": "今日"
+    "today": "今日",
+    "industryHeatmap": "行业榜单",
+    "industryByChange": "按当日涨跌幅",
+    "industryAllSectors": "全部板块",
+    "industryChange": "涨跌幅",
+    "industryVolume": "成交量"
   },
   "symbol": {
     "chart": "K线",

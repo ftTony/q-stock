@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { CryptoPopularTable } from "@/components/market/crypto-popular-table";
 import { IndexStrip } from "@/components/market/index-strip";
+import { IndustryHeatmap } from "@/components/market/industry-heatmap";
 import { KpiCard } from "@/components/market/kpi-card";
 import { RankBoardPanel } from "@/components/market/rank-board-panel";
 import type { IndexQuote, RankQuote } from "@/components/market/markets-types";
@@ -342,6 +343,8 @@ export default function MarketsDashboard() {
           hintDot={alertCount > 0}
         />
       </section>
+
+      {tab !== "crypto" && <IndustryHeatmap assetType={tab} />}
 
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-3">

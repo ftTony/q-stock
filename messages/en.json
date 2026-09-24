@@ -76,7 +76,12 @@
     "bearish": "Bearish",
     "sentimentHint": "Based on Adanos buzz and discussion heat (cached ~30 min)",
     "symbol": "Symbol",
-    "today": "Today"
+    "today": "Today",
+    "industryHeatmap": "Industry Heatmap",
+    "industryByChange": "By daily change",
+    "industryAllSectors": "All sectors",
+    "industryChange": "Change",
+    "industryVolume": "Volume"
   },
   "symbol": {
     "chart": "Chart",

@@ -76,7 +76,12 @@
     "bearish": "Bajista",
     "sentimentHint": "Basado en el buzz de Adanos y la intensidad de la discusión (caché ~30 min)",
     "symbol": "Ticker",
-    "today": "Hoy"
+    "today": "Hoy",
+    "industryHeatmap": "Mapa de calor sectorial",
+    "industryByChange": "Por cambio diario",
+    "industryAllSectors": "Todos los sectores",
+    "industryChange": "Cambio",
+    "industryVolume": "Volumen"
   },
   "symbol": {
     "chart": "Gráfico",

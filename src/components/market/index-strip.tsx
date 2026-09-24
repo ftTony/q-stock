@@ -35,7 +35,7 @@ export function IndexStrip({
   if (!slots.length) return null;
 
   return (
-    <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+    <section className="sticky top-14 z-30 -mx-4 grid grid-cols-1 gap-3 border-b border-[var(--border)] bg-[var(--background)]/90 px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:grid-cols-3 sm:px-6">
       {slots.map((item) => {
         const pct = item.percentChange;
         const up = pct != null && pct >= 0;

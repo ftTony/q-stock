@@ -76,7 +76,12 @@
     "bearish": "แนวโน้มลบ",
     "sentimentHint": "อ้างอิงจากกระแส Adanos และความร้อนแรงของการสนทนา (แคช ~30 นาที)",
     "symbol": "สัญลักษณ์",
-    "today": "วันนี้"
+    "today": "วันนี้",
+    "industryHeatmap": "แผนที่ความร้อนอุตสาหกรรม",
+    "industryByChange": "ตามการเปลี่ยนแปลงรายวัน",
+    "industryAllSectors": "ทุกกลุ่มอุตสาหกรรม",
+    "industryChange": "เปลี่ยนแปลง",
+    "industryVolume": "ปริมาณ"
   },
   "symbol": {
     "chart": "กราฟ",
