@@ -203,7 +203,7 @@ export function TopBarActions() {
         {langOpen && (
           <div
             role="listbox"
-            className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1 shadow-xl"
+            className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1 shadow-[0_8px_30px_rgba(15,23,42,0.12)]"
           >
             {locales.map((l) => {
               const active = l === locale;
@@ -260,13 +260,31 @@ export function TopBarActions() {
               setMenuOpen((v) => !v);
               setNotifOpen(false);
             }}
+            aria-label={
+              session.user.name ||
+              session.user.email?.split("@")[0] ||
+              t("login")
+            }
           >
-            {session.user.email?.[0]?.toUpperCase() || "U"}
+            {(
+              session.user.name?.trim()?.[0] ||
+              session.user.email?.[0] ||
+              "U"
+            ).toUpperCase()}
           </button>
           {menuOpen && (
-            <div className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl">
-              <div className="border-b border-[var(--border)] px-3 py-2 text-xs text-[var(--muted)] truncate">
-                {session.user.email}
+            <div className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl">
+              <div className="border-b border-[var(--border)] px-3 py-2.5">
+                <div className="truncate text-sm font-medium text-[var(--foreground)]">
+                  {session.user.name?.trim() ||
+                    session.user.email?.split("@")[0] ||
+                    "User"}
+                </div>
+                {session.user.email && (
+                  <div className="mt-0.5 truncate text-[11px] text-[var(--muted)]">
+                    {session.user.email}
+                  </div>
+                )}
               </div>
               <Link
                 href="/settings"

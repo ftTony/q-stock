@@ -44,6 +44,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async jwt({ token, user, trigger, session }) {
       if (user) {
         token.id = user.id;
+        token.name = user.name ?? token.name;
+        token.email = user.email ?? token.email;
         const u = user as {
           locale?: string;
           theme?: string;
@@ -54,6 +56,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         token.changeColorScheme = u.changeColorScheme;
       }
       if (trigger === "update" && session) {
+        if (session.name !== undefined) token.name = session.name;
         token.locale = session.locale ?? token.locale;
         token.theme = session.theme ?? token.theme;
         token.changeColorScheme =
@@ -64,6 +67,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
+        session.user.name = (token.name as string | undefined) ?? session.user.name;
+        session.user.email =
+          (token.email as string | undefined) ?? session.user.email;
         session.user.locale = token.locale as string;
         session.user.theme = token.theme as string;
         session.user.changeColorScheme = token.changeColorScheme as string;

@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { QtSelect } from "@/components/ui/qt-select";
 import type { AssetType } from "@/lib/types";
 import { parseAssetType } from "@/lib/types";
 
@@ -135,26 +136,26 @@ function AlertsContent() {
         </label>
         <label className="space-y-1 text-sm">
           <span className="text-[var(--muted)]">Type</span>
-          <select
+          <QtSelect
             value={assetType}
-            onChange={(e) => setAssetType(e.target.value as AssetType)}
-            className="qt-input w-full px-3 py-2.5"
-          >
-            <option value="stock">{tMarket("stocks")}</option>
-            <option value="hk">{tMarket("hk")}</option>
-            <option value="crypto">{tMarket("crypto")}</option>
-          </select>
+            onChange={(v) => setAssetType(v as AssetType)}
+            options={[
+              { value: "stock", label: tMarket("stocks") },
+              { value: "hk", label: tMarket("hk") },
+              { value: "crypto", label: tMarket("crypto") },
+            ]}
+          />
         </label>
         <label className="space-y-1 text-sm">
           <span className="text-[var(--muted)]">{t("condition")}</span>
-          <select
+          <QtSelect
             value={condition}
-            onChange={(e) => setCondition(e.target.value as "gte" | "lte")}
-            className="qt-input w-full px-3 py-2.5"
-          >
-            <option value="gte">{t("gte")}</option>
-            <option value="lte">{t("lte")}</option>
-          </select>
+            onChange={(v) => setCondition(v as "gte" | "lte")}
+            options={[
+              { value: "gte", label: t("gte") },
+              { value: "lte", label: t("lte") },
+            ]}
+          />
         </label>
         <label className="space-y-1 text-sm">
           <span className="text-[var(--muted)]">{t("triggerPrice")}</span>

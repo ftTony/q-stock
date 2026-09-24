@@ -124,7 +124,9 @@
     "peTtm": "PER TTM",
     "beta": "Bêta",
     "profile": "Profil de l'entreprise",
-    "officers": "Dirigeants"
+    "officers": "Dirigeants",
+    "fullscreen": "Plein écran",
+    "exitFullscreen": "Quitter le plein écran"
   },
   "company": {
     "na": "Aucun profil d'entreprise pour cet actif",
@@ -170,6 +172,7 @@
   },
   "settings": {
     "title": "Paramètres",
+    "name": "Nom d'affichage",
     "language": "Langue",
     "theme": "Thème",
     "themeLight": "Clair",

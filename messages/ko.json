@@ -124,7 +124,9 @@
     "peTtm": "P/E TTM",
     "beta": "베타",
     "profile": "기업 정보",
-    "officers": "임원진"
+    "officers": "임원진",
+    "fullscreen": "전체 화면",
+    "exitFullscreen": "전체 화면 종료"
   },
   "company": {
     "na": "이 자산에 대한 기업 정보가 없습니다",
@@ -170,6 +172,7 @@
   },
   "settings": {
     "title": "설정",
+    "name": "닉네임",
     "language": "언어",
     "theme": "테마",
     "themeLight": "라이트",

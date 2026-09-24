@@ -124,7 +124,9 @@
     "peTtm": "KGV TTM",
     "beta": "Beta",
     "profile": "Unternehmensprofil",
-    "officers": "Führungskräfte"
+    "officers": "Führungskräfte",
+    "fullscreen": "Vollbild",
+    "exitFullscreen": "Vollbild beenden"
   },
   "company": {
     "na": "Kein Unternehmensprofil für diesen Vermögenswert verfügbar",
@@ -170,6 +172,7 @@
   },
   "settings": {
     "title": "Einstellungen",
+    "name": "Anzeigename",
     "language": "Sprache",
     "theme": "Design",
     "themeLight": "Hell",

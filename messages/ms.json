@@ -124,7 +124,9 @@
     "peTtm": "P/E TTM",
     "beta": "Beta",
     "profile": "Profil Syarikat",
-    "officers": "Eksekutif"
+    "officers": "Eksekutif",
+    "fullscreen": "Skrin penuh",
+    "exitFullscreen": "Keluar skrin penuh"
   },
   "company": {
     "na": "Tiada profil syarikat untuk aset ini",
@@ -170,6 +172,7 @@
   },
   "settings": {
     "title": "Tetapan",
+    "name": "Nama paparan",
     "language": "Bahasa",
     "theme": "Tema",
     "themeLight": "Cerah",

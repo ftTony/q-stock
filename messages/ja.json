@@ -124,7 +124,9 @@
     "peTtm": "PER TTM",
     "beta": "ベータ",
     "profile": "会社概要",
-    "officers": "役員チーム"
+    "officers": "役員チーム",
+    "fullscreen": "全画面",
+    "exitFullscreen": "全画面を終了"
   },
   "company": {
     "na": "この資産の会社概要はありません",
@@ -170,6 +172,7 @@
   },
   "settings": {
     "title": "設定",
+    "name": "表示名",
     "language": "言語",
     "theme": "テーマ",
     "themeLight": "ライト",

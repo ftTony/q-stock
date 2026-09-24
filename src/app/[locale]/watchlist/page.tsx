@@ -8,6 +8,7 @@ import { Link } from "@/i18n/routing";
 import { ChangePct, PriceText } from "@/components/market/price";
 import { Sparkline } from "@/components/market/sparkline";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { QtSelect } from "@/components/ui/qt-select";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 import { Suspense } from "react";
@@ -185,15 +186,16 @@ function WatchlistContent() {
 
       <section className="qt-panel relative p-4">
         <div className="flex flex-wrap gap-2">
-          <select
+          <QtSelect
             value={addType}
-            onChange={(e) => setAddType(e.target.value as AssetType)}
-            className="qt-input px-3 py-2.5 text-sm"
-          >
-            <option value="stock">{t("stocks")}</option>
-            <option value="hk">{t("hk")}</option>
-            <option value="crypto">{t("crypto")}</option>
-          </select>
+            onChange={(v) => setAddType(v as AssetType)}
+            className="w-36"
+            options={[
+              { value: "stock", label: t("stocks") },
+              { value: "hk", label: t("hk") },
+              { value: "crypto", label: t("crypto") },
+            ]}
+          />
           <input
             value={q}
             onChange={(e) => setQ(e.target.value)}

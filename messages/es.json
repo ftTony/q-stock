@@ -124,7 +124,9 @@
     "peTtm": "PER TTM",
     "beta": "Beta",
     "profile": "Perfil de la empresa",
-    "officers": "Directivos"
+    "officers": "Directivos",
+    "fullscreen": "Pantalla completa",
+    "exitFullscreen": "Salir de pantalla completa"
   },
   "company": {
     "na": "No hay perfil de empresa para este activo",
@@ -170,6 +172,7 @@
   },
   "settings": {
     "title": "Ajustes",
+    "name": "Nombre",
     "language": "Idioma",
     "theme": "Tema",
     "themeLight": "Claro",

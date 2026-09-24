@@ -1,890 +1,157 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSession } from "next-auth/react";
-import { useLocale, useTranslations } from "next-intl";
 import { useParams } from "next/navigation";
-import { Link } from "@/i18n/routing";
-import {
-  CandleChart,
-  type IndicatorFlags,
-} from "@/components/charts/candle-chart";
-import {
-  AiAnalysisPanel,
-  type AiTrendAnalysis,
-} from "@/components/market/ai-analysis-panel";
-import { ChangePct, PriceText } from "@/components/market/price";
-import {
-  EarningsPanel,
-  type EarningsCalendarRow,
-  type EarningsMetric,
-  type EarningsSurprise,
-} from "@/components/market/earnings-panel";
-import { QuoteStatsPanel } from "@/components/market/quote-stats";
-import {
-  CompanyProfilePanel,
-  OfficersPanel,
-} from "@/components/market/company-panel";
-import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
 import { TradePanel } from "@/components/trading/trade-panel";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { displayName } from "@/lib/market-names";
-import type { AssetType, CandleResolution, OhlcvBar, Quote } from "@/lib/types";
+import { QtSelect } from "@/components/ui/qt-select";
+import { SymbolHeader } from "@/components/symbol/symbol-header";
+import { SymbolChartSection } from "@/components/symbol/symbol-chart-section";
+import { SymbolTabsPanel } from "@/components/symbol/symbol-tabs-panel";
+import { useSymbolPage } from "@/components/symbol/use-symbol-page";
+import { isMarketIndexSymbol } from "@/lib/market/indices";
 import { parseAssetType } from "@/lib/types";
-import { computeIndicators, type IndicatorBundle } from "@/lib/indicators";
-
-type Tab =
-  | "news"
-  | "earnings"
-  | "press"
-  | "profile"
-  | "officers"
-  | "comments"
-  | "sentiment"
-  | "ai";
-
-const TAB_LOADING: ReadonlySet<Tab> = new Set([
-  "news",
-  "earnings",
-  "press",
-  "profile",
-  "officers",
-]);
 
 export default function SymbolPage() {
   const params = useParams<{ assetType: string; symbol: string }>();
   const assetType = parseAssetType(params.assetType);
   const symbol = String(params.symbol || "").toUpperCase();
-  const locale = useLocale();
-  const t = useTranslations("symbol");
-  const tCommon = useTranslations("common");
-  const tComments = useTranslations("comments");
-  const tAlerts = useTranslations("alerts");
-  const tEarnings = useTranslations("earnings");
-  const { data: session } = useSession();
-
-  const [quote, setQuote] = useState<Quote | null>(null);
-  const [bars, setBars] = useState<OhlcvBar[]>([]);
-  const [indicators, setIndicators] = useState<IndicatorBundle | undefined>();
-  const [resolution, setResolution] = useState<CandleResolution>("D");
-  const [flags, setFlags] = useState<IndicatorFlags>({
-    ma: true,
-    ema: false,
-    boll: false,
-    rsi: false,
-    macd: false,
-  });
-  const [tab, setTab] = useState<Tab>("news");
-  const [news, setNews] = useState<
-    { headline: string; summary?: string; url?: string; datetime?: number; source?: string }[]
-  >([]);
-  const [earnings, setEarnings] = useState<EarningsSurprise[]>([]);
-  const [earningsUpcoming, setEarningsUpcoming] = useState<EarningsCalendarRow[]>([]);
-  const [earningsRecent, setEarningsRecent] = useState<EarningsCalendarRow[]>([]);
-  const [earningsMetrics, setEarningsMetrics] = useState<EarningsMetric[]>([]);
-  const [earningsLoading, setEarningsLoading] = useState(false);
-  const [press, setPress] = useState<
-    {
-      headline?: string;
-      datetime?: string;
-      url?: string;
-      description?: string;
-      source?: string;
-    }[]
-  >([]);
-  const [comments, setComments] = useState<
-    { id: string; content: string; author: string; userId: string; createdAt: string }[]
-  >([]);
-  const [commentText, setCommentText] = useState("");
-  const [company, setCompany] = useState<CompanyProfile | null>(null);
-  const [officers, setOfficers] = useState<CompanyOfficer[]>([]);
-  const [tabLoading, setTabLoading] = useState(false);
-  const [sentiment, setSentiment] = useState<{
-    news?: Record<string, unknown>;
-    reddit?: Record<string, unknown>;
-  } | null>(null);
-  const [aiAnalysis, setAiAnalysis] = useState<AiTrendAnalysis | null>(null);
-  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
-  const [aiMessage, setAiMessage] = useState<string | null>(null);
-  const [aiDisclaimer, setAiDisclaimer] = useState<string | null>(null);
-  const [aiCached, setAiCached] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [loadingChart, setLoadingChart] = useState(true);
-  const [loadingMoreCandles, setLoadingMoreCandles] = useState(false);
-  const [hasMoreCandles, setHasMoreCandles] = useState(true);
-  const loadMoreLock = useRef(false);
-  const earningsLoadedRef = useRef(false);
-  const [alertPrice, setAlertPrice] = useState("");
-  const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
-  const [alertMsg, setAlertMsg] = useState<string | null>(null);
-  const [alertBusy, setAlertBusy] = useState(false);
-  const [commentBusy, setCommentBusy] = useState(false);
-  const [degraded, setDegraded] = useState(false);
-  const [inWatchlist, setInWatchlist] = useState(false);
-  const [watchBusy, setWatchBusy] = useState(false);
-  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
-
-  const loadQuote = useCallback(async () => {
-    const res = await fetch(`/api/quotes?symbol=${symbol}&assetType=${assetType}`);
-    const data = await res.json();
-    if (res.ok) {
-      setQuote(data.quote);
-      setUpdatedAt(new Date());
-      setAlertPrice((prev) => {
-        if (prev) return prev;
-        const p = data.quote?.price;
-        return p ? String(Number(p.toFixed(4))) : prev;
-      });
-    }
-  }, [symbol, assetType]);
-
-  /** Prefetch earnings for quote panel (stock/hk); shared with earnings tab. */
-  const loadEarningsMetrics = useCallback(async () => {
-    if (assetType !== "stock" && assetType !== "hk") {
-      setEarningsMetrics([]);
-      earningsLoadedRef.current = false;
-      return;
-    }
-    try {
-      const res = await fetch(
-        `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-      );
-      const data = await res.json();
-      if (!res.ok) return;
-      setEarnings(data.surprises ?? data.earnings ?? []);
-      setEarningsUpcoming(data.calendar?.upcoming ?? []);
-      setEarningsRecent(data.calendar?.recent ?? []);
-      setEarningsMetrics(data.metrics ?? []);
-      earningsLoadedRef.current = true;
-      if (data.degraded) setDegraded(true);
-    } catch {
-      /* optional for quote panel */
-    }
-  }, [symbol, assetType]);
-
-  const loadCandles = useCallback(async () => {
-    setLoadingChart(true);
-    setHasMoreCandles(true);
-    loadMoreLock.current = false;
-    try {
-      const res = await fetch(
-        `/api/candles?symbol=${symbol}&assetType=${assetType}&resolution=${resolution}`,
-      );
-      const data = await res.json();
-      if (res.ok) {
-        const next = (data.bars ?? []) as OhlcvBar[];
-        setBars(next);
-        setIndicators(data.indicators);
-        setHasMoreCandles(next.length > 0);
-      }
-    } finally {
-      setLoadingChart(false);
-    }
-  }, [symbol, assetType, resolution]);
-
-  const loadMoreCandles = useCallback(
-    async (earliestTime: number): Promise<OhlcvBar[]> => {
-      if (loadMoreLock.current || !hasMoreCandles || !earliestTime) return [];
-      loadMoreLock.current = true;
-      setLoadingMoreCandles(true);
-      try {
-        const chunkDays =
-          resolution === "D" ? 280 : resolution === "Q" ? 1200 : 2500;
-        const to = earliestTime - 86400;
-        const from = to - chunkDays * 86400;
-        if (to <= 0 || from >= to) {
-          setHasMoreCandles(false);
-          return [];
-        }
-        const res = await fetch(
-          `/api/candles?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&resolution=${resolution}&from=${from}&to=${to}&indicators=0`,
-        );
-        const data = await res.json();
-        if (!res.ok) {
-          setHasMoreCandles(false);
-          return [];
-        }
-        const older = (data.bars ?? []) as OhlcvBar[];
-        if (!older.length) {
-          setHasMoreCandles(false);
-          return [];
-        }
-        setBars((prev) => {
-          const byTime = new Map<number, OhlcvBar>();
-          for (const b of older) byTime.set(b.time, b);
-          for (const b of prev) byTime.set(b.time, b);
-          const merged = [...byTime.values()].sort((a, b) => a.time - b.time);
-          setIndicators(computeIndicators(merged));
-          if (older.length < 5) setHasMoreCandles(false);
-          return merged;
-        });
-        return older;
-      } finally {
-        setLoadingMoreCandles(false);
-        setTimeout(() => {
-          loadMoreLock.current = false;
-        }, 400);
-      }
-    },
-    [symbol, assetType, resolution, hasMoreCandles],
-  );
-  const loadTab = useCallback(async () => {
-    setDegraded(false);
-    const showLoading =
-      TAB_LOADING.has(tab) && !(tab === "earnings" && earningsLoadedRef.current);
-    if (showLoading) setTabLoading(true);
-    try {
-      if (tab === "news") {
-        const res = await fetch(
-          `/api/news?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
-        );
-        const data = await res.json();
-        setNews(data.news ?? []);
-        if (!res.ok || data.degraded) setDegraded(true);
-      } else if (tab === "earnings") {
-        if (assetType === "crypto") {
-          setEarnings([]);
-          setEarningsUpcoming([]);
-          setEarningsRecent([]);
-          setEarningsMetrics([]);
-          return;
-        }
-        if (earningsLoadedRef.current) return;
-        setEarningsLoading(true);
-        try {
-          const res = await fetch(
-            `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-          );
-          const data = await res.json();
-          setEarnings(data.surprises ?? data.earnings ?? []);
-          setEarningsUpcoming(data.calendar?.upcoming ?? []);
-          setEarningsRecent(data.calendar?.recent ?? []);
-          setEarningsMetrics(data.metrics ?? []);
-          earningsLoadedRef.current = true;
-          if (data.degraded) setDegraded(true);
-        } finally {
-          setEarningsLoading(false);
-        }
-      } else if (tab === "press") {
-        if (assetType === "crypto") {
-          setPress([]);
-          return;
-        }
-        const res = await fetch(
-          `/api/press?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-        );
-        const data = await res.json();
-        setPress(data.press ?? []);
-        if (data.degraded) setDegraded(true);
-      } else if (tab === "profile" || tab === "officers") {
-        const res = await fetch(
-          `/api/company?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
-        );
-        const data = await res.json();
-        setCompany(data.profile ?? null);
-        setOfficers(data.officers ?? []);
-        if (!res.ok || data.degraded) setDegraded(true);
-      } else if (tab === "comments") {
-        const res = await fetch(`/api/comments?symbol=${symbol}&assetType=${assetType}`);
-        const data = await res.json();
-        setComments(data.comments ?? []);
-      } else if (tab === "sentiment") {
-        const res = await fetch(`/api/sentiment?symbol=${symbol}&assetType=${assetType}`);
-        const data = await res.json();
-        setSentiment(data.sentiment ?? null);
-      } else if (tab === "ai") {
-        setAiLoading(true);
-        setAiAnalysis(null);
-        setAiAvailable(null);
-        setAiMessage(null);
-        try {
-          const res = await fetch(
-            `/api/ai/analyze?symbol=${symbol}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
-          );
-          const data = await res.json();
-          setAiAvailable(data.available !== false);
-          setAiAnalysis(data.analysis ?? null);
-          setAiMessage(data.message ?? data.error ?? null);
-          setAiDisclaimer(data.disclaimer ?? null);
-          setAiCached(Boolean(data.cached));
-          if (data.degraded) setDegraded(true);
-          if (!res.ok && data.available !== false) setDegraded(true);
-        } finally {
-          setAiLoading(false);
-        }
-      }
-    } finally {
-      setTabLoading(false);
-    }
-  }, [tab, symbol, assetType, locale]);
-
-  useEffect(() => {
-    setAlertPrice("");
-    setAlertMsg(null);
-    setQuote(null);
-    setEarnings([]);
-    setEarningsUpcoming([]);
-    setEarningsRecent([]);
-    setEarningsMetrics([]);
-    setCompany(null);
-    setOfficers([]);
-    earningsLoadedRef.current = false;
-    setTab("news");
-  }, [symbol, assetType]);
-
-  useEffect(() => {
-    void loadQuote();
-    const timer = setInterval(() => void loadQuote(), 20000);
-    return () => clearInterval(timer);
-  }, [loadQuote]);
-
-  useEffect(() => {
-    void loadEarningsMetrics();
-  }, [loadEarningsMetrics]);
-
-  useEffect(() => {
-    void loadCandles();
-  }, [loadCandles]);
-
-  useEffect(() => {
-    void loadTab();
-  }, [loadTab]);
-
-  useEffect(() => {
-    if (!session?.user) {
-      setInWatchlist(false);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const res = await fetch("/api/watchlist");
-      if (!res.ok || cancelled) return;
-      const data = await res.json();
-      const found = (data.items ?? []).some(
-        (i: { symbol: string; assetType: string }) =>
-          i.symbol === symbol && i.assetType === assetType,
-      );
-      setInWatchlist(found);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [session, symbol, assetType]);
-
-  const tabs = useMemo(() => {
-    const all: { id: Tab; label: string }[] = [
-      { id: "news", label: t("news") },
-      { id: "earnings", label: t("earnings") },
-      { id: "press", label: t("press") },
-      { id: "profile", label: t("profile") },
-      { id: "officers", label: t("officers") },
-      { id: "comments", label: t("comments") },
-      { id: "sentiment", label: t("sentiment") },
-      { id: "ai", label: t("ai") },
-    ];
-    if (assetType === "crypto") {
-      return all.filter(
-        (x) =>
-          x.id !== "earnings" &&
-          x.id !== "press" &&
-          x.id !== "profile" &&
-          x.id !== "officers",
-      );
-    }
-    return all;
-  }, [t, assetType]);
-
-  async function postComment(e: FormEvent) {
-    e.preventDefault();
-    if (!commentText.trim() || commentBusy) return;
-    setCommentBusy(true);
-    try {
-      const res = await fetch("/api/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ symbol, assetType, content: commentText }),
-      });
-      if (res.ok) {
-        setCommentText("");
-        await loadTab();
-      }
-    } finally {
-      setCommentBusy(false);
-    }
-  }
-
-  async function deleteComment(id: string) {
-    await fetch(`/api/comments?id=${id}`, { method: "DELETE" });
-    await loadTab();
-  }
-
-  async function createAlert(e: FormEvent) {
-    e.preventDefault();
-    setAlertMsg(null);
-    if (!session?.user) {
-      setAlertMsg(tAlerts("loginRequired"));
-      return;
-    }
-    if (alertBusy) return;
-    setAlertBusy(true);
-    try {
-      const res = await fetch("/api/alerts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          symbol,
-          assetType,
-          condition: alertCondition,
-          triggerPrice: Number(alertPrice),
-        }),
-      });
-      if (!res.ok) {
-        setAlertMsg(tCommon("error"));
-        return;
-      }
-      setAlertMsg("OK");
-      setAlertPrice("");
-    } finally {
-      setAlertBusy(false);
-    }
-  }
-
-  async function toggleWatchlist() {
-    if (!session?.user) {
-      setAlertMsg(tAlerts("loginRequired"));
-      return;
-    }
-    setWatchBusy(true);
-    try {
-      if (inWatchlist) {
-        await fetch(
-          `/api/watchlist?symbol=${symbol}&assetType=${assetType}`,
-          { method: "DELETE" },
-        );
-        setInWatchlist(false);
-      } else {
-        const res = await fetch("/api/watchlist", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ symbol, assetType }),
-        });
-        if (res.ok) setInWatchlist(true);
-      }
-    } finally {
-      setWatchBusy(false);
-    }
-  }
+  const isIndex = isMarketIndexSymbol(symbol);
+  const s = useSymbolPage(symbol, assetType, isIndex);
 
   return (
     <div className="space-y-4 animate-[qtFade_0.45s_ease]">
-      <div className="qt-panel flex flex-wrap items-center justify-between gap-3 p-4 sm:px-5 sm:py-4">
-        <div className="min-w-0">
-          <div className="text-xs text-[var(--muted)]">
-            <Link href="/" className="hover:text-[var(--brand-text)]">
-              ← Markets
-            </Link>
-          </div>
-          <div className="mt-1 flex flex-wrap items-baseline gap-x-3 gap-y-1">
-            <h1 className="text-2xl font-semibold tracking-tight">
-              {symbol}{" "}
-              <span className="text-sm font-normal text-[var(--muted)]">
-                {displayName(symbol, assetType)}
-              </span>
-            </h1>
-            {quote && (
-              <>
-                <span className="text-2xl font-semibold sm:text-3xl">
-                  <PriceText value={quote.price} change={quote.change} />
-                </span>
-                <ChangePct value={quote.percentChange} />
-                {updatedAt && (
-                  <span className="text-xs text-[var(--muted)]">
-                    {updatedAt.toLocaleTimeString()}
-                  </span>
-                )}
-              </>
-            )}
-          </div>
-        </div>
-        <SubmitButton
-          type="button"
-          disabled={watchBusy}
-          loading={watchBusy}
-          loadingLabel={tCommon("loading")}
-          onClick={() => void toggleWatchlist()}
-          className={`shrink-0 px-3 py-1.5 text-xs ${
-            inWatchlist
-              ? "qt-btn-ghost text-[var(--brand-text)]"
-              : "qt-btn-primary"
-          }`}
-        >
-          {inWatchlist ? t("inWatchlist") : t("addWatchlist")}
-        </SubmitButton>
-      </div>
+      <SymbolHeader
+        symbol={symbol}
+        assetType={assetType}
+        quote={s.quote}
+        metrics={s.earningsMetrics}
+        updatedAt={s.updatedAt}
+        inWatchlist={s.inWatchlist}
+        watchBusy={s.watchBusy}
+        watchLabel={s.t("addWatchlist")}
+        watchLabelActive={s.t("inWatchlist")}
+        loadingLabel={s.tCommon("loading")}
+        onToggleWatchlist={() => void s.toggleWatchlist()}
+      />
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
-        <div className="space-y-4 min-w-0 lg:col-start-1">
-          <div className="flex flex-wrap gap-2">
-            {(
-              [
-                ["D", t("day")],
-                ["Q", t("quarter")],
-                ["Y", t("year")],
-              ] as const
-            ).map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setResolution(key)}
-                className={`rounded-xl px-3 py-1.5 text-sm ${
-                  resolution === key
-                    ? "bg-[var(--brand)] text-[#0b1220] font-semibold"
-                    : "qt-btn-ghost border border-[var(--border)] bg-[var(--panel)]"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex flex-wrap gap-2 text-xs">
-            <span className="self-center text-[var(--muted)]">{t("indicators")}:</span>
-            {(
-              [
-                ["ma", "MA"],
-                ["ema", "EMA"],
-                ["boll", "BOLL"],
-                ["rsi", "RSI"],
-                ["macd", "MACD"],
-              ] as const
-            ).map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => setFlags((f) => ({ ...f, [key]: !f[key] }))}
-                className={`rounded-full border px-2.5 py-1 ${
-                  flags[key]
-                    ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                    : "border-[var(--border)] text-[var(--muted)]"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          {loadingChart ? (
-            <div className="qt-panel flex h-[360px] items-center justify-center text-sm text-[var(--muted)] sm:h-[440px]">
-              {tCommon("loading")}
-            </div>
-          ) : (
-            <CandleChart
-              bars={bars}
-              flags={flags}
-              resetKey={`${assetType}:${symbol}:${resolution}`}
-              resolution={resolution}
-              symbol={symbol}
-              onLoadMore={loadMoreCandles}
-              loadingMore={loadingMoreCandles}
-              hasMore={hasMoreCandles}
-            />
-          )}
+        <div className="lg:col-start-1 min-w-0">
+          <SymbolChartSection
+            resolution={s.resolution}
+            onResolutionChange={s.setResolution}
+            resolutionLabels={{
+              D: s.t("day"),
+              Q: s.t("quarter"),
+              Y: s.t("year"),
+            }}
+            indicatorsLabel={s.t("indicators")}
+            flags={s.flags}
+            onFlagToggle={(key) =>
+              s.setFlags((f) => ({ ...f, [key]: !f[key] }))
+            }
+            loadingChart={s.loadingChart}
+            loadingLabel={s.tCommon("loading")}
+            bars={s.bars}
+            assetType={assetType}
+            symbol={symbol}
+            onLoadMore={s.loadMoreCandles}
+            loadingMore={s.loadingMoreCandles}
+            hasMore={s.hasMoreCandles}
+          />
         </div>
 
-        <aside className="flex flex-col gap-3 lg:col-start-2 lg:row-span-2 lg:sticky lg:top-20">
-          {quote && (
-            <QuoteStatsPanel quote={quote} metrics={earningsMetrics} />
-          )}
+        <aside className="flex flex-col gap-3 lg:col-start-2 lg:row-span-2 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-5.5rem)] lg:overflow-y-auto lg:overscroll-contain qt-scroll">
           <TradePanel
             symbol={symbol}
             assetType={assetType}
-            lastPrice={quote?.price ?? null}
+            lastPrice={s.quote?.price ?? null}
+            bid={s.quote?.bid ?? null}
+            ask={s.quote?.ask ?? null}
           />
         </aside>
 
         <div className="space-y-4 min-w-0 lg:col-start-1">
           <form
-            onSubmit={createAlert}
+            onSubmit={s.createAlert}
             className="qt-panel flex flex-wrap items-center gap-2 p-4"
           >
-            <div className="text-sm font-medium leading-none">{t("setAlert")}</div>
-            <select
-              value={alertCondition}
-              onChange={(e) => setAlertCondition(e.target.value as "gte" | "lte")}
-              className="qt-input h-9 px-2 text-sm"
-            >
-              <option value="gte">{tAlerts("gte")}</option>
-              <option value="lte">{tAlerts("lte")}</option>
-            </select>
+            <div className="text-sm font-medium leading-none">
+              {s.t("setAlert")}
+            </div>
+            <QtSelect
+              value={s.alertCondition}
+              onChange={(v) => s.setAlertCondition(v as "gte" | "lte")}
+              className="w-36"
+              triggerClassName="h-9 px-2.5 text-sm"
+              options={[
+                { value: "gte", label: s.tAlerts("gte") },
+                { value: "lte", label: s.tAlerts("lte") },
+              ]}
+            />
             <input
               type="number"
               step="any"
               required
-              value={alertPrice}
-              onChange={(e) => setAlertPrice(e.target.value)}
-              placeholder={tAlerts("triggerPrice")}
+              value={s.alertPrice}
+              onChange={(e) => s.setAlertPrice(e.target.value)}
+              placeholder={s.tAlerts("triggerPrice")}
               className="qt-input h-9 w-32 px-2 text-sm"
             />
             <SubmitButton
               type="submit"
-              loading={alertBusy}
-              loadingLabel={tCommon("loading")}
+              loading={s.alertBusy}
+              loadingLabel={s.tCommon("loading")}
               className="qt-btn-primary h-9 px-3 text-sm"
             >
-              {tAlerts("create")}
+              {s.tAlerts("create")}
             </SubmitButton>
-            {alertMsg && (
-              <span className="text-xs text-[var(--muted)]">{alertMsg}</span>
+            {s.alertMsg && (
+              <span className="text-xs text-[var(--muted)]">{s.alertMsg}</span>
             )}
           </form>
 
-          <div className="overflow-x-auto">
-            <div className="flex min-w-max gap-1 border-b border-[var(--border)]">
-              {tabs.map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  onClick={() => setTab(item.id)}
-                  className={`px-3 py-2 text-sm ${
-                    tab === item.id
-                      ? "border-b-2 border-[var(--brand)] font-medium text-[var(--foreground)]"
-                      : "text-[var(--muted)]"
-                  }`}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {degraded && (
-            <p className="text-xs text-[var(--muted)]">{tCommon("degraded")}</p>
-          )}
-
-          <div className="qt-panel p-4">
-            {tabLoading ? (
-              <div className="flex h-40 items-center justify-center text-sm text-[var(--muted)]">
-                {tCommon("loading")}
-              </div>
-            ) : (
-              <>
-            {tab === "news" && (
-              <ul className="space-y-3">
-                {news.length === 0 && (
-                  <li className="text-sm text-[var(--muted)]">
-                    {degraded ? tCommon("degraded") : tCommon("error")}
-                  </li>
-                )}
-                {news.map((n, i) => (
-                  <li key={i} className="border-b border-[var(--border)] pb-3 last:border-0">
-                    <a
-                      href={n.url || "#"}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-medium hover:text-[var(--brand)]"
-                    >
-                      {n.headline}
-                    </a>
-                    {n.summary && (
-                      <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
-                        {n.summary}
-                      </p>
-                    )}
-                    <div className="mt-1 text-xs text-[var(--muted)]">
-                      {n.source}
-                      {n.datetime
-                        ? ` · ${new Date(
-                            n.datetime > 1e12 ? n.datetime : n.datetime * 1000,
-                          ).toLocaleDateString()}`
-                        : ""}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-
-            {tab === "earnings" &&
-              (assetType === "crypto" ? (
-                <p className="text-sm text-[var(--muted)]">{tEarnings("cryptoNa")}</p>
-              ) : (
-                <EarningsPanel
-                  surprises={earnings}
-                  upcoming={earningsUpcoming}
-                  recent={earningsRecent}
-                  metrics={earningsMetrics}
-                  degraded={degraded}
-                  loading={earningsLoading}
-                />
-              ))}
-
-            {tab === "press" && (
-              <ul className="space-y-3">
-                {assetType === "crypto" && (
-                  <li className="text-sm text-[var(--muted)]">N/A for crypto</li>
-                )}
-                {press.map((p, i) => (
-                  <li key={i} className="border-b border-[var(--border)] pb-3 last:border-0">
-                    <a
-                      href={p.url || "#"}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-medium hover:text-[var(--brand)]"
-                    >
-                      {p.headline || p.description || "Press release"}
-                    </a>
-                    {p.description && p.headline && (
-                      <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
-                        {p.description}
-                      </p>
-                    )}
-                    <div className="mt-1 text-xs text-[var(--muted)]">
-                      {p.datetime
-                        ? new Date(p.datetime).toLocaleString()
-                        : ""}
-                      {p.source ? ` · ${p.source}` : ""}
-                    </div>
-                  </li>
-                ))}
-                {assetType !== "crypto" && press.length === 0 && (
-                  <li className="text-sm text-[var(--muted)]">{tCommon("degraded")}</li>
-                )}
-              </ul>
-            )}
-
-            {tab === "profile" && <CompanyProfilePanel profile={company} />}
-
-            {tab === "officers" && <OfficersPanel officers={officers} />}
-
-            {tab === "comments" && (
-              <div className="space-y-3">
-                {session?.user ? (
-                  <form onSubmit={postComment} className="flex gap-2">
-                    <input
-                      value={commentText}
-                      onChange={(e) => setCommentText(e.target.value)}
-                      placeholder={tComments("placeholder")}
-                      className="flex-1 qt-input px-3 py-2 text-sm"
-                    />
-                    <SubmitButton
-                      type="submit"
-                      loading={commentBusy}
-                      loadingLabel={tCommon("loading")}
-                      className="qt-btn-primary px-3 py-2 text-sm"
-                    >
-                      {tComments("post")}
-                    </SubmitButton>
-                  </form>
-                ) : (
-                  <p className="text-sm text-[var(--muted)]">
-                    {tComments("loginRequired")}
-                  </p>
-                )}
-                <ul className="space-y-3">
-                  {comments.length === 0 && (
-                    <li className="text-sm text-[var(--muted)]">
-                      {tComments("empty")}
-                    </li>
-                  )}
-                  {comments.map((c) => (
-                    <li key={c.id} className="border-b border-[var(--border)] pb-2">
-                      <div className="flex items-center justify-between gap-2 text-xs text-[var(--muted)]">
-                        <span>
-                          {c.author} · {new Date(c.createdAt).toLocaleString()}
-                        </span>
-                        {session?.user?.id === c.userId && (
-                          <button
-                            type="button"
-                            className="text-[var(--down)]"
-                            onClick={() => void deleteComment(c.id)}
-                          >
-                            {tComments("delete")}
-                          </button>
-                        )}
-                      </div>
-                      <p className="mt-1 text-sm whitespace-pre-wrap">{c.content}</p>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
-            {tab === "sentiment" && (
-              <div className="grid gap-3 sm:grid-cols-2">
-                {(["news", "reddit"] as const).map((key) => {
-                  const s = sentiment?.[key] as
-                    | {
-                        available?: boolean;
-                        message?: string;
-                        buzz_score?: number;
-                        sentiment_score?: number;
-                        bullish_pct?: number;
-                        bearish_pct?: number;
-                        trend?: string | null;
-                        source?: string;
-                      }
-                    | undefined;
-                  if (!s) {
-                    return (
-                      <div
-                        key={key}
-                        className="rounded-md border border-[var(--border)] p-3 text-sm text-[var(--muted)]"
-                      >
-                        {key}: N/A
-                      </div>
-                    );
-                  }
-                  return (
-                    <div
-                      key={key}
-                      className="rounded-md border border-[var(--border)] p-3 text-sm"
-                    >
-                      <div className="mb-2 font-medium capitalize">
-                        {s.source || key}
-                      </div>
-                      {s.available === false ? (
-                        <p className="text-[var(--muted)]">
-                          {s.message || tCommon("degraded")}
-                        </p>
-                      ) : (
-                        <dl className="grid grid-cols-2 gap-2">
-                          <div>
-                            <dt className="text-xs text-[var(--muted)]">Buzz</dt>
-                            <dd>{s.buzz_score?.toFixed?.(1) ?? "-"}</dd>
-                          </div>
-                          <div>
-                            <dt className="text-xs text-[var(--muted)]">Score</dt>
-                            <dd>{s.sentiment_score?.toFixed?.(3) ?? "-"}</dd>
-                          </div>
-                          <div>
-                            <dt className="text-xs text-[var(--muted)]">Bullish %</dt>
-                            <dd>{s.bullish_pct?.toFixed?.(1) ?? "-"}</dd>
-                          </div>
-                          <div>
-                            <dt className="text-xs text-[var(--muted)]">Trend</dt>
-                            <dd>{s.trend ?? "-"}</dd>
-                          </div>
-                        </dl>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {tab === "ai" && (
-              <AiAnalysisPanel
-                available={aiAvailable}
-                message={aiMessage}
-                analysis={aiAnalysis}
-                disclaimer={aiDisclaimer}
-                cached={aiCached}
-                degraded={degraded}
-                loading={aiLoading}
-              />
-            )}
-              </>
-            )}
-          </div>
+          <SymbolTabsPanel
+            tabs={s.tabs}
+            tab={s.tab}
+            onTabChange={s.setTab}
+            degraded={s.degraded}
+            degradedLabel={s.tCommon("degraded")}
+            tabLoading={s.tabLoading}
+            loadingLabel={s.tCommon("loading")}
+            assetType={assetType}
+            isIndex={isIndex}
+            news={s.news}
+            press={s.press}
+            earnings={s.earnings}
+            earningsUpcoming={s.earningsUpcoming}
+            earningsRecent={s.earningsRecent}
+            earningsMetrics={s.earningsMetrics}
+            earningsLoading={s.earningsLoading}
+            earningsCryptoNa={s.tEarnings("cryptoNa")}
+            company={s.company}
+            officers={s.officers}
+            comments={s.comments}
+            commentText={s.commentText}
+            onCommentTextChange={s.setCommentText}
+            onPostComment={s.postComment}
+            onDeleteComment={s.deleteComment}
+            commentBusy={s.commentBusy}
+            canComment={Boolean(s.session?.user)}
+            currentUserId={s.session?.user?.id}
+            commentsPlaceholder={s.tComments("placeholder")}
+            commentsPost={s.tComments("post")}
+            commentsLoginRequired={s.tComments("loginRequired")}
+            commentsEmpty={s.tComments("empty")}
+            commentsDelete={s.tComments("delete")}
+            errorLabel={s.tCommon("error")}
+            sentiment={s.sentiment}
+            aiAvailable={s.aiAvailable}
+            aiMessage={s.aiMessage}
+            aiAnalysis={s.aiAnalysis}
+            aiDisclaimer={s.aiDisclaimer}
+            aiCached={s.aiCached}
+            aiLoading={s.aiLoading}
+          />
         </div>
       </div>
     </div>

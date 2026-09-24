@@ -46,16 +46,10 @@ export async function GET(req: Request) {
       const quotes = await getQuotes(
         POPULAR_CRYPTO.map((s) => ({ symbol: s, assetType: "crypto" as const })),
       );
-      if (board === "all") {
-        return NextResponse.json({
-          boards: sortBoards(quotes, limit),
-          source: "popular",
-        });
-      }
-      const boards = sortBoards(quotes, limit);
       return NextResponse.json({
-        quotes: boards[board],
-        board,
+        quotes,
+        board: "hot",
+        boards: { hot: quotes, gainers: [], losers: [] },
         source: "popular",
       });
     }

@@ -124,7 +124,9 @@
     "peTtm": "P/E TTM",
     "beta": "Beta",
     "profile": "Company Profile",
-    "officers": "Executives"
+    "officers": "Executives",
+    "fullscreen": "Fullscreen",
+    "exitFullscreen": "Exit fullscreen"
   },
   "company": {
     "na": "No company profile available for this asset",
@@ -170,6 +172,7 @@
   },
   "settings": {
     "title": "Settings",
+    "name": "Display name",
     "language": "Language",
     "theme": "Theme",
     "themeLight": "Light",

@@ -7,7 +7,63 @@ import {
   getEarningsCalendar,
 } from "@/lib/finnhub/client";
 import { getLongbridgeEarnings } from "@/lib/market/providers/longbridge";
-import { parseAssetType } from "@/lib/types";
+import { getDailyCandles } from "@/lib/market";
+import { parseAssetType, type AssetType } from "@/lib/types";
+
+type MetricRow = { key: string; value: number | null };
+
+function mergeMetrics(primary: MetricRow[], secondary: MetricRow[]): MetricRow[] {
+  const map = new Map<string, number | null>();
+  for (const m of primary) {
+    if (m.value != null) map.set(m.key, m.value);
+  }
+  for (const m of secondary) {
+    if (m.value != null && !map.has(m.key)) map.set(m.key, m.value);
+  }
+  return [...map.entries()].map(([key, value]) => ({ key, value }));
+}
+
+async function finnhubBasicMetrics(sym: string): Promise<MetricRow[]> {
+  try {
+    const basic = await getBasicFinancials(sym);
+    const metric = basic?.metric ?? {};
+    return BASIC_METRIC_KEYS.map((key) => ({
+      key,
+      value: typeof metric[key] === "number" ? metric[key] : null,
+    })).filter((m) => m.value != null);
+  } catch {
+    return [];
+  }
+}
+
+/** Fallback 52-week range from daily candles when Finnhub lacks data. */
+async function week52FromCandles(
+  symbol: string,
+  assetType: AssetType,
+): Promise<MetricRow[]> {
+  try {
+    const to = Math.floor(Date.now() / 1000);
+    const from = to - 370 * 86400;
+    const bars = await getDailyCandles(symbol, assetType, from, to);
+    if (!bars.length) return [];
+    let high = -Infinity;
+    let low = Infinity;
+    for (const b of bars) {
+      if (b.high > high) high = b.high;
+      if (b.low < low && b.low > 0) low = b.low;
+    }
+    const out: MetricRow[] = [];
+    if (Number.isFinite(high) && high > 0) {
+      out.push({ key: "52WeekHigh", value: high });
+    }
+    if (Number.isFinite(low) && low < Infinity) {
+      out.push({ key: "52WeekLow", value: low });
+    }
+    return out;
+  } catch {
+    return [];
+  }
+}
 
 export async function GET(req: Request) {
   try {
@@ -20,33 +76,35 @@ export async function GET(req: Request) {
 
     const sym = symbol.toUpperCase();
 
-    // HK (and stock when Longbridge has data): prefer Longbridge fundamentals
     if (assetType === "hk" || assetType === "stock") {
       try {
         const lb = await getLongbridgeEarnings(sym, assetType);
-        if (lb && (lb.metrics.length || lb.surprises.length || lb.calendar.upcoming.length || lb.calendar.recent.length)) {
-          // For US stock, still merge Finnhub if Longbridge is thin — but if HK, return LB only
-          if (assetType === "hk") {
-            return NextResponse.json({
-              symbol: sym,
-              surprises: lb.surprises,
-              calendar: lb.calendar,
-              metrics: lb.metrics,
-              source: "longbridge",
-              degraded: false,
-            });
+        if (
+          lb &&
+          (lb.metrics.length ||
+            lb.surprises.length ||
+            lb.calendar.upcoming.length ||
+            lb.calendar.recent.length)
+        ) {
+          const fh = await finnhubBasicMetrics(sym);
+          let metrics = mergeMetrics(lb.metrics, fh);
+          const needWeek =
+            !metrics.some((m) => m.key === "52WeekHigh") ||
+            !metrics.some((m) => m.key === "52WeekLow");
+          if (needWeek) {
+            metrics = mergeMetrics(
+              metrics,
+              await week52FromCandles(sym, assetType),
+            );
           }
-          // stock: if LB has good data use it; otherwise fall through to Finnhub
-          if (lb.surprises.length >= 2 || lb.metrics.length >= 2) {
-            return NextResponse.json({
-              symbol: sym,
-              surprises: lb.surprises,
-              calendar: lb.calendar,
-              metrics: lb.metrics,
-              source: "longbridge",
-              degraded: false,
-            });
-          }
+          return NextResponse.json({
+            symbol: sym,
+            surprises: lb.surprises,
+            calendar: lb.calendar,
+            metrics,
+            source: fh.length ? "longbridge+finnhub" : "longbridge",
+            degraded: false,
+          });
         }
       } catch (err) {
         console.warn(
@@ -54,12 +112,14 @@ export async function GET(req: Request) {
           err instanceof Error ? err.message : err,
         );
         if (assetType === "hk") {
+          const fh = await finnhubBasicMetrics(sym);
+          const week = await week52FromCandles(sym, assetType);
           return NextResponse.json({
             symbol: sym,
             surprises: [],
             calendar: { upcoming: [], recent: [] },
-            metrics: [],
-            source: null,
+            metrics: mergeMetrics(fh, week),
+            source: fh.length || week.length ? "fallback" : null,
             degraded: true,
           });
         }
@@ -67,11 +127,13 @@ export async function GET(req: Request) {
     }
 
     if (assetType === "hk") {
+      const fh = await finnhubBasicMetrics(sym);
+      const week = await week52FromCandles(sym, assetType);
       return NextResponse.json({
         symbol: sym,
         surprises: [],
         calendar: { upcoming: [], recent: [] },
-        metrics: [],
+        metrics: mergeMetrics(fh, week),
         source: null,
         degraded: true,
       });
@@ -96,10 +158,17 @@ export async function GET(req: Request) {
       metricsResult.status === "fulfilled" ? metricsResult.value : null;
 
     const metric = basic?.metric ?? {};
-    const metrics = BASIC_METRIC_KEYS.map((key) => ({
+    let metrics = BASIC_METRIC_KEYS.map((key) => ({
       key,
       value: typeof metric[key] === "number" ? metric[key] : null,
-    })).filter((m) => m.value !== null && m.value !== undefined);
+    })).filter((m) => m.value != null) as MetricRow[];
+
+    if (
+      !metrics.some((m) => m.key === "52WeekHigh") ||
+      !metrics.some((m) => m.key === "52WeekLow")
+    ) {
+      metrics = mergeMetrics(metrics, await week52FromCandles(sym, "stock"));
+    }
 
     const upcoming = calendar
       .filter((c) => c.date >= format(today, "yyyy-MM-dd"))

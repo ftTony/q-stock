@@ -10,6 +10,7 @@ import {
   type ChangeColorScheme,
 } from "@/components/providers/preference-provider";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { QtSelect } from "@/components/ui/qt-select";
 import {
   locales,
   languageLabels,
@@ -41,6 +42,7 @@ export default function SettingsPage() {
   const { theme, setTheme } = useTheme();
   const { changeColorScheme, setChangeColorScheme } = usePreference();
   const [lang, setLang] = useState<AppLocale>(locale as AppLocale);
+  const [displayName, setDisplayName] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<"ok" | "error">("ok");
   const [saving, setSaving] = useState(false);
@@ -49,6 +51,10 @@ export default function SettingsPage() {
   useEffect(() => {
     setLang(locale as AppLocale);
   }, [locale]);
+
+  useEffect(() => {
+    setDisplayName(session?.user?.name?.trim() || "");
+  }, [session?.user?.name]);
 
   useEffect(() => {
     try {
@@ -102,6 +108,7 @@ export default function SettingsPage() {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+          name: displayName.trim() || undefined,
           locale: lang,
           theme: theme === "light" || theme === "dark" ? theme : "system",
           changeColorScheme,
@@ -112,7 +119,9 @@ export default function SettingsPage() {
         setMessage(t("saveError"));
         return;
       }
+      const data = await res.json();
       await update({
+        name: (data.user?.name ?? displayName.trim()) || null,
         locale: lang,
         theme,
         changeColorScheme,
@@ -145,33 +154,43 @@ export default function SettingsPage() {
         </p>
       )}
       <form onSubmit={onSave} className="qt-panel w-full space-y-5 p-5 sm:p-6 lg:p-8">
+        {loggedIn && (
+          <label className="block space-y-1 text-sm">
+            <span className="text-[var(--muted)]">{t("name")}</span>
+            <input
+              value={displayName}
+              onChange={(e) => setDisplayName(e.target.value)}
+              maxLength={64}
+              placeholder={session?.user?.email?.split("@")[0] || ""}
+              className="qt-input w-full px-3 py-2.5"
+            />
+          </label>
+        )}
         <div className="grid gap-5 lg:grid-cols-2 lg:gap-8">
           <label className="block space-y-1 text-sm">
             <span className="text-[var(--muted)]">{t("language")}</span>
-            <select
+            <QtSelect
               value={lang}
-              onChange={(e) => setLang(e.target.value as AppLocale)}
-              className="qt-input w-full px-3 py-2.5"
-            >
-              {locales.map((l) => (
-                <option key={l} value={l}>
-                  {localeCode(l)} {languageLabels[l]}
-                </option>
-              ))}
-            </select>
+              onChange={(v) => setLang(v as AppLocale)}
+              options={locales.map((l) => ({
+                value: l,
+                label: languageLabels[l],
+                badge: localeCode(l),
+              }))}
+            />
           </label>
 
           <label className="block space-y-1 text-sm">
             <span className="text-[var(--muted)]">{t("theme")}</span>
-            <select
+            <QtSelect
               value={theme ?? "dark"}
-              onChange={(e) => setTheme(e.target.value)}
-              className="qt-input w-full px-3 py-2.5"
-            >
-              <option value="light">{t("themeLight")}</option>
-              <option value="dark">{t("themeDark")}</option>
-              <option value="system">{t("themeSystem")}</option>
-            </select>
+              onChange={(v) => setTheme(v)}
+              options={[
+                { value: "light", label: t("themeLight") },
+                { value: "dark", label: t("themeDark") },
+                { value: "system", label: t("themeSystem") },
+              ]}
+            />
           </label>
         </div>
 

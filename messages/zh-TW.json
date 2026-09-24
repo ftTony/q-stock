@@ -124,7 +124,9 @@
     "peTtm": "市盈率 TTM",
     "beta": "Beta",
     "profile": "公司概況",
-    "officers": "高管團隊"
+    "officers": "高管團隊",
+    "fullscreen": "全螢幕",
+    "exitFullscreen": "退出全螢幕"
   },
   "company": {
     "na": "該資產暫無公司概況",
@@ -170,6 +172,7 @@
   },
   "settings": {
     "title": "用戶設定",
+    "name": "暱稱",
     "language": "語言",
     "theme": "主題",
     "themeLight": "淺色",

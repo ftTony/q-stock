@@ -5,14 +5,15 @@ import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
-import { ChangePct, PriceText } from "@/components/market/price";
-import { Sparkline } from "@/components/market/sparkline";
-import { displayName } from "@/lib/market-names";
-import type { AssetType, Quote } from "@/lib/types";
+import { CryptoPopularTable } from "@/components/market/crypto-popular-table";
+import { IndexStrip } from "@/components/market/index-strip";
+import { KpiCard } from "@/components/market/kpi-card";
+import { RankBoardPanel } from "@/components/market/rank-board-panel";
+import type { IndexQuote, RankQuote } from "@/components/market/markets-types";
+import type { AssetType } from "@/lib/types";
 
 type Tab = AssetType;
 type Board = "hot" | "gainers" | "losers";
-type RankQuote = Quote & { name?: string };
 
 type NewsItem = {
   headline: string;
@@ -25,20 +26,6 @@ type NewsItem = {
 };
 
 type Boards = Record<Board, RankQuote[]>;
-
-type IndexQuote = {
-  id: string;
-  symbol: string;
-  nameKey: string;
-  assetType: AssetType;
-  price: number | null;
-  change: number | null;
-  percentChange: number | null;
-  open?: number | null;
-  high?: number | null;
-  low?: number | null;
-  previousClose?: number | null;
-};
 
 const EMPTY_BOARDS: Boards = { hot: [], gainers: [], losers: [] };
 
@@ -136,12 +123,16 @@ export default function MarketsDashboard() {
         if (assetType !== "crypto") setIndices([]);
       }
       try {
+        const quoteUrl =
+          assetType === "crypto"
+            ? `/api/quotes?popular=1&assetType=crypto`
+            : `/api/ranks?assetType=${assetType}&board=all&limit=7`;
         const indexPromise =
           assetType === "crypto"
             ? Promise.resolve(null)
             : fetch(`/api/indices?assetType=${assetType}`).catch(() => null);
         const [qr, sr, nr, ar, ir] = await Promise.all([
-          fetch(`/api/ranks?assetType=${assetType}&board=all&limit=7`),
+          fetch(quoteUrl),
           fetch(`/api/sentiment?assetType=${assetType}`),
           fetch(`/api/news?assetType=${assetType}`),
           fetch("/api/alerts").catch(() => null),
@@ -151,16 +142,20 @@ export default function MarketsDashboard() {
         const sj = await sr.json();
         const nj = await nr.json();
         if (!qr.ok) throw new Error(qj.error || "quotes failed");
-        setBoards({
-          hot: qj.boards?.hot ?? [],
-          gainers: qj.boards?.gainers ?? [],
-          losers: qj.boards?.losers ?? [],
-        });
         if (assetType === "crypto") {
+          const quotes = (qj.quotes ?? []) as RankQuote[];
+          setBoards({ hot: quotes, gainers: [], losers: [] });
           setIndices([]);
-        } else if (ir && ir.ok) {
-          const ij = await ir.json();
-          setIndices(ij.indices ?? []);
+        } else {
+          setBoards({
+            hot: qj.boards?.hot ?? [],
+            gainers: qj.boards?.gainers ?? [],
+            losers: qj.boards?.losers ?? [],
+          });
+          if (ir && ir.ok) {
+            const ij = await ir.json();
+            setIndices(ij.indices ?? []);
+          }
         }
         setSentiment(sj.market ?? null);
         setNews((nj.news ?? []).slice(0, 4));
@@ -216,22 +211,27 @@ export default function MarketsDashboard() {
   }, [kpiQuotes]);
 
   const topPerformer = useMemo(() => {
+    if (tab === "crypto") {
+      if (!boards.hot.length) return null;
+      return [...boards.hot].sort(
+        (a, b) => b.percentChange - a.percentChange,
+      )[0];
+    }
     if (!boards.gainers.length) return null;
     return boards.gainers[0];
-  }, [boards.gainers]);
+  }, [boards.gainers, boards.hot, tab]);
 
   const bullish = sentiment?.bullish_pct ?? 0;
   const bearish = sentiment?.bearish_pct ?? 0;
   const neutral = Math.max(0, 100 - bullish - bearish);
 
   const boardMeta: { key: Board; title: string }[] = [
-    {
-      key: "hot",
-      title: tab === "crypto" ? t("popular") : t("rankHot"),
-    },
+    { key: "hot", title: t("rankHot") },
     { key: "gainers", title: t("gainers") },
     { key: "losers", title: t("losers") },
   ];
+
+  const sectionTitle = tab === "crypto" ? t("popular") : t("rankBoards");
 
   return (
     <div className="space-y-5 animate-[qtFade_0.45s_ease]">
@@ -345,7 +345,7 @@ export default function MarketsDashboard() {
 
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-3">
-          <h2 className="text-lg font-semibold tracking-tight">{t("rankBoards")}</h2>
+          <h2 className="text-lg font-semibold tracking-tight">{sectionTitle}</h2>
           <span className="text-xs text-[var(--muted)]">
             {loading
               ? tCommon("loading")
@@ -368,21 +368,30 @@ export default function MarketsDashboard() {
           </div>
         )}
 
-        {!error && (
-          <div className="grid gap-3 xl:grid-cols-3">
-            {boardMeta.map(({ key, title }) => (
-              <RankBoardPanel
-                key={key}
-                title={title}
-                items={boards[key]}
-                loading={loading}
-                watched={watched}
-                onToggleWatch={toggleWatch}
-                t={t}
-              />
-            ))}
-          </div>
-        )}
+        {!error &&
+          (tab === "crypto" ? (
+            <CryptoPopularTable
+              items={boards.hot}
+              loading={loading}
+              watched={watched}
+              onToggleWatch={toggleWatch}
+              t={t}
+            />
+          ) : (
+            <div className="grid gap-3 xl:grid-cols-3">
+              {boardMeta.map(({ key, title }) => (
+                <RankBoardPanel
+                  key={key}
+                  title={title}
+                  items={boards[key]}
+                  loading={loading}
+                  watched={watched}
+                  onToggleWatch={toggleWatch}
+                  t={t}
+                />
+              ))}
+            </div>
+          ))}
       </section>
 
       <section className="grid gap-4 lg:grid-cols-2">
@@ -483,328 +492,6 @@ export default function MarketsDashboard() {
           )}
         </div>
       </section>
-    </div>
-  );
-}
-
-function IndexStrip({
-  indices,
-  loading,
-  t,
-}: {
-  indices: IndexQuote[];
-  loading: boolean;
-  t: ReturnType<typeof useTranslations<"market">>;
-}) {
-  const slots =
-    indices.length > 0
-      ? indices
-      : loading
-        ? Array.from({ length: 3 }).map((_, i) => ({
-            id: `sk-${i}`,
-            symbol: "",
-            nameKey: "",
-            assetType: "stock" as AssetType,
-            price: null,
-            change: null,
-            percentChange: null,
-          }))
-        : [];
-
-  if (!slots.length) return null;
-
-  return (
-    <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-      {slots.map((item) => {
-        const pct = item.percentChange;
-        const up = pct != null && pct >= 0;
-        let name = item.symbol;
-        if (item.nameKey) {
-          try {
-            name = t(item.nameKey as "indexSpx");
-          } catch {
-            name = item.symbol;
-          }
-        }
-
-        const body = (
-          <>
-            <div className="min-w-0 flex-1 basis-[30%]">
-              {item.symbol ? (
-                <>
-                  <div className="truncate text-sm font-semibold">{name}</div>
-                  <div className="text-[11px] tracking-wide text-[var(--muted)]">
-                    {item.symbol}
-                  </div>
-                </>
-              ) : (
-                <div className="space-y-1.5">
-                  <div className="h-3.5 w-20 animate-pulse rounded bg-[var(--surface-2)]" />
-                  <div className="h-2.5 w-10 animate-pulse rounded bg-[var(--surface-2)]" />
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-1 basis-[40%] items-center justify-center">
-              {item.price != null ? (
-                <Sparkline
-                  open={item.open ?? item.previousClose ?? item.price}
-                  high={item.high ?? item.price}
-                  low={item.low ?? item.price}
-                  close={item.price}
-                  up={up}
-                />
-              ) : (
-                <div className="h-7 w-20 animate-pulse rounded bg-[var(--surface-2)]" />
-              )}
-            </div>
-
-            <div className="min-w-[5.5rem] shrink-0 flex-1 basis-[30%] text-right">
-              {item.price != null ? (
-                <>
-                  <div className="text-sm font-semibold tabular-nums">
-                    {item.price.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </div>
-                  <div
-                    className={`text-xs font-medium tabular-nums ${
-                      up ? "text-[var(--up)]" : "text-[var(--down)]"
-                    }`}
-                  >
-                    {pct != null
-                      ? `${up ? "▲" : "▼"} ${up ? "+" : ""}${pct.toFixed(2)}%`
-                      : "—"}
-                  </div>
-                </>
-              ) : (
-                <div className="space-y-1.5">
-                  <div className="ml-auto h-3.5 w-16 animate-pulse rounded bg-[var(--surface-2)]" />
-                  <div className="ml-auto h-2.5 w-12 animate-pulse rounded bg-[var(--surface-2)]" />
-                </div>
-              )}
-            </div>
-          </>
-        );
-
-        if (!item.symbol) {
-          return (
-            <div
-              key={item.id}
-              className="qt-panel flex items-center gap-3 px-4 py-3"
-            >
-              {body}
-            </div>
-          );
-        }
-
-        return (
-          <Link
-            key={item.id}
-            href={`/symbol/${item.assetType}/${item.symbol}`}
-            className="qt-panel flex items-center gap-3 px-4 py-3 transition hover:border-[var(--brand)]/40 hover:bg-[var(--sidebar-hover)]/40"
-          >
-            {body}
-          </Link>
-        );
-      })}
-    </section>
-  );
-}
-
-function RankBoardPanel({
-  title,
-  items,
-  loading,
-  watched,
-  onToggleWatch,
-  t,
-}: {
-  title: string;
-  items: RankQuote[];
-  loading: boolean;
-  watched: Set<string>;
-  onToggleWatch: (symbol: string, assetType: AssetType) => void;
-  t: ReturnType<typeof useTranslations<"market">>;
-}) {
-  return (
-    <div className="qt-panel overflow-hidden">
-      <div className="border-b border-[var(--border)] px-3 py-2.5">
-        <h2 className="text-sm font-semibold text-[var(--foreground)]">{title}</h2>
-      </div>
-      <div className="overflow-x-auto qt-scroll">
-        <table className="w-full min-w-[320px] text-sm">
-          <thead>
-            <tr className="border-b border-[var(--border)] text-left text-[10px] tracking-wider text-[var(--muted)] uppercase">
-              <th className="px-3 py-2 font-semibold">{t("symbol")}</th>
-              <th className="px-2 py-2 font-semibold">{t("price")}</th>
-              <th className="px-2 py-2 font-semibold">{t("change")}</th>
-              <th className="px-3 py-2 text-right font-semibold">{t("actions")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading && items.length === 0 &&
-              Array.from({ length: 7 }).map((_, i) => (
-                <tr
-                  key={`sk-${i}`}
-                  className="border-b border-[var(--border)]/70 last:border-0"
-                >
-                  <td className="px-3 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="h-7 w-7 animate-pulse rounded-md bg-[var(--surface-2)]" />
-                      <span className="space-y-1">
-                        <span className="block h-3 w-10 animate-pulse rounded bg-[var(--surface-2)]" />
-                        <span className="block h-2.5 w-16 animate-pulse rounded bg-[var(--surface-2)]" />
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-2 py-2.5">
-                    <span className="inline-block h-3.5 w-12 animate-pulse rounded bg-[var(--surface-2)]" />
-                  </td>
-                  <td className="px-2 py-2.5">
-                    <span className="inline-block h-3.5 w-10 animate-pulse rounded bg-[var(--surface-2)]" />
-                  </td>
-                  <td className="px-3 py-2.5 text-right">
-                    <span className="inline-block h-3.5 w-16 animate-pulse rounded bg-[var(--surface-2)]" />
-                  </td>
-                </tr>
-              ))}
-            {items.map((item) => {
-              const up = item.percentChange >= 0;
-              const watchKey = `${item.assetType}:${item.symbol}`;
-              const isWatched = watched.has(watchKey);
-              return (
-                <tr
-                  key={`${title}-${item.symbol}`}
-                  className={`border-b border-[var(--border)]/70 last:border-0 hover:bg-[var(--sidebar-hover)]/60 ${
-                    loading ? "opacity-60" : ""
-                  }`}
-                >
-                  <td className="px-3 py-2.5">
-                    <Link
-                      href={`/symbol/${item.assetType}/${item.symbol}`}
-                      className="flex min-w-0 items-center gap-2"
-                    >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] text-[10px] font-bold text-[var(--brand-text)]">
-                        {item.symbol.slice(0, 2)}
-                      </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-[13px] font-semibold tracking-wide">
-                          {item.symbol}
-                        </span>
-                        <span className="block truncate text-[11px] text-[var(--muted)]">
-                          {item.name || displayName(item.symbol, item.assetType)}
-                        </span>
-                      </span>
-                    </Link>
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-2.5 font-medium tabular-nums text-[13px]">
-                    <Link
-                      href={`/symbol/${item.assetType}/${item.symbol}`}
-                      className="block"
-                    >
-                      {item.assetType === "hk" ? "HK$" : "$"}
-                      <PriceText value={item.price} change={item.percentChange} />
-                    </Link>
-                  </td>
-                  <td className="whitespace-nowrap px-2 py-2.5 text-[13px]">
-                    <Link
-                      href={`/symbol/${item.assetType}/${item.symbol}`}
-                      className="inline-flex items-center gap-0.5 font-medium"
-                    >
-                      <span aria-hidden className="text-[10px]">
-                        {up ? "▲" : "▼"}
-                      </span>
-                      <ChangePct value={item.percentChange} />
-                    </Link>
-                  </td>
-                  <td className="px-3 py-2.5">
-                    <div className="flex items-center justify-end gap-1.5">
-                      <button
-                        type="button"
-                        className={`text-sm ${
-                          isWatched
-                            ? "text-[var(--brand-text)]"
-                            : "text-[var(--muted)] hover:text-[var(--brand-text)]"
-                        }`}
-                        title={isWatched ? t("remove") : t("addWatch")}
-                        onClick={() =>
-                          void onToggleWatch(item.symbol, item.assetType)
-                        }
-                      >
-                        {isWatched ? "★" : "☆"}
-                      </button>
-                      <Link
-                        href={`/symbol/${item.assetType}/${item.symbol}`}
-                        className="qt-link-up text-[11px] font-bold tracking-wide hover:opacity-80"
-                      >
-                        {t("buy")}
-                      </Link>
-                      <Link
-                        href={`/alerts?symbol=${item.symbol}&assetType=${item.assetType}`}
-                        className="qt-link-down text-[11px] font-bold tracking-wide hover:opacity-80"
-                      >
-                        {t("sell")}
-                      </Link>
-                      <Link
-                        href={`/symbol/${item.assetType}/${item.symbol}`}
-                        className="text-[var(--muted)] hover:text-[var(--foreground)]"
-                        aria-label="More"
-                      >
-                        ⋮
-                      </Link>
-                    </div>
-                  </td>
-                </tr>
-              );
-            })}
-            {!loading && items.length === 0 && (
-              <tr>
-                <td
-                  colSpan={4}
-                  className="px-3 py-8 text-center text-[var(--muted)]"
-                >
-                  {t("unavailable")}
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function KpiCard({
-  label,
-  value,
-  hint,
-  hintClass,
-  valueClass,
-  hintDot,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-  hintClass?: string;
-  valueClass?: string;
-  hintDot?: boolean;
-}) {
-  return (
-    <div className="qt-card p-4">
-      <div className="mb-2 flex items-center justify-between text-xs text-[var(--muted)]">
-        <span>{label}</span>
-        {hintDot && (
-          <span className="h-2 w-2 rounded-full bg-[var(--down)] shadow-[0_0_8px_var(--down)]" />
-        )}
-      </div>
-      <div className={`text-xl font-semibold tracking-tight sm:text-2xl ${valueClass || ""}`}>
-        {value}
-      </div>
-      {hint && (
-        <div className={`mt-1 text-xs ${hintClass || "text-[var(--muted)]"}`}>{hint}</div>
-      )}
     </div>
   );
 }

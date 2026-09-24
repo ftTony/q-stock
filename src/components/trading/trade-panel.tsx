@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { QtSelect } from "@/components/ui/qt-select";
 import type { AssetType } from "@/lib/types";
 
 type Side = "buy" | "sell";
@@ -34,12 +35,17 @@ export function TradePanel({
   symbol,
   assetType,
   lastPrice,
+  bid = null,
+  ask = null,
 }: {
   symbol: string;
   assetType: AssetType;
   lastPrice: number | null;
+  bid?: number | null;
+  ask?: number | null;
 }) {
   const t = useTranslations("trading");
+  const tSymbol = useTranslations("symbol");
   const { data: session, status } = useSession();
   const [side, setSide] = useState<Side>("buy");
   const [orderType, setOrderType] = useState<OrderType>("market");
@@ -228,15 +234,15 @@ export function TradePanel({
           <label className="mb-1 block text-[11px] text-[var(--muted)]">
             {t("orderType")}
           </label>
-          <select
+          <QtSelect
             value={orderType}
-            onChange={(e) => setOrderType(e.target.value as OrderType)}
-            className="qt-input w-full px-2 py-2 text-sm"
-          >
-            <option value="market">{t("market")}</option>
-            <option value="limit">{t("limit")}</option>
-            <option value="stop">{t("stop")}</option>
-          </select>
+            onChange={(v) => setOrderType(v as OrderType)}
+            options={[
+              { value: "market", label: t("market") },
+              { value: "limit", label: t("limit") },
+              { value: "stop", label: t("stop") },
+            ]}
+          />
         </div>
 
         <div>
@@ -253,6 +259,43 @@ export function TradePanel({
             className="qt-input w-full px-2 py-2 text-sm tabular-nums"
           />
         </div>
+
+        {(bid != null || ask != null || lastPrice != null) && (
+          <div className="grid grid-cols-2 gap-2 text-[11px] text-[var(--muted)]">
+            <button
+              type="button"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/60 px-2 py-1.5 text-left hover:border-[var(--up)]"
+              onClick={() => {
+                const p = bid ?? lastPrice;
+                if (p != null) {
+                  setLimitPrice(String(Number(p.toFixed(4))));
+                  setOrderType("limit");
+                }
+              }}
+            >
+              <div>{tSymbol("bid")}</div>
+              <div className="mt-0.5 font-medium tabular-nums text-[var(--up)]">
+                {bid != null ? fmtMoney(bid) : lastPrice != null ? fmtMoney(lastPrice) : "-"}
+              </div>
+            </button>
+            <button
+              type="button"
+              className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/60 px-2 py-1.5 text-left hover:border-[var(--down)]"
+              onClick={() => {
+                const p = ask ?? lastPrice;
+                if (p != null) {
+                  setLimitPrice(String(Number(p.toFixed(4))));
+                  setOrderType("limit");
+                }
+              }}
+            >
+              <div>{tSymbol("ask")}</div>
+              <div className="mt-0.5 font-medium tabular-nums text-[var(--down)]">
+                {ask != null ? fmtMoney(ask) : lastPrice != null ? fmtMoney(lastPrice) : "-"}
+              </div>
+            </button>
+          </div>
+        )}
 
         {orderType === "limit" && (
           <div>
@@ -288,9 +331,9 @@ export function TradePanel({
           </div>
         )}
 
-        <div className="flex justify-between text-xs text-[var(--muted)]">
-          <span>{t("estimate")}</span>
-          <span className="tabular-nums font-medium text-[var(--foreground)]">
+        <div className="flex items-center justify-between rounded-lg bg-[var(--surface-2)]/70 px-3 py-2 text-sm">
+          <span className="text-[var(--muted)]">{t("estimate")}</span>
+          <span className="tabular-nums font-semibold text-[var(--foreground)]">
             ${fmtMoney(estimate)}
           </span>
         </div>
@@ -300,10 +343,10 @@ export function TradePanel({
           loading={busy}
           loadingLabel={t("loading")}
           disabled={!(qtyNum > 0)}
-          className={`w-full py-2.5 text-sm font-semibold ${
+          className={`w-full py-3 text-sm font-semibold ${
             side === "buy"
-              ? "bg-[var(--up)] text-white"
-              : "bg-[var(--down)] text-white"
+              ? "bg-[var(--up)] text-white hover:brightness-110"
+              : "bg-[var(--down)] text-white hover:brightness-110"
           }`}
         >
           {side === "buy" ? t("submitBuy") : t("submitSell")}

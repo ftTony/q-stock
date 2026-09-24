@@ -4,7 +4,12 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import type { OhlcvBar } from "@/lib/types";
 import { usePreference } from "@/components/providers/preference-provider";
+import {
+  DrawingToolIcon,
+  type DrawingTool,
+} from "@/components/charts/chart-drawing-icons";
 
+export type { DrawingTool };
 export type IndicatorFlags = {
   ma: boolean;
   ema: boolean;
@@ -12,18 +17,6 @@ export type IndicatorFlags = {
   rsi: boolean;
   macd: boolean;
 };
-
-export type DrawingTool =
-  | "none"
-  | "segment"
-  | "rayLine"
-  | "straightLine"
-  | "horizontalStraightLine"
-  | "verticalStraightLine"
-  | "parallelStraightLine"
-  | "fibonacciLine"
-  | "priceLine"
-  | "brush";
 
 type KLineChartsModule = typeof import("klinecharts");
 type ChartInstance = NonNullable<ReturnType<KLineChartsModule["init"]>>;
@@ -137,6 +130,8 @@ const DRAWING_TOOLS: { id: DrawingTool; labelKey: string }[] = [
 export function CandleChart({
   bars,
   flags,
+  onFlagToggle,
+  indicatorsLabel,
   resetKey,
   resolution = "D",
   symbol = "",
@@ -148,6 +143,8 @@ export function CandleChart({
   /** @deprecated KLineChart computes indicators internally */
   indicators?: unknown;
   flags: IndicatorFlags;
+  onFlagToggle?: (key: keyof IndicatorFlags) => void;
+  indicatorsLabel?: string;
   resetKey?: string;
   resolution?: string;
   symbol?: string;
@@ -156,6 +153,7 @@ export function CandleChart({
   hasMore?: boolean;
 }) {
   const t = useTranslations("symbol");
+  const shellRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ChartInstance | null>(null);
   const kcRef = useRef<KLineChartsModule | null>(null);
@@ -166,6 +164,7 @@ export function CandleChart({
   const indicatorIdsRef = useRef<Record<string, string | null>>({});
   const [drawingTool, setDrawingTool] = useState<DrawingTool>("none");
   const [ready, setReady] = useState(false);
+  const [fullscreen, setFullscreen] = useState(false);
   const { changeColorScheme } = usePreference();
 
   barsRef.current = bars;
@@ -328,6 +327,42 @@ export function CandleChart({
     chart.setStyles(buildChartStyles() as never);
   }, [changeColorScheme, ready]);
 
+  useEffect(() => {
+    function onFsChange() {
+      const active = document.fullscreenElement === shellRef.current;
+      setFullscreen(active);
+      requestAnimationFrame(() => {
+        chartRef.current?.resize();
+      });
+    }
+    document.addEventListener("fullscreenchange", onFsChange);
+    return () => document.removeEventListener("fullscreenchange", onFsChange);
+  }, []);
+
+  useEffect(() => {
+    const shell = shellRef.current;
+    if (!shell || typeof ResizeObserver === "undefined") return;
+    const ro = new ResizeObserver(() => {
+      chartRef.current?.resize();
+    });
+    ro.observe(shell);
+    return () => ro.disconnect();
+  }, [ready]);
+
+  const toggleFullscreen = async () => {
+    const shell = shellRef.current;
+    if (!shell) return;
+    try {
+      if (document.fullscreenElement) {
+        await document.exitFullscreen();
+      } else {
+        await shell.requestFullscreen();
+      }
+    } catch {
+      /* browser may block without gesture / support */
+    }
+  };
+
   const startDrawing = (tool: DrawingTool) => {
     setDrawingTool(tool);
     if (tool === "none") return;
@@ -340,54 +375,126 @@ export function CandleChart({
   };
 
   return (
-    <div className="space-y-2">
-      <div className="flex flex-wrap items-center gap-1.5 text-xs">
-        <span className="mr-1 text-[var(--muted)]">{t("drawing")}:</span>
-        <button
-          type="button"
-          onClick={() => startDrawing("none")}
-          className={`rounded-full border px-2.5 py-1 ${
-            drawingTool === "none"
-              ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
-              : "border-[var(--border)] text-[var(--muted)]"
-          }`}
-        >
-          {t("drawPan")}
-        </button>
-        {DRAWING_TOOLS.map((tool) => (
+    <div
+      ref={shellRef}
+      className={`relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)] ${
+        fullscreen ? "flex h-screen flex-col rounded-none border-0" : ""
+      }`}
+    >
+      {/* Drawing tools — vertical icon strip on left */}
+      <div className="pointer-events-none absolute bottom-10 left-0 top-10 z-10 flex items-start p-1.5 sm:p-2">
+        <div className="pointer-events-auto flex max-h-full w-10 flex-col items-center gap-0.5 overflow-y-auto rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 py-1 shadow-sm backdrop-blur-sm qt-scroll sm:w-11">
           <button
-            key={tool.id}
             type="button"
-            onClick={() => startDrawing(tool.id)}
-            className={`rounded-full border px-2.5 py-1 ${
-              drawingTool === tool.id
+            title={t("drawPan")}
+            aria-label={t("drawPan")}
+            onClick={() => startDrawing("none")}
+            className={`flex h-8 w-8 items-center justify-center rounded-md border ${
+              drawingTool === "none"
                 ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                : "border-[var(--border)] text-[var(--muted)]"
+                : "border-transparent text-[var(--muted)] hover:border-[var(--border)] hover:text-[var(--foreground)]"
             }`}
           >
-            {t(tool.labelKey)}
+            <DrawingToolIcon tool="none" />
           </button>
-        ))}
+          {DRAWING_TOOLS.map((tool) => (
+            <button
+              key={tool.id}
+              type="button"
+              title={t(tool.labelKey)}
+              aria-label={t(tool.labelKey)}
+              onClick={() => startDrawing(tool.id)}
+              className={`flex h-8 w-8 items-center justify-center rounded-md border ${
+                drawingTool === tool.id
+                  ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
+                  : "border-transparent text-[var(--muted)] hover:border-[var(--border)] hover:text-[var(--foreground)]"
+              }`}
+            >
+              <DrawingToolIcon tool={tool.id} />
+            </button>
+          ))}
+          <button
+            type="button"
+            title={t("drawClear")}
+            aria-label={t("drawClear")}
+            onClick={clearDrawings}
+            className="flex h-8 w-8 items-center justify-center rounded-md border border-transparent text-[var(--muted)] hover:border-[var(--border)] hover:text-[var(--foreground)]"
+          >
+            <DrawingToolIcon tool="clear" />
+          </button>
+        </div>
+      </div>
+
+      {/* Fullscreen — top right, inset from Y-axis scale */}
+      <div className="pointer-events-none absolute right-12 top-0 z-10 p-2 sm:right-14 sm:p-2.5 lg:right-16">
         <button
           type="button"
-          onClick={clearDrawings}
-          className="rounded-full border border-[var(--border)] px-2.5 py-1 text-[var(--muted)] hover:text-[var(--foreground)]"
+          onClick={() => void toggleFullscreen()}
+          aria-label={fullscreen ? t("exitFullscreen") : t("fullscreen")}
+          title={fullscreen ? t("exitFullscreen") : t("fullscreen")}
+          className="pointer-events-auto flex items-center gap-1 rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 px-2 py-1 text-[11px] text-[var(--muted)] shadow-sm backdrop-blur-sm hover:text-[var(--foreground)] sm:text-xs"
         >
-          {t("drawClear")}
+          {fullscreen ? (
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+            </svg>
+          ) : (
+            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+            </svg>
+          )}
+          <span className="hidden sm:inline">
+            {fullscreen ? t("exitFullscreen") : t("fullscreen")}
+          </span>
         </button>
       </div>
 
-      <div className="relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)]">
-        <div
-          ref={containerRef}
-          className="h-[360px] w-full sm:h-[440px]"
-        />
-        {loadingMore && (
-          <div className="pointer-events-none absolute left-3 top-3 rounded-md bg-[var(--panel)]/90 px-2 py-1 text-xs text-[var(--muted)] shadow">
-            …
+      {/* Indicators — in the gap above volume legend (candle/volume separator) */}
+      {onFlagToggle && (
+        <div className="pointer-events-none absolute bottom-28 left-12 z-10 sm:bottom-32 sm:left-14 lg:bottom-36">
+          <div className="pointer-events-auto flex max-w-full flex-wrap items-center gap-1 rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 px-1.5 py-1 text-[11px] shadow-sm backdrop-blur-sm sm:text-xs">
+            {indicatorsLabel ? (
+              <span className="hidden px-1 text-[var(--muted)] sm:inline">
+                {indicatorsLabel}
+              </span>
+            ) : null}
+            {(
+              [
+                ["ma", "MA"],
+                ["ema", "EMA"],
+                ["boll", "BOLL"],
+                ["rsi", "RSI"],
+                ["macd", "MACD"],
+              ] as const
+            ).map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onFlagToggle(key)}
+                className={`rounded-md border px-2 py-0.5 ${
+                  flags[key]
+                    ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
+                    : "border-transparent text-[var(--muted)] hover:border-[var(--border)] hover:text-[var(--foreground)]"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      )}
+
+      <div
+        ref={containerRef}
+        className={
+          fullscreen ? "min-h-0 w-full flex-1" : "h-[480px] w-full sm:h-[560px] lg:h-[620px]"
+        }
+      />
+      {loadingMore && (
+        <div className="pointer-events-none absolute bottom-3 left-14 z-10 rounded-md bg-[var(--panel)]/90 px-2 py-1 text-xs text-[var(--muted)] shadow sm:left-16">
+          …
+        </div>
+      )}
     </div>
   );
 }
