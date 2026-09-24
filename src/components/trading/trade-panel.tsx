@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import type { AssetType } from "@/lib/types";
 
 type Side = "buy" | "sell";
@@ -210,24 +211,26 @@ export function TradePanel({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-1 rounded-xl bg-[var(--surface-2)] p-1">
-        {(["buy", "sell"] as const).map((s) => (
-          <button
-            key={s}
-            type="button"
-            onClick={() => setSide(s)}
-            className={`rounded-lg py-2 text-sm font-semibold ${
-              side === s
-                ? s === "buy"
-                  ? "bg-[var(--up)] text-white"
-                  : "bg-[var(--down)] text-white"
-                : "text-[var(--muted)]"
-            }`}
-          >
-            {t(s)}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        value={side}
+        onChange={setSide}
+        className="rounded-xl bg-[var(--surface-2)] p-1"
+        buttonClassName="flex-1 py-2 text-sm font-semibold"
+        options={[
+          {
+            value: "buy",
+            label: t("buy"),
+            indicatorClassName: "bg-[var(--up)]",
+            activeTextClassName: "text-white",
+          },
+          {
+            value: "sell",
+            label: t("sell"),
+            indicatorClassName: "bg-[var(--down)]",
+            activeTextClassName: "text-white",
+          },
+        ]}
+      />
 
       <form onSubmit={onSubmit} className="space-y-3">
         <div>

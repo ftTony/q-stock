@@ -145,7 +145,7 @@ export function IndustryHeatmap({
 
         <div
           ref={ref}
-          className="relative h-[280px] w-full bg-[var(--panel)] sm:h-[340px] lg:h-[400px]"
+          className="relative h-[360px] w-full bg-[var(--panel)] sm:h-[440px] lg:h-[520px]"
           onMouseLeave={scheduleHide}
         >
           {loading && (

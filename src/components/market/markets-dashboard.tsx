@@ -11,6 +11,7 @@ import { IndustryHeatmap } from "@/components/market/industry-heatmap";
 import { KpiCard } from "@/components/market/kpi-card";
 import { RankBoardPanel } from "@/components/market/rank-board-panel";
 import type { IndexQuote, RankQuote } from "@/components/market/markets-types";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import type { AssetType } from "@/lib/types";
 
 type Tab = AssetType;
@@ -255,29 +256,20 @@ export default function MarketsDashboard() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1">
-            {(["stock", "hk", "crypto"] as Tab[]).map((key) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => {
-                  setTab(key);
-                  setQ("");
-                }}
-                className={`rounded-lg px-3 py-1.5 text-xs font-semibold transition sm:text-sm ${
-                  tab === key
-                    ? "bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                    : "text-[var(--muted)] hover:text-[var(--foreground)]"
-                }`}
-              >
-                {key === "stock"
-                  ? t("stocks")
-                  : key === "hk"
-                    ? t("hk")
-                    : t("crypto")}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            value={tab}
+            onChange={(key) => {
+              setTab(key);
+              setQ("");
+            }}
+            className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1"
+            buttonClassName="px-3 py-1.5 text-xs font-semibold sm:text-sm"
+            options={[
+              { value: "stock", label: t("stocks") },
+              { value: "hk", label: t("hk") },
+              { value: "crypto", label: t("crypto") },
+            ]}
+          />
 
           <div className="relative min-w-[220px] flex-1 sm:flex-none">
             <input
