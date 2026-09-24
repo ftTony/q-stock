@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { SubmitButton } from "@/components/ui/submit-button";
 import type { AssetType } from "@/lib/types";
 import { parseAssetType } from "@/lib/types";
 
@@ -31,6 +32,9 @@ function AlertsContent() {
   const [condition, setCondition] = useState<"gte" | "lte">("gte");
   const [triggerPrice, setTriggerPrice] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+  const [actionId, setActionId] = useState<string | null>(null);
+  const tCommon = useTranslations("common");
 
   const load = useCallback(async () => {
     const res = await fetch("/api/alerts");
@@ -68,37 +72,52 @@ function AlertsContent() {
   async function onCreate(e: FormEvent) {
     e.preventDefault();
     setError(null);
-    const res = await fetch("/api/alerts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        symbol,
-        assetType,
-        condition,
-        triggerPrice: Number(triggerPrice),
-      }),
-    });
-    const data = await res.json();
-    if (!res.ok) {
-      setError(data.error || "Error");
-      return;
+    setSubmitting(true);
+    try {
+      const res = await fetch("/api/alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          symbol,
+          assetType,
+          condition,
+          triggerPrice: Number(triggerPrice),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || "Error");
+        return;
+      }
+      setTriggerPrice("");
+      await load();
+    } finally {
+      setSubmitting(false);
     }
-    setTriggerPrice("");
-    await load();
   }
 
   async function patchStatus(id: string, next: "active" | "disabled") {
-    await fetch("/api/alerts", {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ id, status: next }),
-    });
-    await load();
+    setActionId(id);
+    try {
+      await fetch("/api/alerts", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, status: next }),
+      });
+      await load();
+    } finally {
+      setActionId(null);
+    }
   }
 
   async function remove(id: string) {
-    await fetch(`/api/alerts?id=${id}`, { method: "DELETE" });
-    await load();
+    setActionId(id);
+    try {
+      await fetch(`/api/alerts?id=${id}`, { method: "DELETE" });
+      await load();
+    } finally {
+      setActionId(null);
+    }
   }
 
   return (
@@ -150,9 +169,13 @@ function AlertsContent() {
           />
         </label>
         {error && <p className="text-sm text-[var(--down)] sm:col-span-2">{error}</p>}
-        <button type="submit" className="qt-btn qt-btn-primary px-4 py-2.5 text-sm sm:col-span-2">
+        <SubmitButton
+          loading={submitting}
+          loadingLabel={tCommon("loading")}
+          className="qt-btn-primary px-4 py-2.5 text-sm sm:col-span-2"
+        >
           {t("create")}
-        </button>
+        </SubmitButton>
       </form>
 
       <ul className="qt-panel divide-y divide-[var(--border)] overflow-hidden">
@@ -175,29 +198,35 @@ function AlertsContent() {
             </div>
             <div className="flex gap-2 text-xs">
               {a.status === "active" ? (
-                <button
+                <SubmitButton
                   type="button"
-                  className="qt-btn qt-btn-ghost px-2.5 py-1.5"
+                  loading={actionId === a.id}
+                  loadingLabel={tCommon("loading")}
+                  className="qt-btn-ghost px-2.5 py-1.5"
                   onClick={() => void patchStatus(a.id, "disabled")}
                 >
                   {t("disable")}
-                </button>
+                </SubmitButton>
               ) : (
-                <button
+                <SubmitButton
                   type="button"
-                  className="qt-btn qt-btn-ghost px-2.5 py-1.5"
+                  loading={actionId === a.id}
+                  loadingLabel={tCommon("loading")}
+                  className="qt-btn-ghost px-2.5 py-1.5"
                   onClick={() => void patchStatus(a.id, "active")}
                 >
                   {t("reactivate")}
-                </button>
+                </SubmitButton>
               )}
-              <button
+              <SubmitButton
                 type="button"
-                className="qt-btn qt-btn-ghost px-2.5 py-1.5 text-[var(--down)]"
+                loading={actionId === a.id}
+                loadingLabel={tCommon("loading")}
+                className="qt-btn-ghost px-2.5 py-1.5 text-[var(--down)]"
                 onClick={() => void remove(a.id)}
               >
                 Delete
-              </button>
+              </SubmitButton>
             </div>
           </li>
         ))}

@@ -4,6 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { SubmitButton } from "@/components/ui/submit-button";
 import type { AssetType } from "@/lib/types";
 
 type Side = "buy" | "sell";
@@ -294,17 +295,19 @@ export function TradePanel({
           </span>
         </div>
 
-        <button
+        <SubmitButton
           type="submit"
-          disabled={busy || !(qtyNum > 0)}
-          className={`qt-btn w-full py-2.5 text-sm font-semibold disabled:opacity-50 ${
+          loading={busy}
+          loadingLabel={t("loading")}
+          disabled={!(qtyNum > 0)}
+          className={`w-full py-2.5 text-sm font-semibold ${
             side === "buy"
-              ? "bg-[var(--up)] text-white hover:opacity-90"
-              : "bg-[var(--down)] text-white hover:opacity-90"
+              ? "bg-[var(--up)] text-white"
+              : "bg-[var(--down)] text-white"
           }`}
         >
-          {busy ? t("loading") : side === "buy" ? t("submitBuy") : t("submitSell")}
-        </button>
+          {side === "buy" ? t("submitBuy") : t("submitSell")}
+        </SubmitButton>
 
         {msg && <p className="text-xs text-[var(--muted)]">{msg}</p>}
       </form>

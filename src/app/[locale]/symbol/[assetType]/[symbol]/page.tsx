@@ -27,6 +27,7 @@ import {
 } from "@/components/market/company-panel";
 import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
 import { TradePanel } from "@/components/trading/trade-panel";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, CandleResolution, OhlcvBar, Quote } from "@/lib/types";
 import { parseAssetType } from "@/lib/types";
@@ -116,6 +117,8 @@ export default function SymbolPage() {
   const [alertPrice, setAlertPrice] = useState("");
   const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
+  const [alertBusy, setAlertBusy] = useState(false);
+  const [commentBusy, setCommentBusy] = useState(false);
   const [degraded, setDegraded] = useState(false);
   const [inWatchlist, setInWatchlist] = useState(false);
   const [watchBusy, setWatchBusy] = useState(false);
@@ -393,15 +396,20 @@ export default function SymbolPage() {
 
   async function postComment(e: FormEvent) {
     e.preventDefault();
-    if (!commentText.trim()) return;
-    const res = await fetch("/api/comments", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ symbol, assetType, content: commentText }),
-    });
-    if (res.ok) {
-      setCommentText("");
-      await loadTab();
+    if (!commentText.trim() || commentBusy) return;
+    setCommentBusy(true);
+    try {
+      const res = await fetch("/api/comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ symbol, assetType, content: commentText }),
+      });
+      if (res.ok) {
+        setCommentText("");
+        await loadTab();
+      }
+    } finally {
+      setCommentBusy(false);
     }
   }
 
@@ -417,22 +425,28 @@ export default function SymbolPage() {
       setAlertMsg(tAlerts("loginRequired"));
       return;
     }
-    const res = await fetch("/api/alerts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        symbol,
-        assetType,
-        condition: alertCondition,
-        triggerPrice: Number(alertPrice),
-      }),
-    });
-    if (!res.ok) {
-      setAlertMsg(tCommon("error"));
-      return;
+    if (alertBusy) return;
+    setAlertBusy(true);
+    try {
+      const res = await fetch("/api/alerts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          symbol,
+          assetType,
+          condition: alertCondition,
+          triggerPrice: Number(alertPrice),
+        }),
+      });
+      if (!res.ok) {
+        setAlertMsg(tCommon("error"));
+        return;
+      }
+      setAlertMsg("OK");
+      setAlertPrice("");
+    } finally {
+      setAlertBusy(false);
     }
-    setAlertMsg("OK");
-    setAlertPrice("");
   }
 
   async function toggleWatchlist() {
@@ -492,18 +506,20 @@ export default function SymbolPage() {
             )}
           </div>
         </div>
-        <button
+        <SubmitButton
           type="button"
           disabled={watchBusy}
+          loading={watchBusy}
+          loadingLabel={tCommon("loading")}
           onClick={() => void toggleWatchlist()}
-          className={`qt-btn shrink-0 px-3 py-1.5 text-xs ${
+          className={`shrink-0 px-3 py-1.5 text-xs ${
             inWatchlist
               ? "qt-btn-ghost text-[var(--brand-text)]"
               : "qt-btn-primary"
           }`}
         >
           {inWatchlist ? t("inWatchlist") : t("addWatchlist")}
-        </button>
+        </SubmitButton>
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
@@ -609,12 +625,14 @@ export default function SymbolPage() {
               placeholder={tAlerts("triggerPrice")}
               className="qt-input h-9 w-32 px-2 text-sm"
             />
-            <button
+            <SubmitButton
               type="submit"
-              className="qt-btn qt-btn-primary h-9 px-3 text-sm"
+              loading={alertBusy}
+              loadingLabel={tCommon("loading")}
+              className="qt-btn-primary h-9 px-3 text-sm"
             >
               {tAlerts("create")}
-            </button>
+            </SubmitButton>
             {alertMsg && (
               <span className="text-xs text-[var(--muted)]">{alertMsg}</span>
             )}
@@ -747,12 +765,14 @@ export default function SymbolPage() {
                       placeholder={tComments("placeholder")}
                       className="flex-1 qt-input px-3 py-2 text-sm"
                     />
-                    <button
+                    <SubmitButton
                       type="submit"
-                      className="qt-btn qt-btn-primary px-3 py-2 text-sm"
+                      loading={commentBusy}
+                      loadingLabel={tCommon("loading")}
+                      className="qt-btn-primary px-3 py-2 text-sm"
                     >
                       {tComments("post")}
-                    </button>
+                    </SubmitButton>
                   </form>
                 ) : (
                   <p className="text-sm text-[var(--muted)]">

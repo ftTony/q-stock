@@ -490,13 +490,13 @@ export default function MarketsDashboard() {
                           </button>
                           <Link
                             href={`/symbol/${item.assetType}/${item.symbol}`}
-                            className="text-xs font-bold tracking-wide text-[var(--up)] hover:opacity-80"
+                            className="qt-link-up text-xs font-bold tracking-wide hover:opacity-80"
                           >
                             {t("buy")}
                           </Link>
                           <Link
                             href={`/alerts?symbol=${item.symbol}&assetType=${item.assetType}`}
-                            className="text-xs font-bold tracking-wide text-[var(--down)] hover:opacity-80"
+                            className="qt-link-down text-xs font-bold tracking-wide hover:opacity-80"
                           >
                             {t("sell")}
                           </Link>

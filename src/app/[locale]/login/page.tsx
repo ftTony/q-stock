@@ -4,10 +4,12 @@ import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default function LoginPage() {
   const t = useTranslations("auth");
   const tApp = useTranslations("app");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -19,18 +21,21 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-    setLoading(false);
-    if (res?.error) {
-      setError(t("error"));
-      return;
+    try {
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+      if (res?.error) {
+        setError(t("error"));
+        return;
+      }
+      router.push("/");
+      router.refresh();
+    } finally {
+      setLoading(false);
     }
-    router.push("/");
-    router.refresh();
   }
 
   return (
@@ -50,6 +55,7 @@ export default function LoginPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="qt-input w-full px-3 py-2.5"
+            disabled={loading}
           />
         </label>
         <label className="block space-y-1 text-sm">
@@ -61,16 +67,17 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="qt-input w-full px-3 py-2.5"
+            disabled={loading}
           />
         </label>
         {error && <p className="text-sm text-[var(--down)]">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="qt-btn qt-btn-primary w-full px-3 py-2.5 text-sm disabled:opacity-60"
+        <SubmitButton
+          loading={loading}
+          loadingLabel={tCommon("loading")}
+          className="qt-btn-primary w-full px-3 py-2.5 text-sm"
         >
           {t("submitLogin")}
-        </button>
+        </SubmitButton>
       </form>
       <p className="text-sm text-[var(--muted)]">
         {t("noAccount")}{" "}

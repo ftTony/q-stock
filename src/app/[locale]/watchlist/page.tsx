@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { ChangePct, PriceText } from "@/components/market/price";
 import { Sparkline } from "@/components/market/sparkline";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 import { Suspense } from "react";
@@ -211,7 +212,8 @@ function WatchlistContent() {
               <li key={`${r.assetType}-${r.symbol}`}>
                 <button
                   type="button"
-                  className="flex w-full items-center justify-between px-3 py-2.5 text-left text-sm hover:bg-[var(--sidebar-hover)]"
+                  disabled={adding}
+                  className="flex w-full items-center justify-between px-3 py-2.5 text-left text-sm hover:bg-[var(--sidebar-hover)] disabled:opacity-50"
                   onClick={() => void addSymbol(r.symbol, r.assetType)}
                 >
                   <span>
@@ -308,13 +310,13 @@ function WatchlistContent() {
                         <div className="flex items-center gap-3">
                           <Link
                             href={`/symbol/${item.assetType}/${item.symbol}`}
-                            className="text-xs font-bold text-[var(--up)]"
+                            className="qt-link-up text-xs font-bold hover:opacity-80"
                           >
                             {t("buy")}
                           </Link>
                           <button
                             type="button"
-                            className="text-xs font-bold text-[var(--down)]"
+                            className="qt-link-down text-xs font-bold hover:opacity-80"
                             onClick={() => void remove(item.id)}
                           >
                             {t("remove")}
@@ -328,14 +330,15 @@ function WatchlistContent() {
                   <tr>
                     <td colSpan={5} className="px-4 py-10 text-center">
                       <p className="mb-3 text-[var(--muted)]">{t("watchlistEmpty")}</p>
-                      <button
+                      <SubmitButton
                         type="button"
-                        disabled={adding}
+                        loading={adding}
+                        loadingLabel={tCommon("loading")}
                         onClick={() => void seedPopular()}
-                        className="qt-btn qt-btn-primary px-4 py-2 text-sm disabled:opacity-60"
+                        className="qt-btn-primary px-4 py-2 text-sm"
                       >
-                        {adding ? tCommon("loading") : t("seedPopular")}
-                      </button>
+                        {t("seedPopular")}
+                      </SubmitButton>
                     </td>
                   </tr>
                 )}

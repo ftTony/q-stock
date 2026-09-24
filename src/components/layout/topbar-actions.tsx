@@ -5,7 +5,12 @@ import { useSession, signOut } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
-import { locales, type AppLocale } from "@/i18n/config";
+import {
+  locales,
+  languageLabels,
+  localeCode,
+  type AppLocale,
+} from "@/i18n/config";
 
 type AlertItem = {
   id: string;
@@ -29,8 +34,10 @@ export function TopBarActions() {
   const [recent, setRecent] = useState<AlertItem[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
+  const langRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     if (!session?.user) {
@@ -60,6 +67,7 @@ export function TopBarActions() {
     function onDoc(e: MouseEvent) {
       if (!menuRef.current?.contains(e.target as Node)) setMenuOpen(false);
       if (!notifRef.current?.contains(e.target as Node)) setNotifOpen(false);
+      if (!langRef.current?.contains(e.target as Node)) setLangOpen(false);
     }
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
@@ -166,20 +174,82 @@ export function TopBarActions() {
         )}
       </div>
 
-      <select
-        className="qt-input hidden h-9 px-2 text-xs md:block"
-        value={locale}
-        onChange={(e) => {
-          router.replace(pathname, { locale: e.target.value as AppLocale });
-        }}
-        aria-label="Language"
-      >
-        {locales.map((l) => (
-          <option key={l} value={l}>
-            {l}
-          </option>
-        ))}
-      </select>
+      <div className="relative hidden md:block" ref={langRef}>
+        <button
+          type="button"
+          className="qt-btn qt-btn-ghost flex h-9 items-center gap-1.5 px-2 text-xs"
+          aria-label="Language"
+          aria-haspopup="listbox"
+          aria-expanded={langOpen}
+          onClick={() => {
+            setLangOpen((v) => !v);
+            setMenuOpen(false);
+            setNotifOpen(false);
+          }}
+        >
+          <span className="inline-flex h-5 w-7 items-center justify-center rounded border border-[var(--border)] bg-[var(--sidebar-hover)] text-[10px] font-bold text-[var(--brand-text)]">
+            {localeCode(locale)}
+          </span>
+          <svg
+            className={`h-3 w-3 text-[var(--muted)] transition-transform ${langOpen ? "rotate-180" : ""}`}
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+          >
+            <path d="m6 9 6 6 6-6" />
+          </svg>
+        </button>
+        {langOpen && (
+          <div
+            role="listbox"
+            className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1 shadow-xl"
+          >
+            {locales.map((l) => {
+              const active = l === locale;
+              return (
+                <button
+                  key={l}
+                  type="button"
+                  role="option"
+                  aria-selected={active}
+                  className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition-colors hover:bg-[var(--sidebar-hover)] ${
+                    active
+                      ? "bg-[var(--brand-soft)] font-semibold text-[var(--brand-text)]"
+                      : "text-[var(--foreground)]"
+                  }`}
+                  onClick={() => {
+                    setLangOpen(false);
+                    if (!active) router.replace(pathname, { locale: l as AppLocale });
+                  }}
+                >
+                  <span
+                    className={`inline-flex w-7 items-center justify-center rounded border px-0.5 py-0.5 text-[10px] font-bold ${
+                      active
+                        ? "border-[var(--brand-text)] text-[var(--brand-text)]"
+                        : "border-[var(--border)] bg-[var(--sidebar-hover)] text-[var(--muted)]"
+                    }`}
+                  >
+                    {localeCode(l)}
+                  </span>
+                  <span className="truncate">{languageLabels[l]}</span>
+                  {active && (
+                    <svg
+                      className="ml-auto h-3.5 w-3.5 shrink-0"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2.5"
+                    >
+                      <path d="M20 6 9 17l-5-5" />
+                    </svg>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        )}
+      </div>
 
       {session?.user ? (
         <div className="relative" ref={menuRef}>

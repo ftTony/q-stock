@@ -3,10 +3,12 @@
 import { FormEvent, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
+import { SubmitButton } from "@/components/ui/submit-button";
 
 export default function RegisterPage() {
   const t = useTranslations("auth");
   const tApp = useTranslations("app");
+  const tCommon = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -19,18 +21,21 @@ export default function RegisterPage() {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    const res = await fetch("/api/auth/register", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email, password, name: name || undefined, locale }),
-    });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setError(data.error || t("error"));
-      return;
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password, name: name || undefined, locale }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setError(data.error || t("error"));
+        return;
+      }
+      router.push(`/login?registered=1`);
+    } finally {
+      setLoading(false);
     }
-    router.push(`/login?registered=1`);
   }
 
   return (
@@ -48,6 +53,7 @@ export default function RegisterPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="qt-input w-full px-3 py-2.5"
+            disabled={loading}
           />
         </label>
         <label className="block space-y-1 text-sm">
@@ -58,6 +64,7 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="qt-input w-full px-3 py-2.5"
+            disabled={loading}
           />
         </label>
         <label className="block space-y-1 text-sm">
@@ -69,16 +76,17 @@ export default function RegisterPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="qt-input w-full px-3 py-2.5"
+            disabled={loading}
           />
         </label>
         {error && <p className="text-sm text-[var(--down)]">{error}</p>}
-        <button
-          type="submit"
-          disabled={loading}
-          className="qt-btn qt-btn-primary w-full px-3 py-2.5 text-sm disabled:opacity-60"
+        <SubmitButton
+          loading={loading}
+          loadingLabel={tCommon("loading")}
+          className="qt-btn-primary w-full px-3 py-2.5 text-sm"
         >
           {t("submitRegister")}
-        </button>
+        </SubmitButton>
       </form>
       <p className="text-sm text-[var(--muted)]">
         {t("haveAccount")}{" "}

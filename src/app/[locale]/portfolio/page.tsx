@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { ChangePct, PriceText } from "@/components/market/price";
 import { Sparkline } from "@/components/market/sparkline";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
@@ -259,14 +260,15 @@ export default function PortfolioPage() {
             <h2 className="text-lg font-semibold">{tTrade("accountTitle")}</h2>
             <p className="text-sm text-[var(--muted)]">{tTrade("accountDesc")}</p>
           </div>
-          <button
+          <SubmitButton
             type="button"
-            disabled={resetting}
+            loading={resetting}
+            loadingLabel={tTrade("loading")}
             onClick={() => void resetAccount()}
-            className="qt-btn qt-btn-ghost border border-[var(--border)] px-3 py-1.5 text-sm disabled:opacity-50"
+            className="qt-btn-ghost border border-[var(--border)] px-3 py-1.5 text-sm"
           >
-            {resetting ? tTrade("loading") : tTrade("reset")}
-          </button>
+            {tTrade("reset")}
+          </SubmitButton>
         </div>
         {tradeMsg && (
           <p className="text-xs text-[var(--muted)]">{tradeMsg}</p>
@@ -481,14 +483,15 @@ export default function PortfolioPage() {
         {rows.length === 0 ? (
           <div className="space-y-3 p-6 text-center">
             <p className="text-sm text-[var(--muted)]">{tMarket("watchlistEmpty")}</p>
-            <button
+            <SubmitButton
               type="button"
-              disabled={seeding}
+              loading={seeding}
+              loadingLabel={tCommon("loading")}
               onClick={() => void seedPopular()}
-              className="qt-btn qt-btn-primary px-4 py-2 text-sm disabled:opacity-60"
+              className="qt-btn-primary px-4 py-2 text-sm"
             >
-              {seeding ? tCommon("loading") : t("seedPopular")}
-            </button>
+              {t("seedPopular")}
+            </SubmitButton>
           </div>
         ) : (
           <div className="overflow-x-auto qt-scroll">
@@ -567,13 +570,13 @@ export default function PortfolioPage() {
                         <div className="flex gap-3">
                           <Link
                             href={`/symbol/${item.assetType}/${item.symbol}`}
-                            className="text-xs font-bold text-[var(--up)]"
+                            className="qt-link-up text-xs font-bold hover:opacity-80"
                           >
                             {tMarket("buy")}
                           </Link>
                           <Link
                             href={`/alerts?symbol=${item.symbol}&assetType=${item.assetType}`}
-                            className="text-xs font-bold text-[var(--down)]"
+                            className="qt-link-down text-xs font-bold hover:opacity-80"
                           >
                             {tMarket("sell")}
                           </Link>

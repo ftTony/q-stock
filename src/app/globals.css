@@ -81,6 +81,16 @@ a {
   text-decoration: none;
 }
 
+a.qt-link-up,
+.qt-link-up {
+  color: var(--up) !important;
+}
+
+a.qt-link-down,
+.qt-link-down {
+  color: var(--down) !important;
+}
+
 input,
 select,
 textarea,
@@ -158,6 +168,14 @@ button.qt-btn-primary:hover,
 a.qt-btn-primary:hover,
 .qt-btn.qt-btn-primary:hover {
   filter: brightness(1.06);
+}
+
+.qt-btn:disabled,
+.qt-btn[aria-busy="true"] {
+  opacity: 0.55;
+  cursor: not-allowed;
+  filter: none !important;
+  pointer-events: none;
 }
 
 button.qt-btn-ghost,
