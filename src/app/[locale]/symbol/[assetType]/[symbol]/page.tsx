@@ -19,7 +19,7 @@ export default function SymbolPage() {
   const s = useSymbolPage(symbol, assetType, isIndex);
 
   return (
-    <div className="space-y-4 animate-[qtFade_0.45s_ease]">
+    <div className="space-y-4">
       <SymbolHeader
         symbol={symbol}
         assetType={assetType}
@@ -31,10 +31,11 @@ export default function SymbolPage() {
         watchLabel={s.t("addWatchlist")}
         watchLabelActive={s.t("inWatchlist")}
         loadingLabel={s.tCommon("loading")}
+        backLabel={s.t("back")}
         onToggleWatchlist={() => void s.toggleWatchlist()}
       />
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] lg:items-start">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] lg:items-start animate-[qtFade_0.45s_ease]">
         <div className="lg:col-start-1 min-w-0">
           <SymbolChartSection
             resolution={s.resolution}

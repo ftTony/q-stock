@@ -126,7 +126,8 @@
     "profile": "Profil Syarikat",
     "officers": "Eksekutif",
     "fullscreen": "Skrin penuh",
-    "exitFullscreen": "Keluar skrin penuh"
+    "exitFullscreen": "Keluar skrin penuh",
+    "back": "Kembali"
   },
   "company": {
     "na": "Tiada profil syarikat untuk aset ini",

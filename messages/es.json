@@ -126,7 +126,8 @@
     "profile": "Perfil de la empresa",
     "officers": "Directivos",
     "fullscreen": "Pantalla completa",
-    "exitFullscreen": "Salir de pantalla completa"
+    "exitFullscreen": "Salir de pantalla completa",
+    "back": "Volver"
   },
   "company": {
     "na": "No hay perfil de empresa para este activo",

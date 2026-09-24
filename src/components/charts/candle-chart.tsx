@@ -382,7 +382,7 @@ export function CandleChart({
       }`}
     >
       {/* Drawing tools — vertical icon strip on left */}
-      <div className="pointer-events-none absolute bottom-10 left-0 top-10 z-10 flex items-start p-1.5 sm:p-2">
+      <div className="pointer-events-none absolute bottom-10 left-0 top-[45px] z-10 flex items-start p-1.5 sm:p-2">
         <div className="pointer-events-auto flex max-h-full w-10 flex-col items-center gap-0.5 overflow-y-auto rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 py-1 shadow-sm backdrop-blur-sm qt-scroll sm:w-11">
           <button
             type="button"

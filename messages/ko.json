@@ -126,7 +126,8 @@
     "profile": "기업 정보",
     "officers": "임원진",
     "fullscreen": "전체 화면",
-    "exitFullscreen": "전체 화면 종료"
+    "exitFullscreen": "전체 화면 종료",
+    "back": "뒤로"
   },
   "company": {
     "na": "이 자산에 대한 기업 정보가 없습니다",

@@ -65,9 +65,6 @@ export function QuoteStatsGrid({
       ? ((quote.high - quote.low) / quote.previousClose) * 100
       : null;
 
-  const spread =
-    quote.ask != null && quote.bid != null ? quote.ask - quote.bid : null;
-
   const weekHigh = metricValue(metrics, "52WeekHigh");
   const weekLow = metricValue(metrics, "52WeekLow");
   const mktCap = metricValue(metrics, "marketCapitalization");
@@ -93,19 +90,6 @@ export function QuoteStatsGrid({
       </StatCell>
       <StatCell label={t("volume")}>{fmtCompact(quote.volume)}</StatCell>
       <StatCell label={t("turnover")}>{fmtCompact(quote.turnover)}</StatCell>
-      <StatCell label={t("bid")}>
-        {quote.bid != null
-          ? `${fmt(quote.bid)}${quote.bidSize != null ? ` × ${fmtCompact(quote.bidSize)}` : ""}`
-          : "-"}
-      </StatCell>
-      <StatCell label={t("ask")}>
-        {quote.ask != null
-          ? `${fmt(quote.ask)}${quote.askSize != null ? ` × ${fmtCompact(quote.askSize)}` : ""}`
-          : "-"}
-      </StatCell>
-      <StatCell label={t("spread")}>
-        {spread != null ? fmt(spread, 4) : "-"}
-      </StatCell>
       <StatCell label={t("week52High")}>{fmt(weekHigh)}</StatCell>
       <StatCell label={t("week52Low")}>{fmt(weekLow)}</StatCell>
       <StatCell label={t("mktCap")}>

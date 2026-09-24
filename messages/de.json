@@ -126,7 +126,8 @@
     "profile": "Unternehmensprofil",
     "officers": "Führungskräfte",
     "fullscreen": "Vollbild",
-    "exitFullscreen": "Vollbild beenden"
+    "exitFullscreen": "Vollbild beenden",
+    "back": "Zurück"
   },
   "company": {
     "na": "Kein Unternehmensprofil für diesen Vermögenswert verfügbar",

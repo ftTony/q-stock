@@ -126,7 +126,8 @@
     "profile": "会社概要",
     "officers": "役員チーム",
     "fullscreen": "全画面",
-    "exitFullscreen": "全画面を終了"
+    "exitFullscreen": "全画面を終了",
+    "back": "戻る"
   },
   "company": {
     "na": "この資産の会社概要はありません",

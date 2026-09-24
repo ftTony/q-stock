@@ -126,7 +126,8 @@
     "profile": "公司概況",
     "officers": "高管團隊",
     "fullscreen": "全螢幕",
-    "exitFullscreen": "退出全螢幕"
+    "exitFullscreen": "退出全螢幕",
+    "back": "返回"
   },
   "company": {
     "na": "該資產暫無公司概況",
