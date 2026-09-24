@@ -79,6 +79,7 @@ body {
 a {
   color: inherit;
   text-decoration: none;
+  cursor: pointer;
 }
 
 a.qt-link-up,
@@ -89,6 +90,10 @@ a.qt-link-up,
 a.qt-link-down,
 .qt-link-down {
   color: var(--down) !important;
+}
+
+button:not(:disabled):not([aria-busy="true"]) {
+  cursor: pointer;
 }
 
 input,
@@ -154,6 +159,7 @@ select.qt-input::-ms-expand {
   border: 1px solid transparent;
   font-weight: 600;
   transition: 0.15s ease;
+  cursor: pointer;
 }
 
 button.qt-btn-primary,

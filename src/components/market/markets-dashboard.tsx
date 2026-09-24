@@ -11,6 +11,8 @@ import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
 type Tab = AssetType;
+type Board = "hot" | "gainers" | "losers";
+type RankQuote = Quote & { name?: string };
 
 type NewsItem = {
   headline: string;
@@ -21,6 +23,24 @@ type NewsItem = {
   category?: string;
   image?: string;
 };
+
+type Boards = Record<Board, RankQuote[]>;
+
+type IndexQuote = {
+  id: string;
+  symbol: string;
+  nameKey: string;
+  assetType: AssetType;
+  price: number | null;
+  change: number | null;
+  percentChange: number | null;
+  open?: number | null;
+  high?: number | null;
+  low?: number | null;
+  previousClose?: number | null;
+};
+
+const EMPTY_BOARDS: Boards = { hot: [], gainers: [], losers: [] };
 
 export default function MarketsDashboard() {
   const t = useTranslations("market");
@@ -33,7 +53,8 @@ export default function MarketsDashboard() {
 
   const [tab, setTab] = useState<Tab>(initialTab);
   const [q, setQ] = useState("");
-  const [quotes, setQuotes] = useState<Quote[]>([]);
+  const [boards, setBoards] = useState<Boards>(EMPTY_BOARDS);
+  const [indices, setIndices] = useState<IndexQuote[]>([]);
   const [watched, setWatched] = useState<Set<string>>(new Set());
   const [results, setResults] = useState<
     { symbol: string; description: string; assetType: AssetType }[]
@@ -42,8 +63,6 @@ export default function MarketsDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [alertCount, setAlertCount] = useState(0);
-  const [sortMode, setSortMode] = useState<"all" | "gainers" | "losers">("all");
-  const [filterOpen, setFilterOpen] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
   const [sentiment, setSentiment] = useState<{
     buzz_score?: number;
@@ -108,25 +127,41 @@ export default function MarketsDashboard() {
     }
   }
 
-  const loadPopular = useCallback(
+  const loadBoards = useCallback(
     async (assetType: Tab, silent = false) => {
       if (!silent) {
         setLoading(true);
         setError(null);
-        setQuotes([]);
+        setBoards(EMPTY_BOARDS);
+        if (assetType !== "crypto") setIndices([]);
       }
       try {
-        const [qr, sr, nr, ar] = await Promise.all([
-          fetch(`/api/quotes?popular=1&assetType=${assetType}`),
+        const indexPromise =
+          assetType === "crypto"
+            ? Promise.resolve(null)
+            : fetch(`/api/indices?assetType=${assetType}`).catch(() => null);
+        const [qr, sr, nr, ar, ir] = await Promise.all([
+          fetch(`/api/ranks?assetType=${assetType}&board=all&limit=7`),
           fetch(`/api/sentiment?assetType=${assetType}`),
           fetch(`/api/news?assetType=${assetType}`),
           fetch("/api/alerts").catch(() => null),
+          indexPromise,
         ]);
         const qj = await qr.json();
         const sj = await sr.json();
         const nj = await nr.json();
         if (!qr.ok) throw new Error(qj.error || "quotes failed");
-        setQuotes(qj.quotes ?? []);
+        setBoards({
+          hot: qj.boards?.hot ?? [],
+          gainers: qj.boards?.gainers ?? [],
+          losers: qj.boards?.losers ?? [],
+        });
+        if (assetType === "crypto") {
+          setIndices([]);
+        } else if (ir && ir.ok) {
+          const ij = await ir.json();
+          setIndices(ij.indices ?? []);
+        }
         setSentiment(sj.market ?? null);
         setNews((nj.news ?? []).slice(0, 4));
         setUpdatedAt(new Date());
@@ -141,7 +176,7 @@ export default function MarketsDashboard() {
       } catch (err) {
         if (!silent) {
           setError(err instanceof Error ? err.message : tCommon("error"));
-          setQuotes([]);
+          setBoards(EMPTY_BOARDS);
         }
       } finally {
         if (!silent) setLoading(false);
@@ -151,10 +186,10 @@ export default function MarketsDashboard() {
   );
 
   useEffect(() => {
-    void loadPopular(tab);
-    const timer = setInterval(() => void loadPopular(tab, true), 45000);
+    void loadBoards(tab);
+    const timer = setInterval(() => void loadBoards(tab, true), 45000);
     return () => clearInterval(timer);
-  }, [tab, loadPopular]);
+  }, [tab, loadBoards]);
 
   useEffect(() => {
     if (!q.trim()) {
@@ -171,29 +206,32 @@ export default function MarketsDashboard() {
     return () => clearTimeout(handle);
   }, [q, tab]);
 
-  const list = useMemo(() => {
-    const sorted = [...quotes];
-    if (sortMode === "gainers") {
-      sorted.sort((a, b) => b.percentChange - a.percentChange);
-    } else if (sortMode === "losers") {
-      sorted.sort((a, b) => a.percentChange - b.percentChange);
-    }
-    return sorted;
-  }, [quotes, sortMode]);
-
+  const kpiQuotes = boards.hot;
   const avgChange = useMemo(() => {
-    if (!quotes.length) return 0;
-    return quotes.reduce((s, item) => s + (item.percentChange || 0), 0) / quotes.length;
-  }, [quotes]);
+    if (!kpiQuotes.length) return 0;
+    return (
+      kpiQuotes.reduce((s, item) => s + (item.percentChange || 0), 0) /
+      kpiQuotes.length
+    );
+  }, [kpiQuotes]);
 
   const topPerformer = useMemo(() => {
-    if (!quotes.length) return null;
-    return [...quotes].sort((a, b) => b.percentChange - a.percentChange)[0];
-  }, [quotes]);
+    if (!boards.gainers.length) return null;
+    return boards.gainers[0];
+  }, [boards.gainers]);
 
   const bullish = sentiment?.bullish_pct ?? 0;
   const bearish = sentiment?.bearish_pct ?? 0;
   const neutral = Math.max(0, 100 - bullish - bearish);
+
+  const boardMeta: { key: Board; title: string }[] = [
+    {
+      key: "hot",
+      title: tab === "crypto" ? t("popular") : t("rankHot"),
+    },
+    { key: "gainers", title: t("gainers") },
+    { key: "losers", title: t("losers") },
+  ];
 
   return (
     <div className="space-y-5 animate-[qtFade_0.45s_ease]">
@@ -267,52 +305,21 @@ export default function MarketsDashboard() {
             )}
           </div>
 
-          <div className="relative">
-            <button
-              type="button"
-              className="qt-btn qt-btn-ghost h-10 px-3 text-sm"
-              onClick={() => setFilterOpen((v) => !v)}
-            >
-              {t("filter")}
-              {sortMode !== "all" ? ` · ${t(sortMode)}` : ""}
-            </button>
-            {filterOpen && (
-              <div className="absolute right-0 z-30 mt-1 w-40 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl">
-                {(
-                  [
-                    ["all", t("filterAll")],
-                    ["gainers", t("gainers")],
-                    ["losers", t("losers")],
-                  ] as const
-                ).map(([key, label]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    className={`block w-full px-3 py-2 text-left text-sm hover:bg-[var(--sidebar-hover)] ${
-                      sortMode === key ? "text-[var(--brand-text)]" : ""
-                    }`}
-                    onClick={() => {
-                      setSortMode(key);
-                      setFilterOpen(false);
-                    }}
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
           <Link href="/alerts" className="qt-btn qt-btn-primary h-10 px-3 text-sm">
             + {t("create")}
           </Link>
         </div>
       </section>
 
+      {tab !== "crypto" && (
+        <IndexStrip indices={indices} loading={loading} t={t} />
+      )}
+
       <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <KpiCard
           label={t("kpiTickers")}
-          value={String(quotes.length || 0)}
-          hint={`${quotes.length ? `+${Math.min(3, quotes.length)}` : "0"} ${t("today")}`}
+          value={String(kpiQuotes.length || 0)}
+          hint={`${kpiQuotes.length ? `+${Math.min(3, kpiQuotes.length)}` : "0"} ${t("today")}`}
           hintClass="text-[var(--up)]"
         />
         <KpiCard
@@ -336,10 +343,10 @@ export default function MarketsDashboard() {
         />
       </section>
 
-      <section className="qt-panel overflow-hidden">
-        <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3 text-sm text-[var(--muted)]">
-          <span className="font-medium text-[var(--foreground)]">{t("popular")}</span>
-          <span className="text-xs">
+      <section className="space-y-3">
+        <div className="flex items-end justify-between gap-3">
+          <h2 className="text-lg font-semibold tracking-tight">{t("rankBoards")}</h2>
+          <span className="text-xs text-[var(--muted)]">
             {loading
               ? tCommon("loading")
               : updatedAt
@@ -349,12 +356,12 @@ export default function MarketsDashboard() {
         </div>
 
         {error && (
-          <div className="space-y-2 p-4 text-sm">
+          <div className="qt-panel space-y-2 p-4 text-sm">
             <p className="text-[var(--down)]">{error}</p>
             <button
               type="button"
               className="qt-btn qt-btn-ghost px-3 py-1.5"
-              onClick={() => void loadPopular(tab)}
+              onClick={() => void loadBoards(tab)}
             >
               {tCommon("retry")}
             </button>
@@ -362,168 +369,18 @@ export default function MarketsDashboard() {
         )}
 
         {!error && (
-          <div className="overflow-x-auto qt-scroll">
-            <table className="min-w-[720px] w-full text-sm">
-              <thead>
-                <tr className="border-b border-[var(--border)] text-left text-[11px] tracking-wider text-[var(--muted)] uppercase">
-                  <th className="px-4 py-3 font-semibold">{t("symbol")}</th>
-                  <th className="px-4 py-3 font-semibold">{t("price")}</th>
-                  <th className="px-4 py-3 font-semibold">{t("change")}</th>
-                  <th className="px-4 py-3 font-semibold">{t("volume")}</th>
-                  <th className="px-4 py-3 font-semibold">{t("last24h")}</th>
-                  <th className="px-4 py-3 font-semibold">{t("actions")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {loading && list.length === 0 && (
-                  <>
-                    {Array.from({ length: 8 }).map((_, i) => (
-                      <tr
-                        key={`sk-${i}`}
-                        className="border-b border-[var(--border)]/70 last:border-0"
-                      >
-                        <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
-                            <span className="h-9 w-9 animate-pulse rounded-lg bg-[var(--surface-2)]" />
-                            <span className="space-y-1.5">
-                              <span className="block h-3.5 w-14 animate-pulse rounded bg-[var(--surface-2)]" />
-                              <span className="block h-3 w-24 animate-pulse rounded bg-[var(--surface-2)]" />
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-block h-4 w-16 animate-pulse rounded bg-[var(--surface-2)]" />
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-block h-4 w-14 animate-pulse rounded bg-[var(--surface-2)]" />
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-block h-4 w-24 animate-pulse rounded bg-[var(--surface-2)]" />
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-block h-8 w-20 animate-pulse rounded bg-[var(--surface-2)]" />
-                        </td>
-                        <td className="px-4 py-3">
-                          <span className="inline-block h-4 w-28 animate-pulse rounded bg-[var(--surface-2)]" />
-                        </td>
-                      </tr>
-                    ))}
-                  </>
-                )}
-                {list.map((item) => {
-                  const up = item.percentChange >= 0;
-                  const range =
-                    item.high && item.low
-                      ? `${item.low.toFixed(2)} – ${item.high.toFixed(2)}`
-                      : "-";
-                  return (
-                    <tr
-                      key={item.symbol}
-                      className={`border-b border-[var(--border)]/70 last:border-0 hover:bg-[var(--sidebar-hover)]/60 ${
-                        loading ? "opacity-60" : ""
-                      }`}
-                    >
-                      <td className="px-4 py-3">
-                        <Link
-                          href={`/symbol/${item.assetType}/${item.symbol}`}
-                          className="flex items-center gap-3"
-                        >
-                          <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-2)] text-[11px] font-bold text-[var(--brand-text)]">
-                            {item.symbol.slice(0, 2)}
-                          </span>
-                          <span>
-                            <span className="block font-semibold tracking-wide">
-                              {item.symbol}
-                            </span>
-                            <span className="block text-xs text-[var(--muted)]">
-                              {displayName(item.symbol, item.assetType)}
-                            </span>
-                          </span>
-                        </Link>
-                      </td>
-                      <td className="px-4 py-3 font-medium tabular-nums">
-                        $
-                        <PriceText
-                          value={item.price}
-                          change={item.percentChange}
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <span className="inline-flex items-center gap-1 font-medium">
-                          <span aria-hidden>{up ? "▲" : "▼"}</span>
-                          <ChangePct value={item.percentChange} />
-                        </span>
-                      </td>
-                      <td className="px-4 py-3 text-[var(--muted)] tabular-nums">
-                        {range}
-                      </td>
-                      <td className="px-4 py-3">
-                        <Sparkline
-                          open={item.open}
-                          high={item.high}
-                          low={item.low}
-                          close={item.price}
-                          up={up}
-                        />
-                      </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
-                          <button
-                            type="button"
-                            className={`text-sm ${
-                              watched.has(`${item.assetType}:${item.symbol}`)
-                                ? "text-[var(--brand-text)]"
-                                : "text-[var(--muted)] hover:text-[var(--brand-text)]"
-                            }`}
-                            title={
-                              watched.has(`${item.assetType}:${item.symbol}`)
-                                ? t("remove")
-                                : t("addWatch")
-                            }
-                            onClick={() =>
-                              void toggleWatch(item.symbol, item.assetType)
-                            }
-                          >
-                            {watched.has(`${item.assetType}:${item.symbol}`)
-                              ? "★"
-                              : "☆"}
-                          </button>
-                          <Link
-                            href={`/symbol/${item.assetType}/${item.symbol}`}
-                            className="qt-link-up text-xs font-bold tracking-wide hover:opacity-80"
-                          >
-                            {t("buy")}
-                          </Link>
-                          <Link
-                            href={`/alerts?symbol=${item.symbol}&assetType=${item.assetType}`}
-                            className="qt-link-down text-xs font-bold tracking-wide hover:opacity-80"
-                          >
-                            {t("sell")}
-                          </Link>
-                          <Link
-                            href={`/symbol/${item.assetType}/${item.symbol}`}
-                            className="text-[var(--muted)] hover:text-[var(--foreground)]"
-                            aria-label="More"
-                          >
-                            ⋮
-                          </Link>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-                {!loading && list.length === 0 && (
-                  <tr>
-                    <td
-                      colSpan={6}
-                      className="px-4 py-10 text-center text-[var(--muted)]"
-                    >
-                      {t("unavailable")}
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div className="grid gap-3 xl:grid-cols-3">
+            {boardMeta.map(({ key, title }) => (
+              <RankBoardPanel
+                key={key}
+                title={title}
+                items={boards[key]}
+                loading={loading}
+                watched={watched}
+                onToggleWatch={toggleWatch}
+                t={t}
+              />
+            ))}
           </div>
         )}
       </section>
@@ -626,6 +483,295 @@ export default function MarketsDashboard() {
           )}
         </div>
       </section>
+    </div>
+  );
+}
+
+function IndexStrip({
+  indices,
+  loading,
+  t,
+}: {
+  indices: IndexQuote[];
+  loading: boolean;
+  t: ReturnType<typeof useTranslations<"market">>;
+}) {
+  const slots =
+    indices.length > 0
+      ? indices
+      : loading
+        ? Array.from({ length: 3 }).map((_, i) => ({
+            id: `sk-${i}`,
+            symbol: "",
+            nameKey: "",
+            assetType: "stock" as AssetType,
+            price: null,
+            change: null,
+            percentChange: null,
+          }))
+        : [];
+
+  if (!slots.length) return null;
+
+  return (
+    <section className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      {slots.map((item) => {
+        const pct = item.percentChange;
+        const up = pct != null && pct >= 0;
+        let name = item.symbol;
+        if (item.nameKey) {
+          try {
+            name = t(item.nameKey as "indexSpx");
+          } catch {
+            name = item.symbol;
+          }
+        }
+
+        const body = (
+          <>
+            <div className="min-w-0 flex-1 basis-[30%]">
+              {item.symbol ? (
+                <>
+                  <div className="truncate text-sm font-semibold">{name}</div>
+                  <div className="text-[11px] tracking-wide text-[var(--muted)]">
+                    {item.symbol}
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="h-3.5 w-20 animate-pulse rounded bg-[var(--surface-2)]" />
+                  <div className="h-2.5 w-10 animate-pulse rounded bg-[var(--surface-2)]" />
+                </div>
+              )}
+            </div>
+
+            <div className="flex flex-1 basis-[40%] items-center justify-center">
+              {item.price != null ? (
+                <Sparkline
+                  open={item.open ?? item.previousClose ?? item.price}
+                  high={item.high ?? item.price}
+                  low={item.low ?? item.price}
+                  close={item.price}
+                  up={up}
+                />
+              ) : (
+                <div className="h-7 w-20 animate-pulse rounded bg-[var(--surface-2)]" />
+              )}
+            </div>
+
+            <div className="min-w-[5.5rem] shrink-0 flex-1 basis-[30%] text-right">
+              {item.price != null ? (
+                <>
+                  <div className="text-sm font-semibold tabular-nums">
+                    {item.price.toLocaleString(undefined, {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })}
+                  </div>
+                  <div
+                    className={`text-xs font-medium tabular-nums ${
+                      up ? "text-[var(--up)]" : "text-[var(--down)]"
+                    }`}
+                  >
+                    {pct != null
+                      ? `${up ? "▲" : "▼"} ${up ? "+" : ""}${pct.toFixed(2)}%`
+                      : "—"}
+                  </div>
+                </>
+              ) : (
+                <div className="space-y-1.5">
+                  <div className="ml-auto h-3.5 w-16 animate-pulse rounded bg-[var(--surface-2)]" />
+                  <div className="ml-auto h-2.5 w-12 animate-pulse rounded bg-[var(--surface-2)]" />
+                </div>
+              )}
+            </div>
+          </>
+        );
+
+        if (!item.symbol) {
+          return (
+            <div
+              key={item.id}
+              className="qt-panel flex items-center gap-3 px-4 py-3"
+            >
+              {body}
+            </div>
+          );
+        }
+
+        return (
+          <Link
+            key={item.id}
+            href={`/symbol/${item.assetType}/${item.symbol}`}
+            className="qt-panel flex items-center gap-3 px-4 py-3 transition hover:border-[var(--brand)]/40 hover:bg-[var(--sidebar-hover)]/40"
+          >
+            {body}
+          </Link>
+        );
+      })}
+    </section>
+  );
+}
+
+function RankBoardPanel({
+  title,
+  items,
+  loading,
+  watched,
+  onToggleWatch,
+  t,
+}: {
+  title: string;
+  items: RankQuote[];
+  loading: boolean;
+  watched: Set<string>;
+  onToggleWatch: (symbol: string, assetType: AssetType) => void;
+  t: ReturnType<typeof useTranslations<"market">>;
+}) {
+  return (
+    <div className="qt-panel overflow-hidden">
+      <div className="border-b border-[var(--border)] px-3 py-2.5">
+        <h2 className="text-sm font-semibold text-[var(--foreground)]">{title}</h2>
+      </div>
+      <div className="overflow-x-auto qt-scroll">
+        <table className="w-full min-w-[320px] text-sm">
+          <thead>
+            <tr className="border-b border-[var(--border)] text-left text-[10px] tracking-wider text-[var(--muted)] uppercase">
+              <th className="px-3 py-2 font-semibold">{t("symbol")}</th>
+              <th className="px-2 py-2 font-semibold">{t("price")}</th>
+              <th className="px-2 py-2 font-semibold">{t("change")}</th>
+              <th className="px-3 py-2 text-right font-semibold">{t("actions")}</th>
+            </tr>
+          </thead>
+          <tbody>
+            {loading && items.length === 0 &&
+              Array.from({ length: 7 }).map((_, i) => (
+                <tr
+                  key={`sk-${i}`}
+                  className="border-b border-[var(--border)]/70 last:border-0"
+                >
+                  <td className="px-3 py-2.5">
+                    <div className="flex items-center gap-2">
+                      <span className="h-7 w-7 animate-pulse rounded-md bg-[var(--surface-2)]" />
+                      <span className="space-y-1">
+                        <span className="block h-3 w-10 animate-pulse rounded bg-[var(--surface-2)]" />
+                        <span className="block h-2.5 w-16 animate-pulse rounded bg-[var(--surface-2)]" />
+                      </span>
+                    </div>
+                  </td>
+                  <td className="px-2 py-2.5">
+                    <span className="inline-block h-3.5 w-12 animate-pulse rounded bg-[var(--surface-2)]" />
+                  </td>
+                  <td className="px-2 py-2.5">
+                    <span className="inline-block h-3.5 w-10 animate-pulse rounded bg-[var(--surface-2)]" />
+                  </td>
+                  <td className="px-3 py-2.5 text-right">
+                    <span className="inline-block h-3.5 w-16 animate-pulse rounded bg-[var(--surface-2)]" />
+                  </td>
+                </tr>
+              ))}
+            {items.map((item) => {
+              const up = item.percentChange >= 0;
+              const watchKey = `${item.assetType}:${item.symbol}`;
+              const isWatched = watched.has(watchKey);
+              return (
+                <tr
+                  key={`${title}-${item.symbol}`}
+                  className={`border-b border-[var(--border)]/70 last:border-0 hover:bg-[var(--sidebar-hover)]/60 ${
+                    loading ? "opacity-60" : ""
+                  }`}
+                >
+                  <td className="px-3 py-2.5">
+                    <Link
+                      href={`/symbol/${item.assetType}/${item.symbol}`}
+                      className="flex min-w-0 items-center gap-2"
+                    >
+                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] text-[10px] font-bold text-[var(--brand-text)]">
+                        {item.symbol.slice(0, 2)}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block truncate text-[13px] font-semibold tracking-wide">
+                          {item.symbol}
+                        </span>
+                        <span className="block truncate text-[11px] text-[var(--muted)]">
+                          {item.name || displayName(item.symbol, item.assetType)}
+                        </span>
+                      </span>
+                    </Link>
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-2.5 font-medium tabular-nums text-[13px]">
+                    <Link
+                      href={`/symbol/${item.assetType}/${item.symbol}`}
+                      className="block"
+                    >
+                      {item.assetType === "hk" ? "HK$" : "$"}
+                      <PriceText value={item.price} change={item.percentChange} />
+                    </Link>
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-2.5 text-[13px]">
+                    <Link
+                      href={`/symbol/${item.assetType}/${item.symbol}`}
+                      className="inline-flex items-center gap-0.5 font-medium"
+                    >
+                      <span aria-hidden className="text-[10px]">
+                        {up ? "▲" : "▼"}
+                      </span>
+                      <ChangePct value={item.percentChange} />
+                    </Link>
+                  </td>
+                  <td className="px-3 py-2.5">
+                    <div className="flex items-center justify-end gap-1.5">
+                      <button
+                        type="button"
+                        className={`text-sm ${
+                          isWatched
+                            ? "text-[var(--brand-text)]"
+                            : "text-[var(--muted)] hover:text-[var(--brand-text)]"
+                        }`}
+                        title={isWatched ? t("remove") : t("addWatch")}
+                        onClick={() =>
+                          void onToggleWatch(item.symbol, item.assetType)
+                        }
+                      >
+                        {isWatched ? "★" : "☆"}
+                      </button>
+                      <Link
+                        href={`/symbol/${item.assetType}/${item.symbol}`}
+                        className="qt-link-up text-[11px] font-bold tracking-wide hover:opacity-80"
+                      >
+                        {t("buy")}
+                      </Link>
+                      <Link
+                        href={`/alerts?symbol=${item.symbol}&assetType=${item.assetType}`}
+                        className="qt-link-down text-[11px] font-bold tracking-wide hover:opacity-80"
+                      >
+                        {t("sell")}
+                      </Link>
+                      <Link
+                        href={`/symbol/${item.assetType}/${item.symbol}`}
+                        className="text-[var(--muted)] hover:text-[var(--foreground)]"
+                        aria-label="More"
+                      >
+                        ⋮
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
+            {!loading && items.length === 0 && (
+              <tr>
+                <td
+                  colSpan={4}
+                  className="px-3 py-8 text-center text-[var(--muted)]"
+                >
+                  {t("unavailable")}
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

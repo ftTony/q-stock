@@ -1,11 +1,32 @@
 import type { AssetType } from "@/lib/types";
-import { normalizeSymbol, toFinnhubSymbol } from "@/lib/types";
+import { normalizeSymbol, toFinnhubSymbol as baseFinnhub } from "@/lib/types";
+import {
+  INDEX_FINNHUB,
+  INDEX_FUTU,
+  INDEX_LONGBRIDGE,
+  isMarketIndexSymbol,
+} from "@/lib/market/indices";
 
-/** Longbridge: AAPL → AAPL.US ; 00700 → 700.HK ; BTC → BTC.US */
+function indexCode(symbol: string): string {
+  return symbol
+    .toUpperCase()
+    .trim()
+    .replace(/^\./, "")
+    .replace(/\.US$/i, "")
+    .replace(/\.HK$/i, "")
+    .replace(/^US\./, "")
+    .replace(/^HK\./, "");
+}
+
+/** Longbridge: AAPL → AAPL.US ; 00700 → 700.HK ; SPX → .SPX.US ; HSI → HSI.HK */
 export function toLongbridgeSymbol(
   symbol: string,
   assetType: AssetType,
 ): string {
+  const code = indexCode(symbol);
+  if (isMarketIndexSymbol(code)) {
+    return INDEX_LONGBRIDGE[code];
+  }
   const s = normalizeSymbol(symbol, assetType);
   if (assetType === "crypto") {
     return `${s}.US`;
@@ -19,8 +40,12 @@ export function toLongbridgeSymbol(
   return `${s}.US`;
 }
 
-/** Futu OpenAPI: AAPL → US.AAPL ; 00700 → HK.00700 */
+/** Futu OpenAPI: AAPL → US.AAPL ; 00700 → HK.00700 ; indices via INDEX_FUTU */
 export function toFutuSymbol(symbol: string, assetType: AssetType): string {
+  const code = indexCode(symbol);
+  if (isMarketIndexSymbol(code)) {
+    return INDEX_FUTU[code];
+  }
   const s = normalizeSymbol(symbol, assetType);
   if (assetType === "crypto") {
     throw new Error("Futu provider does not support crypto");
@@ -40,4 +65,12 @@ export function toFutuSymbol(symbol: string, assetType: AssetType): string {
   return `US.${s}`;
 }
 
-export { normalizeSymbol, toFinnhubSymbol };
+export function toFinnhubSymbol(symbol: string, assetType: AssetType): string {
+  const code = indexCode(symbol);
+  if (isMarketIndexSymbol(code)) {
+    return INDEX_FINNHUB[code];
+  }
+  return baseFinnhub(symbol, assetType);
+}
+
+export { normalizeSymbol };

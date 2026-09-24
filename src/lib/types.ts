@@ -33,6 +33,8 @@ export interface Quote {
   ask?: number;
   bidSize?: number;
   askSize?: number;
+  /** Display name from rank API when available. */
+  name?: string;
 }
 
 export interface SearchResult {
