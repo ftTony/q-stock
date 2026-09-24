@@ -337,6 +337,11 @@
     "error": "出錯了",
     "retry": "重試",
     "rateLimited": "介面限流，請稍後再試",
-    "degraded": "部分資料因方案限制暫不可用"
+    "degraded": "部分資料因方案限制暫不可用",
+    "dataSource": "資料來源",
+    "providerLongbridge": "長橋",
+    "providerFutu": "富途",
+    "providerFinnhub": "Finnhub",
+    "providerBinance": "Binance"
   }
 }

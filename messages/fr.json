@@ -337,6 +337,11 @@
     "error": "Une erreur est survenue",
     "retry": "Réessayer",
     "rateLimited": "Limite atteinte, réessayez plus tard",
-    "degraded": "Certaines données indisponibles pour votre plan"
+    "degraded": "Certaines données indisponibles pour votre plan",
+    "dataSource": "Source des données",
+    "providerLongbridge": "Longbridge",
+    "providerFutu": "Futu",
+    "providerFinnhub": "Finnhub",
+    "providerBinance": "Binance"
   }
 }

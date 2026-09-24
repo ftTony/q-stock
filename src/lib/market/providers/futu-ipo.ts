@@ -10,12 +10,19 @@ import { normalizeSymbol } from "@/lib/market/symbols";
  * Futu HK IPO — https://open.futunn.com/zh-cn/api/quote/ipo/ipo-list
  * GET /api/v1.0/quote/ipo-list/hk
  * request_type: 9=可认购 10=待上市 11=即将上市(9+10)
- * Note: API does not return historical (已上市) IPOs.
+ *
+ * Official list excludes historical IPOs. 「已上市」uses the Recent IPOs plate
+ * (HK.LIST1290 次新股) via plate-stock + basicinfo + snapshot.
  */
 
 const REQUEST_TYPE: Record<Exclude<IpoStatus, "listed">, number> = {
   filing: 9,
   listing: 10,
+};
+
+/** Futu concept plate: Recent IPOs / 次新股 */
+const LISTED_PLATE: Record<"hk", string> = {
+  hk: "HK.LIST1290",
 };
 
 type FutuIpoRow = {
@@ -28,12 +35,32 @@ type FutuIpoRow = {
   list_price?: number;
   ipo_price_min?: number;
   ipo_price_max?: number;
-  entrance_price?: number;
   apply_end_time?: string;
   apply_end_timestamp?: number;
-  is_subscribe_status?: boolean;
-  lucky_ratio?: string;
-  apply_multiple?: string;
+};
+
+type StockRow = {
+  code?: string;
+  stock_name?: string;
+  sc_name?: string;
+  tc_name?: string;
+  stock_type?: string;
+};
+
+type BasicRow = {
+  code?: string;
+  name?: string;
+  sc_name?: string;
+  tc_name?: string;
+  listing_date?: number;
+  state?: string;
+  stock_type?: string;
+};
+
+type SnapRow = {
+  code?: string;
+  last_price?: number;
+  prev_close_price?: number;
 };
 
 function str(v: unknown): string {
@@ -100,7 +127,6 @@ function mapRow(row: FutuIpoRow, status: IpoStatus): IpoItem | null {
   };
 }
 
-/** Docs show data.list; live API returns data as a bare array. */
 function rowsOf(data: unknown): FutuIpoRow[] {
   if (Array.isArray(data)) return data as FutuIpoRow[];
   if (data && typeof data === "object") {
@@ -111,21 +137,113 @@ function rowsOf(data: unknown): FutuIpoRow[] {
   return [];
 }
 
+async function getFutuListedFromPlate(limit: number): Promise<IpoItem[]> {
+  const plate = LISTED_PLATE.hk;
+  const fetchLimit = Math.min(50, Math.max(limit * 4, 16));
+
+  const { data: stockData } = await futuRequest<{ stock_list?: StockRow[] }>(
+    "GET",
+    "/api/v1.0/quote/plate-stock",
+    { query: { plate_code: plate, limit: fetchLimit } },
+  );
+
+  const candidates = (stockData.stock_list ?? []).filter((s) => {
+    if (!s.code) return false;
+    const t = (s.stock_type || "STOCK").toUpperCase();
+    // Prefer equities; skip warrants etc.
+    return t === "STOCK" || t === "EQTY" || t === "";
+  });
+  if (!candidates.length) return [];
+
+  const codes = candidates.map((s) => s.code!);
+  const [basicRes, snapRes] = await Promise.all([
+    futuRequest<{ basic_list?: BasicRow[] }>(
+      "POST",
+      "/api/v1.0/quote/stock-basicinfo",
+      { body: { code_list: codes } },
+    ),
+    futuRequest<{ snapshot_list?: SnapRow[] }>(
+      "POST",
+      "/api/v1.0/quote/snapshot",
+      { body: { code_list: codes } },
+    ),
+  ]);
+
+  const basicByCode = new Map(
+    (basicRes.data.basic_list ?? [])
+      .filter((b) => b.code)
+      .map((b) => [b.code!, b]),
+  );
+  const snapByCode = new Map(
+    (snapRes.data.snapshot_list ?? [])
+      .filter((s) => s.code)
+      .map((s) => [s.code!, s]),
+  );
+
+  const ranked = candidates
+    .map((s) => {
+      const code = s.code!;
+      const basic = basicByCode.get(code);
+      const snap = snapByCode.get(code);
+      const listingMs = Number(basic?.listing_date ?? 0);
+      const state = (basic?.state || "NORMAL").toUpperCase();
+      if (state === "DELISTED") return null;
+      const bare = code.replace(/^HK\./i, "");
+      const symbol = normalizeSymbol(bare, "hk");
+      const name =
+        str(basic?.sc_name) ||
+        str(s.sc_name) ||
+        str(basic?.name) ||
+        str(s.stock_name) ||
+        symbol;
+      const last = Number(snap?.last_price ?? 0);
+      const prev = Number(snap?.prev_close_price ?? 0);
+      let content: string | undefined;
+      if (prev > 0 && Number.isFinite(last)) {
+        const chg = ((last - prev) / prev) * 100;
+        const sign = chg > 0 ? "+" : "";
+        content = `上市 ${sign}${chg.toFixed(2)}%`;
+      }
+      return {
+        listingMs: listingMs > 0 ? listingMs : 0,
+        item: {
+          id: `futu:listed:${code}`,
+          symbol,
+          name,
+          date: formatDate(listingMs),
+          content,
+          assetType: "hk" as const,
+          linkable: true,
+          status: "listed" as const,
+        } satisfies IpoItem,
+      };
+    })
+    .filter((x): x is NonNullable<typeof x> => x != null)
+    .sort((a, b) => b.listingMs - a.listingMs)
+    .slice(0, limit)
+    .map((x) => x.item);
+
+  return ranked;
+}
+
 /**
  * Fetch HK IPO list from Futu.
- * `listed` is unsupported by this endpoint → returns [].
+ * filing/listing → ipo-list/hk; listed → 次新股 plate.
  */
 export async function getFutuIpoList(
   status: IpoStatus,
   limit = 4,
 ): Promise<IpoItem[]> {
   if (!isFutuConfigured()) return [];
-  if (status === "listed") return [];
 
-  const requestType = REQUEST_TYPE[status];
-  const key = `futu:ipo:hk:v1:${status}:${limit}`;
+  const key = `futu:ipo:hk:v2:${status}:${limit}`;
 
   return cachedFetch(key, 180_000, async () => {
+    if (status === "listed") {
+      return getFutuListedFromPlate(limit);
+    }
+
+    const requestType = REQUEST_TYPE[status];
     const { data } = await futuRequest<unknown>(
       "GET",
       "/api/v1.0/quote/ipo-list/hk",

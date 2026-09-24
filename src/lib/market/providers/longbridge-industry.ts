@@ -111,14 +111,8 @@ function marketOf(assetType: AssetType): "US" | "HK" | null {
   return null;
 }
 
-export function isIndustryRankConfigured(): boolean {
-  return true;
-}
-
-/**
- * Industry treemap via Longbridge web industry_chart (includes stocks for tooltip).
- */
-export async function getIndustryHeatmap(
+/** Longbridge industry chart is a public HTTP endpoint (no API key). */
+export async function getLongbridgeIndustryHeatmap(
   assetType: AssetType,
   limit = 40,
 ): Promise<IndustryHeatCell[]> {
@@ -145,4 +139,11 @@ export async function getIndustryHeatmap(
       .filter((x): x is IndustryHeatCell => x != null)
       .slice(0, limit);
   });
+}
+
+/** @deprecated use getLongbridgeIndustryHeatmap */
+export const getIndustryHeatmap = getLongbridgeIndustryHeatmap;
+
+export function isIndustryRankConfigured(): boolean {
+  return true;
 }

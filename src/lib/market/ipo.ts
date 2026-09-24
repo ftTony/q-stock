@@ -16,8 +16,8 @@ export type IpoListResult = {
 };
 
 /**
- * HK IPO: Longbridge → Futu (same priority as quotes/content).
- * Futu has no historical 已上市 → only Longbridge serves that tab.
+ * HK IPO: Longbridge → Futu.
+ * Futu「已上市」uses Recent IPOs plate (次新股 HK.LIST1290).
  */
 export async function getIpoList(
   status: IpoStatus,
@@ -28,13 +28,12 @@ export async function getIpoList(
     try {
       if (id === "longbridge") {
         const items = await getLongbridgeIpoList(status, limit);
-        if (items.length > 0 || status === "listed") {
+        if (items.length > 0) {
           return { items, source: "longbridge" };
         }
         continue;
       }
       if (id === "futu") {
-        if (status === "listed") continue;
         const items = await getFutuIpoList(status, limit);
         return { items, source: "futu" };
       }

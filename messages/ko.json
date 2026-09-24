@@ -337,6 +337,11 @@
     "error": "문제가 발생했습니다",
     "retry": "다시 시도",
     "rateLimited": "요청 한도 도달, 나중에 다시 시도하세요",
-    "degraded": "이용 중인 요금제에서는 일부 데이터를 사용할 수 없습니다"
+    "degraded": "이용 중인 요금제에서는 일부 데이터를 사용할 수 없습니다",
+    "dataSource": "데이터 소스",
+    "providerLongbridge": "Longbridge",
+    "providerFutu": "Futu",
+    "providerFinnhub": "Finnhub",
+    "providerBinance": "Binance"
   }
 }

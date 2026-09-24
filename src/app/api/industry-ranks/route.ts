@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import {
   getIndustryHeatmap,
-  isIndustryRankConfigured,
-} from "@/lib/market/providers/longbridge-industry";
+  isIndustryHeatmapAvailable,
+} from "@/lib/market/industry";
 import { parseAssetType } from "@/lib/types";
 
 export async function GET(req: Request) {
@@ -12,7 +12,7 @@ export async function GET(req: Request) {
     if (assetType === "crypto") {
       return NextResponse.json({ industries: [], source: null });
     }
-    if (!isIndustryRankConfigured()) {
+    if (!isIndustryHeatmapAvailable()) {
       return NextResponse.json({
         industries: [],
         source: null,
@@ -24,10 +24,10 @@ export async function GET(req: Request) {
       60,
       Math.max(10, Number(searchParams.get("limit") || 40) || 40),
     );
-    const industries = await getIndustryHeatmap(assetType, limit);
+    const { industries, source } = await getIndustryHeatmap(assetType, limit);
     return NextResponse.json({
       industries,
-      source: "longbridge",
+      source,
       degraded: industries.length === 0,
     });
   } catch (err) {

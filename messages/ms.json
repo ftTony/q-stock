@@ -337,6 +337,11 @@
     "error": "Ada sesuatu yang tidak kena",
     "retry": "Cuba lagi",
     "rateLimited": "Had kadar dicapai, cuba lagi kemudian",
-    "degraded": "Sebahagian data tidak tersedia untuk pelan anda"
+    "degraded": "Sebahagian data tidak tersedia untuk pelan anda",
+    "dataSource": "Sumber data",
+    "providerLongbridge": "Longbridge",
+    "providerFutu": "Futu",
+    "providerFinnhub": "Finnhub",
+    "providerBinance": "Binance"
   }
 }

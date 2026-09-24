@@ -337,6 +337,11 @@
     "error": "Etwas ist schiefgelaufen",
     "retry": "Erneut versuchen",
     "rateLimited": "Limit erreicht, später erneut versuchen",
-    "degraded": "Einige Daten für Ihren Plan nicht verfügbar"
+    "degraded": "Einige Daten für Ihren Plan nicht verfügbar",
+    "dataSource": "Datenquelle",
+    "providerLongbridge": "Longbridge",
+    "providerFutu": "Futu",
+    "providerFinnhub": "Finnhub",
+    "providerBinance": "Binance"
   }
 }

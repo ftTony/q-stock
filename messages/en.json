@@ -337,6 +337,11 @@
     "error": "Something went wrong",
     "retry": "Retry",
     "rateLimited": "Rate limited, try again later",
-    "degraded": "Some data unavailable for your plan"
+    "degraded": "Some data unavailable for your plan",
+    "dataSource": "Data source",
+    "providerLongbridge": "Longbridge",
+    "providerFutu": "Futu",
+    "providerFinnhub": "Finnhub",
+    "providerBinance": "Binance"
   }
 }

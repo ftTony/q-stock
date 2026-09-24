@@ -337,6 +337,11 @@
     "error": "เกิดข้อผิดพลาด",
     "retry": "ลองใหม่",
     "rateLimited": "ถูกจำกัดอัตรา กรุณาลองใหม่ภายหลัง",
-    "degraded": "ข้อมูลบางส่วนไม่พร้อมใช้งานสำหรับแผนของคุณ"
+    "degraded": "ข้อมูลบางส่วนไม่พร้อมใช้งานสำหรับแผนของคุณ",
+    "dataSource": "แหล่งข้อมูล",
+    "providerLongbridge": "Longbridge",
+    "providerFutu": "Futu",
+    "providerFinnhub": "Finnhub",
+    "providerBinance": "Binance"
   }
 }

@@ -337,6 +337,11 @@
     "error": "出错了",
     "retry": "重试",
     "rateLimited": "接口限流，请稍后再试",
-    "degraded": "部分数据因套餐限制暂不可用"
+    "degraded": "部分数据因套餐限制暂不可用",
+    "dataSource": "数据来源",
+    "providerLongbridge": "长桥",
+    "providerFutu": "富途",
+    "providerFinnhub": "Finnhub",
+    "providerBinance": "Binance"
   }
 }

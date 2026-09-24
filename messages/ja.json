@@ -337,6 +337,11 @@
     "error": "エラーが発生しました",
     "retry": "再試行",
     "rateLimited": "APIレート制限中。後でもう一度お試しください",
-    "degraded": "お使いのプランでは一部データが利用できません"
+    "degraded": "お使いのプランでは一部データが利用できません",
+    "dataSource": "データソース",
+    "providerLongbridge": "Longbridge",
+    "providerFutu": "Futu",
+    "providerFinnhub": "Finnhub",
+    "providerBinance": "Binance"
   }
 }

@@ -337,6 +337,11 @@
     "error": "Algo salió mal",
     "retry": "Reintentar",
     "rateLimited": "Límite alcanzado, inténtalo más tarde",
-    "degraded": "Algunos datos no disponibles para tu plan"
+    "degraded": "Algunos datos no disponibles para tu plan",
+    "dataSource": "Fuente de datos",
+    "providerLongbridge": "Longbridge",
+    "providerFutu": "Futu",
+    "providerFinnhub": "Finnhub",
+    "providerBinance": "Binance"
   }
 }

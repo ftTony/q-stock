@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { TopBarActions } from "@/components/layout/topbar-actions";
+import { DataSourceBadge } from "@/components/layout/data-source-badge";
 
 function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -335,6 +336,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </header>
 
         <main className="flex-1 px-4 py-5 pb-24 sm:px-6 sm:py-6 lg:pb-6">{children}</main>
+
+        <DataSourceBadge />
 
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--border)] bg-[var(--sidebar)]/95 backdrop-blur-xl lg:hidden">
           <div className="grid grid-cols-4 gap-1 px-2 py-2 text-[11px]">
