@@ -220,7 +220,12 @@
     "credsClear": "清除",
     "credsSaved": "憑證已儲存",
     "credsCleared": "憑證已清除",
-    "credsSaveError": "儲存失敗，請檢查填寫內容"
+    "credsSaveError": "儲存失敗，請檢查填寫內容",
+    "credsPromptTitle": "尚未設定行情 Key",
+    "credsPromptBody": "請填寫你的長橋或富途 OpenAPI 憑證，才能使用券商行情。",
+    "credsPromptAction": "去設定",
+    "credsPromptLater": "稍後",
+    "credsSetupBanner": "歡迎使用。請先設定至少一家券商（長橋或富途）的 OpenAPI Key；未設定時僅能使用平台行情（Finnhub / 幣安）。"
   },
   "alerts": {
     "title": "價格提醒",

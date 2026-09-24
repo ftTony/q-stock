@@ -4,6 +4,7 @@ import { FormEvent, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
+import { pathAfterAuth } from "@/lib/market/creds-status-client";
 import { SubmitButton } from "@/components/ui/submit-button";
 
 export default function LoginPage() {
@@ -31,7 +32,8 @@ export default function LoginPage() {
         setError(t("error"));
         return;
       }
-      router.push("/");
+      const next = await pathAfterAuth();
+      router.push(next);
       router.refresh();
     } finally {
       setLoading(false);

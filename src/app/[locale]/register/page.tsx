@@ -1,8 +1,10 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { signIn } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
+import { pathAfterAuth } from "@/lib/market/creds-status-client";
 import { SubmitButton } from "@/components/ui/submit-button";
 
 export default function RegisterPage() {
@@ -25,14 +27,30 @@ export default function RegisterPage() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password, name: name || undefined, locale }),
+        body: JSON.stringify({
+          email,
+          password,
+          name: name || undefined,
+          locale,
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
         setError(data.error || t("error"));
         return;
       }
-      router.push(`/login?registered=1`);
+      const signed = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+      if (signed?.error) {
+        router.push("/login?registered=1");
+        return;
+      }
+      const next = await pathAfterAuth();
+      router.push(next);
+      router.refresh();
     } finally {
       setLoading(false);
     }

@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { TopBarActions } from "@/components/layout/topbar-actions";
 import { DataSourceBadge } from "@/components/layout/data-source-badge";
+import { MarketCredentialsPrompt } from "@/components/settings/market-credentials-prompt";
 
 function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -334,6 +335,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
+
+        <MarketCredentialsPrompt />
 
         <main className="flex-1 px-4 py-5 pb-24 sm:px-6 sm:py-6 lg:pb-6">{children}</main>
 

@@ -15,6 +15,16 @@ const cache = new Map<
   { store: MarketCredsStore; expiresAt: number }
 >();
 
+function marketCredentialDelegate() {
+  const d = prisma.userMarketCredential;
+  if (!d) {
+    throw new Error(
+      "Prisma client missing UserMarketCredential — run `npx prisma generate` and restart the server",
+    );
+  }
+  return d;
+}
+
 export function getMarketCreds(): MarketCredsStore {
   return als.getStore() ?? {};
 }
@@ -67,7 +77,7 @@ export async function loadUserMarketCreds(
     return hit.store;
   }
 
-  const rows = await prisma.userMarketCredential.findMany({
+  const rows = await marketCredentialDelegate().findMany({
     where: { userId },
   });
 

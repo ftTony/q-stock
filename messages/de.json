@@ -220,7 +220,12 @@
     "credsClear": "Clear",
     "credsSaved": "Credentials saved",
     "credsCleared": "Credentials cleared",
-    "credsSaveError": "Save failed — check your input"
+    "credsSaveError": "Save failed — check your input",
+    "credsPromptTitle": "Market data keys not set",
+    "credsPromptBody": "Add your Longbridge or Futu OpenAPI credentials to use broker quotes.",
+    "credsPromptAction": "Go to settings",
+    "credsPromptLater": "Later",
+    "credsSetupBanner": "Welcome. Please configure at least one broker OpenAPI key (Longbridge or Futu). Without it, only platform sources (Finnhub / Binance) are available."
   },
   "alerts": {
     "title": "Kursalarme",

@@ -9,20 +9,21 @@ import {
 } from "@/lib/market/creds-context";
 
 const longbridgeSchema = z.object({
-  appKey: z.string().min(1).max(256),
-  appSecret: z.string().min(1).max(256),
-  accessToken: z.string().min(1).max(2048),
+  appKey: z.string().min(1).max(512),
+  appSecret: z.string().min(1).max(512),
+  // Longbridge JWT / refresh-style tokens can be long
+  accessToken: z.string().min(1).max(16_384),
 });
 
 const futuBearerSchema = z.object({
   mode: z.literal("bearer"),
-  accessToken: z.string().min(1).max(4096),
+  accessToken: z.string().min(1).max(16_384),
 });
 
 const futuAppKeySchema = z.object({
   mode: z.literal("appkey"),
-  appKey: z.string().min(1).max(256),
-  privateKey: z.string().min(1).max(16_000),
+  appKey: z.string().min(1).max(512),
+  privateKey: z.string().min(1).max(65_536),
   signAlg: z.enum(["ed25519", "rsa-sha256", "rsa"]).optional(),
 });
 
@@ -67,26 +68,52 @@ export async function PUT(req: Request) {
 
   const userId = session.user.id;
 
-  if (parsed.data.longbridge) {
-    const payload = encryptJson(parsed.data.longbridge);
-    await prisma.userMarketCredential.upsert({
-      where: {
-        userId_provider: { userId, provider: "longbridge" },
-      },
-      create: { userId, provider: "longbridge", payload },
-      update: { payload },
-    });
-  }
+  try {
+    if (parsed.data.longbridge) {
+      const payload = encryptJson(parsed.data.longbridge);
+      await prisma.userMarketCredential.upsert({
+        where: {
+          userId_provider: { userId, provider: "longbridge" },
+        },
+        create: { userId, provider: "longbridge", payload },
+        update: { payload },
+      });
+    }
 
-  if (parsed.data.futu) {
-    const payload = encryptJson(parsed.data.futu);
-    await prisma.userMarketCredential.upsert({
-      where: {
-        userId_provider: { userId, provider: "futu" },
-      },
-      create: { userId, provider: "futu", payload },
-      update: { payload },
-    });
+    if (parsed.data.futu) {
+      const payload = encryptJson(parsed.data.futu);
+      await prisma.userMarketCredential.upsert({
+        where: {
+          userId_provider: { userId, provider: "futu" },
+        },
+        create: { userId, provider: "futu", payload },
+        update: { payload },
+      });
+    }
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : "Save failed";
+    console.error("[market-credentials] save failed:", msg);
+    if (/CREDENTIALS_ENCRYPTION_KEY/i.test(msg)) {
+      return NextResponse.json(
+        {
+          error:
+            "Server missing CREDENTIALS_ENCRYPTION_KEY — add it to .env and restart",
+          code: "ENCRYPTION_KEY_MISSING",
+        },
+        { status: 503 },
+      );
+    }
+    if (/userMarketCredential|UserMarketCredential|prisma generate/i.test(msg)) {
+      return NextResponse.json(
+        {
+          error:
+            "Prisma client outdated — run `npx prisma generate` and restart the server",
+          code: "PRISMA_CLIENT_STALE",
+        },
+        { status: 503 },
+      );
+    }
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 
   invalidateUserMarketCredsCache(userId);

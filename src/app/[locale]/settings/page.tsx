@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, Suspense, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useLocale, useTranslations } from "next-intl";
@@ -258,7 +258,15 @@ export default function SettingsPage() {
         </div>
       </form>
 
-      {loggedIn ? <MarketCredentialsForm /> : null}
+      {loggedIn ? (
+        <Suspense
+          fallback={
+            <p className="text-sm text-[var(--muted)]">{tCommon("loading")}</p>
+          }
+        >
+          <MarketCredentialsForm />
+        </Suspense>
+      ) : null}
     </div>
   );
 }

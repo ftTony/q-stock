@@ -220,7 +220,12 @@
     "credsClear": "清除",
     "credsSaved": "凭证已保存",
     "credsCleared": "凭证已清除",
-    "credsSaveError": "保存失败，请检查填写内容"
+    "credsSaveError": "保存失败，请检查填写内容",
+    "credsPromptTitle": "尚未配置行情 Key",
+    "credsPromptBody": "请填写你的长桥或富途 OpenAPI 凭证，才能使用券商行情。",
+    "credsPromptAction": "去设置",
+    "credsPromptLater": "稍后",
+    "credsSetupBanner": "欢迎使用。请先配置至少一家券商（长桥或富途）的 OpenAPI Key，未配置时仅能使用平台行情（Finnhub / 币安）。"
   },
   "alerts": {
     "title": "价格提醒",

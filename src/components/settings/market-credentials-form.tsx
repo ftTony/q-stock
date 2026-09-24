@@ -1,20 +1,28 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { useRouter } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
+import {
+  CREDS_DISMISS_KEY,
+  hasAnyBrokerCreds,
+  type MarketCredsStatus,
+} from "@/lib/market/creds-status-client";
 
-type Status = {
-  longbridge: { configured: boolean };
-  futu: { configured: boolean; mode?: "bearer" | "appkey" };
-};
+type Status = MarketCredsStatus;
 
 type FutuMode = "appkey" | "bearer";
 
 export function MarketCredentialsForm() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const setupKeys = searchParams.get("setupKeys") === "1";
+  const panelRef = useRef<HTMLDivElement>(null);
 
   const [status, setStatus] = useState<Status | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,6 +46,7 @@ export function MarketCredentialsForm() {
     const data = (await res.json()) as Status;
     setStatus(data);
     if (data.futu.mode) setFutuMode(data.futu.mode);
+    return data;
   }
 
   useEffect(() => {
@@ -55,10 +64,26 @@ export function MarketCredentialsForm() {
   }, []);
 
   useEffect(() => {
+    if (!setupKeys || loading) return;
+    panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [setupKeys, loading]);
+
+  useEffect(() => {
     if (!message) return;
     const timer = setTimeout(() => setMessage(null), 3500);
     return () => clearTimeout(timer);
   }, [message]);
+
+  function onCredsSaved(next: Status | undefined) {
+    try {
+      sessionStorage.removeItem(CREDS_DISMISS_KEY);
+    } catch {
+      /* ignore */
+    }
+    if (setupKeys && hasAnyBrokerCreds(next)) {
+      router.replace("/settings");
+    }
+  }
 
   async function saveLongbridge(e: FormEvent) {
     e.preventDefault();
@@ -77,16 +102,23 @@ export function MarketCredentialsForm() {
         }),
       });
       if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
         setMessageKind("error");
-        setMessage(t("credsSaveError"));
+        setMessage(data?.error || t("credsSaveError"));
         return;
       }
       setLbKey("");
       setLbSecret("");
       setLbToken("");
-      await refreshStatus();
+      const next = await refreshStatus();
+      onCredsSaved(next);
       setMessageKind("ok");
       setMessage(t("credsSaved"));
+    } catch {
+      setMessageKind("error");
+      setMessage(t("credsSaveError"));
     } finally {
       setSavingLb(false);
     }
@@ -118,16 +150,23 @@ export function MarketCredentialsForm() {
         body: JSON.stringify(body),
       });
       if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
         setMessageKind("error");
-        setMessage(t("credsSaveError"));
+        setMessage(data?.error || t("credsSaveError"));
         return;
       }
       setFutuAppKey("");
       setFutuPrivateKey("");
       setFutuBearer("");
-      await refreshStatus();
+      const next = await refreshStatus();
+      onCredsSaved(next);
       setMessageKind("ok");
       setMessage(t("credsSaved"));
+    } catch {
+      setMessageKind("error");
+      setMessage(t("credsSaveError"));
     } finally {
       setSavingFutu(false);
     }
@@ -153,12 +192,26 @@ export function MarketCredentialsForm() {
     return <p className="text-sm text-[var(--muted)]">{tCommon("loading")}</p>;
   }
 
+  const highlight =
+    setupKeys && !hasAnyBrokerCreds(status)
+      ? "ring-2 ring-[var(--brand)]"
+      : "";
+
   return (
-    <div className="qt-panel w-full space-y-6 p-5 sm:p-6 lg:p-8">
+    <div
+      ref={panelRef}
+      id="market-credentials"
+      className={`qt-panel w-full space-y-6 p-5 sm:p-6 lg:p-8 ${highlight}`}
+    >
       <div>
         <h2 className="text-lg font-semibold tracking-tight">
           {t("credsTitle")}
         </h2>
+        {setupKeys && !hasAnyBrokerCreds(status) ? (
+          <p className="mt-2 rounded-lg bg-[var(--brand-soft)] px-3 py-2 text-sm text-[var(--foreground)]">
+            {t("credsSetupBanner")}
+          </p>
+        ) : null}
         <p className="mt-1 text-sm text-[var(--muted)]">{t("credsHint")}</p>
         <p className="mt-2 text-xs text-[var(--muted)]">{t("credsCompliance")}</p>
       </div>
@@ -184,7 +237,10 @@ export function MarketCredentialsForm() {
         </p>
       )}
 
-      <form onSubmit={saveLongbridge} className="space-y-3 border-t border-[var(--border)] pt-5">
+      <form
+        onSubmit={saveLongbridge}
+        className="space-y-3 border-t border-[var(--border)] pt-5"
+      >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-medium">{t("credsLongbridge")}</h3>
           <span className="text-xs text-[var(--muted)]">
@@ -252,7 +308,10 @@ export function MarketCredentialsForm() {
         </div>
       </form>
 
-      <form onSubmit={saveFutu} className="space-y-3 border-t border-[var(--border)] pt-5">
+      <form
+        onSubmit={saveFutu}
+        className="space-y-3 border-t border-[var(--border)] pt-5"
+      >
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h3 className="text-sm font-medium">{t("credsFutu")}</h3>
           <span className="text-xs text-[var(--muted)]">
