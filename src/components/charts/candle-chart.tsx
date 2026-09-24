@@ -432,7 +432,7 @@ export function CandleChart({
           onClick={() => void toggleFullscreen()}
           aria-label={fullscreen ? t("exitFullscreen") : t("fullscreen")}
           title={fullscreen ? t("exitFullscreen") : t("fullscreen")}
-          className="pointer-events-auto flex items-center gap-1 rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 px-2 py-1 text-[11px] text-[var(--muted)] shadow-sm backdrop-blur-sm hover:text-[var(--foreground)] sm:text-xs"
+          className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 text-[var(--muted)] shadow-sm backdrop-blur-sm hover:text-[var(--foreground)]"
         >
           {fullscreen ? (
             <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
@@ -443,9 +443,6 @@ export function CandleChart({
               <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
             </svg>
           )}
-          <span className="hidden sm:inline">
-            {fullscreen ? t("exitFullscreen") : t("fullscreen")}
-          </span>
         </button>
       </div>
 
