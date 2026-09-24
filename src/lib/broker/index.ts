@@ -1,3 +1,4 @@
+import { getMarketCreds } from "@/lib/market/creds-context";
 import { isFutuConfigured } from "@/lib/market/providers/futu-http";
 
 /**
@@ -36,6 +37,7 @@ export function getBrokerGateway(): BrokerGateway | null {
   return null;
 }
 
+/** Reflects current-request BYOK (ALS); trade wiring is still Phase 2. */
 export function listBrokerGateways(): {
   id: BrokerId;
   configured: boolean;
@@ -44,17 +46,13 @@ export function listBrokerGateways(): {
   return [
     {
       id: "longbridge",
-      configured: Boolean(
-        process.env.LONGBRIDGE_APP_KEY &&
-          process.env.LONGBRIDGE_APP_SECRET &&
-          process.env.LONGBRIDGE_ACCESS_TOKEN,
-      ),
-      ready: false, // TradeContext wiring is Phase 2
+      configured: Boolean(getMarketCreds().longbridge),
+      ready: false,
     },
     {
       id: "futu",
       configured: isFutuConfigured(),
-      ready: false, // Futu OpenAPI trade wiring is Phase 2
+      ready: false,
     },
   ];
 }

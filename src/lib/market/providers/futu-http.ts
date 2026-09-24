@@ -1,12 +1,13 @@
 import crypto from "crypto";
-import fs from "fs";
+import { getMarketCreds } from "@/lib/market/creds-context";
+import type { FutuCreds } from "@/lib/market/creds-types";
 import { MarketDataError } from "@/lib/market/types";
 
 /**
  * Futu OpenAPI cloud REST client — https://open.futunn.com/api/overview/getting-started
  * Host: https://webapi.futunn.com
  *
- * Auth (prefer Method 2 when AppKey + private key are set):
+ * Auth uses per-request BYOK from AsyncLocalStorage (not process.env).
  * - Method 2: X-Api-Key + Ed25519/RSA signature
  * - Method 1: Authorization: Bearer {access_token}
  */
@@ -18,41 +19,35 @@ let timeOffsetMs = 0;
 let timeSyncedAt = 0;
 const TIME_SYNC_TTL_MS = 5 * 60_000;
 
+function currentFutuCreds(): FutuCreds | undefined {
+  return getMarketCreds().futu;
+}
+
 export function hasBearerAuth(): boolean {
-  return Boolean(process.env.FUTU_ACCESS_TOKEN?.trim());
+  const c = currentFutuCreds();
+  return c?.mode === "bearer";
 }
 
 export function hasAppKeyAuth(): boolean {
-  return Boolean(
-    process.env.FUTU_APP_KEY?.trim() &&
-      (process.env.FUTU_PRIVATE_KEY?.trim() ||
-        process.env.FUTU_PRIVATE_KEY_PATH?.trim()),
-  );
+  const c = currentFutuCreds();
+  return c?.mode === "appkey";
 }
 
 export function isFutuConfigured(): boolean {
-  return hasAppKeyAuth() || hasBearerAuth();
+  return Boolean(currentFutuCreds());
 }
 
-/** Prefer Method 2 for backend/server integrations when both are present. */
+/** Prefer Method 2 when AppKey creds are present. */
 function useAppKeyAuth(): boolean {
   return hasAppKeyAuth();
-}
-
-function rawPrivateKeyMaterial(): string {
-  const inline = process.env.FUTU_PRIVATE_KEY?.trim();
-  if (inline) return inline.replace(/\\n/g, "\n");
-  const path = process.env.FUTU_PRIVATE_KEY_PATH?.trim();
-  if (path) return fs.readFileSync(path, "utf8").trim();
-  throw new Error("FUTU_PRIVATE_KEY or FUTU_PRIVATE_KEY_PATH required");
 }
 
 /**
  * Accept PEM, base64 PKCS#8 DER (console one-liner), or hex DER.
  * Ed25519 PKCS#8 typically starts with MC4CAQAwBQYDK2VwBCIE when base64-encoded.
  */
-function loadPrivateKey(): crypto.KeyObject {
-  const raw = rawPrivateKeyMaterial();
+function loadPrivateKey(privateKey: string): crypto.KeyObject {
+  const raw = privateKey.replace(/\\n/g, "\n").trim();
   if (raw.includes("BEGIN")) {
     return crypto.createPrivateKey(raw);
   }
@@ -80,9 +75,9 @@ function loadPrivateKey(): crypto.KeyObject {
   return crypto.createPrivateKey(raw);
 }
 
-function signPayload(payload: string): string {
-  const alg = (process.env.FUTU_SIGN_ALG || "ed25519").toLowerCase();
-  const key = loadPrivateKey();
+function signPayload(payload: string, creds: Extract<FutuCreds, { mode: "appkey" }>): string {
+  const alg = (creds.signAlg || "ed25519").toLowerCase();
+  const key = loadPrivateKey(creds.privateKey);
   if (alg === "rsa-sha256" || alg === "rsa") {
     const sig = crypto.sign("sha256", Buffer.from(payload, "utf8"), {
       key,
@@ -127,12 +122,17 @@ async function buildAuthHeaders(
   queryString: string,
   body: string | null,
 ): Promise<Record<string, string>> {
-  if (!useAppKeyAuth()) {
-    if (!hasBearerAuth()) {
+  const creds = currentFutuCreds();
+  if (!creds) {
+    throw new MarketDataError("Futu credentials not configured", "futu");
+  }
+
+  if (!useAppKeyAuth() || creds.mode === "bearer") {
+    if (creds.mode !== "bearer") {
       throw new MarketDataError("Futu credentials not configured", "futu");
     }
     return {
-      Authorization: `Bearer ${process.env.FUTU_ACCESS_TOKEN!.trim()}`,
+      Authorization: `Bearer ${creds.accessToken}`,
       "Content-Type": "application/json",
     };
   }
@@ -150,10 +150,10 @@ async function buildAuthHeaders(
     queryString,
     bodyPart,
   ].join("\n");
-  const signature = signPayload(payload);
+  const signature = signPayload(payload, creds);
 
   return {
-    "X-Api-Key": process.env.FUTU_APP_KEY!.trim(),
+    "X-Api-Key": creds.appKey,
     Authorization: signature,
     "X-Timestamp": timestampMs,
     "X-Nonce": nonce,

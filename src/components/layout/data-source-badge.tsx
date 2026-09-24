@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 
 type ProviderId = "longbridge" | "futu" | "finnhub" | "binance";
@@ -14,13 +15,15 @@ const PROVIDER_I18N: Record<ProviderId, string> = {
 
 /**
  * Fixed bottom-left badge showing configured market-data sources
- * in priority order (Longbridge → Futu → Finnhub → …).
+ * in priority order for the current session (BYOK for LB/Futu).
  */
 export function DataSourceBadge() {
   const t = useTranslations("common");
+  const { status: sessionStatus } = useSession();
   const [chain, setChain] = useState<ProviderId[]>([]);
 
   useEffect(() => {
+    if (sessionStatus === "loading") return;
     let cancelled = false;
     (async () => {
       try {
@@ -35,7 +38,6 @@ export function DataSourceBadge() {
           (id): id is ProviderId =>
             id in PROVIDER_I18N && Boolean(configured[id]),
         );
-        // Equity-relevant first; keep binance if present for crypto pages
         const ordered = priority.length
           ? priority
           : (Object.keys(PROVIDER_I18N) as ProviderId[]).filter(
@@ -49,7 +51,7 @@ export function DataSourceBadge() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [sessionStatus]);
 
   if (!chain.length) return null;
 

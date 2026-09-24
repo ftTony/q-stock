@@ -1,15 +1,12 @@
 import { createHash, createHmac } from "crypto";
+import { getMarketCreds } from "@/lib/market/creds-context";
 
 const HOST =
   process.env.LONGBRIDGE_HTTP_HOST?.trim() ||
   "https://openapi.longbridge.cn";
 
 function hasLongbridgeCreds(): boolean {
-  return Boolean(
-    process.env.LONGBRIDGE_APP_KEY &&
-      process.env.LONGBRIDGE_APP_SECRET &&
-      process.env.LONGBRIDGE_ACCESS_TOKEN,
-  );
+  return Boolean(getMarketCreds().longbridge);
 }
 
 export { hasLongbridgeCreds as hasLongbridgeHttpCreds };
@@ -42,17 +39,16 @@ function signGet(
   )}`;
 }
 
-/** Signed Longbridge OpenAPI GET (JSON body). */
+/** Signed Longbridge OpenAPI GET (JSON body). Uses request ALS BYOK. */
 export async function longbridgeHttpGet<T = unknown>(
   path: string,
   params: Record<string, string | number | undefined>,
 ): Promise<T> {
-  if (!hasLongbridgeCreds()) {
+  const creds = getMarketCreds().longbridge;
+  if (!creds) {
     throw new Error("Longbridge credentials not configured");
   }
-  const key = process.env.LONGBRIDGE_APP_KEY!;
-  const secret = process.env.LONGBRIDGE_APP_SECRET!;
-  const token = process.env.LONGBRIDGE_ACCESS_TOKEN!;
+  const { appKey: key, appSecret: secret, accessToken: token } = creds;
 
   const query = Object.entries(params)
     .filter(([, v]) => v !== undefined && v !== "")

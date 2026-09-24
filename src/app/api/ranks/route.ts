@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
 import {
   getLongbridgeRankBoards,
   getLongbridgeRankList,
@@ -6,6 +7,7 @@ import {
   type RankBoard,
 } from "@/lib/market/providers/longbridge-rank";
 import { getQuotes } from "@/lib/market";
+import { withUserMarket } from "@/lib/market/with-user-market";
 import {
   POPULAR_CRYPTO,
   POPULAR_HK,
@@ -34,70 +36,76 @@ function sortBoards(quotes: Quote[], limit: number) {
 
 export async function GET(req: Request) {
   try {
-    const { searchParams } = new URL(req.url);
-    const assetType = parseAssetType(searchParams.get("assetType"));
-    const board = parseBoard(searchParams.get("board"));
-    const limit = Math.min(
-      50,
-      Math.max(5, Number(searchParams.get("limit") || 15) || 15),
-    );
-
-    if (assetType === "crypto") {
-      const quotes = await getQuotes(
-        POPULAR_CRYPTO.map((s) => ({ symbol: s, assetType: "crypto" as const })),
+    const session = await auth();
+    return await withUserMarket(session?.user?.id, async () => {
+      const { searchParams } = new URL(req.url);
+      const assetType = parseAssetType(searchParams.get("assetType"));
+      const board = parseBoard(searchParams.get("board"));
+      const limit = Math.min(
+        50,
+        Math.max(5, Number(searchParams.get("limit") || 15) || 15),
       );
-      return NextResponse.json({
-        quotes,
-        board: "hot",
-        boards: { hot: quotes, gainers: [], losers: [] },
-        source: "popular",
-      });
-    }
 
-    if (isLongbridgeRankConfigured()) {
-      try {
-        if (board === "all") {
-          const boards = await getLongbridgeRankBoards(assetType, limit);
-          return NextResponse.json({
-            boards,
-            source: "longbridge",
-          });
-        }
-        const quotes = await getLongbridgeRankList(assetType, board, limit);
+      if (assetType === "crypto") {
+        const quotes = await getQuotes(
+          POPULAR_CRYPTO.map((s) => ({
+            symbol: s,
+            assetType: "crypto" as const,
+          })),
+        );
         return NextResponse.json({
           quotes,
-          board,
-          source: "longbridge",
+          board: "hot",
+          boards: { hot: quotes, gainers: [], losers: [] },
+          source: "popular",
         });
-      } catch (err) {
-        console.warn(
-          "[ranks] longbridge failed, fallback popular:",
-          err instanceof Error ? err.message : err,
-        );
       }
-    }
 
-    const list =
-      assetType === "hk"
-        ? POPULAR_HK.map((s) => ({ symbol: s, assetType: "hk" as const }))
-        : POPULAR_STOCKS.map((s) => ({
-            symbol: s,
-            assetType: "stock" as const,
-          }));
-    const quotes = await getQuotes(list);
-    if (board === "all") {
+      if (isLongbridgeRankConfigured()) {
+        try {
+          if (board === "all") {
+            const boards = await getLongbridgeRankBoards(assetType, limit);
+            return NextResponse.json({
+              boards,
+              source: "longbridge",
+            });
+          }
+          const quotes = await getLongbridgeRankList(assetType, board, limit);
+          return NextResponse.json({
+            quotes,
+            board,
+            source: "longbridge",
+          });
+        } catch (err) {
+          console.warn(
+            "[ranks] longbridge failed, fallback popular:",
+            err instanceof Error ? err.message : err,
+          );
+        }
+      }
+
+      const list =
+        assetType === "hk"
+          ? POPULAR_HK.map((s) => ({ symbol: s, assetType: "hk" as const }))
+          : POPULAR_STOCKS.map((s) => ({
+              symbol: s,
+              assetType: "stock" as const,
+            }));
+      const quotes = await getQuotes(list);
+      if (board === "all") {
+        return NextResponse.json({
+          boards: sortBoards(quotes, limit),
+          source: "popular-fallback",
+          degraded: true,
+        });
+      }
+      const boards = sortBoards(quotes, limit);
       return NextResponse.json({
-        boards: sortBoards(quotes, limit),
+        quotes: boards[board],
+        board,
         source: "popular-fallback",
         degraded: true,
       });
-    }
-    const boards = sortBoards(quotes, limit);
-    return NextResponse.json({
-      quotes: boards[board],
-      board,
-      source: "popular-fallback",
-      degraded: true,
     });
   } catch (err) {
     console.error("ranks", err);

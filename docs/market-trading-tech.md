@@ -91,11 +91,13 @@ interface MarketDataProvider {
 
 [`src/lib/market/router.ts`](../src/lib/market/router.ts)：
 
-1. 读取 `MARKET_DATA_PROVIDERS`（CSV）；未配置则按默认顺序过滤「已配置凭证」的源
-2. 默认顺序：`longbridge,futu,finnhub`
-3. `withProviderFailover`：按序调用，失败记日志并试下一个；全部失败再抛错
+1. 读取 `MARKET_DATA_PROVIDERS`（CSV）；未配置则按默认顺序过滤「当前请求已配置」的源
+2. 默认顺序：`longbridge,futu,finnhub,binance`
+3. **长桥 / 富途「已配置」= 当前登录用户在设置页保存了 BYOK**（AsyncLocalStorage），不是服务端 env
+4. 游客或无 BYOK：仅 Finnhub / Binance
+5. `withProviderFailover`：按序调用，失败记日志并试下一个；全部失败再抛错
 
-门面 [`src/lib/market/index.ts`](../src/lib/market/index.ts) 对外只暴露：
+API 路由通过 `withUserMarket(session?.user?.id, …)` 注入凭证。门面 [`src/lib/market/index.ts`](../src/lib/market/index.ts) 对外只暴露：
 
 - `getQuote` / `getQuotes`
 - `getDailyCandles` / `getMonthlyCandles`
@@ -131,7 +133,7 @@ interface MarketDataProvider {
 
 - 依赖 npm `longbridge`
 - `Config.fromApikey` + `QuoteContext.quote` / `candlesticks`
-- Env：`LONGBRIDGE_APP_KEY` / `SECRET` / `ACCESS_TOKEN`
+- **凭证**：用户 BYOK（`UserMarketCredential` + ALS），非 `LONGBRIDGE_*` env
 - Next 配置：`serverExternalPackages: ["longbridge"]`（原生绑定）
 
 #### 富途（`providers/futu.ts`）— 云端 OpenAPI，**不用 OpenD**
@@ -144,11 +146,12 @@ interface MarketDataProvider {
 | 快照 | `POST /api/v1.0/quote/snapshot` body `{ code_list: ["US.AAPL"] }` |
 | 历史 K | `GET /api/v1.0/quote/{symbol}/history-kline?ktype=2\|4&…` |
 
-鉴权（二选一，适合服务端 env）：
+鉴权（用户在设置页二选一）：
 
-1. **Bearer**：`FUTU_ACCESS_TOKEN` → `Authorization: Bearer …`
-2. **Legacy AppKey**：`FUTU_APP_KEY` + `FUTU_PRIVATE_KEY`（或 `_PATH`）  
-   签名串：`timestamp\nMETHOD\npath\nquery\nsha256(body)`，算法默认 Ed25519（`FUTU_SIGN_ALG`）
+1. **AppKey + 私钥**（推荐）：Ed25519 / RSA 签名
+2. **Bearer Access Token**
+
+服务端 `FUTU_*` env **不参与** Web 行情。
 
 #### Finnhub（`providers/finnhub.ts`）
 
@@ -245,22 +248,15 @@ getBrokerGateway(): BrokerGateway | null  // 当前恒为 null
 ## 6. 环境变量摘要
 
 ```bash
-MARKET_DATA_PROVIDERS=longbridge,futu,finnhub
+MARKET_DATA_PROVIDERS=longbridge,futu,finnhub,binance
 
-# 长桥
-LONGBRIDGE_APP_KEY=
-LONGBRIDGE_APP_SECRET=
-LONGBRIDGE_ACCESS_TOKEN=
+# 用户 BYOK 加密密钥（必填才能保存长桥/富途）
+CREDENTIALS_ENCRYPTION_KEY=
 
-# 富途（云端，二选一）
-FUTU_ACCESS_TOKEN=
-# FUTU_APP_KEY=
-# FUTU_PRIVATE_KEY=          # 或 FUTU_PRIVATE_KEY_PATH=
-# FUTU_SIGN_ALG=ed25519
-# FUTU_HTTP_URL=https://webapi.futunn.com
-
-# Finnhub（回退 + 资讯）
+# 平台 Finnhub（游客 / 无 BYOK 兜底）
 FINNHUB_API_KEY=
+
+# 长桥 / 富途：请在 Web 设置页填写，不要再用服务端 env 给访客转行情
 ```
 
 完整说明见 [启动与环境](./getting-started.md) 与仓库根目录 [.env.example](../.env.example)。

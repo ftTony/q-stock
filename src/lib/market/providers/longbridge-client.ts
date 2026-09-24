@@ -1,3 +1,8 @@
+import { getMarketCreds } from "@/lib/market/creds-context";
+import {
+  fingerprintLongbridge,
+  type LongbridgeCreds,
+} from "@/lib/market/creds-types";
 import { toLongbridgeSymbol, normalizeSymbol } from "@/lib/market/symbols";
 import { MarketDataError } from "@/lib/market/types";
 import type { AssetType, OhlcvBar } from "@/lib/types";
@@ -5,27 +10,47 @@ import type { AssetType, OhlcvBar } from "@/lib/types";
 export type LbModule = typeof import("longbridge");
 
 let lbPromise: Promise<LbModule> | null = null;
-let quoteCtx: InstanceType<LbModule["QuoteContext"]> | null = null;
 
+const quoteCtxCache = new Map<
+  string,
+  InstanceType<LbModule["QuoteContext"]>
+>();
 const contentCtxCache = new Map<
-  LbLanguageId,
+  string,
   InstanceType<LbModule["ContentContext"]>
 >();
-
 const fundamentalCtxCache = new Map<
-  LbLanguageId,
+  string,
   InstanceType<LbModule["FundamentalContext"]>
 >();
+
+const MAX_CTX = 32;
+
+function trimMap<K, V>(map: Map<K, V>, max: number) {
+  while (map.size > max) {
+    const first = map.keys().next().value;
+    if (first === undefined) break;
+    map.delete(first);
+  }
+}
 
 /** Longbridge Language enum: 0=zh-CN, 1=zh-HK, 2=en. */
 export type LbLanguageId = 0 | 1 | 2 | "default";
 
+function requireLongbridgeCreds(): LongbridgeCreds {
+  const c = getMarketCreds().longbridge;
+  if (!c) {
+    throw new MarketDataError(
+      "Longbridge credentials not configured for this user",
+      "longbridge",
+    );
+  }
+  return c;
+}
+
+/** True when the current request ALS has Longbridge BYOK credentials. */
 export function hasLongbridgeCreds(): boolean {
-  return Boolean(
-    process.env.LONGBRIDGE_APP_KEY &&
-      process.env.LONGBRIDGE_APP_SECRET &&
-      process.env.LONGBRIDGE_ACCESS_TOKEN,
-  );
+  return Boolean(getMarketCreds().longbridge);
 }
 
 export async function loadLb(): Promise<LbModule> {
@@ -35,18 +60,33 @@ export async function loadLb(): Promise<LbModule> {
   return lbPromise;
 }
 
+function makeConfig(
+  lb: LbModule,
+  creds: LongbridgeCreds,
+  language?: LbLanguageId,
+) {
+  return lb.Config.fromApikey(
+    creds.appKey,
+    creds.appSecret,
+    creds.accessToken,
+    language === undefined || language === "default"
+      ? undefined
+      : { language },
+  );
+}
+
 export async function getQuoteCtx(): Promise<
   InstanceType<LbModule["QuoteContext"]>
 > {
-  if (quoteCtx) return quoteCtx;
+  const creds = requireLongbridgeCreds();
+  const key = fingerprintLongbridge(creds);
+  const hit = quoteCtxCache.get(key);
+  if (hit) return hit;
   const lb = await loadLb();
-  const config = lb.Config.fromApikey(
-    process.env.LONGBRIDGE_APP_KEY!,
-    process.env.LONGBRIDGE_APP_SECRET!,
-    process.env.LONGBRIDGE_ACCESS_TOKEN!,
-  );
-  quoteCtx = lb.QuoteContext.new(config);
-  return quoteCtx;
+  const ctx = lb.QuoteContext.new(makeConfig(lb, creds));
+  quoteCtxCache.set(key, ctx);
+  trimMap(quoteCtxCache, MAX_CTX);
+  return ctx;
 }
 
 /** @deprecated Prefer getQuoteCtx */
@@ -61,7 +101,7 @@ export function dec(v: { toNumber(): number } | null | undefined): number {
   }
 }
 
-/** Map UI locale to Longbridge language id (default keeps env `LONGBRIDGE_LANGUAGE`). */
+/** Map UI locale to Longbridge language id (default keeps SDK default). */
 export function lbLanguage(locale?: string): LbLanguageId {
   const l = (locale || "").toLowerCase();
   if (l.startsWith("zh-cn")) return 0;
@@ -71,32 +111,26 @@ export function lbLanguage(locale?: string): LbLanguageId {
 }
 
 export async function getContentCtx(language: LbLanguageId = "default") {
-  const cached = contentCtxCache.get(language);
+  const creds = requireLongbridgeCreds();
+  const key = `${fingerprintLongbridge(creds)}:c:${language}`;
+  const cached = contentCtxCache.get(key);
   if (cached) return cached;
   const lb = await loadLb();
-  const config = lb.Config.fromApikey(
-    process.env.LONGBRIDGE_APP_KEY!,
-    process.env.LONGBRIDGE_APP_SECRET!,
-    process.env.LONGBRIDGE_ACCESS_TOKEN!,
-    language === "default" ? undefined : { language },
-  );
-  const ctx = lb.ContentContext.new(config);
-  contentCtxCache.set(language, ctx);
+  const ctx = lb.ContentContext.new(makeConfig(lb, creds, language));
+  contentCtxCache.set(key, ctx);
+  trimMap(contentCtxCache, MAX_CTX);
   return ctx;
 }
 
 export async function getFundamentalCtx(language: LbLanguageId = "default") {
-  const cached = fundamentalCtxCache.get(language);
+  const creds = requireLongbridgeCreds();
+  const key = `${fingerprintLongbridge(creds)}:f:${language}`;
+  const cached = fundamentalCtxCache.get(key);
   if (cached) return cached;
   const lb = await loadLb();
-  const config = lb.Config.fromApikey(
-    process.env.LONGBRIDGE_APP_KEY!,
-    process.env.LONGBRIDGE_APP_SECRET!,
-    process.env.LONGBRIDGE_ACCESS_TOKEN!,
-    language === "default" ? undefined : { language },
-  );
-  const ctx = lb.FundamentalContext.new(config);
-  fundamentalCtxCache.set(language, ctx);
+  const ctx = lb.FundamentalContext.new(makeConfig(lb, creds, language));
+  fundamentalCtxCache.set(key, ctx);
+  trimMap(fundamentalCtxCache, MAX_CTX);
   return ctx;
 }
 

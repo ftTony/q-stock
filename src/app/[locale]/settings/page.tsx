@@ -11,6 +11,7 @@ import {
 } from "@/components/providers/preference-provider";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
+import { MarketCredentialsForm } from "@/components/settings/market-credentials-form";
 import {
   locales,
   languageLabels,
@@ -256,6 +257,8 @@ export default function SettingsPage() {
           )}
         </div>
       </form>
+
+      {loggedIn ? <MarketCredentialsForm /> : null}
     </div>
   );
 }

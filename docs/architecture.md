@@ -33,7 +33,7 @@
 原则：
 
 - 浏览器不直连券商 / Finnhub / Adanos，密钥仅在服务端
-- 行情经 `MARKET_DATA_PROVIDERS` 优先级路由（默认 longbridge → futu → finnhub）
+- 行情经 `MARKET_DATA_PROVIDERS` 优先级路由；长桥/富途仅在登录用户 BYOK 后启用，游客走 Finnhub/币安
 - 业务数据（用户、自选、评论、提醒、模拟交易）落 Postgres
 - 行情类数据以短时缓存为主，不落库
 - 真实券商下单预留 `@/lib/broker`（本阶段未接通）

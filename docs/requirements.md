@@ -160,7 +160,7 @@
 ## 7. 约束与已知限制
 
 1. 行情源需至少配置长桥 / 富途 / Finnhub 之一；Finnhub 免费档有 rate limit；部分公告 / 基本面接口可能需付费
-2. 富途使用云端 OpenAPI（`webapi.futunn.com`），配置 `FUTU_ACCESS_TOKEN` 或 AppKey+私钥，无需本机 OpenD
+2. 富途使用云端 OpenAPI（`webapi.futunn.com`）；用户在设置页自带 AppKey+私钥或 Bearer Token（BYOK），无需本机 OpenD
 3. 季 K / 年 K 为本地聚合，可能与券商软件存在差异
 4. Adanos 免费额度极低，生产建议 Hobby 及以上，并依赖缓存
 5. 真实券商撮合预留 `@/lib/broker`（本阶段未接通）；提供**模拟交易**（仅做多），资金为虚拟 `$100,000`

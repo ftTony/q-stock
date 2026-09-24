@@ -42,25 +42,23 @@ cp .env.example .env
 APP_URL=http://localhost:3000
 AUTH_SECRET=请替换为足够长的随机字符串
 DATABASE_URL=postgresql://qstock:qstock@localhost:5432/qstock?schema=public
-# 至少配置一个行情源（推荐长桥或 Finnhub）
-LONGBRIDGE_APP_KEY=
-LONGBRIDGE_APP_SECRET=
-LONGBRIDGE_ACCESS_TOKEN=
-# 或 FUTU_ACCESS_TOKEN=
-# 或 FINNHUB_API_KEY=
+# 加密用户自带的长桥/富途 Key（设置页 BYOK）
+CREDENTIALS_ENCRYPTION_KEY=请填入64位hex（node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"）
+# 平台行情兜底（游客与无 BYOK 用户可用）
+FINNHUB_API_KEY=
 ```
 
 可选：
 
 ```env
-FUTU_ACCESS_TOKEN=你的_futu_oauth_access_token
-FINNHUB_API_KEY=你的_finnhub_key
 ADANOS_API_KEY=你的_adanos_key
 EMAIL_FROM=alerts@example.com
 RESEND_API_KEY=re_xxx
 ALERT_POLL_INTERVAL_MS=45000
-MARKET_DATA_PROVIDERS=longbridge,futu,finnhub
+MARKET_DATA_PROVIDERS=longbridge,futu,finnhub,binance
 ```
+
+登录后在 **设置 → 行情数据源** 填写你自己的长桥 / 富途 OpenAPI 凭证；服务端 `.env` 的 `LONGBRIDGE_*` / `FUTU_*` **不再**用于 Web 行情接口。
 
 ### 2.3 启动数据库
 
@@ -113,11 +111,9 @@ Worker 按 `ALERT_POLL_INTERVAL_MS`（默认 45000ms）轮询 `active` 提醒并
 | `AUTH_SECRET` | 是 | Auth.js 密钥 |
 | `AUTH_TRUST_HOST` | 建议 | Docker / 代理场景设为 `true` |
 | `DATABASE_URL` | 是 | Prisma PostgreSQL 连接串 |
-| `MARKET_DATA_PROVIDERS` | 否 | 行情源优先级 CSV，默认 `longbridge,futu,finnhub`；省略则按已配置凭证自动探测 |
-| `LONGBRIDGE_APP_KEY` / `SECRET` / `ACCESS_TOKEN` | 否* | 长桥 OpenAPI；三键齐全即启用 |
-| `FUTU_ACCESS_TOKEN` | 否* | 富途云端 Bearer Token（推荐） |
-| `FUTU_APP_KEY` + `FUTU_PRIVATE_KEY`(/`_PATH`) | 否* | 富途 Legacy AppKey 签名鉴权 |
-| `FINNHUB_API_KEY` | 否* | Finnhub；回退行情 + 新闻/财报/公告 |
+| `CREDENTIALS_ENCRYPTION_KEY` | 是* | 32 字节 hex/base64；加密用户长桥/富途 Key。缺则无法保存 BYOK |
+| `MARKET_DATA_PROVIDERS` | 否 | 行情源优先级 CSV，默认含 longbridge,futu,finnhub,binance |
+| `FINNHUB_API_KEY` | 否* | 平台 Finnhub；游客与无 BYOK 时的股票行情兜底 |
 | `ADANOS_API_KEY` | 否 | 缺失时情绪区降级 |
 | `EMAIL_FROM` | 发信时 | 发件人地址 |
 | `RESEND_API_KEY` | 否 | 优先邮件通道 |
@@ -129,6 +125,7 @@ Worker 按 `ALERT_POLL_INTERVAL_MS`（默认 45000ms）轮询 `active` 提醒并
 
 说明：
 
+- **长桥 / 富途**：由登录用户在设置页自带 Key（BYOK），加密存库；不通过服务端 env 向访客转发行情。
 - 未配置 `RESEND_API_KEY` 且无 `SMTP_HOST` 时，提醒触发只写日志，不真正发信。
 - Compose 中 `web` / `worker` 的 `DATABASE_URL` 会覆盖为指向服务名 `db` 的内网地址。
 

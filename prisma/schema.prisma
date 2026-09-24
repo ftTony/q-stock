@@ -70,13 +70,35 @@ model User {
   createdAt         DateTime          @default(now())
   updatedAt         DateTime          @updatedAt
 
-  watchlist       WatchlistItem[]
-  priceAlerts     PriceAlert[]
-  comments        Comment[]
-  alertDeliveries AlertDeliveryLog[]
-  paperAccount    PaperAccount?
-  paperPositions  PaperPosition[]
-  paperOrders     PaperOrder[]
+  watchlist          WatchlistItem[]
+  priceAlerts        PriceAlert[]
+  comments           Comment[]
+  alertDeliveries    AlertDeliveryLog[]
+  paperAccount       PaperAccount?
+  paperPositions     PaperPosition[]
+  paperOrders        PaperOrder[]
+  marketCredentials  UserMarketCredential[]
+}
+
+enum MarketCredentialProvider {
+  longbridge
+  futu
+}
+
+/** Encrypted per-user Longbridge / Futu OpenAPI credentials (BYOK). */
+model UserMarketCredential {
+  id        String                   @id @default(cuid())
+  userId    String
+  provider  MarketCredentialProvider
+  /** AES-256-GCM ciphertext (iv + tag + payload), base64. */
+  payload   String
+  updatedAt DateTime                 @updatedAt
+  createdAt DateTime                 @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([userId])
 }
 
 model WatchlistItem {

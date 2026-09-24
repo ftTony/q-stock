@@ -1,4 +1,7 @@
 import { cachedFetch } from "@/lib/cache";
+import { getMarketCreds } from "@/lib/market/creds-context";
+import { fingerprintLongbridge } from "@/lib/market/creds-types";
+import { hasLongbridgeCreds, loadLb } from "@/lib/market/providers/longbridge-client";
 import { normalizeSymbol } from "@/lib/market/symbols";
 import type { AssetType, Quote } from "@/lib/types";
 
@@ -6,32 +9,30 @@ export type RankBoard = "hot" | "gainers" | "losers";
 
 type LbModule = typeof import("longbridge");
 
-let lbPromise: Promise<LbModule> | null = null;
-let marketCtx: InstanceType<LbModule["MarketContext"]> | null = null;
-
-function hasLongbridgeCreds(): boolean {
-  return Boolean(
-    process.env.LONGBRIDGE_APP_KEY &&
-      process.env.LONGBRIDGE_APP_SECRET &&
-      process.env.LONGBRIDGE_ACCESS_TOKEN,
-  );
-}
-
-async function loadLb(): Promise<LbModule> {
-  if (!lbPromise) lbPromise = import("longbridge");
-  return lbPromise;
-}
+const marketCtxCache = new Map<
+  string,
+  InstanceType<LbModule["MarketContext"]>
+>();
 
 async function getMarketCtx(): Promise<InstanceType<LbModule["MarketContext"]>> {
-  if (marketCtx) return marketCtx;
+  const creds = getMarketCreds().longbridge;
+  if (!creds) throw new Error("Longbridge credentials not configured");
+  const key = fingerprintLongbridge(creds);
+  const hit = marketCtxCache.get(key);
+  if (hit) return hit;
   const lb = await loadLb();
   const config = lb.Config.fromApikey(
-    process.env.LONGBRIDGE_APP_KEY!,
-    process.env.LONGBRIDGE_APP_SECRET!,
-    process.env.LONGBRIDGE_ACCESS_TOKEN!,
+    creds.appKey,
+    creds.appSecret,
+    creds.accessToken,
   );
-  marketCtx = lb.MarketContext.new(config);
-  return marketCtx;
+  const ctx = lb.MarketContext.new(config);
+  marketCtxCache.set(key, ctx);
+  if (marketCtxCache.size > 32) {
+    const first = marketCtxCache.keys().next().value;
+    if (first !== undefined) marketCtxCache.delete(first);
+  }
+  return ctx;
 }
 
 function marketCode(assetType: AssetType): "US" | "HK" | null {

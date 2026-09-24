@@ -1,6 +1,7 @@
 import type { IndustryHeatCell } from "@/lib/market/providers/longbridge-industry";
 import { getLongbridgeIndustryHeatmap } from "@/lib/market/providers/longbridge-industry";
 import { getFutuIndustryHeatmap } from "@/lib/market/providers/futu-industry";
+import { hasLongbridgeCreds } from "@/lib/market/providers/longbridge-client";
 import { isFutuConfigured } from "@/lib/market/providers/futu-http";
 import { isProviderEnabled } from "@/lib/market/router";
 import type { AssetType } from "@/lib/types";
@@ -13,11 +14,11 @@ export type IndustryHeatmapResult = {
 };
 
 /**
- * Industry heatmap: Longbridge → Futu (when enabled via MARKET_DATA_PROVIDERS).
- * Longbridge chart needs no API key; Futu needs AppKey auth.
+ * Industry heatmap: Longbridge → Futu when the current user has BYOK
+ * credentials for that provider (guests get neither).
  */
 export function isIndustryHeatmapAvailable(): boolean {
-  if (isProviderEnabled("longbridge")) return true;
+  if (isProviderEnabled("longbridge") && hasLongbridgeCreds()) return true;
   if (isProviderEnabled("futu") && isFutuConfigured()) return true;
   return false;
 }
@@ -30,7 +31,7 @@ export async function getIndustryHeatmap(
     return { industries: [], source: null };
   }
 
-  if (isProviderEnabled("longbridge")) {
+  if (isProviderEnabled("longbridge") && hasLongbridgeCreds()) {
     try {
       const industries = await getLongbridgeIndustryHeatmap(assetType, limit);
       if (industries.length > 0) {

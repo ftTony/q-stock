@@ -3,6 +3,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getQuotes } from "@/lib/market";
+import { withUserMarket } from "@/lib/market/with-user-market";
 import { normalizeSymbol } from "@/lib/types";
 
 const upsertSchema = z.object({
@@ -34,22 +35,26 @@ export async function GET(req: Request) {
     });
   }
 
-  const quotes = await getQuotes(
-    items.map((i) => ({ symbol: i.symbol, assetType: i.assetType })),
-  );
-  const quoteMap = new Map(quotes.map((q) => [`${q.assetType}:${q.symbol}`, q]));
+  return withUserMarket(session.user.id, async () => {
+    const quotes = await getQuotes(
+      items.map((i) => ({ symbol: i.symbol, assetType: i.assetType })),
+    );
+    const quoteMap = new Map(
+      quotes.map((q) => [`${q.assetType}:${q.symbol}`, q]),
+    );
 
-  return NextResponse.json({
-    items: items.map((i) => ({
-      ...i,
-      quote: quoteMap.get(`${i.assetType}:${i.symbol}`) ?? null,
-    })),
-    counts: {
-      stock: items.filter((i) => i.assetType === "stock").length,
-      hk: items.filter((i) => i.assetType === "hk").length,
-      crypto: items.filter((i) => i.assetType === "crypto").length,
-      total: items.length,
-    },
+    return NextResponse.json({
+      items: items.map((i) => ({
+        ...i,
+        quote: quoteMap.get(`${i.assetType}:${i.symbol}`) ?? null,
+      })),
+      counts: {
+        stock: items.filter((i) => i.assetType === "stock").length,
+        hk: items.filter((i) => i.assetType === "hk").length,
+        crypto: items.filter((i) => i.assetType === "crypto").length,
+        total: items.length,
+      },
+    });
   });
 }
 

@@ -1,6 +1,7 @@
 import type { AssetType, OrderSide, OrderType, PaperOrder } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getQuote } from "@/lib/market";
+import { withUserMarket } from "@/lib/market/with-user-market";
 import { normalizeSymbol } from "@/lib/types";
 import { ensureAccount } from "@/lib/trading/account";
 import { TradingError, applyFillInTx, fillPendingOrder, shouldTriggerPending } from "@/lib/trading/execute";
@@ -37,6 +38,10 @@ export function serializeOrder(order: PaperOrder) {
 }
 
 export async function placeOrder(input: PlaceOrderInput) {
+  return withUserMarket(input.userId, () => placeOrderInner(input));
+}
+
+async function placeOrderInner(input: PlaceOrderInput) {
   const symbol = normalizeSymbol(input.symbol, input.assetType);
   const qty = input.qty;
 
