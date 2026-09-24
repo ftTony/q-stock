@@ -7,6 +7,7 @@ import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { SegmentedControl } from "@/components/ui/segmented-control";
+import { TopToast, type ToastTone } from "@/components/ui/top-toast";
 import type { AssetType } from "@/lib/types";
 
 type Side = "buy" | "sell";
@@ -57,6 +58,8 @@ export function TradePanel({
   const [position, setPosition] = useState<Position | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
   const [msg, setMsg] = useState<string | null>(null);
+  const [msgTone, setMsgTone] = useState<ToastTone>("neutral");
+  const [msgKey, setMsgKey] = useState(0);
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -112,11 +115,17 @@ export function TradePanel({
 
   const estimate = qtyNum > 0 && estimatePrice > 0 ? qtyNum * estimatePrice : 0;
 
+  function showToast(text: string, tone: ToastTone) {
+    setMsgTone(tone);
+    setMsg(text);
+    setMsgKey((k) => k + 1);
+  }
+
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setMsg(null);
     if (!session?.user) {
-      setMsg(t("loginRequired"));
+      showToast(t("loginRequired"), "neutral");
       return;
     }
     setBusy(true);
@@ -138,11 +147,12 @@ export function TradePanel({
       });
       const data = await res.json();
       if (!res.ok) {
-        setMsg(data.error || t("orderFailed"));
+        showToast(data.error || t("orderFailed"), "error");
         return;
       }
-      setMsg(
+      showToast(
         data.order?.status === "filled" ? t("orderFilled") : t("orderPending"),
+        "success",
       );
       await load();
     } finally {
@@ -182,6 +192,12 @@ export function TradePanel({
 
   return (
     <div className="qt-panel space-y-4 p-4">
+      <TopToast
+        key={msgKey}
+        message={msg}
+        tone={msgTone}
+        onDismiss={() => setMsg(null)}
+      />
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold tracking-wide uppercase text-[var(--muted)]">
           {t("title")}
@@ -354,8 +370,6 @@ export function TradePanel({
         >
           {side === "buy" ? t("submitBuy") : t("submitSell")}
         </SubmitButton>
-
-        {msg && <p className="text-xs text-[var(--muted)]">{msg}</p>}
       </form>
 
       {orders.length > 0 && (
