@@ -6,6 +6,11 @@ import {
   isLongbridgeRankConfigured,
   type RankBoard,
 } from "@/lib/market/providers/longbridge-rank";
+import {
+  getFutuRankBoards,
+  getFutuRankList,
+} from "@/lib/market/providers/futu-rank";
+import { isFutuConfigured } from "@/lib/market/providers/futu-http";
 import { getQuotes } from "@/lib/market";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import {
@@ -84,13 +89,29 @@ export async function GET(req: Request) {
         }
       }
 
+      if (isFutuConfigured()) {
+        try {
+          if (board === "all") {
+            const boards = await getFutuRankBoards(assetType, limit);
+            return NextResponse.json({ boards, source: "futu" });
+          }
+          const quotes = await getFutuRankList(assetType, board, limit);
+          return NextResponse.json({ quotes, board, source: "futu" });
+        } catch (err) {
+          console.warn(
+            "[ranks] futu failed, fallback popular:",
+            err instanceof Error ? err.message : err,
+          );
+        }
+      }
+
       const list =
         assetType === "hk"
           ? POPULAR_HK.map((s) => ({ symbol: s, assetType: "hk" as const }))
           : POPULAR_STOCKS.map((s) => ({
-              symbol: s,
-              assetType: "stock" as const,
-            }));
+            symbol: s,
+            assetType: "stock" as const,
+          }));
       const quotes = await getQuotes(list);
       if (board === "all") {
         return NextResponse.json({

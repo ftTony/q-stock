@@ -37,11 +37,6 @@ export function isFutuConfigured(): boolean {
   return Boolean(currentFutuCreds());
 }
 
-/** Prefer Method 2 when AppKey creds are present. */
-function useAppKeyAuth(): boolean {
-  return hasAppKeyAuth();
-}
-
 /**
  * Accept PEM, base64 PKCS#8 DER (console one-liner), or hex DER.
  * Ed25519 PKCS#8 typically starts with MC4CAQAwBQYDK2VwBCIE when base64-encoded.
@@ -127,7 +122,7 @@ async function buildAuthHeaders(
     throw new MarketDataError("Futu credentials not configured", "futu");
   }
 
-  if (!useAppKeyAuth() || creds.mode === "bearer") {
+  if (!hasAppKeyAuth() || creds.mode === "bearer") {
     if (creds.mode !== "bearer") {
       throw new MarketDataError("Futu credentials not configured", "futu");
     }
@@ -175,6 +170,7 @@ export type FutuRequestResult<T> = {
   data: T;
   nextTime?: number;
   hasMore?: boolean;
+  nextKey?: string;
 };
 
 export async function futuRequest<T>(
@@ -246,5 +242,6 @@ export async function futuRequest<T>(
     data: json.data,
     nextTime,
     hasMore: json.pagination?.has_more,
+    nextKey: json.pagination?.next_key,
   };
 }

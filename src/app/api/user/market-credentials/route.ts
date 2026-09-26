@@ -67,6 +67,19 @@ export async function PUT(req: Request) {
   }
 
   const userId = session.user.id;
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true },
+  });
+  if (!user) {
+    return NextResponse.json(
+      {
+        error: "Your session is outdated. Sign out and sign in again.",
+        code: "SESSION_USER_NOT_FOUND",
+      },
+      { status: 401 },
+    );
+  }
 
   try {
     if (parsed.data.longbridge) {
@@ -104,6 +117,15 @@ export async function PUT(req: Request) {
       );
     }
     if (/userMarketCredential|UserMarketCredential|prisma generate/i.test(msg)) {
+      if (/UserMarketCredential_userId_fkey/i.test(msg)) {
+        return NextResponse.json(
+          {
+            error: "Your session is outdated. Sign out and sign in again.",
+            code: "SESSION_USER_NOT_FOUND",
+          },
+          { status: 401 },
+        );
+      }
       return NextResponse.json(
         {
           error:
