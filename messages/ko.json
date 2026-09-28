@@ -300,7 +300,8 @@
     "emailSave": "이메일 설정 저장",
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
-    "emailSaveError": "Failed to save email settings"
+    "emailSaveError": "Failed to save email settings",
+    "credsTrustNote": "키는 평문으로 저장되지 않으며 계정용으로만 암호화됩니다. 안심하고 추가하세요."
   },
   "alerts": {
     "title": "가격 알림",

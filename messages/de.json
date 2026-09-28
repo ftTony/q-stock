@@ -300,7 +300,8 @@
     "emailSave": "Save email settings",
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
-    "emailSaveError": "Failed to save email settings"
+    "emailSaveError": "Failed to save email settings",
+    "credsTrustNote": "Wir speichern Ihre Keys nie im Klartext. Sie werden nur für Ihr Konto verschlüsselt — Sie können sie bedenkenlos hinterlegen."
   },
   "alerts": {
     "title": "Kursalarme",

@@ -300,7 +300,8 @@
     "emailSave": "Save email settings",
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
-    "emailSaveError": "Failed to save email settings"
+    "emailSaveError": "Failed to save email settings",
+    "credsTrustNote": "Kami tidak pernah menyimpan kunci anda dalam teks biasa. Ia disulitkan untuk akaun anda sahaja — sila tambah dengan yakin."
   },
   "alerts": {
     "title": "Amaran harga",

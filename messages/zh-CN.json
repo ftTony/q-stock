@@ -300,7 +300,8 @@
     "emailSave": "保存邮件设置",
     "emailSaved": "邮件设置已保存",
     "emailCleared": "邮件设置已清除",
-    "emailSaveError": "保存邮件设置失败"
+    "emailSaveError": "保存邮件设置失败",
+    "credsTrustNote": "系统不会明文保存您的 Key，仅加密存储且只用于你本人账户，请放心添加。"
   },
   "alerts": {
     "title": "价格提醒",

@@ -279,13 +279,9 @@ export function MarketCredentialsForm() {
         <h2 className="text-lg font-semibold tracking-tight">
           {t("credsTitle")}
         </h2>
-        {setupKeys && !hasAnyBrokerCreds(status) ? (
-          <p className="mt-2 rounded-lg bg-[var(--brand-soft)] px-3 py-2 text-sm text-[var(--foreground)]">
-            {t("credsSetupBanner")}
-          </p>
-        ) : null}
-        <p className="mt-1 text-sm text-[var(--muted)]">{t("credsHint")}</p>
-        <p className="mt-2 text-xs text-[var(--muted)]">{t("credsCompliance")}</p>
+        <p className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--brand-soft)] px-3 py-2.5 text-sm text-[var(--foreground)]">
+          {t("credsTrustNote")}
+        </p>
       </div>
 
       {message && (
@@ -315,7 +311,7 @@ export function MarketCredentialsForm() {
         className="space-y-3 border-t border-[var(--border)] pt-5"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-medium">{t("credsLongbridge")}</h3>
+          <h3 className="text-base font-semibold">{t("credsLongbridge")}</h3>
           <span className="text-xs text-[var(--muted)]">
             {status?.longbridge.configured
               ? t("credsConfigured")
@@ -323,7 +319,7 @@ export function MarketCredentialsForm() {
           </span>
         </div>
         <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("credsAppKey")}</span>
+          <span className="text-sm text-[var(--muted)]">{t("credsAppKey")}</span>
           <input
             value={lbKey}
             onChange={(e) => setLbKey(e.target.value)}
@@ -388,7 +384,7 @@ export function MarketCredentialsForm() {
         className="space-y-3 border-t border-[var(--border)] pt-5"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-medium">{t("credsFutu")}</h3>
+          <h3 className="text-base font-semibold">{t("credsFutu")}</h3>
           <span className="text-xs text-[var(--muted)]">
             {status?.futu.configured
               ? t("credsConfigured")
@@ -483,14 +479,14 @@ export function MarketCredentialsForm() {
         className="space-y-3 border-t border-[var(--border)] pt-5"
       >
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-sm font-medium">{t("credsBinance")}</h3>
+          <h3 className="text-base font-semibold">{t("credsBinance")}</h3>
           <span className="text-xs text-[var(--muted)]">
             {status?.binance?.configured
               ? t("credsConfigured")
               : t("credsNotConfigured")}
           </span>
         </div>
-        <p className="text-xs text-[var(--muted)]">{t("credsBinanceHint")}</p>
+        <p className="text-sm text-[var(--muted)]">{t("credsBinanceHint")}</p>
         <label className="block space-y-1 text-sm">
           <span className="text-[var(--muted)]">{t("credsBinanceApiKey")}</span>
           <input

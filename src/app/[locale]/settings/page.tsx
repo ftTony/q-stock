@@ -215,11 +215,10 @@ export default function SettingsPage() {
                   key={opt.id}
                   type="button"
                   onClick={() => setChangeColorScheme(opt.id)}
-                  className={`rounded-xl border p-3 text-left transition sm:p-4 ${
-                    selected
+                  className={`rounded-xl border p-3 text-left transition sm:p-4 ${selected
                       ? "border-[var(--brand)] bg-[var(--brand-soft)] ring-1 ring-[var(--brand)]"
                       : "border-[var(--border)] hover:bg-[var(--sidebar-hover)]"
-                  }`}
+                    }`}
                 >
                   <div className="text-sm font-medium">{opt.label}</div>
                   <SchemePreview scheme={opt.id} />
@@ -244,15 +243,15 @@ export default function SettingsPage() {
               style={
                 messageKind === "ok"
                   ? {
-                      background:
-                        "color-mix(in srgb, var(--up) 12%, transparent)",
-                      color: "var(--up)",
-                    }
+                    background:
+                      "color-mix(in srgb, var(--up) 12%, transparent)",
+                    color: "var(--up)",
+                  }
                   : {
-                      background:
-                        "color-mix(in srgb, var(--down) 12%, transparent)",
-                      color: "var(--down)",
-                    }
+                    background:
+                      "color-mix(in srgb, var(--down) 12%, transparent)",
+                    color: "var(--down)",
+                  }
               }
             >
               {messageKind === "ok" ? "✓ " : ""}
@@ -274,7 +273,7 @@ export default function SettingsPage() {
           </Suspense>
           <MarketOkxCredentialsForm />
           <AiCredentialsForm />
-          <EmailCredentialsForm />
+          {/* <EmailCredentialsForm /> */}
         </>
       ) : null}
     </div>

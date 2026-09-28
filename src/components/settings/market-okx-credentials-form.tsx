@@ -127,14 +127,14 @@ export function MarketOkxCredentialsForm() {
   return (
     <div className="qt-panel w-full space-y-4 p-5 sm:p-6 lg:p-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-sm font-medium">{t("credsOkx")}</h3>
+        <h3 className="text-base font-semibold">{t("credsOkx")}</h3>
         <span className="text-xs text-[var(--muted)]">
           {status?.okx?.configured
             ? t("credsConfigured")
             : t("credsNotConfigured")}
         </span>
       </div>
-      <p className="text-xs text-[var(--muted)]">{t("credsOkxHint")}</p>
+      <p className="text-sm text-[var(--muted)]">{t("credsOkxHint")}</p>
       {message ? (
         <p
           className="text-sm"

@@ -300,7 +300,8 @@
     "emailSave": "Save email settings",
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
-    "emailSaveError": "Failed to save email settings"
+    "emailSaveError": "Failed to save email settings",
+    "credsTrustNote": "We never store your keys in plain text. They are encrypted for your account only — feel free to add them."
   },
   "alerts": {
     "title": "Price alerts",

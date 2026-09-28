@@ -300,7 +300,8 @@
     "emailSave": "メール設定を保存",
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
-    "emailSaveError": "Failed to save email settings"
+    "emailSaveError": "Failed to save email settings",
+    "credsTrustNote": "キーは平文では保存されません。アカウント専用に暗号化されますので、安心してご登録ください。"
   },
   "alerts": {
     "title": "価格アラート",
