@@ -15,6 +15,13 @@ export default async function AboutPage() {
         <p className="mt-2 text-sm text-[var(--muted)]">{t("subtitle")}</p>
       </div>
 
+      <article className="qt-panel space-y-3 p-5 text-sm leading-relaxed text-[var(--foreground)] sm:p-6">
+        <h2 className="text-sm font-semibold tracking-tight sm:text-base">
+          {t("platformTitle")}
+        </h2>
+        <p>{t("platformBody")}</p>
+      </article>
+
       <article className="qt-panel space-y-3.5 p-5 text-sm leading-relaxed text-[var(--foreground)] sm:p-6">
         <p>{t("p1")}</p>
         <p

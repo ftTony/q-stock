@@ -465,7 +465,7 @@
   },
   "about": {
     "title": "About me",
-    "subtitle": "Q-STOCK 작성자 인사",
+    "subtitle": "Qianli Gu · 작성자 인사",
     "p1": "금융 소프트웨어 개발 10년, 프론트엔드 중심·백엔드 협업에 익숙하며 계좌 개설부터 거래·시세·리스크까지 증권·브로커 업무 전반을 이해합니다. 본 사이트는 개인 학습·기술 실험용이며, 시세와 콘텐츠는 참고용으로 투자 권유가 아닙니다.",
     "p2": "Futu·Longbridge 비즈니스 팀 소개가 가능하시면, 더 깊은 협업을 논의하고 싶습니다.",
     "p3": "여유(예산)가 되면 API 토큰 충전에 도움을 주세요. 이후 AI 금융 기능에 쓸 예정입니다.",
@@ -477,6 +477,8 @@
     "wechatQrAlt": "WeChat QR",
     "alipayQrAlt": "Alipay QR",
     "qrHint": "Scan to tip, or email for collaboration.",
-    "mainlandNotice": "중국 본토 이용자 안내: 현재 해외 주식·BTC 투자는 불법입니다. 본 사이트는 학습용이며 현지 법령을 지켜 주세요."
+    "mainlandNotice": "중국 본토 이용자 안내: 현재 해외 주식·BTC 투자는 불법입니다. 본 사이트는 학습용이며 현지 법령을 지켜 주세요.",
+    "platformTitle": "Qianli Gu 소개",
+    "platformBody": "Qianli Gu(钱力股)는 ‘잠재력 투자’와 ‘가치 발굴’을 중심으로 합니다. AI로 더 차분한 리서치·복기를 돕고, 탐욕·공포 등 인간 약점이 판단을 흔드는 것을 줄이고자 합니다. 시세와 콘텐츠는 학습용이며 투자 권유가 아닙니다."
   }
 }

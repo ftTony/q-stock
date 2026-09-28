@@ -465,7 +465,7 @@
   },
   "about": {
     "title": "About me",
-    "subtitle": "Mot de l’auteur de Q-STOCK",
+    "subtitle": "Qianli Gu · mot de l’auteur",
     "p1": "Une décennie dans le logiciel financier — front-end d’abord, à l’aise avec le back-end — et familier du parcours courtier : ouverture de compte, trading, données de marché et risque. Ce site est un bac à sable personnel. Les contenus sont indicatifs et ne constituent pas un conseil en investissement.",
     "p2": "Si vous pouvez me présenter les équipes business Futu ou Longbridge, j’aimerais explorer une collaboration plus poussée.",
     "p3": "Si vous avez un peu de « munitions » (budget), aidez à recharger des jetons d’API — pour de prochaines fonctions IA finance.",
@@ -477,6 +477,8 @@
     "wechatQrAlt": "WeChat QR",
     "alipayQrAlt": "Alipay QR",
     "qrHint": "Scan to tip, or email for collaboration.",
-    "mainlandNotice": "Rappel aux amis en Chine continentale : investir dans des actions étrangères ou le BTC est actuellement illégal. Ce site est uniquement pédagogique — respectez les lois locales."
+    "mainlandNotice": "Rappel aux amis en Chine continentale : investir dans des actions étrangères ou le BTC est actuellement illégal. Ce site est uniquement pédagogique — respectez les lois locales.",
+    "platformTitle": "À propos de Qianli Gu",
+    "platformBody": "Qianli Gu (钱力股) s’articule autour de l’investissement de potentiel et de la découverte de valeur. L’IA aide à analyser et à revoir avec plus de sang-froid, pour atténuer l’effet de la peur, de la cupidité et d’autres biais humains. Les données et contenus sont pédagogiques, pas un conseil en investissement."
   }
 }

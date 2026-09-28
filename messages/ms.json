@@ -465,7 +465,7 @@
   },
   "about": {
     "title": "About me",
-    "subtitle": "Nota daripada pengarang Q-STOCK",
+    "subtitle": "Qianli Gu · nota pengarang",
     "p1": "Sedekad dalam perisian kewangan—utama front-end, selesa dengan back-end—dan biasa dengan aliran broker dari pembukaan akaun hingga dagangan, data pasaran dan risiko. Laman ini untuk pembelajaran / amalan teknikal peribadi. Kandungan hanya rujukan, bukan nasihat pelaburan.",
     "p2": "Jika boleh memperkenalkan saya kepada pasukan perniagaan Futu atau Longbridge, saya ingin meneroka kerjasama yang lebih mendalam.",
     "p3": "Jika ada “peluru” (bajet), bantu tambah token API — untuk lebih banyak ciri kewangan berasaskan AI.",
@@ -477,6 +477,8 @@
     "wechatQrAlt": "WeChat QR",
     "alipayQrAlt": "Alipay QR",
     "qrHint": "Scan to tip, or email for collaboration.",
-    "mainlandNotice": "Peringatan untuk rakan di tanah besar China: melabur saham luar negara atau BTC kini adalah haram. Laman ini hanya untuk pembelajaran — patuhi undang-undang setempat."
+    "mainlandNotice": "Peringatan untuk rakan di tanah besar China: melabur saham luar negara atau BTC kini adalah haram. Laman ini hanya untuk pembelajaran — patuhi undang-undang setempat.",
+    "platformTitle": "Tentang Qianli Gu",
+    "platformBody": "Qianli Gu (钱力股) berpaksikan pelaburan potensi dan penemuan nilai. AI membantu kajian dan semakan yang lebih tenang, serta mengurangkan gangguan ketakutan, ketamakan dan kelemahan manusia lain. Data dan kandungan hanya untuk pembelajaran, bukan nasihat pelaburan."
   }
 }

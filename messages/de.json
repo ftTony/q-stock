@@ -465,7 +465,7 @@
   },
   "about": {
     "title": "About me",
-    "subtitle": "Eine Notiz vom Q-STOCK-Autor",
+    "subtitle": "Qianli Gu · Notiz vom Autor",
     "p1": "Ein Jahrzehnt Finanzsoftware — Frontend im Fokus, mit Backend-Erfahrung — und vertraut mit dem Broker-Stack von Kontoeröffnung über Trading und Marktdaten bis Risiko. Diese Seite ist ein persönliches Lern-/Technikprojekt. Inhalte dienen nur der Orientierung und sind keine Anlageberatung.",
     "p2": "Wenn Sie Kontakte zu Futu- oder Longbridge-Business-Teams haben, würde ich eine engere Zusammenarbeit gerne ausloten.",
     "p3": "Wer etwas „Munition“ (Budget) übrig hat: API-Token aufladen hilft — für mehr KI-Finanzfunktionen.",
@@ -477,6 +477,8 @@
     "wechatQrAlt": "WeChat QR",
     "alipayQrAlt": "Alipay QR",
     "qrHint": "Scan to tip, or email for collaboration.",
-    "mainlandNotice": "Hinweis für Freunde in Festlandchina: Anlagen in ausländische Aktien oder BTC sind derzeit rechtswidrig. Diese Seite dient nur dem Lernen — bitte geltendes Recht beachten."
+    "mainlandNotice": "Hinweis für Freunde in Festlandchina: Anlagen in ausländische Aktien oder BTC sind derzeit rechtswidrig. Diese Seite dient nur dem Lernen — bitte geltendes Recht beachten.",
+    "platformTitle": "Über Qianli Gu",
+    "platformBody": "Qianli Gu (钱力股) dreht sich um Potenzialinvesting und Wertfindung. KI soll ruhigere Analyse und Review unterstützen und den Einfluss von Angst, Gier und anderen menschlichen Schwächen mindern. Marktdaten und Inhalte dienen nur dem Lernen, nicht der Anlageberatung."
   }
 }
