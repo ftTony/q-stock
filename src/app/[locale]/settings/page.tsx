@@ -12,6 +12,8 @@ import {
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { MarketCredentialsForm } from "@/components/settings/market-credentials-form";
+import { MarketOkxCredentialsForm } from "@/components/settings/market-okx-credentials-form";
+import { MarketVendorPrefs } from "@/components/settings/market-vendor-prefs";
 import {
   locales,
   languageLabels,
@@ -259,13 +261,17 @@ export default function SettingsPage() {
       </form>
 
       {loggedIn ? (
-        <Suspense
-          fallback={
-            <p className="text-sm text-[var(--muted)]">{tCommon("loading")}</p>
-          }
-        >
-          <MarketCredentialsForm />
-        </Suspense>
+        <>
+          <MarketVendorPrefs />
+          <Suspense
+            fallback={
+              <p className="text-sm text-[var(--muted)]">{tCommon("loading")}</p>
+            }
+          >
+            <MarketCredentialsForm />
+          </Suspense>
+          <MarketOkxCredentialsForm />
+        </>
       ) : null}
     </div>
   );

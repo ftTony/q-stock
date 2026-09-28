@@ -28,6 +28,7 @@ export function MarketCredentialsForm() {
   const [loading, setLoading] = useState(true);
   const [savingLb, setSavingLb] = useState(false);
   const [savingFutu, setSavingFutu] = useState(false);
+  const [savingBn, setSavingBn] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<"ok" | "error">("ok");
 
@@ -39,6 +40,9 @@ export function MarketCredentialsForm() {
   const [futuAppKey, setFutuAppKey] = useState("");
   const [futuPrivateKey, setFutuPrivateKey] = useState("");
   const [futuBearer, setFutuBearer] = useState("");
+
+  const [bnApiKey, setBnApiKey] = useState("");
+  const [bnApiSecret, setBnApiSecret] = useState("");
 
   async function refreshStatus() {
     const res = await fetch("/api/user/market-credentials");
@@ -172,7 +176,44 @@ export function MarketCredentialsForm() {
     }
   }
 
-  async function clearProvider(provider: "longbridge" | "futu") {
+  async function saveBinance(e: FormEvent) {
+    e.preventDefault();
+    setSavingBn(true);
+    setMessage(null);
+    try {
+      const res = await fetch("/api/user/market-credentials", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          binance: {
+            apiKey: bnApiKey.trim(),
+            apiSecret: bnApiSecret.trim() || undefined,
+          },
+        }),
+      });
+      if (!res.ok) {
+        const data = (await res.json().catch(() => null)) as {
+          error?: string;
+        } | null;
+        setMessageKind("error");
+        setMessage(data?.error || t("credsSaveError"));
+        return;
+      }
+      setBnApiKey("");
+      setBnApiSecret("");
+      const next = await refreshStatus();
+      onCredsSaved(next);
+      setMessageKind("ok");
+      setMessage(t("credsSaved"));
+    } catch {
+      setMessageKind("error");
+      setMessage(t("credsSaveError"));
+    } finally {
+      setSavingBn(false);
+    }
+  }
+
+  async function clearProvider(provider: "longbridge" | "futu" | "binance") {
     setMessage(null);
     const res = await fetch(
       `/api/user/market-credentials?provider=${provider}`,
@@ -393,6 +434,65 @@ export function MarketCredentialsForm() {
             <button
               type="button"
               onClick={() => clearProvider("futu")}
+              className="qt-btn px-4 py-2 text-sm"
+            >
+              {t("credsClear")}
+            </button>
+          ) : null}
+        </div>
+      </form>
+
+      <form
+        onSubmit={saveBinance}
+        className="space-y-3 border-t border-[var(--border)] pt-5"
+      >
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h3 className="text-sm font-medium">{t("credsBinance")}</h3>
+          <span className="text-xs text-[var(--muted)]">
+            {status?.binance?.configured
+              ? t("credsConfigured")
+              : t("credsNotConfigured")}
+          </span>
+        </div>
+        <p className="text-xs text-[var(--muted)]">{t("credsBinanceHint")}</p>
+        <label className="block space-y-1 text-sm">
+          <span className="text-[var(--muted)]">{t("credsBinanceApiKey")}</span>
+          <input
+            value={bnApiKey}
+            onChange={(e) => setBnApiKey(e.target.value)}
+            autoComplete="off"
+            className="qt-input w-full px-3 py-2.5 font-mono text-xs"
+            placeholder={
+              status?.binance?.configured ? t("credsKeepPlaceholder") : ""
+            }
+          />
+        </label>
+        <label className="block space-y-1 text-sm">
+          <span className="text-[var(--muted)]">
+            {t("credsBinanceApiSecret")}
+          </span>
+          <input
+            type="password"
+            value={bnApiSecret}
+            onChange={(e) => setBnApiSecret(e.target.value)}
+            autoComplete="off"
+            className="qt-input w-full px-3 py-2.5 font-mono text-xs"
+            placeholder={t("credsBinanceSecretOptional")}
+          />
+        </label>
+        <div className="flex flex-wrap gap-2">
+          <SubmitButton
+            loading={savingBn}
+            loadingLabel={tCommon("loading")}
+            className="qt-btn-primary px-4 py-2 text-sm"
+            disabled={!bnApiKey.trim()}
+          >
+            {t("credsSaveBinance")}
+          </SubmitButton>
+          {status?.binance?.configured ? (
+            <button
+              type="button"
+              onClick={() => clearProvider("binance")}
               className="qt-btn px-4 py-2 text-sm"
             >
               {t("credsClear")}

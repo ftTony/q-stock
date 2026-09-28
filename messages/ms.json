@@ -225,7 +225,25 @@
     "credsPromptBody": "Add your Longbridge or Futu OpenAPI credentials to use broker quotes.",
     "credsPromptAction": "Go to settings",
     "credsPromptLater": "Later",
-    "credsSetupBanner": "Welcome. Please configure at least one broker OpenAPI key (Longbridge or Futu). Without it, only platform sources (Finnhub / Binance) are available."
+    "credsSetupBanner": "Welcome. Please configure at least one broker OpenAPI key (Longbridge or Futu). Without it, only platform sources (Finnhub / Binance) are available.",
+    "credsBinance": "Binance (crypto)",
+    "credsBinanceHint": "With an API Key we call Binance REST; without one we use Binance website public market JSON.",
+    "credsBinanceApiKey": "API Key",
+    "credsBinanceApiSecret": "API Secret (optional)",
+    "credsBinanceSecretOptional": "Optional for quotes; kept for future signed endpoints",
+    "credsSaveBinance": "Save Binance",
+    "vendorTitle": "Data vendors",
+    "vendorHint": "Choose preferred vendors for equities and crypto. Add API keys below as needed.",
+    "vendorEquity": "US / HK stocks",
+    "vendorEquityHint": "Preferred broker first; falls back to the other, then Finnhub.",
+    "vendorCrypto": "Crypto",
+    "vendorCryptoHint": "Preferred exchange first; falls back to the other, then Finnhub.",
+    "vendorSaved": "Vendor preference saved",
+    "credsOkx": "OKX (crypto)",
+    "credsOkxHint": "Public market data works without a key; save a key for future private APIs.",
+    "credsOkxPassphrase": "Passphrase (optional)",
+    "credsOkxOptional": "Optional",
+    "credsSaveOkx": "Save OKX"
   },
   "alerts": {
     "title": "Amaran harga",
@@ -369,6 +387,7 @@
     "providerLongbridge": "Longbridge",
     "providerFutu": "Futu",
     "providerFinnhub": "Finnhub",
-    "providerBinance": "Binance"
+    "providerBinance": "Binance",
+    "providerOkx": "OKX"
   }
 }

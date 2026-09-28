@@ -1,3 +1,5 @@
+import type { CryptoVendorId, EquityVendorId } from "@/lib/market/types";
+
 export type LongbridgeCreds = {
   appKey: string;
   appSecret: string;
@@ -18,10 +20,27 @@ export type FutuAppKeyCreds = {
 
 export type FutuCreds = FutuBearerCreds | FutuAppKeyCreds;
 
+export type BinanceCreds = {
+  apiKey: string;
+  apiSecret?: string;
+};
+
+export type OkxCreds = {
+  apiKey: string;
+  apiSecret?: string;
+  passphrase?: string;
+};
+
 export type MarketCredsStore = {
   userId?: string;
   longbridge?: LongbridgeCreds;
   futu?: FutuCreds;
+  binance?: BinanceCreds;
+  okx?: OkxCreds;
+  /** Preferred US/HK broker when configured. */
+  equityVendor?: EquityVendorId;
+  /** Preferred crypto exchange. */
+  cryptoVendor?: CryptoVendorId;
 };
 
 export function fingerprintLongbridge(c: LongbridgeCreds): string {
@@ -33,4 +52,8 @@ export function fingerprintFutu(c: FutuCreds): string {
     return `futu:bearer:${c.accessToken.slice(0, 8)}`;
   }
   return `futu:appkey:${c.appKey}`;
+}
+
+export function fingerprintBinance(c: BinanceCreds): string {
+  return `bn:${c.apiKey.slice(0, 8)}`;
 }

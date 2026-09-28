@@ -2,7 +2,11 @@ import { binanceProvider } from "@/lib/market/providers/binance";
 import { finnhubProvider } from "@/lib/market/providers/finnhub";
 import { futuProvider } from "@/lib/market/providers/futu";
 import { longbridgeProvider } from "@/lib/market/providers/longbridge";
+import { okxProvider } from "@/lib/market/providers/okx";
+import { getMarketCreds } from "@/lib/market/creds-context";
 import type {
+  CryptoVendorId,
+  EquityVendorId,
   MarketDataProvider,
   MarketProviderId,
 } from "@/lib/market/types";
@@ -14,17 +18,18 @@ const REGISTRY: Record<MarketProviderId, MarketDataProvider> = {
   futu: futuProvider,
   finnhub: finnhubProvider,
   binance: binanceProvider,
+  okx: okxProvider,
 };
 
-/** Equity preference. Crypto prefers Binance public klines (no key). */
 const DEFAULT_ORDER: MarketProviderId[] = [
   "longbridge",
   "futu",
   "finnhub",
   "binance",
+  "okx",
 ];
 
-/** Content / IPO: Longbridge → Futu → Finnhub (no binance). */
+/** Content / IPO: broker order then Finnhub. */
 export const CONTENT_PROVIDER_ORDER = [
   "longbridge",
   "futu",
@@ -32,8 +37,6 @@ export const CONTENT_PROVIDER_ORDER = [
 ] as const satisfies readonly MarketProviderId[];
 
 export type ContentProviderId = (typeof CONTENT_PROVIDER_ORDER)[number];
-
-const CRYPTO_ORDER: MarketProviderId[] = ["binance", "finnhub", "longbridge"];
 
 function envProviderList(): MarketProviderId[] | null {
   const raw = process.env.MARKET_DATA_PROVIDERS?.trim();
@@ -44,28 +47,53 @@ function envProviderList(): MarketProviderId[] | null {
     .filter((s): s is MarketProviderId => s in REGISTRY);
 }
 
-/**
- * Whether a provider is allowed by MARKET_DATA_PROVIDERS.
- * If the env is unset, all providers are allowed (gated only by credentials).
- * Omitting `longbridge` from the CSV disables Longbridge → Futu is used next.
- */
 export function isProviderEnabled(id: MarketProviderId): boolean {
   const list = envProviderList();
   if (!list) return true;
   return list.includes(id);
 }
 
-/** Enabled + configured content providers in Longbridge → Futu → Finnhub order. */
+function preferredEquityVendor(): EquityVendorId {
+  return getMarketCreds().equityVendor ?? "longbridge";
+}
+
+function preferredCryptoVendor(): CryptoVendorId {
+  return getMarketCreds().cryptoVendor ?? "binance";
+}
+
+/** Content providers: user equity vendor first, then the other, then Finnhub. */
 export function listContentProviders(): ContentProviderId[] {
-  return CONTENT_PROVIDER_ORDER.filter(
+  const primary = preferredEquityVendor();
+  const secondary: EquityVendorId =
+    primary === "longbridge" ? "futu" : "longbridge";
+  const order = [primary, secondary, "finnhub"] as const;
+  return order.filter(
     (id) => isProviderEnabled(id) && REGISTRY[id].isConfigured(),
   );
 }
 
+/** Effective priority for the current request (user vendor prefs + env allowlist). */
 export function getProviderPriority(): MarketProviderId[] {
+  const equity = preferredEquityVendor();
+  const equityAlt: EquityVendorId =
+    equity === "longbridge" ? "futu" : "longbridge";
+  const crypto = preferredCryptoVendor();
+  const cryptoAlt: CryptoVendorId = crypto === "binance" ? "okx" : "binance";
+  const preferred: MarketProviderId[] = [
+    equity,
+    equityAlt,
+    crypto,
+    cryptoAlt,
+    "finnhub",
+  ];
   const fromEnv = envProviderList();
-  if (fromEnv) return fromEnv;
-  return DEFAULT_ORDER.filter((id) => REGISTRY[id].isConfigured());
+  const allowed = fromEnv
+    ? preferred.filter((id) => fromEnv.includes(id))
+    : preferred;
+  const configured = allowed.filter((id) => REGISTRY[id].isConfigured());
+  return configured.length
+    ? configured
+    : DEFAULT_ORDER.filter((id) => REGISTRY[id].isConfigured());
 }
 
 export function getActiveProviders(): {
@@ -78,49 +106,56 @@ export function getActiveProviders(): {
   }));
 }
 
+function uniqueProviders(ids: MarketProviderId[]): MarketDataProvider[] {
+  const seen = new Set<MarketProviderId>();
+  const out: MarketDataProvider[] = [];
+  for (const id of ids) {
+    if (seen.has(id)) continue;
+    seen.add(id);
+    const p = REGISTRY[id];
+    if (p?.isConfigured()) out.push(p);
+  }
+  return out;
+}
+
 export function listProvidersFor(
   assetType: AssetType,
 ): MarketDataProvider[] {
-  const raw = process.env.MARKET_DATA_PROVIDERS?.trim();
-  const preferred =
-    assetType === "crypto" && !raw ? CRYPTO_ORDER : getProviderPriority();
-
-  const configured = preferred
-    .map((id) => REGISTRY[id])
-    .filter((p) => p.isConfigured());
-
-  const pool =
-    configured.length > 0
-      ? configured
-      : DEFAULT_ORDER.map((id) => REGISTRY[id]).filter((p) =>
-          p.isConfigured(),
-        );
-
-  if (assetType === "crypto" && !pool.some((p) => p.id === "binance")) {
-    pool.push(binanceProvider);
+  if (assetType === "crypto") {
+    const primary = preferredCryptoVendor();
+    const secondary: CryptoVendorId =
+      primary === "binance" ? "okx" : "binance";
+    const ordered: MarketProviderId[] = [
+      primary,
+      secondary,
+      "finnhub",
+    ];
+    return uniqueProviders(ordered).filter(
+      (p) => p.supports?.(assetType) !== false,
+    );
   }
 
-  return pool.filter((p) => p.supports?.(assetType) !== false);
+  // US / HK equity: user-selected broker first, then the other, then Finnhub
+  const primary = preferredEquityVendor();
+  const secondary: EquityVendorId =
+    primary === "longbridge" ? "futu" : "longbridge";
+  const ordered: MarketProviderId[] = [primary, secondary, "finnhub"];
+  // Also allow env-ordered extras if enabled
+  const fromEnv = envProviderList();
+  if (fromEnv) {
+    for (const id of fromEnv) {
+      if (!ordered.includes(id)) ordered.push(id);
+    }
+  }
+  return uniqueProviders(ordered).filter(
+    (p) => p.supports?.(assetType) !== false,
+  );
 }
 
-/**
- * Candles: prefer Longbridge / Futu before Finnhub.
- * Crypto still prefers Binance.
- */
 export function listProvidersForCandles(
   assetType: AssetType,
 ): MarketDataProvider[] {
-  if (assetType === "crypto") {
-    return listProvidersFor(assetType);
-  }
-  const base = listProvidersFor(assetType);
-  const prefer: MarketProviderId[] = ["longbridge", "futu", "finnhub"];
-  const ranked = [...base].sort((a, b) => {
-    const ia = prefer.indexOf(a.id);
-    const ib = prefer.indexOf(b.id);
-    return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-  });
-  return ranked;
+  return listProvidersFor(assetType);
 }
 
 export async function withProviderFailover<T>(
@@ -132,7 +167,7 @@ export async function withProviderFailover<T>(
   const providers = providersOverride ?? listProvidersFor(assetType);
   if (!providers.length) {
     throw new MarketDataError(
-      "No market data providers configured. Set LONGBRIDGE_*, FUTU_*, FINNHUB_API_KEY, or use Binance for crypto.",
+      "No market data providers configured. Set broker/crypto keys in Settings, or FINNHUB_API_KEY.",
     );
   }
 

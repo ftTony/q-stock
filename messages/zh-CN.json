@@ -225,7 +225,25 @@
     "credsPromptBody": "请填写你的长桥或富途 OpenAPI 凭证，才能使用券商行情。",
     "credsPromptAction": "去设置",
     "credsPromptLater": "稍后",
-    "credsSetupBanner": "欢迎使用。请先配置至少一家券商（长桥或富途）的 OpenAPI Key，未配置时仅能使用平台行情（Finnhub / 币安）。"
+    "credsSetupBanner": "欢迎使用。请先配置至少一家券商（长桥或富途）的 OpenAPI Key，未配置时仅能使用平台行情（Finnhub / 币安）。",
+    "credsBinance": "币安 Binance（数字货币）",
+    "credsBinanceHint": "填写 API Key 后走币安官方接口；未填写时自动使用币安网页公开行情接口。",
+    "credsBinanceApiKey": "API Key",
+    "credsBinanceApiSecret": "API Secret（可选）",
+    "credsBinanceSecretOptional": "行情可不填；预留给后续签名接口",
+    "credsSaveBinance": "保存币安",
+    "vendorTitle": "数据源厂商",
+    "vendorHint": "选择港股/美股与数字货币优先使用的数据厂商；下方可填写对应 API Key。",
+    "vendorEquity": "港股 / 美股",
+    "vendorEquityHint": "优先使用所选券商；失败时自动尝试另一家，再回退 Finnhub。",
+    "vendorCrypto": "数字货币",
+    "vendorCryptoHint": "优先使用所选交易所；失败时自动尝试另一家，再回退 Finnhub。",
+    "vendorSaved": "厂商偏好已保存",
+    "credsOkx": "OKX（数字货币）",
+    "credsOkxHint": "行情可公开拉取，无需 Key；填写 Key 便于后续私有接口。",
+    "credsOkxPassphrase": "Passphrase（可选）",
+    "credsOkxOptional": "可选",
+    "credsSaveOkx": "保存 OKX"
   },
   "alerts": {
     "title": "价格提醒",
@@ -369,6 +387,7 @@
     "providerLongbridge": "长桥",
     "providerFutu": "富途",
     "providerFinnhub": "Finnhub",
-    "providerBinance": "Binance"
+    "providerBinance": "Binance",
+    "providerOkx": "OKX"
   }
 }

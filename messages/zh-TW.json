@@ -225,7 +225,25 @@
     "credsPromptBody": "請填寫你的長橋或富途 OpenAPI 憑證，才能使用券商行情。",
     "credsPromptAction": "去設定",
     "credsPromptLater": "稍後",
-    "credsSetupBanner": "歡迎使用。請先設定至少一家券商（長橋或富途）的 OpenAPI Key；未設定時僅能使用平台行情（Finnhub / 幣安）。"
+    "credsSetupBanner": "歡迎使用。請先設定至少一家券商（長橋或富途）的 OpenAPI Key；未設定時僅能使用平台行情（Finnhub / 幣安）。",
+    "credsBinance": "幣安 Binance（數位貨幣）",
+    "credsBinanceHint": "填寫 API Key 後走幣安官方介面；未填寫時自動使用幣安網頁公開行情介面。",
+    "credsBinanceApiKey": "API Key",
+    "credsBinanceApiSecret": "API Secret（選填）",
+    "credsBinanceSecretOptional": "行情可不填；預留給後續簽名介面",
+    "credsSaveBinance": "儲存幣安",
+    "vendorTitle": "資料來源廠商",
+    "vendorHint": "選擇港股/美股與數位貨幣優先使用的資料廠商；下方可填寫對應 API Key。",
+    "vendorEquity": "港股 / 美股",
+    "vendorEquityHint": "優先使用所選券商；失敗時自動嘗試另一家，再回退 Finnhub。",
+    "vendorCrypto": "數位貨幣",
+    "vendorCryptoHint": "優先使用所選交易所；失敗時自動嘗試另一家，再回退 Finnhub。",
+    "vendorSaved": "廠商偏好已儲存",
+    "credsOkx": "OKX（數位貨幣）",
+    "credsOkxHint": "行情可公開拉取，無需 Key；填寫 Key 便於後續私有介面。",
+    "credsOkxPassphrase": "Passphrase（選填）",
+    "credsOkxOptional": "選填",
+    "credsSaveOkx": "儲存 OKX"
   },
   "alerts": {
     "title": "價格提醒",
@@ -369,6 +387,7 @@
     "providerLongbridge": "長橋",
     "providerFutu": "富途",
     "providerFinnhub": "Finnhub",
-    "providerBinance": "Binance"
+    "providerBinance": "Binance",
+    "providerOkx": "OKX"
   }
 }

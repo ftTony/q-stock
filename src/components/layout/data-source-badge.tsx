@@ -4,13 +4,14 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 
-type ProviderId = "longbridge" | "futu" | "finnhub" | "binance";
+type ProviderId = "longbridge" | "futu" | "finnhub" | "binance" | "okx";
 
 const PROVIDER_I18N: Record<ProviderId, string> = {
   longbridge: "providerLongbridge",
   futu: "providerFutu",
   finnhub: "providerFinnhub",
   binance: "providerBinance",
+  okx: "providerOkx",
 };
 
 /**

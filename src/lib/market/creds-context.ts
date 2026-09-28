@@ -2,10 +2,13 @@ import { AsyncLocalStorage } from "async_hooks";
 import { prisma } from "@/lib/db";
 import { decryptJson } from "@/lib/crypto/secret-box";
 import type {
+  BinanceCreds,
   FutuCreds,
   LongbridgeCreds,
   MarketCredsStore,
+  OkxCreds,
 } from "@/lib/market/creds-types";
+import type { CryptoVendorId, EquityVendorId } from "@/lib/market/types";
 
 const als = new AsyncLocalStorage<MarketCredsStore>();
 
@@ -69,6 +72,27 @@ function parseFutu(raw: unknown): FutuCreds | undefined {
   return undefined;
 }
 
+function parseBinance(raw: unknown): BinanceCreds | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  const apiKey = String(o.apiKey ?? "").trim();
+  if (!apiKey) return undefined;
+  const apiSecret = String(o.apiSecret ?? "").trim() || undefined;
+  return { apiKey, apiSecret };
+}
+
+function parseOkx(raw: unknown): OkxCreds | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  const apiKey = String(o.apiKey ?? "").trim();
+  if (!apiKey) return undefined;
+  return {
+    apiKey,
+    apiSecret: String(o.apiSecret ?? "").trim() || undefined,
+    passphrase: String(o.passphrase ?? "").trim() || undefined,
+  };
+}
+
 export async function loadUserMarketCreds(
   userId: string,
 ): Promise<MarketCredsStore> {
@@ -77,11 +101,19 @@ export async function loadUserMarketCreds(
     return hit.store;
   }
 
-  const rows = await marketCredentialDelegate().findMany({
-    where: { userId },
-  });
+  const [rows, user] = await Promise.all([
+    marketCredentialDelegate().findMany({ where: { userId } }),
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: { equityVendor: true, cryptoVendor: true },
+    }),
+  ]);
 
-  const store: MarketCredsStore = { userId };
+  const store: MarketCredsStore = {
+    userId,
+    equityVendor: (user?.equityVendor as EquityVendorId | undefined) ?? "longbridge",
+    cryptoVendor: (user?.cryptoVendor as CryptoVendorId | undefined) ?? "binance",
+  };
   for (const row of rows) {
     try {
       const parsed = decryptJson<unknown>(row.payload);
@@ -89,6 +121,10 @@ export async function loadUserMarketCreds(
         store.longbridge = parseLongbridge(parsed);
       } else if (row.provider === "futu") {
         store.futu = parseFutu(parsed);
+      } else if (row.provider === "binance") {
+        store.binance = parseBinance(parsed);
+      } else if (row.provider === "okx") {
+        store.okx = parseOkx(parsed);
       }
     } catch (err) {
       console.warn(
@@ -102,10 +138,13 @@ export async function loadUserMarketCreds(
   return store;
 }
 
-/** Status for GET API — never includes secrets. */
 export async function getUserMarketCredsStatus(userId: string): Promise<{
   longbridge: { configured: boolean };
   futu: { configured: boolean; mode?: "bearer" | "appkey" };
+  binance: { configured: boolean };
+  okx: { configured: boolean };
+  equityVendor: EquityVendorId;
+  cryptoVendor: CryptoVendorId;
 }> {
   const store = await loadUserMarketCreds(userId);
   return {
@@ -114,5 +153,9 @@ export async function getUserMarketCredsStatus(userId: string): Promise<{
       configured: Boolean(store.futu),
       mode: store.futu?.mode,
     },
+    binance: { configured: Boolean(store.binance) },
+    okx: { configured: Boolean(store.okx) },
+    equityVendor: store.equityVendor ?? "longbridge",
+    cryptoVendor: store.cryptoVendor ?? "binance",
   };
 }

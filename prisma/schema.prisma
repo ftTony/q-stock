@@ -59,16 +59,30 @@ enum OrderStatus {
   rejected
 }
 
+enum EquityMarketVendor {
+  longbridge
+  futu
+}
+
+enum CryptoMarketVendor {
+  binance
+  okx
+}
+
 model User {
-  id                String            @id @default(cuid())
-  email             String            @unique
+  id                String             @id @default(cuid())
+  email             String             @unique
   passwordHash      String
   name              String?
-  locale            LocaleCode        @default(zh_CN)
-  theme             ThemeMode         @default(system)
-  changeColorScheme ChangeColorScheme @default(cn)
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  locale            LocaleCode         @default(zh_CN)
+  theme             ThemeMode          @default(system)
+  changeColorScheme ChangeColorScheme  @default(cn)
+  /** Preferred broker for US/HK equity quotes & content. */
+  equityVendor      EquityMarketVendor @default(longbridge)
+  /** Preferred exchange for crypto quotes. */
+  cryptoVendor      CryptoMarketVendor @default(binance)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   watchlist          WatchlistItem[]
   priceAlerts        PriceAlert[]
@@ -83,9 +97,11 @@ model User {
 enum MarketCredentialProvider {
   longbridge
   futu
+  binance
+  okx
 }
 
-/** Encrypted per-user Longbridge / Futu OpenAPI credentials (BYOK). */
+/** Encrypted per-user broker/exchange credentials (BYOK). */
 model UserMarketCredential {
   id        String                   @id @default(cuid())
   userId    String

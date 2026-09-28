@@ -1,6 +1,10 @@
 export type MarketCredsStatus = {
   longbridge: { configured: boolean };
   futu: { configured: boolean; mode?: "bearer" | "appkey" };
+  binance?: { configured: boolean };
+  okx?: { configured: boolean };
+  equityVendor?: "longbridge" | "futu";
+  cryptoVendor?: "binance" | "okx";
 };
 
 /** True when the user has at least one broker OpenAPI key. */
