@@ -21,7 +21,7 @@ export function KpiCard({
           <span className="h-2 w-2 rounded-full bg-[var(--down)] shadow-[0_0_8px_var(--down)]" />
         )}
       </div>
-      <div className={`text-xl font-semibold tracking-tight sm:text-2xl ${valueClass || ""}`}>
+      <div className={`text-lg font-semibold tracking-tight tabular-nums sm:text-xl ${valueClass || ""}`}>
         {value}
       </div>
       {hint && (

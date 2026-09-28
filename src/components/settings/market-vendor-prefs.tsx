@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { QtSelect } from "@/components/ui/qt-select";
 import type { CryptoVendorId, EquityVendorId } from "@/lib/market/types";
+import {
+  notifyMarketVendorsChanged,
+  type MarketCredsStatus,
+} from "@/lib/market/creds-status-client";
 
-type Status = {
-  equityVendor?: EquityVendorId;
-  cryptoVendor?: CryptoVendorId;
-};
+type Status = MarketCredsStatus;
 
 /**
  * Choose preferred equity broker (Longbridge / Futu) and crypto exchange
@@ -63,6 +64,7 @@ export function MarketVendorPrefs() {
       const data = (await res.json()) as Status;
       if (data.equityVendor) setEquity(data.equityVendor);
       if (data.cryptoVendor) setCrypto(data.cryptoVendor);
+      notifyMarketVendorsChanged(data);
       setMessage(t("vendorSaved"));
     } finally {
       setSaving(false);

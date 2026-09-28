@@ -14,6 +14,8 @@ import { QtSelect } from "@/components/ui/qt-select";
 import { MarketCredentialsForm } from "@/components/settings/market-credentials-form";
 import { MarketOkxCredentialsForm } from "@/components/settings/market-okx-credentials-form";
 import { MarketVendorPrefs } from "@/components/settings/market-vendor-prefs";
+import { AiCredentialsForm } from "@/components/settings/ai-credentials-form";
+import { EmailCredentialsForm } from "@/components/settings/email-credentials-form";
 import {
   locales,
   languageLabels,
@@ -231,7 +233,7 @@ export default function SettingsPage() {
           <SubmitButton
             loading={saving}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary px-4 py-2.5 text-sm"
+            className="qt-btn-primary h-[42px] px-4 text-sm"
           >
             {t("save")}
           </SubmitButton>
@@ -271,6 +273,8 @@ export default function SettingsPage() {
             <MarketCredentialsForm />
           </Suspense>
           <MarketOkxCredentialsForm />
+          <AiCredentialsForm />
+          <EmailCredentialsForm />
         </>
       ) : null}
     </div>

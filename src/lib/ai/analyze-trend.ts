@@ -67,22 +67,25 @@ function truncate(s: string | undefined, max: number): string {
 }
 
 function notConfiguredMessage(locale: string): string {
-  if (locale === "zh-TW") return "未配置 DEEPSEEK_API_KEY，無法生成 AI 分析";
-  if (locale === "en") return "DEEPSEEK_API_KEY is not configured";
-  return "未配置 DEEPSEEK_API_KEY，无法生成 AI 分析";
+  if (locale === "zh-TW")
+    return "未配置 AI：請在設定中填寫 API Key，或由管理員配置伺服器 DEEPSEEK_API_KEY";
+  if (locale === "en")
+    return "AI is not configured. Add an API key in Settings, or set DEEPSEEK_API_KEY on the server.";
+  return "未配置 AI：请在设置中填写 API Key，或由管理员配置服务器 DEEPSEEK_API_KEY";
 }
 
 export async function analyzeTrend(opts: {
   symbol: string;
   assetType: AssetType;
   locale?: string;
+  userId?: string | null;
 }): Promise<AnalyzeTrendResult> {
   const symbol = opts.symbol.toUpperCase();
   const assetType = opts.assetType;
   const locale = opts.locale || "zh-CN";
   const disclaimer = disclaimerFor(locale);
 
-  if (!isAiConfigured()) {
+  if (!(await isAiConfigured(opts.userId))) {
     return {
       available: false,
       message: notConfiguredMessage(locale),
@@ -225,7 +228,11 @@ Write summary, drivers, and risks in ${langLabel(locale)}.`;
   const user = `Analyze trend for ${symbol} (${assetType}). Return structured JSON fields (bias, confidence, horizon, summary, drivers, risks).\n\nDATA:\n${JSON.stringify(context)}`;
 
   try {
-    const object = await generateTrendObject({ system, user });
+    const object = await generateTrendObject({
+      system,
+      user,
+      userId: opts.userId,
+    });
     const analysis: TrendAnalysis = {
       bias: object.bias,
       confidence: Math.max(0, Math.min(1, object.confidence)),

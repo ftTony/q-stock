@@ -156,7 +156,7 @@ function WatchlistContent() {
     <div className="space-y-5 animate-[qtFade_0.45s_ease]">
       <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{tNav("watchlist")}</h1>
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{tNav("watchlist")}</h1>
           <p className="text-sm text-[var(--muted)]">{t("descStock")}</p>
         </div>
         <div className="flex rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1">
@@ -172,7 +172,7 @@ function WatchlistContent() {
               key={key}
               type="button"
               onClick={() => setFilter(key)}
-              className={`rounded-lg px-3 py-1.5 text-xs font-semibold sm:text-sm ${
+              className={`rounded-lg px-2.5 py-1 text-[11px] font-medium sm:text-xs ${
                 filter === key
                   ? "bg-[var(--brand-soft)] text-[var(--brand-text)]"
                   : "text-[var(--muted)]"

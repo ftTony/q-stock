@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { sendWelcomeEmail } from "@/lib/email";
 import { toDbLocale } from "@/i18n/config";
 
 const schema = z.object({
@@ -25,18 +26,31 @@ export async function POST(req: Request) {
     const email = parsed.data.email.toLowerCase();
     const existing = await prisma.user.findUnique({ where: { email } });
     if (existing) {
-      return NextResponse.json({ error: "Email already registered" }, { status: 409 });
+      return NextResponse.json(
+        { error: "Email already registered" },
+        { status: 409 },
+      );
     }
 
+    const locale = parsed.data.locale || "zh-CN";
     const passwordHash = await bcrypt.hash(parsed.data.password, 10);
     const user = await prisma.user.create({
       data: {
         email,
         passwordHash,
         name: parsed.data.name,
-        locale: toDbLocale(parsed.data.locale || "zh-CN"),
+        locale: toDbLocale(locale),
       },
       select: { id: true, email: true, name: true },
+    });
+
+    // Do not fail registration if mail delivery fails
+    void sendWelcomeEmail({
+      to: user.email,
+      name: user.name,
+      locale,
+    }).catch((err) => {
+      console.error("[register] welcome email failed:", err);
     });
 
     return NextResponse.json({ user }, { status: 201 });

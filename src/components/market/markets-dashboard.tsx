@@ -242,14 +242,14 @@ export default function MarketsDashboard() {
     <div className="space-y-5 animate-[qtFade_0.45s_ease]">
       <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
         <div className="space-y-1">
-          <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
             {tab === "crypto"
               ? t("titleCrypto")
               : tab === "hk"
                 ? t("titleHk")
                 : t("titleStock")}
           </h1>
-          <p className="text-sm text-[var(--muted)]">
+          <p className="text-xs text-[var(--muted)] sm:text-sm">
             {tab === "crypto"
               ? t("descCrypto")
               : tab === "hk"
@@ -266,7 +266,7 @@ export default function MarketsDashboard() {
               setQ("");
             }}
             className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1"
-            buttonClassName="px-3 py-1.5 text-xs font-semibold sm:text-sm"
+            buttonClassName="px-2.5 py-1 text-[11px] font-medium sm:text-xs"
             options={[
               { value: "stock", label: t("stocks") },
               { value: "hk", label: t("hk") },
@@ -279,7 +279,7 @@ export default function MarketsDashboard() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder={t("search")}
-              className="qt-input w-full px-3 py-2.5 text-sm"
+              className="qt-input w-full px-3 py-2 text-xs sm:text-sm"
             />
             {results.length > 0 && (
               <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl">
@@ -301,7 +301,7 @@ export default function MarketsDashboard() {
             )}
           </div>
 
-          <Link href="/alerts" className="qt-btn qt-btn-primary h-10 px-3 text-sm">
+          <Link href="/alerts" className="qt-btn qt-btn-primary h-9 px-3 text-xs">
             + {t("create")}
           </Link>
         </div>
@@ -334,7 +334,8 @@ export default function MarketsDashboard() {
         />
         <KpiCard
           label={t("kpiAlerts")}
-          value={`${alertCount} ${t("kpiAlertsValue")}`}
+          value={String(alertCount)}
+          hint={t("kpiAlertsValue")}
           hintDot={alertCount > 0}
         />
       </section>

@@ -9,6 +9,7 @@ import { QtSelect } from "@/components/ui/qt-select";
 import {
   CREDS_DISMISS_KEY,
   hasAnyBrokerCreds,
+  MARKET_VENDORS_CHANGED,
   type MarketCredsStatus,
 } from "@/lib/market/creds-status-client";
 
@@ -64,6 +65,33 @@ export function MarketCredentialsForm() {
     })();
     return () => {
       cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    function onVendorsChanged(ev: Event) {
+      const detail = (ev as CustomEvent<MarketCredsStatus>).detail;
+      if (detail) {
+        setStatus((prev) =>
+          prev
+            ? {
+                ...prev,
+                ...detail,
+                longbridge: detail.longbridge ?? prev.longbridge,
+                futu: detail.futu ?? prev.futu,
+                binance: detail.binance ?? prev.binance,
+                okx: detail.okx ?? prev.okx,
+              }
+            : detail,
+        );
+        if (detail.futu?.mode) setFutuMode(detail.futu.mode);
+      } else {
+        void refreshStatus();
+      }
+    }
+    window.addEventListener(MARKET_VENDORS_CHANGED, onVendorsChanged);
+    return () => {
+      window.removeEventListener(MARKET_VENDORS_CHANGED, onVendorsChanged);
     };
   }, []);
 
@@ -238,6 +266,9 @@ export function MarketCredentialsForm() {
       ? "ring-2 ring-[var(--brand)]"
       : "";
 
+  const equityVendor = status?.equityVendor ?? "longbridge";
+  const cryptoVendor = status?.cryptoVendor ?? "binance";
+
   return (
     <div
       ref={panelRef}
@@ -278,6 +309,7 @@ export function MarketCredentialsForm() {
         </p>
       )}
 
+      {equityVendor === "longbridge" ? (
       <form
         onSubmit={saveLongbridge}
         className="space-y-3 border-t border-[var(--border)] pt-5"
@@ -332,7 +364,7 @@ export function MarketCredentialsForm() {
           <SubmitButton
             loading={savingLb}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary px-4 py-2 text-sm"
+            className="qt-btn-primary h-[42px] px-4 text-sm"
             disabled={!lbKey.trim() || !lbSecret.trim() || !lbToken.trim()}
           >
             {t("credsSaveLongbridge")}
@@ -341,14 +373,16 @@ export function MarketCredentialsForm() {
             <button
               type="button"
               onClick={() => clearProvider("longbridge")}
-              className="qt-btn px-4 py-2 text-sm"
+              className="qt-btn h-[42px] px-4 text-sm"
             >
               {t("credsClear")}
             </button>
           ) : null}
         </div>
       </form>
+      ) : null}
 
+      {equityVendor === "futu" ? (
       <form
         onSubmit={saveFutu}
         className="space-y-3 border-t border-[var(--border)] pt-5"
@@ -421,7 +455,7 @@ export function MarketCredentialsForm() {
           <SubmitButton
             loading={savingFutu}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary px-4 py-2 text-sm"
+            className="qt-btn-primary h-[42px] px-4 text-sm"
             disabled={
               futuMode === "bearer"
                 ? !futuBearer.trim()
@@ -434,14 +468,16 @@ export function MarketCredentialsForm() {
             <button
               type="button"
               onClick={() => clearProvider("futu")}
-              className="qt-btn px-4 py-2 text-sm"
+              className="qt-btn h-[42px] px-4 text-sm"
             >
               {t("credsClear")}
             </button>
           ) : null}
         </div>
       </form>
+      ) : null}
 
+      {cryptoVendor === "binance" ? (
       <form
         onSubmit={saveBinance}
         className="space-y-3 border-t border-[var(--border)] pt-5"
@@ -484,7 +520,7 @@ export function MarketCredentialsForm() {
           <SubmitButton
             loading={savingBn}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary px-4 py-2 text-sm"
+            className="qt-btn-primary h-[42px] px-4 text-sm"
             disabled={!bnApiKey.trim()}
           >
             {t("credsSaveBinance")}
@@ -493,13 +529,14 @@ export function MarketCredentialsForm() {
             <button
               type="button"
               onClick={() => clearProvider("binance")}
-              className="qt-btn px-4 py-2 text-sm"
+              className="qt-btn h-[42px] px-4 text-sm"
             >
               {t("credsClear")}
             </button>
           ) : null}
         </div>
       </form>
+      ) : null}
     </div>
   );
 }

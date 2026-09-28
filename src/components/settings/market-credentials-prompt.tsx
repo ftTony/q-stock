@@ -28,7 +28,10 @@ export function MarketCredentialsPrompt() {
     if (
       pathname.startsWith("/settings") ||
       pathname.startsWith("/login") ||
-      pathname.startsWith("/register")
+      pathname.startsWith("/register") ||
+      pathname.startsWith("/forgot-password") ||
+      pathname.startsWith("/reset-password") ||
+      pathname.startsWith("/auth/")
     ) {
       setShow(false);
       return;

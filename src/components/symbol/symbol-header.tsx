@@ -47,7 +47,7 @@ function WatchButton({
       loading={watchBusy}
       loadingLabel={loadingLabel}
       onClick={onToggleWatchlist}
-      className={`shrink-0 px-3 py-1.5 text-xs ${
+      className={`qt-btn shrink-0 px-2.5 py-1 text-[11px] font-medium leading-none sm:text-xs ${
         inWatchlist
           ? "qt-btn-ghost text-[var(--brand-text)]"
           : "qt-btn-primary"
@@ -71,15 +71,15 @@ function SymbolPriceRow({
 }) {
   return (
     <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-      <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+      <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
         {symbol}{" "}
-        <span className="text-sm font-normal text-[var(--muted)]">
+        <span className="text-xs font-normal text-[var(--muted)] sm:text-sm">
           {displayName(symbol, assetType)}
         </span>
       </h1>
       {quote && (
         <>
-          <span className="text-xl font-semibold sm:text-2xl">
+          <span className="text-lg font-semibold tabular-nums sm:text-xl">
             <PriceText value={quote.price} change={quote.change} />
           </span>
           <ChangePct value={quote.percentChange} />

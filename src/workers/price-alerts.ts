@@ -1,7 +1,10 @@
 import { PrismaClient } from "@prisma/client";
 import { getQuote } from "../lib/market";
 import { withUserMarket } from "../lib/market/with-user-market";
-import { sendAlertEmail } from "../lib/email";
+import {
+  resolveAlertMailTransport,
+  sendAlertEmail,
+} from "../lib/email";
 import {
   fillPendingOrder,
   shouldTriggerPending,
@@ -64,6 +67,7 @@ async function tickAlerts() {
       if (!hit) continue;
 
       try {
+        const transport = await resolveAlertMailTransport(alert.userId);
         await sendAlertEmail({
           to: alert.user.email,
           symbol: alert.symbol,
@@ -71,6 +75,7 @@ async function tickAlerts() {
           condition: alert.condition,
           triggerPrice: trigger,
           currentPrice: price,
+          transport,
         });
 
         await prisma.$transaction([

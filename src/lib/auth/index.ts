@@ -1,20 +1,100 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
+import GitHub from "next-auth/providers/github";
+import Google from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
+import { sendWelcomeEmail } from "@/lib/email";
+import { fromDbLocale, toDbLocale } from "@/i18n/config";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
   password: z.string().min(6),
 });
 
+const googleConfigured = Boolean(
+  process.env.AUTH_GOOGLE_ID?.trim() && process.env.AUTH_GOOGLE_SECRET?.trim(),
+);
+
+const githubConfigured = Boolean(
+  process.env.AUTH_GITHUB_ID?.trim() && process.env.AUTH_GITHUB_SECRET?.trim(),
+);
+
+const oauthProviders = new Set(["google", "github"]);
+
+async function localeFromRequestCookie(): Promise<string> {
+  try {
+    const jar = await cookies();
+    return (
+      jar.get("NEXT_LOCALE")?.value ||
+      jar.get("NEXT_LOCALE".toLowerCase())?.value ||
+      "zh-CN"
+    );
+  } catch {
+    return "zh-CN";
+  }
+}
+
+async function upsertOAuthUser(opts: {
+  email: string;
+  name?: string | null;
+  provider: string;
+}) {
+  const email = opts.email.toLowerCase();
+  const uiLocale = await localeFromRequestCookie();
+  let dbUser = await prisma.user.findUnique({ where: { email } });
+  if (!dbUser) {
+    const name = opts.name?.trim() || email.split("@")[0] || null;
+    dbUser = await prisma.user.create({
+      data: {
+        email,
+        name,
+        locale: toDbLocale(uiLocale),
+      },
+    });
+    void sendWelcomeEmail({
+      to: dbUser.email,
+      name: dbUser.name,
+      locale: fromDbLocale(dbUser.locale),
+    }).catch((err) => {
+      console.error(`[auth] ${opts.provider} welcome email failed:`, err);
+    });
+  } else if (!dbUser.name && opts.name?.trim()) {
+    dbUser = await prisma.user.update({
+      where: { id: dbUser.id },
+      data: { name: opts.name.trim() },
+    });
+  }
+  return dbUser;
+}
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
     signIn: "/zh-CN/login",
+    error: "/zh-CN/login",
   },
   providers: [
+    ...(googleConfigured
+      ? [
+          Google({
+            clientId: process.env.AUTH_GOOGLE_ID!,
+            clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
+    ...(githubConfigured
+      ? [
+          GitHub({
+            clientId: process.env.AUTH_GITHUB_ID!,
+            clientSecret: process.env.AUTH_GITHUB_SECRET!,
+            allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
     Credentials({
       name: "credentials",
       credentials: {
@@ -26,8 +106,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         if (!parsed.success) return null;
         const email = parsed.data.email.toLowerCase();
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) return null;
-        const ok = await bcrypt.compare(parsed.data.password, user.passwordHash);
+        if (!user?.passwordHash) return null;
+        const ok = await bcrypt.compare(
+          parsed.data.password,
+          user.passwordHash,
+        );
         if (!ok) return null;
         return {
           id: user.id,
@@ -41,7 +124,47 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    async jwt({ token, user, trigger, session }) {
+    async signIn({ account, profile }) {
+      if (!account?.provider || !oauthProviders.has(account.provider)) {
+        return true;
+      }
+      const email = profile?.email?.toLowerCase();
+      if (!email) return false;
+      if (account.provider === "google") {
+        const verified =
+          typeof profile === "object" &&
+          profile &&
+          "email_verified" in profile &&
+          (profile as { email_verified?: boolean }).email_verified;
+        if (verified === false) return false;
+      }
+      return true;
+    },
+    async jwt({ token, user, account, profile, trigger, session }) {
+      if (account?.provider && oauthProviders.has(account.provider)) {
+        const email = (
+          profile?.email ||
+          user?.email ||
+          token.email ||
+          ""
+        ).toLowerCase();
+        if (!email) return token;
+
+        const dbUser = await upsertOAuthUser({
+          email,
+          name: profile?.name || user?.name,
+          provider: account.provider,
+        });
+
+        token.id = dbUser.id;
+        token.email = dbUser.email;
+        token.name = dbUser.name ?? token.name;
+        token.locale = dbUser.locale;
+        token.theme = dbUser.theme;
+        token.changeColorScheme = dbUser.changeColorScheme;
+        return token;
+      }
+
       if (user) {
         token.id = user.id;
         token.name = user.name ?? token.name;
@@ -67,7 +190,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.name = (token.name as string | undefined) ?? session.user.name;
+        session.user.name =
+          (token.name as string | undefined) ?? session.user.name;
         session.user.email =
           (token.email as string | undefined) ?? session.user.email;
         session.user.locale = token.locale as string;

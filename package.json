@@ -15,7 +15,10 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@ai-sdk/anthropic": "^4.0.65",
     "@ai-sdk/deepseek": "^3.0.50",
+    "@ai-sdk/google": "^4.0.82",
+    "@ai-sdk/openai": "^3.0.119",
     "@auth/prisma-adapter": "^2.11.3",
     "@prisma/client": "^6.19.3",
     "ai": "^7.0.111",

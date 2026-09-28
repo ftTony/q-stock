@@ -129,7 +129,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const isPortfolio = pathname.startsWith("/portfolio");
   const isAlerts = pathname.startsWith("/alerts");
   const isSettings = pathname.startsWith("/settings");
-  const isAuth = pathname.startsWith("/login") || pathname.startsWith("/register");
+  const isAuth =
+    pathname.startsWith("/login") ||
+    pathname.startsWith("/register") ||
+    pathname.startsWith("/forgot-password") ||
+    pathname.startsWith("/reset-password") ||
+    pathname.startsWith("/auth/");
 
   useEffect(() => {
     if (!session?.user) {

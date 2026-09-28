@@ -14,6 +14,16 @@ export function hasAnyBrokerCreds(status: MarketCredsStatus | null | undefined):
 
 export const CREDS_DISMISS_KEY = "market-creds-prompt-dismissed";
 
+/** Fired when equity/crypto vendor preference is saved in Settings. */
+export const MARKET_VENDORS_CHANGED = "qstock:market-vendors-changed";
+
+export function notifyMarketVendorsChanged(status: MarketCredsStatus): void {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent(MARKET_VENDORS_CHANGED, { detail: status }),
+  );
+}
+
 export async function fetchMarketCredsStatus(): Promise<MarketCredsStatus | null> {
   try {
     const res = await fetch("/api/user/market-credentials");

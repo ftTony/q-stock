@@ -3,10 +3,12 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
+import {
+  MARKET_VENDORS_CHANGED,
+  type MarketCredsStatus,
+} from "@/lib/market/creds-status-client";
 
-type Status = {
-  okx?: { configured: boolean };
-};
+type Status = MarketCredsStatus;
 
 export function MarketOkxCredentialsForm() {
   const t = useTranslations("settings");
@@ -37,6 +39,21 @@ export function MarketOkxCredentialsForm() {
     })();
     return () => {
       cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    function onVendorsChanged(ev: Event) {
+      const detail = (ev as CustomEvent<MarketCredsStatus>).detail;
+      if (detail) {
+        setStatus((prev) => (prev ? { ...prev, ...detail } : detail));
+      } else {
+        void refresh();
+      }
+    }
+    window.addEventListener(MARKET_VENDORS_CHANGED, onVendorsChanged);
+    return () => {
+      window.removeEventListener(MARKET_VENDORS_CHANGED, onVendorsChanged);
     };
   }, []);
 
@@ -85,6 +102,7 @@ export function MarketOkxCredentialsForm() {
   }
 
   async function onClear() {
+    setMessage(null);
     const res = await fetch("/api/user/market-credentials?provider=okx", {
       method: "DELETE",
     });
@@ -100,6 +118,10 @@ export function MarketOkxCredentialsForm() {
 
   if (loading) {
     return <p className="text-sm text-[var(--muted)]">{tCommon("loading")}</p>;
+  }
+
+  if ((status?.cryptoVendor ?? "binance") !== "okx") {
+    return null;
   }
 
   return (
@@ -161,7 +183,7 @@ export function MarketOkxCredentialsForm() {
           <SubmitButton
             loading={saving}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary px-4 py-2 text-sm"
+            className="qt-btn-primary h-[42px] px-4 text-sm"
             disabled={!apiKey.trim()}
           >
             {t("credsSaveOkx")}
@@ -169,8 +191,8 @@ export function MarketOkxCredentialsForm() {
           {status?.okx?.configured ? (
             <button
               type="button"
-              onClick={() => void onClear()}
-              className="qt-btn px-4 py-2 text-sm"
+              onClick={onClear}
+              className="qt-btn h-[42px] px-4 text-sm"
             >
               {t("credsClear")}
             </button>

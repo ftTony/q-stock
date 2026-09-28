@@ -11,7 +11,8 @@ const TTL_MS = 30 * 60_000;
 export async function GET(req: Request) {
   try {
     const session = await auth();
-    return await withUserMarket(session?.user?.id, async () => {
+    const userId = session?.user?.id ?? null;
+    return await withUserMarket(userId ?? undefined, async () => {
       const { searchParams } = new URL(req.url);
       const symbol = searchParams.get("symbol");
       if (!symbol) {
@@ -21,10 +22,16 @@ export async function GET(req: Request) {
       const assetType = parseAssetType(searchParams.get("assetType"));
       const locale = searchParams.get("locale") || "zh-CN";
       const sym = symbol.toUpperCase();
-      const cacheKey = `ai:trend:${assetType}:${sym}:${locale}`;
+      const scope = userId || "env";
+      const cacheKey = `ai:trend:${scope}:${assetType}:${sym}:${locale}`;
 
-      if (!isAiConfigured()) {
-        const result = await analyzeTrend({ symbol: sym, assetType, locale });
+      if (!(await isAiConfigured(userId))) {
+        const result = await analyzeTrend({
+          symbol: sym,
+          assetType,
+          locale,
+          userId,
+        });
         return NextResponse.json({
           ...result,
           cached: false,
@@ -46,7 +53,7 @@ export async function GET(req: Request) {
       }
 
       const result = await cachedFetch(cacheKey, TTL_MS, () =>
-        analyzeTrend({ symbol: sym, assetType, locale }),
+        analyzeTrend({ symbol: sym, assetType, locale, userId }),
       );
 
       return NextResponse.json({

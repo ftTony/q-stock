@@ -1,22 +1,33 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, Suspense, useState } from "react";
 import { signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { pathAfterAuth } from "@/lib/market/creds-status-client";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { OAuthSignInButtons } from "@/components/auth/oauth-sign-in-buttons";
 
-export default function LoginPage() {
+function LoginForm() {
   const t = useTranslations("auth");
   const tApp = useTranslations("app");
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  const oauthError = searchParams.get("error");
+  const notice =
+    searchParams.get("reset") === "1"
+      ? t("resetSuccess")
+      : searchParams.get("registered") === "1"
+        ? t("registered")
+        : null;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -48,6 +59,12 @@ export default function LoginPage() {
         </div>
         <h1 className="mt-2 text-2xl font-semibold">{t("loginTitle")}</h1>
       </div>
+      {notice ? (
+        <p className="text-sm text-[var(--up)]">{notice}</p>
+      ) : null}
+      {oauthError ? (
+        <p className="text-sm text-[var(--down)]">{t("oauthError")}</p>
+      ) : null}
       <form onSubmit={onSubmit} className="space-y-3">
         <label className="block space-y-1 text-sm">
           <span className="text-[var(--muted)]">{t("email")}</span>
@@ -61,7 +78,15 @@ export default function LoginPage() {
           />
         </label>
         <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("password")}</span>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[var(--muted)]">{t("password")}</span>
+            <Link
+              href="/forgot-password"
+              className="text-xs text-[var(--brand-text)]"
+            >
+              {t("forgotPassword")}
+            </Link>
+          </div>
           <input
             type="password"
             required
@@ -81,6 +106,7 @@ export default function LoginPage() {
           {t("submitLogin")}
         </SubmitButton>
       </form>
+      <OAuthSignInButtons disabled={loading} />
       <p className="text-sm text-[var(--muted)]">
         {t("noAccount")}{" "}
         <Link href="/register" className="text-[var(--brand-text)]">
@@ -89,5 +115,13 @@ export default function LoginPage() {
       </p>
       <p className="hidden text-xs">{locale}</p>
     </div>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<p className="text-sm text-[var(--muted)]">…</p>}>
+      <LoginForm />
+    </Suspense>
   );
 }

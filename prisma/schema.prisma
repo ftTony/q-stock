@@ -72,7 +72,8 @@ enum CryptoMarketVendor {
 model User {
   id                String             @id @default(cuid())
   email             String             @unique
-  passwordHash      String
+  /** Null for OAuth-only users (e.g. Google). */
+  passwordHash      String?
   name              String?
   locale            LocaleCode         @default(zh_CN)
   theme             ThemeMode          @default(system)
@@ -91,7 +92,24 @@ model User {
   paperAccount       PaperAccount?
   paperPositions     PaperPosition[]
   paperOrders        PaperOrder[]
-  marketCredentials  UserMarketCredential[]
+  marketCredentials   UserMarketCredential[]
+  serviceCredentials  UserServiceCredential[]
+  passwordResetTokens PasswordResetToken[]
+}
+
+/** One-time password reset token (store SHA-256 hash only). */
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  userId    String
+  tokenHash String   @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 enum MarketCredentialProvider {
@@ -110,6 +128,27 @@ model UserMarketCredential {
   payload   String
   updatedAt DateTime                 @updatedAt
   createdAt DateTime                 @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, provider])
+  @@index([userId])
+}
+
+enum ServiceCredentialProvider {
+  email
+  ai
+}
+
+/** Encrypted per-user email / AI credentials (BYOK). */
+model UserServiceCredential {
+  id        String                    @id @default(cuid())
+  userId    String
+  provider  ServiceCredentialProvider
+  /** AES-256-GCM ciphertext (iv + tag + payload), base64. */
+  payload   String
+  updatedAt DateTime                  @updatedAt
+  createdAt DateTime                  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

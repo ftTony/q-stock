@@ -53,9 +53,9 @@ export function SymbolChartSection({
             key={key}
             type="button"
             onClick={() => onResolutionChange(key)}
-            className={`rounded-xl px-3 py-1.5 text-sm ${
+            className={`rounded-lg px-2.5 py-1 text-[11px] sm:text-xs ${
               resolution === key
-                ? "bg-[var(--brand)] text-[#0b1220] font-semibold"
+                ? "bg-[var(--brand)] text-[#0b1220] font-medium"
                 : "qt-btn-ghost border border-[var(--border)] bg-[var(--panel)]"
             }`}
           >
