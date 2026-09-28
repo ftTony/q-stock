@@ -18,7 +18,8 @@
     "login": "登入",
     "register": "註冊",
     "logout": "登出",
-    "marketOpen": "開市中"
+    "marketOpen": "開市中",
+    "about": "關於我"
   },
   "market": {
     "stocks": "美股",
@@ -200,7 +201,11 @@
     "continueWithGoogle": "使用 Google 帳號繼續",
     "googleError": "第三方登入失敗，請重試或改用信箱登入。",
     "continueWithGithub": "使用 GitHub 帳號繼續",
-    "oauthError": "第三方登入失敗，請重試或改用信箱登入。"
+    "oauthError": "第三方登入失敗，請重試或改用信箱登入。",
+    "inviteCode": "邀請碼",
+    "inviteCodeOptional": "選填",
+    "inviteInvalid": "邀請碼無效或已被使用",
+    "emailTaken": "此電子郵件已註冊"
   },
   "settings": {
     "title": "用戶設定",
@@ -301,7 +306,17 @@
     "emailSaved": "郵件設定已儲存",
     "emailCleared": "郵件設定已清除",
     "emailSaveError": "儲存郵件設定失敗",
-    "credsTrustNote": "系統不會明文保存您的 Key，僅加密儲存且只用於你本人帳戶，請放心新增。"
+    "credsTrustNote": "系統不會明文保存您的 Key，僅加密儲存且只用於你本人帳戶，請放心新增。",
+    "inviteTitle": "邀請",
+    "inviteHint": "好盤不輕傳，邀碼有數。此碼只贈予你認定有緣之人。若他亦能在 Q-Stock 看盤受益，緣法流轉，你自會再獲一枚。",
+    "inviteCopyCode": "複製邀請碼",
+    "inviteCopyLink": "複製連結",
+    "inviteCopied": "已複製",
+    "inviteUsed": "已使用",
+    "inviteEmpty": "暫無邀請碼",
+    "inviteLoadError": "載入邀請碼失敗",
+    "inviteShareCode": "邀請你一起用 Q-Stock 看美股 / 港股 / 數字貨幣。註冊時填寫邀請碼：{code}",
+    "inviteShareLink": "邀請你一起用 Q-Stock 看美股 / 港股 / 數字貨幣。點此註冊：{link}"
   },
   "alerts": {
     "title": "價格提醒",
@@ -447,5 +462,21 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX"
+  },
+  "about": {
+    "title": "關於我",
+    "subtitle": "Q-STOCK 作者寄語",
+    "p1": "金融開發十年，主攻前端、兼顧後端，熟悉券商開戶到交易、行情與風控等全流程。本站為個人學習與技術實踐，行情與內容僅供參考，不構成投資建議。",
+    "p2": "若方便牽線，歡迎幫忙對接富途、長橋商務同學——後續希望能有更深入的合作。",
+    "p3": "有子彈（錢）的朋友，可以幫忙加點 token，後續會做更多 AI 金融相關功能。",
+    "p4": "感謝每一位路過的朋友。",
+    "contactTitle": "聯絡方式",
+    "contactEmailLabel": "信箱：",
+    "wechat": "微信",
+    "alipay": "支付寶",
+    "wechatQrAlt": "微信收款二維碼",
+    "alipayQrAlt": "支付寶收款二維碼",
+    "qrHint": "掃碼支持一下；也可寄信溝通合作。",
+    "mainlandNotice": "中國大陸朋友提醒：目前境外投資股票、BTC 是違法行為。本站僅供學習參考，請遵守當地法律法規。"
   }
 }

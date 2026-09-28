@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
@@ -17,8 +17,19 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const invite = params.get("invite")?.trim();
+      if (invite) setInviteCode(invite);
+    } catch {
+      /* ignore */
+    }
+  }, []);
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -33,11 +44,18 @@ export default function RegisterPage() {
           password,
           name: name || undefined,
           locale,
+          inviteCode: inviteCode.trim() || undefined,
         }),
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || t("error"));
+        if (data.error === "Invalid or used invite code") {
+          setError(t("inviteInvalid"));
+        } else if (data.error === "Email already registered") {
+          setError(t("emailTaken"));
+        } else {
+          setError(data.error || t("error"));
+        }
         return;
       }
       const signed = await signIn("credentials", {
@@ -96,6 +114,18 @@ export default function RegisterPage() {
             onChange={(e) => setPassword(e.target.value)}
             className="qt-input w-full px-3 py-2.5"
             disabled={loading}
+          />
+        </label>
+        <label className="block space-y-1 text-sm">
+          <span className="text-[var(--muted)]">{t("inviteCode")}</span>
+          <input
+            value={inviteCode}
+            onChange={(e) => setInviteCode(e.target.value)}
+            className="qt-input w-full px-3 py-2.5 font-mono"
+            disabled={loading}
+            autoComplete="off"
+            spellCheck={false}
+            placeholder={t("inviteCodeOptional")}
           />
         </label>
         {error && <p className="text-sm text-[var(--down)]">{error}</p>}

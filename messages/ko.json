@@ -18,7 +18,8 @@
     "login": "로그인",
     "register": "가입",
     "logout": "로그아웃",
-    "marketOpen": "시장 개장"
+    "marketOpen": "시장 개장",
+    "about": "About"
   },
   "market": {
     "stocks": "미국 주식",
@@ -200,7 +201,11 @@
     "continueWithGoogle": "Google로 계속",
     "googleError": "소셜 로그인에 실패했습니다. 이메일로 다시 시도하세요.",
     "continueWithGithub": "GitHub로 계속",
-    "oauthError": "소셜 로그인에 실패했습니다. 이메일로 다시 시도하세요."
+    "oauthError": "소셜 로그인에 실패했습니다. 이메일로 다시 시도하세요.",
+    "inviteCode": "초대 코드",
+    "inviteCodeOptional": "선택",
+    "inviteInvalid": "유효하지 않거나 이미 사용된 초대 코드입니다",
+    "emailTaken": "이미 등록된 이메일입니다"
   },
   "settings": {
     "title": "설정",
@@ -301,7 +306,17 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "키는 평문으로 저장되지 않으며 계정용으로만 암호화됩니다. 안심하고 추가하세요."
+    "credsTrustNote": "키는 평문으로 저장되지 않으며 계정용으로만 암호화됩니다. 안심하고 추가하세요.",
+    "inviteTitle": "초대",
+    "inviteHint": "초대 코드는 한정되어 있습니다. 신뢰하는 사람에게만 공유하세요. Q-Stock 에 가입하면 새 코드가 지급됩니다.",
+    "inviteCopyCode": "코드 복사",
+    "inviteCopyLink": "링크 복사",
+    "inviteCopied": "복사됨",
+    "inviteUsed": "사용됨",
+    "inviteEmpty": "초대 코드 없음",
+    "inviteLoadError": "초대 코드를 불러오지 못했습니다",
+    "inviteShareCode": "Q-Stock(미국/홍콩 주식·암호화폐)에 초대합니다. 초대 코드: {code}",
+    "inviteShareLink": "Q-Stock(미국/홍콩 주식·암호화폐)에 초대합니다. 가입 링크: {link}"
   },
   "alerts": {
     "title": "가격 알림",
@@ -447,5 +462,21 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX"
+  },
+  "about": {
+    "title": "About me",
+    "subtitle": "Q-STOCK 작성자 인사",
+    "p1": "금융 소프트웨어 개발 10년, 프론트엔드 중심·백엔드 협업에 익숙하며 계좌 개설부터 거래·시세·리스크까지 증권·브로커 업무 전반을 이해합니다. 본 사이트는 개인 학습·기술 실험용이며, 시세와 콘텐츠는 참고용으로 투자 권유가 아닙니다.",
+    "p2": "Futu·Longbridge 비즈니스 팀 소개가 가능하시면, 더 깊은 협업을 논의하고 싶습니다.",
+    "p3": "여유(예산)가 되면 API 토큰 충전에 도움을 주세요. 이후 AI 금융 기능에 쓸 예정입니다.",
+    "p4": "들러 주신 모든 분들께 감사드립니다.",
+    "contactTitle": "연락처",
+    "contactEmailLabel": "이메일:",
+    "wechat": "WeChat",
+    "alipay": "Alipay",
+    "wechatQrAlt": "WeChat QR",
+    "alipayQrAlt": "Alipay QR",
+    "qrHint": "Scan to tip, or email for collaboration.",
+    "mainlandNotice": "중국 본토 이용자 안내: 현재 해외 주식·BTC 투자는 불법입니다. 본 사이트는 학습용이며 현지 법령을 지켜 주세요."
   }
 }

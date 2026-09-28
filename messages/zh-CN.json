@@ -18,7 +18,8 @@
     "login": "登录",
     "register": "注册",
     "logout": "退出",
-    "marketOpen": "开市中"
+    "marketOpen": "开市中",
+    "about": "关于我"
   },
   "market": {
     "stocks": "美股",
@@ -200,7 +201,11 @@
     "continueWithGoogle": "使用 Google 账号继续",
     "googleError": "第三方登录失败，请重试或改用邮箱登录。",
     "continueWithGithub": "使用 GitHub 账号继续",
-    "oauthError": "第三方登录失败，请重试或改用邮箱登录。"
+    "oauthError": "第三方登录失败，请重试或改用邮箱登录。",
+    "inviteCode": "邀请码",
+    "inviteCodeOptional": "可选",
+    "inviteInvalid": "邀请码无效或已被使用",
+    "emailTaken": "该邮箱已注册"
   },
   "settings": {
     "title": "用户设置",
@@ -301,7 +306,17 @@
     "emailSaved": "邮件设置已保存",
     "emailCleared": "邮件设置已清除",
     "emailSaveError": "保存邮件设置失败",
-    "credsTrustNote": "系统不会明文保存您的 Key，仅加密存储且只用于你本人账户，请放心添加。"
+    "credsTrustNote": "系统不会明文保存您的 Key，仅加密存储且只用于你本人账户，请放心添加。",
+    "inviteTitle": "邀请",
+    "inviteHint": "好盘不轻传，邀码有数。此码只赠予你认定有缘之人。若他亦能在 Q-Stock 看盘受益，缘法流转，你自会再获一枚。",
+    "inviteCopyCode": "复制邀请码",
+    "inviteCopyLink": "复制链接",
+    "inviteCopied": "已复制",
+    "inviteUsed": "已使用",
+    "inviteEmpty": "暂无邀请码",
+    "inviteLoadError": "加载邀请码失败",
+    "inviteShareCode": "邀请你一起用 Q-Stock 看美股 / 港股 / 数字货币。注册时填写邀请码：{code}",
+    "inviteShareLink": "邀请你一起用 Q-Stock 看美股 / 港股 / 数字货币。点此注册：{link}"
   },
   "alerts": {
     "title": "价格提醒",
@@ -447,5 +462,21 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX"
+  },
+  "about": {
+    "title": "关于我",
+    "subtitle": "Q-STOCK 作者寄语",
+    "p1": "金融开发十年，主攻前端、兼顾后端，熟悉券商开户到交易、行情与风控等全流程。本站为个人学习与技术实践，行情与内容仅供参考，不构成投资建议。",
+    "p2": "若方便牵线，欢迎帮忙对接富途、长桥商务同学——后续希望能有更深入的合作。",
+    "p3": "有子弹（钱）的朋友，可以帮忙加点 token，后续会做更多 AI 金融相关功能。",
+    "p4": "感谢每一位路过的朋友。",
+    "contactTitle": "联系方式",
+    "contactEmailLabel": "邮箱：",
+    "wechat": "微信",
+    "alipay": "支付宝",
+    "wechatQrAlt": "微信收款二维码",
+    "alipayQrAlt": "支付宝收款二维码",
+    "qrHint": "扫码支持一下；也可发邮件沟通合作。",
+    "mainlandNotice": "中国内地朋友提醒：目前境外投资股票、BTC 是违法行为。本站仅供学习参考，请遵守当地法律法规。"
   }
 }

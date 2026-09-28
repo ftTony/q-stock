@@ -95,6 +95,23 @@ model User {
   marketCredentials   UserMarketCredential[]
   serviceCredentials  UserServiceCredential[]
   passwordResetTokens PasswordResetToken[]
+  inviteCodesOwned    InviteCode[]         @relation("InviteOwned")
+  inviteCodeUsed      InviteCode?          @relation("InviteUsed")
+}
+
+/** One-time invite code owned by a user; optionally redeemed at registration. */
+model InviteCode {
+  id        String    @id @default(cuid())
+  code      String    @unique
+  ownerId   String
+  usedById  String?   @unique
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  owner  User  @relation("InviteOwned", fields: [ownerId], references: [id], onDelete: Cascade)
+  usedBy User? @relation("InviteUsed", fields: [usedById], references: [id], onDelete: SetNull)
+
+  @@index([ownerId])
 }
 
 /** One-time password reset token (store SHA-256 hash only). */

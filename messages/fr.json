@@ -18,7 +18,8 @@
     "login": "Connexion",
     "register": "S'inscrire",
     "logout": "Déconnexion",
-    "marketOpen": "Marché ouvert"
+    "marketOpen": "Marché ouvert",
+    "about": "About"
   },
   "market": {
     "stocks": "Actions US",
@@ -200,7 +201,11 @@
     "continueWithGoogle": "Continuer avec Google",
     "googleError": "Échec de la connexion sociale. Réessayez ou utilisez l'e-mail.",
     "continueWithGithub": "Continuer avec GitHub",
-    "oauthError": "Échec de la connexion sociale. Réessayez ou utilisez l'e-mail."
+    "oauthError": "Échec de la connexion sociale. Réessayez ou utilisez l'e-mail.",
+    "inviteCode": "Code d'invitation",
+    "inviteCodeOptional": "Facultatif",
+    "inviteInvalid": "Code d'invitation invalide ou déjà utilisé",
+    "emailTaken": "Cet e-mail est déjà enregistré"
   },
   "settings": {
     "title": "Paramètres",
@@ -301,7 +306,17 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "Nous ne stockons jamais vos clés en clair. Elles sont chiffrées pour votre compte uniquement — ajoutez-les en toute confiance."
+    "credsTrustNote": "Nous ne stockons jamais vos clés en clair. Elles sont chiffrées pour votre compte uniquement — ajoutez-les en toute confiance.",
+    "inviteTitle": "Invitation",
+    "inviteHint": "Les codes sont limités—partagez-les avec des personnes de confiance. Quand quelqu'un rejoint Q-Stock avec votre code, vous en recevez un nouveau.",
+    "inviteCopyCode": "Copier le code",
+    "inviteCopyLink": "Copier le lien",
+    "inviteCopied": "Copié",
+    "inviteUsed": "Utilisé",
+    "inviteEmpty": "Aucun code d'invitation",
+    "inviteLoadError": "Échec du chargement des codes",
+    "inviteShareCode": "Rejoins-moi sur Q-Stock (actions US/HK & crypto). Code d'invitation : {code}",
+    "inviteShareLink": "Rejoins-moi sur Q-Stock (actions US/HK & crypto). Inscription : {link}"
   },
   "alerts": {
     "title": "Alertes de prix",
@@ -447,5 +462,21 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX"
+  },
+  "about": {
+    "title": "About me",
+    "subtitle": "Mot de l’auteur de Q-STOCK",
+    "p1": "Une décennie dans le logiciel financier — front-end d’abord, à l’aise avec le back-end — et familier du parcours courtier : ouverture de compte, trading, données de marché et risque. Ce site est un bac à sable personnel. Les contenus sont indicatifs et ne constituent pas un conseil en investissement.",
+    "p2": "Si vous pouvez me présenter les équipes business Futu ou Longbridge, j’aimerais explorer une collaboration plus poussée.",
+    "p3": "Si vous avez un peu de « munitions » (budget), aidez à recharger des jetons d’API — pour de prochaines fonctions IA finance.",
+    "p4": "Merci à toutes les personnes qui passent par ici.",
+    "contactTitle": "Contact",
+    "contactEmailLabel": "E-mail :",
+    "wechat": "WeChat",
+    "alipay": "Alipay",
+    "wechatQrAlt": "WeChat QR",
+    "alipayQrAlt": "Alipay QR",
+    "qrHint": "Scan to tip, or email for collaboration.",
+    "mainlandNotice": "Rappel aux amis en Chine continentale : investir dans des actions étrangères ou le BTC est actuellement illégal. Ce site est uniquement pédagogique — respectez les lois locales."
   }
 }

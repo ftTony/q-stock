@@ -294,6 +294,13 @@ export function TopBarActions() {
                 {t("settings")}
               </Link>
               <Link
+                href="/about"
+                className="block px-3 py-2 text-sm hover:bg-[var(--sidebar-hover)]"
+                onClick={() => setMenuOpen(false)}
+              >
+                {t("about")}
+              </Link>
+              <Link
                 href="/portfolio"
                 className="block px-3 py-2 text-sm hover:bg-[var(--sidebar-hover)]"
                 onClick={() => setMenuOpen(false)}
@@ -311,9 +318,17 @@ export function TopBarActions() {
           )}
         </div>
       ) : (
-        <Link href="/login" className="qt-btn qt-btn-primary h-9 px-3 text-xs">
-          {t("login")}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href="/about"
+            className="hidden text-sm text-[var(--muted)] hover:text-[var(--foreground)] sm:inline"
+          >
+            {t("about")}
+          </Link>
+          <Link href="/login" className="qt-btn qt-btn-primary h-9 px-3 text-xs">
+            {t("login")}
+          </Link>
+        </div>
       )}
     </div>
   );

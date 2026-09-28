@@ -18,7 +18,8 @@
     "login": "ログイン",
     "register": "新規登録",
     "logout": "ログアウト",
-    "marketOpen": "市場開場"
+    "marketOpen": "市場開場",
+    "about": "About"
   },
   "market": {
     "stocks": "米国株",
@@ -200,7 +201,11 @@
     "continueWithGoogle": "Googleで続行",
     "googleError": "ソーシャルログインに失敗しました。メールでお試しください。",
     "continueWithGithub": "GitHubで続行",
-    "oauthError": "ソーシャルログインに失敗しました。メールでお試しください。"
+    "oauthError": "ソーシャルログインに失敗しました。メールでお試しください。",
+    "inviteCode": "招待コード",
+    "inviteCodeOptional": "任意",
+    "inviteInvalid": "招待コードが無効、または使用済みです",
+    "emailTaken": "このメールアドレスは既に登録されています"
   },
   "settings": {
     "title": "設定",
@@ -301,7 +306,17 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "キーは平文では保存されません。アカウント専用に暗号化されますので、安心してご登録ください。"
+    "credsTrustNote": "キーは平文では保存されません。アカウント専用に暗号化されますので、安心してご登録ください。",
+    "inviteTitle": "招待",
+    "inviteHint": "招待コードには限りがあります。信頼できる人にだけシェアしてください。Q-Stock で登録されると、新たに1つコードが付与されます。",
+    "inviteCopyCode": "コードをコピー",
+    "inviteCopyLink": "リンクをコピー",
+    "inviteCopied": "コピーしました",
+    "inviteUsed": "使用済み",
+    "inviteEmpty": "招待コードがありません",
+    "inviteLoadError": "招待コードの読み込みに失敗しました",
+    "inviteShareCode": "Q-Stock（米株・香港株・暗号資産）へご招待。登録時に招待コード：{code}",
+    "inviteShareLink": "Q-Stock（米株・香港株・暗号資産）へご招待。登録はこちら：{link}"
   },
   "alerts": {
     "title": "価格アラート",
@@ -447,5 +462,21 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX"
+  },
+  "about": {
+    "title": "About me",
+    "subtitle": "Q-STOCK 作者より",
+    "p1": "金融ソフトウェア開発に約10年。フロントエンドを主軸にバックエンドにも通じ、口座開設から取引・相場・リスク管理までブローカー業務の一連を把握しています。本サイトは個人の学習・技術実践用で、相場やコンテンツは参考情報にすぎず、投資助言ではありません。",
+    "p2": "富途（Futu）や Longbridge のビジネス担当をご紹介いただけると大変助かります。今後の深い協業を目指しています。",
+    "p3": "余裕のある方は API トークンのチャージにご協力を。今後の AI 金融機能の拡充に充てます。",
+    "p4": "立ち寄ってくださった皆さん、ありがとうございます。",
+    "contactTitle": "連絡先",
+    "contactEmailLabel": "メール：",
+    "wechat": "WeChat",
+    "alipay": "Alipay",
+    "wechatQrAlt": "WeChat QR",
+    "alipayQrAlt": "Alipay QR",
+    "qrHint": "Scan to tip, or email for collaboration.",
+    "mainlandNotice": "中国本土の方向け：現在、海外株・BTC への投資は違法とされています。本サイトは学習用であり、現地の法令を遵守してください。"
   }
 }

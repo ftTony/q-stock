@@ -15,6 +15,7 @@ import { MarketCredentialsForm } from "@/components/settings/market-credentials-
 import { MarketOkxCredentialsForm } from "@/components/settings/market-okx-credentials-form";
 import { MarketVendorPrefs } from "@/components/settings/market-vendor-prefs";
 import { AiCredentialsForm } from "@/components/settings/ai-credentials-form";
+import { InvitePanel } from "@/components/settings/invite-panel";
 import { EmailCredentialsForm } from "@/components/settings/email-credentials-form";
 import {
   locales,
@@ -263,6 +264,7 @@ export default function SettingsPage() {
 
       {loggedIn ? (
         <>
+          <InvitePanel />
           <MarketVendorPrefs />
           <Suspense
             fallback={

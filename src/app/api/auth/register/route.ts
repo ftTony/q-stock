@@ -4,12 +4,14 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendWelcomeEmail } from "@/lib/email";
 import { toDbLocale } from "@/i18n/config";
+import { generateInviteCode } from "@/lib/user/invites";
 
 const schema = z.object({
   email: z.string().email(),
   password: z.string().min(6).max(72),
   name: z.string().min(1).max(64).optional(),
   locale: z.string().optional(),
+  inviteCode: z.string().min(6).max(32).optional(),
 });
 
 export async function POST(req: Request) {
@@ -34,17 +36,66 @@ export async function POST(req: Request) {
 
     const locale = parsed.data.locale || "zh-CN";
     const passwordHash = await bcrypt.hash(parsed.data.password, 10);
-    const user = await prisma.user.create({
-      data: {
-        email,
-        passwordHash,
-        name: parsed.data.name,
-        locale: toDbLocale(locale),
-      },
-      select: { id: true, email: true, name: true },
+    const rawInvite = parsed.data.inviteCode?.trim();
+
+    let inviteRow: {
+      id: string;
+      ownerId: string;
+      usedById: string | null;
+    } | null = null;
+
+    if (rawInvite) {
+      inviteRow = await prisma.inviteCode.findUnique({
+        where: { code: rawInvite },
+        select: { id: true, ownerId: true, usedById: true },
+      });
+      if (!inviteRow || inviteRow.usedById) {
+        return NextResponse.json(
+          { error: "Invalid or used invite code" },
+          { status: 400 },
+        );
+      }
+    }
+
+    const user = await prisma.$transaction(async (tx) => {
+      const created = await tx.user.create({
+        data: {
+          email,
+          passwordHash,
+          name: parsed.data.name,
+          locale: toDbLocale(locale),
+        },
+        select: { id: true, email: true, name: true },
+      });
+
+      if (inviteRow) {
+        const updated = await tx.inviteCode.updateMany({
+          where: { id: inviteRow.id, usedById: null },
+          data: { usedById: created.id, usedAt: new Date() },
+        });
+        if (updated.count !== 1) {
+          throw new Error("INVITE_RACE");
+        }
+
+        // Reward inviter with one new code (“缘法流转”).
+        for (let attempt = 0; attempt < 8; attempt++) {
+          try {
+            await tx.inviteCode.create({
+              data: {
+                code: generateInviteCode(),
+                ownerId: inviteRow.ownerId,
+              },
+            });
+            break;
+          } catch {
+            /* unique collision — retry */
+          }
+        }
+      }
+
+      return created;
     });
 
-    // Do not fail registration if mail delivery fails
     void sendWelcomeEmail({
       to: user.email,
       name: user.name,
@@ -55,6 +106,12 @@ export async function POST(req: Request) {
 
     return NextResponse.json({ user }, { status: 201 });
   } catch (err) {
+    if (err instanceof Error && err.message === "INVITE_RACE") {
+      return NextResponse.json(
+        { error: "Invalid or used invite code" },
+        { status: 400 },
+      );
+    }
     console.error("register", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }

@@ -18,7 +18,8 @@
     "login": "Log masuk",
     "register": "Daftar",
     "logout": "Log keluar",
-    "marketOpen": "Pasaran Dibuka"
+    "marketOpen": "Pasaran Dibuka",
+    "about": "About"
   },
   "market": {
     "stocks": "Saham US",
@@ -200,7 +201,11 @@
     "continueWithGoogle": "Teruskan dengan Google",
     "googleError": "Log masuk sosial gagal. Cuba lagi atau guna e-mel.",
     "continueWithGithub": "Teruskan dengan GitHub",
-    "oauthError": "Log masuk sosial gagal. Cuba lagi atau guna e-mel."
+    "oauthError": "Log masuk sosial gagal. Cuba lagi atau guna e-mel.",
+    "inviteCode": "Kod jemputan",
+    "inviteCodeOptional": "Pilihan",
+    "inviteInvalid": "Kod jemputan tidak sah atau telah digunakan",
+    "emailTaken": "E-mel sudah didaftarkan"
   },
   "settings": {
     "title": "Tetapan",
@@ -301,7 +306,17 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "Kami tidak pernah menyimpan kunci anda dalam teks biasa. Ia disulitkan untuk akaun anda sahaja — sila tambah dengan yakin."
+    "credsTrustNote": "Kami tidak pernah menyimpan kunci anda dalam teks biasa. Ia disulitkan untuk akaun anda sahaja — sila tambah dengan yakin.",
+    "inviteTitle": "Jemputan",
+    "inviteHint": "Kod jemputan terhad—kongsi hanya dengan orang yang dipercayai. Bila seseorang daftar Q-Stock dengan kod anda, anda menerima kod baharu.",
+    "inviteCopyCode": "Salin kod",
+    "inviteCopyLink": "Salin pautan",
+    "inviteCopied": "Disalin",
+    "inviteUsed": "Digunakan",
+    "inviteEmpty": "Tiada kod jemputan",
+    "inviteLoadError": "Gagal memuatkan kod jemputan",
+    "inviteShareCode": "Sertai saya di Q-Stock (saham AS/HK & kripto). Kod jemputan: {code}",
+    "inviteShareLink": "Sertai saya di Q-Stock (saham AS/HK & kripto). Daftar di sini: {link}"
   },
   "alerts": {
     "title": "Amaran harga",
@@ -447,5 +462,21 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX"
+  },
+  "about": {
+    "title": "About me",
+    "subtitle": "Nota daripada pengarang Q-STOCK",
+    "p1": "Sedekad dalam perisian kewangan—utama front-end, selesa dengan back-end—dan biasa dengan aliran broker dari pembukaan akaun hingga dagangan, data pasaran dan risiko. Laman ini untuk pembelajaran / amalan teknikal peribadi. Kandungan hanya rujukan, bukan nasihat pelaburan.",
+    "p2": "Jika boleh memperkenalkan saya kepada pasukan perniagaan Futu atau Longbridge, saya ingin meneroka kerjasama yang lebih mendalam.",
+    "p3": "Jika ada “peluru” (bajet), bantu tambah token API — untuk lebih banyak ciri kewangan berasaskan AI.",
+    "p4": "Terima kasih kepada setiap rakan yang singgah.",
+    "contactTitle": "Hubungi",
+    "contactEmailLabel": "E-mel:",
+    "wechat": "WeChat",
+    "alipay": "Alipay",
+    "wechatQrAlt": "WeChat QR",
+    "alipayQrAlt": "Alipay QR",
+    "qrHint": "Scan to tip, or email for collaboration.",
+    "mainlandNotice": "Peringatan untuk rakan di tanah besar China: melabur saham luar negara atau BTC kini adalah haram. Laman ini hanya untuk pembelajaran — patuhi undang-undang setempat."
   }
 }

@@ -18,7 +18,8 @@
     "login": "Anmelden",
     "register": "Registrieren",
     "logout": "Abmelden",
-    "marketOpen": "Markt offen"
+    "marketOpen": "Markt offen",
+    "about": "About"
   },
   "market": {
     "stocks": "US-Aktien",
@@ -200,7 +201,11 @@
     "continueWithGoogle": "Mit Google fortfahren",
     "googleError": "Soziale Anmeldung fehlgeschlagen. Erneut versuchen oder E-Mail nutzen.",
     "continueWithGithub": "Mit GitHub fortfahren",
-    "oauthError": "Soziale Anmeldung fehlgeschlagen. Erneut versuchen oder E-Mail nutzen."
+    "oauthError": "Soziale Anmeldung fehlgeschlagen. Erneut versuchen oder E-Mail nutzen.",
+    "inviteCode": "Einladungscode",
+    "inviteCodeOptional": "Optional",
+    "inviteInvalid": "Ungültiger oder bereits verwendeter Einladungscode",
+    "emailTaken": "E-Mail bereits registriert"
   },
   "settings": {
     "title": "Einstellungen",
@@ -301,7 +306,17 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "Wir speichern Ihre Keys nie im Klartext. Sie werden nur für Ihr Konto verschlüsselt — Sie können sie bedenkenlos hinterlegen."
+    "credsTrustNote": "Wir speichern Ihre Keys nie im Klartext. Sie werden nur für Ihr Konto verschlüsselt — Sie können sie bedenkenlos hinterlegen.",
+    "inviteTitle": "Einladung",
+    "inviteHint": "Einladungscodes sind begrenzt—teilen Sie sie nur mit Vertrauenspersonen. Wer mit Ihrem Code bei Q-Stock beitritt, bringt Ihnen einen neuen Code.",
+    "inviteCopyCode": "Code kopieren",
+    "inviteCopyLink": "Link kopieren",
+    "inviteCopied": "Kopiert",
+    "inviteUsed": "Verwendet",
+    "inviteEmpty": "Keine Einladungscodes",
+    "inviteLoadError": "Einladungscodes konnten nicht geladen werden",
+    "inviteShareCode": "Komm zu Q-Stock (US-/HK-Aktien & Krypto). Einladungscode: {code}",
+    "inviteShareLink": "Komm zu Q-Stock (US-/HK-Aktien & Krypto). Registrierung: {link}"
   },
   "alerts": {
     "title": "Kursalarme",
@@ -447,5 +462,21 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX"
+  },
+  "about": {
+    "title": "About me",
+    "subtitle": "Eine Notiz vom Q-STOCK-Autor",
+    "p1": "Ein Jahrzehnt Finanzsoftware — Frontend im Fokus, mit Backend-Erfahrung — und vertraut mit dem Broker-Stack von Kontoeröffnung über Trading und Marktdaten bis Risiko. Diese Seite ist ein persönliches Lern-/Technikprojekt. Inhalte dienen nur der Orientierung und sind keine Anlageberatung.",
+    "p2": "Wenn Sie Kontakte zu Futu- oder Longbridge-Business-Teams haben, würde ich eine engere Zusammenarbeit gerne ausloten.",
+    "p3": "Wer etwas „Munition“ (Budget) übrig hat: API-Token aufladen hilft — für mehr KI-Finanzfunktionen.",
+    "p4": "Danke an alle, die vorbeischauen.",
+    "contactTitle": "Kontakt",
+    "contactEmailLabel": "E-Mail:",
+    "wechat": "WeChat",
+    "alipay": "Alipay",
+    "wechatQrAlt": "WeChat QR",
+    "alipayQrAlt": "Alipay QR",
+    "qrHint": "Scan to tip, or email for collaboration.",
+    "mainlandNotice": "Hinweis für Freunde in Festlandchina: Anlagen in ausländische Aktien oder BTC sind derzeit rechtswidrig. Diese Seite dient nur dem Lernen — bitte geltendes Recht beachten."
   }
 }

@@ -18,7 +18,8 @@
     "login": "เข้าสู่ระบบ",
     "register": "ลงทะเบียน",
     "logout": "ออกจากระบบ",
-    "marketOpen": "ตลาดเปิด"
+    "marketOpen": "ตลาดเปิด",
+    "about": "About"
   },
   "market": {
     "stocks": "หุ้นสหรัฐฯ",
@@ -200,7 +201,11 @@
     "continueWithGoogle": "ดำเนินการต่อด้วย Google",
     "googleError": "เข้าสู่ระบบโซเชียลไม่สำเร็จ ลองใหม่หรือใช้อีเมล",
     "continueWithGithub": "ดำเนินการต่อด้วย GitHub",
-    "oauthError": "เข้าสู่ระบบโซเชียลไม่สำเร็จ ลองใหม่หรือใช้อีเมล"
+    "oauthError": "เข้าสู่ระบบโซเชียลไม่สำเร็จ ลองใหม่หรือใช้อีเมล",
+    "inviteCode": "รหัสเชิญ",
+    "inviteCodeOptional": "ไม่บังคับ",
+    "inviteInvalid": "รหัสเชิญไม่ถูกต้องหรือถูกใช้แล้ว",
+    "emailTaken": "อีเมลนี้ลงทะเบียนแล้ว"
   },
   "settings": {
     "title": "การตั้งค่า",
@@ -301,7 +306,17 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "ระบบไม่เก็บ Key เป็นข้อความธรรมดา จะเข้ารหัสเฉพาะบัญชีของคุณ เพิ่มได้อย่างมั่นใจ"
+    "credsTrustNote": "ระบบไม่เก็บ Key เป็นข้อความธรรมดา จะเข้ารหัสเฉพาะบัญชีของคุณ เพิ่มได้อย่างมั่นใจ",
+    "inviteTitle": "เชิญชวน",
+    "inviteHint": "รหัสเชิญมีจำกัด—แชร์เฉพาะกับคนที่ไว้ใจ เมื่อมีคนสมัคร Q-Stock ด้วยรหัสของคุณ คุณจะได้รหัสใหม่",
+    "inviteCopyCode": "คัดลอกรหัส",
+    "inviteCopyLink": "คัดลอกลิงก์",
+    "inviteCopied": "คัดลอกแล้ว",
+    "inviteUsed": "ใช้แล้ว",
+    "inviteEmpty": "ยังไม่มีรหัสเชิญ",
+    "inviteLoadError": "โหลดรหัสเชิญไม่สำเร็จ",
+    "inviteShareCode": "ชวนมาใช้ Q-Stock ดูหุ้น US/HK และคริปโต รหัสเชิญ: {code}",
+    "inviteShareLink": "ชวนมาใช้ Q-Stock ดูหุ้น US/HK และคริปโต สมัครที่นี่: {link}"
   },
   "alerts": {
     "title": "การแจ้งเตือนราคา",
@@ -447,5 +462,21 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX"
+  },
+  "about": {
+    "title": "About me",
+    "subtitle": "ข้อความจากผู้สร้าง Q-STOCK",
+    "p1": "พัฒนาซอฟต์แวร์การเงินมาสิบปี เน้นฟรอนต์เอนด์ คุ้นแบ็กเอนด์ และเข้าใจกระบวนการโบรกเกอร์ตั้งแต่เปิดบัญชี เทรด ข้อมูลตลาด ถึงความเสี่ยง เว็บนี้เป็นการเรียนรู้และทดลองส่วนตัว เนื้อหาเพื่ออ้างอิงเท่านั้น ไม่ใช่คำแนะนำการลงทุน",
+    "p2": "หากช่วยแนะนำทีมธุรกิจ Futu หรือ Longbridge ได้ จะยินดีสำรวจความร่วมมือที่ลึกขึ้น",
+    "p3": "มีกระสุน (งบ) ช่วยเติม token ได้ จะนำไปทำฟีเจอร์ AI การเงินเพิ่มเติม",
+    "p4": "ขอบคุณทุกท่านที่แวะมา",
+    "contactTitle": "ติดต่อ",
+    "contactEmailLabel": "อีเมล:",
+    "wechat": "WeChat",
+    "alipay": "Alipay",
+    "wechatQrAlt": "WeChat QR",
+    "alipayQrAlt": "Alipay QR",
+    "qrHint": "Scan to tip, or email for collaboration.",
+    "mainlandNotice": "เตือนเพื่อนในจีนแผ่นดินใหญ่: ปัจจุบันการลงทุนหุ้นต่างประเทศหรือ BTC เป็นการกระทำผิดกฎหมาย เว็บนี้เพื่อการเรียนรู้เท่านั้น กรุณาปฏิบัติตามกฎหมายท้องถิ่น"
   }
 }
