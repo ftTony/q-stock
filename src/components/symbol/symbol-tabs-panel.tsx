@@ -15,6 +15,7 @@ import {
   CompanyProfilePanel,
   OfficersPanel,
 } from "@/components/market/company-panel";
+import { PaginatedList } from "@/components/ui/paginated-list";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
 import type { AssetType } from "@/lib/types";
@@ -176,14 +177,20 @@ export function SymbolTabsPanel({
         ) : (
           <>
             {tab === "news" && (
-              <ul className="space-y-3">
-                {news.length === 0 && (
-                  <li className="text-sm text-[var(--muted)]">
+              <PaginatedList
+                items={news}
+                pageSize={8}
+                resetKey={`news-${news.length}-${news[0]?.headline ?? ""}`}
+                empty={
+                  <p className="text-sm text-[var(--muted)]">
                     {degraded ? degradedLabel : errorLabel}
-                  </li>
-                )}
-                {news.map((n, i) => (
-                  <li key={i} className="border-b border-[var(--border)] pb-3 last:border-0">
+                  </p>
+                }
+                renderItem={(n, i) => (
+                  <li
+                    key={`${n.url || n.headline}-${i}`}
+                    className="border-b border-[var(--border)] pb-3 last:border-0"
+                  >
                     <a
                       href={n.url || "#"}
                       target="_blank"
@@ -206,8 +213,8 @@ export function SymbolTabsPanel({
                         : ""}
                     </div>
                   </li>
-                ))}
-              </ul>
+                )}
+              />
             )}
 
             {tab === "earnings" &&
@@ -224,39 +231,45 @@ export function SymbolTabsPanel({
                 />
               ))}
 
-            {tab === "press" && (
-              <ul className="space-y-3">
-                {(assetType === "crypto" || isIndex) && (
-                  <li className="text-sm text-[var(--muted)]">N/A</li>
-                )}
-                {press.map((p, i) => (
-                  <li key={i} className="border-b border-[var(--border)] pb-3 last:border-0">
-                    <a
-                      href={p.url || "#"}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="font-medium hover:text-[var(--brand)]"
+            {tab === "press" &&
+              (assetType === "crypto" || isIndex ? (
+                <p className="text-sm text-[var(--muted)]">N/A</p>
+              ) : (
+                <PaginatedList
+                  items={press}
+                  pageSize={8}
+                  resetKey={`press-${press.length}-${press[0]?.headline ?? ""}`}
+                  empty={
+                    <p className="text-sm text-[var(--muted)]">{degradedLabel}</p>
+                  }
+                  renderItem={(p, i) => (
+                    <li
+                      key={`${p.url || p.headline}-${i}`}
+                      className="border-b border-[var(--border)] pb-3 last:border-0"
                     >
-                      {p.headline || p.description || "Press release"}
-                    </a>
-                    {p.description && p.headline && (
-                      <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
-                        {p.description}
-                      </p>
-                    )}
-                    <div className="mt-1 text-xs text-[var(--muted)]">
-                      {p.datetime
-                        ? new Date(p.datetime).toLocaleString()
-                        : ""}
-                      {p.source ? ` · ${p.source}` : ""}
-                    </div>
-                  </li>
-                ))}
-                {assetType !== "crypto" && !isIndex && press.length === 0 && (
-                  <li className="text-sm text-[var(--muted)]">{degradedLabel}</li>
-                )}
-              </ul>
-            )}
+                      <a
+                        href={p.url || "#"}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="font-medium hover:text-[var(--brand)]"
+                      >
+                        {p.headline || p.description || "Press release"}
+                      </a>
+                      {p.description && p.headline && (
+                        <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
+                          {p.description}
+                        </p>
+                      )}
+                      <div className="mt-1 text-xs text-[var(--muted)]">
+                        {p.datetime
+                          ? new Date(p.datetime).toLocaleString()
+                          : ""}
+                        {p.source ? ` · ${p.source}` : ""}
+                      </div>
+                    </li>
+                  )}
+                />
+              ))}
 
             {tab === "profile" && <CompanyProfilePanel profile={company} />}
 
