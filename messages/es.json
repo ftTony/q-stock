@@ -1,8 +1,11 @@
 {
   "app": {
-    "name": "Q-Stock",
-    "tagline": "Acciones EE. UU., acciones de Hong Kong y cripto",
-    "terminal": "Terminal v1.0"
+    "name": "Qianli Gu",
+    "tagline": "Inversión inteligente · Descubrimiento de valor · IA",
+    "terminal": "Terminal v1.0",
+    "domain": "q-stock.cn",
+    "slogan": "Inversión inteligente · Descubrimiento de valor",
+    "fintech": "FINTECH PLATFORM"
   },
   "nav": {
     "main": "Navegar",
@@ -19,6 +22,10 @@
     "register": "Registrarse",
     "logout": "Cerrar sesión",
     "marketOpen": "Mercado abierto",
+    "marketClosed": "Mercado cerrado",
+    "marketOpenUs": "EE.UU. abierto",
+    "marketOpenHk": "HK abierto",
+    "marketOpenBoth": "EE.UU. y HK abiertos",
     "about": "About"
   },
   "market": {
@@ -315,8 +322,8 @@
     "inviteUsed": "Usado",
     "inviteEmpty": "Sin códigos de invitación",
     "inviteLoadError": "No se pudieron cargar los códigos",
-    "inviteShareCode": "Únete a Q-Stock (acciones US/HK y cripto). Código de invitación: {code}",
-    "inviteShareLink": "Únete a Q-Stock (acciones US/HK y cripto). Regístrate aquí: {link}"
+    "inviteShareCode": "Únete a Qianli Gu (Q-Stock): con IA para mirar y repasar el mercado con más calma, y atenuar avaricia, miedo y otros sesgos. Código: {code}",
+    "inviteShareLink": "Únete a Qianli Gu (Q-Stock): con IA para mirar y repasar el mercado con más calma, y atenuar avaricia, miedo y otros sesgos. Regístrate: {link}"
   },
   "alerts": {
     "title": "Alertas de precio",
@@ -479,6 +486,6 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "Aviso para amigos en China continental: invertir en acciones extranjeras o BTC es actualmente ilegal. Este sitio es solo para aprendizaje — cumplan las leyes locales.",
     "platformTitle": "Sobre Qianli Gu",
-    "platformBody": "Qianli Gu (钱力股) gira en torno a la inversión en potencial y el descubrimiento de valor. Usamos IA para apoyar un análisis y una revisión más serenos, y atenuar el efecto del miedo, la codicia y otros sesgos humanos. Los datos y contenidos son solo para aprendizaje, no asesoramiento de inversión."
+    "platformBody": "Qianli Gu (钱力股) gira en torno a la inversión inteligente y el descubrimiento de valor. Usamos IA para apoyar un análisis y una revisión más serenos, y atenuar el efecto del miedo, la codicia y otros sesgos humanos. Los datos y contenidos son solo para aprendizaje, no asesoramiento de inversión."
   }
 }

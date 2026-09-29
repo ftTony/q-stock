@@ -1,8 +1,11 @@
 {
   "app": {
-    "name": "Q-Stock",
-    "tagline": "미국 주식, 홍콩 주식 & 암호화폐 시장",
-    "terminal": "터미널 v1.0"
+    "name": "Qianli Gu",
+    "tagline": "스마트 투자 · 가치 발굴 · AI 의사결정",
+    "terminal": "터미널 v1.0",
+    "domain": "q-stock.cn",
+    "slogan": "스마트 투자 · 가치 발굴",
+    "fintech": "FINTECH PLATFORM"
   },
   "nav": {
     "main": "탐색",
@@ -19,6 +22,10 @@
     "register": "가입",
     "logout": "로그아웃",
     "marketOpen": "시장 개장",
+    "marketClosed": "휴장",
+    "marketOpenUs": "미장 개장",
+    "marketOpenHk": "홍콩 개장",
+    "marketOpenBoth": "미·홍콩 개장",
     "about": "About"
   },
   "market": {
@@ -315,8 +322,8 @@
     "inviteUsed": "사용됨",
     "inviteEmpty": "초대 코드 없음",
     "inviteLoadError": "초대 코드를 불러오지 못했습니다",
-    "inviteShareCode": "Q-Stock(미국/홍콩 주식·암호화폐)에 초대합니다. 초대 코드: {code}",
-    "inviteShareLink": "Q-Stock(미국/홍콩 주식·암호화폐)에 초대합니다. 가입 링크: {link}"
+    "inviteShareCode": "전리구(Q-Stock)에 초대합니다. AI로 더 차분한 시세 관찰·복기를 돕고, 탐욕·공포 같은 인간적 약점을 줄여 보세요. 초대 코드: {code}",
+    "inviteShareLink": "전리구(Q-Stock)에 초대합니다. AI로 더 차분한 시세 관찰·복기를 돕고, 탐욕·공포 같은 인간적 약점을 줄여 보세요. 가입 링크: {link}"
   },
   "alerts": {
     "title": "가격 알림",
@@ -479,6 +486,6 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "중국 본토 이용자 안내: 현재 해외 주식·BTC 투자는 불법입니다. 본 사이트는 학습용이며 현지 법령을 지켜 주세요.",
     "platformTitle": "Qianli Gu 소개",
-    "platformBody": "Qianli Gu(钱力股)는 ‘잠재력 투자’와 ‘가치 발굴’을 중심으로 합니다. AI로 더 차분한 리서치·복기를 돕고, 탐욕·공포 등 인간 약점이 판단을 흔드는 것을 줄이고자 합니다. 시세와 콘텐츠는 학습용이며 투자 권유가 아닙니다."
+    "platformBody": "Qianli Gu(钱力股)는 ‘스마트 투자’와 ‘가치 발굴’을 중심으로 합니다. AI로 더 차분한 리서치·복기를 돕고, 탐욕·공포 등 인간 약점이 판단을 흔드는 것을 줄이고자 합니다. 시세와 콘텐츠는 학습용이며 투자 권유가 아닙니다."
   }
 }

@@ -1,8 +1,11 @@
 {
   "app": {
-    "name": "Q-Stock",
-    "tagline": "米国株・香港株・暗号通貨マーケット",
-    "terminal": "ターミナル v1.0"
+    "name": "銭力股",
+    "tagline": "スマート投資 · 価値発見 · AI 意思決定支援",
+    "terminal": "ターミナル v1.0",
+    "domain": "q-stock.cn",
+    "slogan": "スマート投資 · 価値発見",
+    "fintech": "FINTECH PLATFORM"
   },
   "nav": {
     "main": "ナビゲーション",
@@ -19,6 +22,10 @@
     "register": "新規登録",
     "logout": "ログアウト",
     "marketOpen": "市場開場",
+    "marketClosed": "休場",
+    "marketOpenUs": "米国株開場中",
+    "marketOpenHk": "香港株開場中",
+    "marketOpenBoth": "米・香港開場中",
     "about": "About"
   },
   "market": {
@@ -315,8 +322,8 @@
     "inviteUsed": "使用済み",
     "inviteEmpty": "招待コードがありません",
     "inviteLoadError": "招待コードの読み込みに失敗しました",
-    "inviteShareCode": "Q-Stock（米株・香港株・暗号資産）へご招待。登録時に招待コード：{code}",
-    "inviteShareLink": "Q-Stock（米株・香港株・暗号資産）へご招待。登録はこちら：{link}"
+    "inviteShareCode": "銭力股（Q-Stock）へご招待。AIを借りて、より冷静な相場観察と振り返りを支え、強欲や恐怖などの人性の弱みを抑える。招待コード：{code}",
+    "inviteShareLink": "銭力股（Q-Stock）へご招待。AIを借りて、より冷静な相場観察と振り返りを支え、強欲や恐怖などの人性の弱みを抑える。登録はこちら：{link}"
   },
   "alerts": {
     "title": "価格アラート",
@@ -479,6 +486,6 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "中国本土の方向け：現在、海外株・BTC への投資は違法とされています。本サイトは学習用であり、現地の法令を遵守してください。",
     "platformTitle": "銭力股について",
-    "platformBody": "銭力股（钱力股）は「潜在投資」と「価値発見」を軸にしています。AI の力で、より冷静な相場観察と振り返りを支え、強欲・恐怖など人間の弱点が判断を歪めるのを少しでも和らげます。相場とコンテンツは学習用であり、投資助言ではありません。"
+    "platformBody": "銭力股（钱力股）は「スマート投資」と「価値発見」を軸にしています。AI の力で、より冷静な相場観察と振り返りを支え、強欲・恐怖など人間の弱点が判断を歪めるのを少しでも和らげます。相場とコンテンツは学習用であり、投資助言ではありません。"
   }
 }

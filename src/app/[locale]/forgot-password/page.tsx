@@ -4,10 +4,10 @@ import { FormEvent, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { SiteLogo } from "@/components/brand/site-logo";
 
 export default function ForgotPasswordPage() {
   const t = useTranslations("auth");
-  const tApp = useTranslations("app");
   const tCommon = useTranslations("common");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -39,10 +39,8 @@ export default function ForgotPasswordPage() {
   return (
     <div className="qt-panel w-full space-y-5 p-6 sm:p-8">
       <div>
-        <div className="text-xs tracking-[0.18em] text-[var(--brand-text)] uppercase">
-          {tApp("name")}
-        </div>
-        <h1 className="mt-2 text-2xl font-semibold">{t("forgotTitle")}</h1>
+        <SiteLogo height={28} priority variant="compact" />
+        <h1 className="mt-3 text-2xl font-semibold">{t("forgotTitle")}</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">{t("forgotHint")}</p>
       </div>
 

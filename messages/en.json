@@ -1,8 +1,11 @@
 {
   "app": {
-    "name": "Q-Stock",
-    "tagline": "US stocks, HK stocks & crypto markets",
-    "terminal": "Terminal v1.0"
+    "name": "Qianli Gu",
+    "tagline": "Smart investing · Value discovery · AI-assisted decisions",
+    "terminal": "Terminal v1.0",
+    "domain": "q-stock.cn",
+    "slogan": "Smart investing · Value discovery",
+    "fintech": "FINTECH PLATFORM"
   },
   "nav": {
     "main": "Navigate",
@@ -19,6 +22,10 @@
     "register": "Sign up",
     "logout": "Log out",
     "marketOpen": "Market Open",
+    "marketClosed": "Market Closed",
+    "marketOpenUs": "US Open",
+    "marketOpenHk": "HK Open",
+    "marketOpenBoth": "US & HK Open",
     "about": "About"
   },
   "market": {
@@ -315,8 +322,8 @@
     "inviteUsed": "Used",
     "inviteEmpty": "No invite codes yet",
     "inviteLoadError": "Failed to load invite codes",
-    "inviteShareCode": "Join me on Q-Stock for US / HK stocks & crypto. Use invite code: {code}",
-    "inviteShareLink": "Join me on Q-Stock for US / HK stocks & crypto. Sign up here: {link}"
+    "inviteShareCode": "Join me on Qianli Gu (Q-Stock): use AI for calmer market watching and reviews—and dial down greed, fear, and other human biases. Invite code: {code}",
+    "inviteShareLink": "Join me on Qianli Gu (Q-Stock): use AI for calmer market watching and reviews—and dial down greed, fear, and other human biases. Sign up: {link}"
   },
   "alerts": {
     "title": "Price alerts",
@@ -479,6 +486,6 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "Note for friends in mainland China: investing in overseas stocks or BTC is currently illegal. This site is for learning only — please follow local laws.",
     "platformTitle": "About Qianli Gu",
-    "platformBody": "Qianli Gu (钱力股) is built around potential investing and value discovery. We use AI to support calmer research and review—and to help blunt the impact of fear, greed, and other human biases. Market data and content are for learning only, not investment advice."
+    "platformBody": "Qianli Gu (钱力股) is built around smart investing and value discovery. We use AI to support calmer research and review—and to help blunt the impact of fear, greed, and other human biases. Market data and content are for learning only, not investment advice."
   }
 }

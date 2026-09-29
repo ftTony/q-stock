@@ -1,8 +1,11 @@
 {
   "app": {
-    "name": "Q-Stock",
-    "tagline": "US-Aktien, HK-Aktien & Krypto-Märkte",
-    "terminal": "Terminal v1.0"
+    "name": "Qianli Gu",
+    "tagline": "Intelligentes Investing · Wertfindung · KI",
+    "terminal": "Terminal v1.0",
+    "domain": "q-stock.cn",
+    "slogan": "Intelligentes Investing · Wertfindung",
+    "fintech": "FINTECH PLATFORM"
   },
   "nav": {
     "main": "Navigieren",
@@ -19,6 +22,10 @@
     "register": "Registrieren",
     "logout": "Abmelden",
     "marketOpen": "Markt offen",
+    "marketClosed": "Markt geschlossen",
+    "marketOpenUs": "US offen",
+    "marketOpenHk": "HK offen",
+    "marketOpenBoth": "US & HK offen",
     "about": "About"
   },
   "market": {
@@ -315,8 +322,8 @@
     "inviteUsed": "Verwendet",
     "inviteEmpty": "Keine Einladungscodes",
     "inviteLoadError": "Einladungscodes konnten nicht geladen werden",
-    "inviteShareCode": "Komm zu Q-Stock (US-/HK-Aktien & Krypto). Einladungscode: {code}",
-    "inviteShareLink": "Komm zu Q-Stock (US-/HK-Aktien & Krypto). Registrierung: {link}"
+    "inviteShareCode": "Komm zu Qianli Gu (Q-Stock): mit KI ruhiger Märkte beobachten und Reviews machen—Gier, Angst und andere Schwächen etwas zurücknehmen. Code: {code}",
+    "inviteShareLink": "Komm zu Qianli Gu (Q-Stock): mit KI ruhiger Märkte beobachten und Reviews machen—Gier, Angst und andere Schwächen etwas zurücknehmen. Registrierung: {link}"
   },
   "alerts": {
     "title": "Kursalarme",
@@ -479,6 +486,6 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "Hinweis für Freunde in Festlandchina: Anlagen in ausländische Aktien oder BTC sind derzeit rechtswidrig. Diese Seite dient nur dem Lernen — bitte geltendes Recht beachten.",
     "platformTitle": "Über Qianli Gu",
-    "platformBody": "Qianli Gu (钱力股) dreht sich um Potenzialinvesting und Wertfindung. KI soll ruhigere Analyse und Review unterstützen und den Einfluss von Angst, Gier und anderen menschlichen Schwächen mindern. Marktdaten und Inhalte dienen nur dem Lernen, nicht der Anlageberatung."
+    "platformBody": "Qianli Gu (钱力股) dreht sich um intelligentes Investing und Wertfindung. KI soll ruhigere Analyse und Review unterstützen und den Einfluss von Angst, Gier und anderen menschlichen Schwächen mindern. Marktdaten und Inhalte dienen nur dem Lernen, nicht der Anlageberatung."
   }
 }

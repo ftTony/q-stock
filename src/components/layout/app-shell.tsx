@@ -7,6 +7,7 @@ import { Link, usePathname } from "@/i18n/routing";
 import { TopBarActions } from "@/components/layout/topbar-actions";
 import { DataSourceBadge } from "@/components/layout/data-source-badge";
 import { MarketCredentialsPrompt } from "@/components/settings/market-credentials-prompt";
+import { SiteLogo } from "@/components/brand/site-logo";
 
 function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -107,11 +108,10 @@ function NavItem({
     <Link
       href={href}
       onClick={onClick}
-      className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
-        active
-          ? "bg-[var(--sidebar-active)] text-[var(--brand-text)]"
-          : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-      }`}
+      className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${active
+        ? "bg-[var(--sidebar-active)] text-[var(--brand-text)]"
+        : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+        }`}
     >
       {active && (
         <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[var(--brand)]" />
@@ -168,15 +168,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const close = () => setOpen(false);
 
   const sidebar = (
-    <aside className="flex h-full w-[260px] flex-col border-r border-[var(--border)] bg-[var(--sidebar)]">
-      <div className="border-b border-[var(--border)] px-5 py-5">
+    <aside className="flex h-full w-[270px] flex-col border-r border-[var(--border)] bg-[var(--sidebar)]">
+      <div
+        className="border-b border-[var(--border)] pr-3 pb-3"
+        style={{ paddingTop: 7, paddingLeft: 16, paddingBottom: 2 }}
+      >
         <Link href="/" onClick={close} className="block">
-          <div className="text-lg font-bold tracking-[0.12em] text-[var(--foreground)]">
-            {tApp("name").toUpperCase()}
-          </div>
-          <div className="mt-1 text-[11px] tracking-[0.08em] text-[var(--muted)]">
-            {tApp("terminal")}
-          </div>
+          <SiteLogo height={40} priority variant="full" />
         </Link>
       </div>
 
@@ -295,7 +293,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-dvh lg:flex">
-      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-[260px]">{sidebar}</div>
+      <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-[270px]">{sidebar}</div>
 
       {open && (
         <div className="fixed inset-0 z-50 lg:hidden">
@@ -309,7 +307,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <div className="flex min-h-dvh flex-1 flex-col lg:pl-[260px]">
+      <div className="flex min-h-dvh flex-1 flex-col lg:pl-[270px]">
         <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
           <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
             <div className="flex items-center gap-3">
@@ -321,44 +319,43 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               >
                 <IconMenu />
               </button>
+              <Link href="/" className="flex items-center lg:hidden">
+                <SiteLogo height={28} variant="compact" />
+              </Link>
               <nav className="hidden items-center gap-1 text-sm md:flex">
                 <Link
                   href="/watchlist"
-                  className={`rounded-lg px-3 py-1.5 transition ${
-                    isWatchlist
-                      ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
-                      : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-                  }`}
+                  className={`rounded-lg px-3 py-1.5 transition ${isWatchlist
+                    ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
+                    : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+                    }`}
                 >
                   {t("watchlist")}
                 </Link>
                 <Link
                   href="/analysis"
-                  className={`rounded-lg px-3 py-1.5 transition ${
-                    isAnalysis
-                      ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
-                      : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-                  }`}
+                  className={`rounded-lg px-3 py-1.5 transition ${isAnalysis
+                    ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
+                    : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+                    }`}
                 >
                   {t("analysis")}
                 </Link>
                 <Link
                   href="/portfolio"
-                  className={`rounded-lg px-3 py-1.5 transition ${
-                    isPortfolio
-                      ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
-                      : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-                  }`}
+                  className={`rounded-lg px-3 py-1.5 transition ${isPortfolio
+                    ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
+                    : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+                    }`}
                 >
                   {t("portfolio")}
                 </Link>
                 <Link
                   href="/alerts"
-                  className={`rounded-lg px-3 py-1.5 transition ${
-                    isAlerts
-                      ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
-                      : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-                  }`}
+                  className={`rounded-lg px-3 py-1.5 transition ${isAlerts
+                    ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
+                    : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+                    }`}
                 >
                   {t("alerts")}
                 </Link>

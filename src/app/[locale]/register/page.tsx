@@ -1,12 +1,13 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { pathAfterAuth } from "@/lib/market/creds-status-client";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { OAuthSignInButtons } from "@/components/auth/oauth-sign-in-buttons";
+import { SiteLogo } from "@/components/brand/site-logo";
 
 export default function RegisterPage() {
   const t = useTranslations("auth");
@@ -20,6 +21,13 @@ export default function RegisterPage() {
   const [inviteCode, setInviteCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [oauthBusy, setOauthBusy] = useState(false);
+
+  const onOauthBusyChange = useCallback((busy: boolean) => {
+    setOauthBusy(busy);
+  }, []);
+
+  const formBusy = loading || oauthBusy;
 
   useEffect(() => {
     try {
@@ -77,11 +85,9 @@ export default function RegisterPage() {
 
   return (
     <div className="qt-panel w-full space-y-5 p-6 sm:p-8">
-      <div>
-        <div className="text-xs tracking-[0.18em] text-[var(--brand-text)] uppercase">
-          {tApp("name")}
-        </div>
-        <h1 className="mt-2 text-2xl font-semibold">{t("registerTitle")}</h1>
+      <div className="flex flex-col items-center gap-2">
+        <SiteLogo height={44} priority variant="compact" />
+        <p className="text-sm text-[var(--muted)]">{tApp("slogan")}</p>
       </div>
       <form onSubmit={onSubmit} className="space-y-3">
         <label className="block space-y-1 text-sm">
@@ -90,7 +96,7 @@ export default function RegisterPage() {
             value={name}
             onChange={(e) => setName(e.target.value)}
             className="qt-input w-full px-3 py-2.5"
-            disabled={loading}
+            disabled={formBusy}
           />
         </label>
         <label className="block space-y-1 text-sm">
@@ -101,7 +107,7 @@ export default function RegisterPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="qt-input w-full px-3 py-2.5"
-            disabled={loading}
+            disabled={formBusy}
           />
         </label>
         <label className="block space-y-1 text-sm">
@@ -113,7 +119,7 @@ export default function RegisterPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="qt-input w-full px-3 py-2.5"
-            disabled={loading}
+            disabled={formBusy}
           />
         </label>
         <label className="block space-y-1 text-sm">
@@ -122,22 +128,25 @@ export default function RegisterPage() {
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value)}
             className="qt-input w-full px-3 py-2.5 font-mono"
-            disabled={loading}
+            disabled={formBusy}
             autoComplete="off"
             spellCheck={false}
             placeholder={t("inviteCodeOptional")}
           />
         </label>
-        {error && <p className="text-sm text-[var(--down)]">{error}</p>}
+        {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
         <SubmitButton
-          loading={loading}
+          loading={formBusy}
           loadingLabel={tCommon("loading")}
           className="qt-btn-primary w-full px-3 py-2.5 text-sm"
         >
           {t("submitRegister")}
         </SubmitButton>
       </form>
-      <OAuthSignInButtons disabled={loading} />
+      <OAuthSignInButtons
+        disabled={formBusy}
+        onBusyChange={onOauthBusyChange}
+      />
       <p className="text-sm text-[var(--muted)]">
         {t("haveAccount")}{" "}
         <Link href="/login" className="text-[var(--brand-text)]">

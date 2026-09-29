@@ -11,6 +11,7 @@ import {
   localeCode,
   type AppLocale,
 } from "@/i18n/config";
+import { getEquitySession } from "@/lib/market/session";
 
 type AlertItem = {
   id: string;
@@ -21,6 +22,24 @@ type AlertItem = {
   status: "active" | "triggered" | "disabled";
   triggeredAt?: string | null;
 };
+
+function useEquitySessionLabel(t: (key: string) => string) {
+  const [session, setSession] = useState(() => getEquitySession());
+
+  useEffect(() => {
+    const tick = () => setSession(getEquitySession());
+    tick();
+    const id = window.setInterval(tick, 30_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  if (session.usOpen && session.hkOpen) {
+    return { open: true, label: t("marketOpenBoth") };
+  }
+  if (session.usOpen) return { open: true, label: t("marketOpenUs") };
+  if (session.hkOpen) return { open: true, label: t("marketOpenHk") };
+  return { open: false, label: t("marketClosed") };
+}
 
 export function TopBarActions() {
   const t = useTranslations("nav");
@@ -74,12 +93,22 @@ export function TopBarActions() {
   }, []);
 
   const dark = (resolvedTheme || theme) === "dark";
+  const market = useEquitySessionLabel((key) => t(key as "marketOpen"));
 
   return (
     <div className="flex items-center gap-2 sm:gap-3">
-      <span className="qt-chip hidden sm:inline-flex">
-        <span className="h-1.5 w-1.5 rounded-full bg-[var(--up)] shadow-[0_0_8px_var(--up)]" />
-        {t("marketOpen")}
+      <span
+        className="qt-chip hidden sm:inline-flex"
+        title={market.label}
+      >
+        <span
+          className={`h-1.5 w-1.5 rounded-full ${
+            market.open
+              ? "bg-[var(--up)] shadow-[0_0_8px_var(--up)]"
+              : "bg-[var(--muted)]"
+          }`}
+        />
+        {market.label}
       </span>
 
       <button

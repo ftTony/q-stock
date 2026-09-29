@@ -185,6 +185,11 @@ function formatPrice(n: number): string {
   });
 }
 
+function emailBrandLogoHtml(): string {
+  const src = `${appBaseUrl()}/logo.png`;
+  return `<img src="${src}" alt="钱力股 Q-Stock" width="120" height="106" style="display:block;height:40px;width:auto;max-width:160px;margin:0 0 14px;border:0;outline:none" />`;
+}
+
 function emailShell(opts: {
   titleZh: string;
   titleEn: string;
@@ -192,12 +197,12 @@ function emailShell(opts: {
 }): string {
   return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:#1a1a1a;max-width:560px;margin:0 auto">
       <div style="padding:28px 24px;border-radius:12px;background:linear-gradient(135deg,#0b1220 0%,#1e3a5f 100%);color:#fff">
-        <div style="font-size:12px;letter-spacing:0.18em;opacity:0.85">Q-STOCK</div>
-        <h1 style="margin:10px 0 0;font-size:22px;font-weight:600">${opts.titleZh}</h1>
+        ${emailBrandLogoHtml()}
+        <h1 style="margin:0;font-size:22px;font-weight:600">${opts.titleZh}</h1>
         <p style="margin:8px 0 0;opacity:0.9;font-size:14px">${opts.titleEn}</p>
       </div>
       ${opts.bodyHtml}
-      <p style="font-size:12px;color:#94a3b8;padding:0 8px 8px;margin:16px 0 0">Q-STOCK · 行情与提醒仅供参考，不构成投资建议。<br/>Market data and alerts are for reference only — not investment advice.</p>
+      <p style="font-size:12px;color:#94a3b8;padding:0 8px 8px;margin:16px 0 0">钱力股 Q-STOCK · 行情与提醒仅供参考，不构成投资建议。<br/>Market data and alerts are for reference only — not investment advice.</p>
     </div>`;
 }
 
@@ -305,15 +310,12 @@ export async function sendWelcomeEmail(opts: {
   const loginUrl = `${homeUrl}/login`;
   const settingsUrl = `${homeUrl}/settings`;
 
-  const subject = "欢迎来到 Q-STOCK 平台 / Welcome to the Q-STOCK platform";
+  const subject = "欢迎来到钱力股 Q-STOCK / Welcome to Qianli Gu (Q-STOCK)";
 
-  const html = `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;line-height:1.65;color:#1a1a1a;max-width:560px;margin:0 auto">
-      <div style="padding:28px 24px;border-radius:12px;background:linear-gradient(135deg,#0b1220 0%,#1e3a5f 100%);color:#fff">
-        <div style="font-size:12px;letter-spacing:0.18em;opacity:0.85">Q-STOCK</div>
-        <h1 style="margin:10px 0 0;font-size:22px;font-weight:600">欢迎来到 Q-STOCK 平台</h1>
-        <p style="margin:8px 0 0;opacity:0.9;font-size:14px">Welcome to the Q-STOCK platform</p>
-      </div>
-
+  const html = emailShell({
+    titleZh: "欢迎来到钱力股平台",
+    titleEn: "Welcome to the Qianli Gu platform",
+    bodyHtml: `
       <div style="padding:24px 8px 8px">
         <h2 style="font-size:18px;margin:0 0 12px">注册成功</h2>
         <p style="margin:0 0 12px">你好，<strong>${who}</strong>！</p>
@@ -325,15 +327,13 @@ export async function sendWelcomeEmail(opts: {
           <li>在首页添加自选，或为关注标的设置价格提醒。</li>
         </ol>
         <p style="margin:0 0 20px">
-          <a href="${loginUrl}" style="display:inline-block;padding:10px 18px;border-radius:8px;background:#3b82f6;color:#fff;text-decoration:none;font-size:14px">前往登录</a>
-          <a href="${settingsUrl}" style="display:inline-block;padding:10px 18px;border-radius:8px;margin-left:8px;border:1px solid #cbd5e1;color:#0f172a;text-decoration:none;font-size:14px">打开设置</a>
+          ${emailBtn(loginUrl, "前往登录")}
+          ${emailBtn(settingsUrl, "打开设置", "ghost")}
         </p>
         <p style="margin:0;font-size:13px;color:#64748b">如按钮无法点击，请复制链接：<br/>${loginUrl}</p>
       </div>
-
       <hr style="border:none;border-top:1px solid #e2e8f0;margin:28px 0" />
-
-      <div style="padding:8px 8px 24px">
+      <div style="padding:8px 8px 8px">
         <h2 style="font-size:18px;margin:0 0 12px">You're in</h2>
         <p style="margin:0 0 12px">Hi <strong>${who}</strong>,</p>
         <p style="margin:0 0 12px">Thanks for joining. Your account (${escapeHtml(opts.to)}) is ready for US / HK equities and crypto quotes, watchlists, price alerts, AI analysis, and paper trading.</p>
@@ -344,17 +344,15 @@ export async function sendWelcomeEmail(opts: {
           <li>Build a watchlist or set price alerts on symbols you care about.</li>
         </ol>
         <p style="margin:0 0 20px">
-          <a href="${loginUrl}" style="display:inline-block;padding:10px 18px;border-radius:8px;background:#3b82f6;color:#fff;text-decoration:none;font-size:14px">Sign in</a>
-          <a href="${settingsUrl}" style="display:inline-block;padding:10px 18px;border-radius:8px;margin-left:8px;border:1px solid #cbd5e1;color:#0f172a;text-decoration:none;font-size:14px">Open Settings</a>
+          ${emailBtn(loginUrl, "Sign in")}
+          ${emailBtn(settingsUrl, "Open Settings", "ghost")}
         </p>
         <p style="margin:0;font-size:13px;color:#64748b">If the buttons don’t work, copy this link:<br/>${loginUrl}</p>
-      </div>
-
-      <p style="font-size:12px;color:#94a3b8;padding:0 8px 8px;margin:0">Q-STOCK · 行情与分析仅供参考，不构成投资建议。<br/>Market data and AI analysis are for reference only — not investment advice.</p>
-    </div>`;
+      </div>`,
+  });
 
   const text = [
-    "欢迎来到 Q-STOCK 平台",
+    "欢迎来到钱力股 Q-STOCK 平台",
     `你好，${opts.name?.trim() || opts.to}！`,
     `账户已创建：${opts.to}`,
     "",
@@ -365,11 +363,11 @@ export async function sendWelcomeEmail(opts: {
     "",
     "————————",
     "",
-    "Welcome to the Q-STOCK platform",
+    "Welcome to Qianli Gu (Q-STOCK)",
     `Hi ${opts.name?.trim() || opts.to},`,
     `Account created: ${opts.to}`,
     "",
-    "Use Q-STOCK for US / HK / crypto markets, watchlists, alerts, AI analysis, and paper trading.",
+    "Use Qianli Gu for US / HK / crypto markets, watchlists, alerts, AI analysis, and paper trading.",
     "After signing in, open Settings to configure vendors and bring-your-own API keys.",
     `Sign in: ${loginUrl}`,
     `Settings: ${settingsUrl}`,

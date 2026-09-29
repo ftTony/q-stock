@@ -6,6 +6,7 @@ import {
   PreferenceProvider,
   type ChangeColorScheme,
 } from "@/components/providers/preference-provider";
+import { PwaRegister } from "@/components/pwa/pwa-register";
 
 export function AppProviders({
   children,
@@ -19,6 +20,7 @@ export function AppProviders({
     <SessionProvider>
       <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <PreferenceProvider initialScheme={changeColorScheme}>
+          <PwaRegister />
           {children}
         </PreferenceProvider>
       </ThemeProvider>

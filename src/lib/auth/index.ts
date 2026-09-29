@@ -1,4 +1,4 @@
-import NextAuth from "next-auth";
+import NextAuth, { customFetch } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import GitHub from "next-auth/providers/github";
 import Google from "next-auth/providers/google";
@@ -7,6 +7,7 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendWelcomeEmail } from "@/lib/email";
+import { getProxyAwareFetch } from "@/lib/http/proxy-fetch";
 import { fromDbLocale, toDbLocale } from "@/i18n/config";
 
 const credentialsSchema = z.object({
@@ -83,6 +84,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             clientId: process.env.AUTH_GOOGLE_ID!,
             clientSecret: process.env.AUTH_GOOGLE_SECRET!,
             allowDangerousEmailAccountLinking: true,
+            // Mainland / filtered networks: Node cannot reach Google without a proxy.
+            // Browser may use the system proxy; Auth.js server fetch must opt in.
+            [customFetch]: getProxyAwareFetch(),
           }),
         ]
       : []),

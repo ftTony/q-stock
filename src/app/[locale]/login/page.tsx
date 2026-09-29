@@ -1,25 +1,26 @@
 "use client";
 
-import { FormEvent, Suspense, useState } from "react";
+import { FormEvent, Suspense, useCallback, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { pathAfterAuth } from "@/lib/market/creds-status-client";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { OAuthSignInButtons } from "@/components/auth/oauth-sign-in-buttons";
+import { SiteLogo } from "@/components/brand/site-logo";
 
 function LoginForm() {
   const t = useTranslations("auth");
   const tApp = useTranslations("app");
   const tCommon = useTranslations("common");
-  const locale = useLocale();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [oauthBusy, setOauthBusy] = useState(false);
 
   const oauthError = searchParams.get("error");
   const notice =
@@ -28,6 +29,12 @@ function LoginForm() {
       : searchParams.get("registered") === "1"
         ? t("registered")
         : null;
+
+  const onOauthBusyChange = useCallback((busy: boolean) => {
+    setOauthBusy(busy);
+  }, []);
+
+  const formBusy = loading || oauthBusy;
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
@@ -53,17 +60,15 @@ function LoginForm() {
 
   return (
     <div className="qt-panel w-full space-y-5 p-6 sm:p-8">
-      <div>
-        <div className="text-xs tracking-[0.18em] text-[var(--brand-text)] uppercase">
-          {tApp("name")}
-        </div>
-        <h1 className="mt-2 text-2xl font-semibold">{t("loginTitle")}</h1>
+      <div className="flex flex-col items-center gap-2">
+        <SiteLogo height={44} priority variant="compact" />
+        <p className="text-sm text-[var(--muted)]">{tApp("slogan")}</p>
       </div>
       {notice ? (
         <p className="text-sm text-[var(--up)]">{notice}</p>
       ) : null}
       {oauthError ? (
-        <p className="text-sm text-[var(--down)]">{t("oauthError")}</p>
+        <p className="text-sm text-[var(--danger)]">{t("oauthError")}</p>
       ) : null}
       <form onSubmit={onSubmit} className="space-y-3">
         <label className="block space-y-1 text-sm">
@@ -74,7 +79,7 @@ function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             className="qt-input w-full px-3 py-2.5"
-            disabled={loading}
+            disabled={formBusy}
           />
         </label>
         <label className="block space-y-1 text-sm">
@@ -94,26 +99,28 @@ function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             className="qt-input w-full px-3 py-2.5"
-            disabled={loading}
+            disabled={formBusy}
           />
         </label>
-        {error && <p className="text-sm text-[var(--down)]">{error}</p>}
+        {error && <p className="text-sm text-[var(--danger)]">{error}</p>}
         <SubmitButton
-          loading={loading}
+          loading={formBusy}
           loadingLabel={tCommon("loading")}
           className="qt-btn-primary w-full px-3 py-2.5 text-sm"
         >
           {t("submitLogin")}
         </SubmitButton>
       </form>
-      <OAuthSignInButtons disabled={loading} />
+      <OAuthSignInButtons
+        disabled={formBusy}
+        onBusyChange={onOauthBusyChange}
+      />
       <p className="text-sm text-[var(--muted)]">
         {t("noAccount")}{" "}
         <Link href="/register" className="text-[var(--brand-text)]">
           {t("registerTitle")}
         </Link>
       </p>
-      <p className="hidden text-xs">{locale}</p>
     </div>
   );
 }

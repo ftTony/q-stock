@@ -1,8 +1,11 @@
 {
   "app": {
-    "name": "Q-Stock",
-    "tagline": "Saham AS, saham HK & pasaran kripto",
-    "terminal": "Terminal v1.0"
+    "name": "Qianli Gu",
+    "tagline": "Pelaburan pintar · Penemuan nilai · AI",
+    "terminal": "Terminal v1.0",
+    "domain": "q-stock.cn",
+    "slogan": "Pelaburan pintar · Penemuan nilai",
+    "fintech": "FINTECH PLATFORM"
   },
   "nav": {
     "main": "Navigasi",
@@ -19,6 +22,10 @@
     "register": "Daftar",
     "logout": "Log keluar",
     "marketOpen": "Pasaran Dibuka",
+    "marketClosed": "Pasaran Ditutup",
+    "marketOpenUs": "AS Dibuka",
+    "marketOpenHk": "HK Dibuka",
+    "marketOpenBoth": "AS & HK Dibuka",
     "about": "About"
   },
   "market": {
@@ -315,8 +322,8 @@
     "inviteUsed": "Digunakan",
     "inviteEmpty": "Tiada kod jemputan",
     "inviteLoadError": "Gagal memuatkan kod jemputan",
-    "inviteShareCode": "Sertai saya di Q-Stock (saham AS/HK & kripto). Kod jemputan: {code}",
-    "inviteShareLink": "Sertai saya di Q-Stock (saham AS/HK & kripto). Daftar di sini: {link}"
+    "inviteShareCode": "Sertai saya di Qianli Gu (Q-Stock): guna AI untuk pantau & ulas pasaran dengan lebih tenang, kurangkan ketamakan, ketakutan dan kelemahan manusia. Kod: {code}",
+    "inviteShareLink": "Sertai saya di Qianli Gu (Q-Stock): guna AI untuk pantau & ulas pasaran dengan lebih tenang, kurangkan ketamakan, ketakutan dan kelemahan manusia. Daftar: {link}"
   },
   "alerts": {
     "title": "Amaran harga",
@@ -479,6 +486,6 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "Peringatan untuk rakan di tanah besar China: melabur saham luar negara atau BTC kini adalah haram. Laman ini hanya untuk pembelajaran — patuhi undang-undang setempat.",
     "platformTitle": "Tentang Qianli Gu",
-    "platformBody": "Qianli Gu (钱力股) berpaksikan pelaburan potensi dan penemuan nilai. AI membantu kajian dan semakan yang lebih tenang, serta mengurangkan gangguan ketakutan, ketamakan dan kelemahan manusia lain. Data dan kandungan hanya untuk pembelajaran, bukan nasihat pelaburan."
+    "platformBody": "Qianli Gu (钱力股) berpaksikan pelaburan pintar dan penemuan nilai. AI membantu kajian dan semakan yang lebih tenang, serta mengurangkan gangguan ketakutan, ketamakan dan kelemahan manusia lain. Data dan kandungan hanya untuk pembelajaran, bukan nasihat pelaburan."
   }
 }

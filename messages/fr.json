@@ -1,8 +1,11 @@
 {
   "app": {
-    "name": "Q-Stock",
-    "tagline": "Actions américaines, actions de Hong Kong & crypto",
-    "terminal": "Terminal v1.0"
+    "name": "Qianli Gu",
+    "tagline": "Investissement intelligent · Découverte de valeur · IA",
+    "terminal": "Terminal v1.0",
+    "domain": "q-stock.cn",
+    "slogan": "Investissement intelligent · Découverte de valeur",
+    "fintech": "FINTECH PLATFORM"
   },
   "nav": {
     "main": "Naviguer",
@@ -19,6 +22,10 @@
     "register": "S'inscrire",
     "logout": "Déconnexion",
     "marketOpen": "Marché ouvert",
+    "marketClosed": "Marché fermé",
+    "marketOpenUs": "US ouvert",
+    "marketOpenHk": "HK ouvert",
+    "marketOpenBoth": "US & HK ouverts",
     "about": "About"
   },
   "market": {
@@ -315,8 +322,8 @@
     "inviteUsed": "Utilisé",
     "inviteEmpty": "Aucun code d'invitation",
     "inviteLoadError": "Échec du chargement des codes",
-    "inviteShareCode": "Rejoins-moi sur Q-Stock (actions US/HK & crypto). Code d'invitation : {code}",
-    "inviteShareLink": "Rejoins-moi sur Q-Stock (actions US/HK & crypto). Inscription : {link}"
+    "inviteShareCode": "Rejoins-moi sur Qianli Gu (Q-Stock) : l’IA pour observer et revoir les marchés plus sereinement, et atténuer cupidité, peur et autres biais. Code : {code}",
+    "inviteShareLink": "Rejoins-moi sur Qianli Gu (Q-Stock) : l’IA pour observer et revoir les marchés plus sereinement, et atténuer cupidité, peur et autres biais. Inscription : {link}"
   },
   "alerts": {
     "title": "Alertes de prix",
@@ -479,6 +486,6 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "Rappel aux amis en Chine continentale : investir dans des actions étrangères ou le BTC est actuellement illégal. Ce site est uniquement pédagogique — respectez les lois locales.",
     "platformTitle": "À propos de Qianli Gu",
-    "platformBody": "Qianli Gu (钱力股) s’articule autour de l’investissement de potentiel et de la découverte de valeur. L’IA aide à analyser et à revoir avec plus de sang-froid, pour atténuer l’effet de la peur, de la cupidité et d’autres biais humains. Les données et contenus sont pédagogiques, pas un conseil en investissement."
+    "platformBody": "Qianli Gu (钱力股) s’articule autour de l’investissement intelligent et de la découverte de valeur. L’IA aide à analyser et à revoir avec plus de sang-froid, pour atténuer l’effet de la peur, de la cupidité et d’autres biais humains. Les données et contenus sont pédagogiques, pas un conseil en investissement."
   }
 }

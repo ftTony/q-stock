@@ -5,10 +5,10 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { SiteLogo } from "@/components/brand/site-logo";
 
 function ResetPasswordForm() {
   const t = useTranslations("auth");
-  const tApp = useTranslations("app");
   const tCommon = useTranslations("common");
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -58,10 +58,8 @@ function ResetPasswordForm() {
   return (
     <div className="qt-panel w-full space-y-5 p-6 sm:p-8">
       <div>
-        <div className="text-xs tracking-[0.18em] text-[var(--brand-text)] uppercase">
-          {tApp("name")}
-        </div>
-        <h1 className="mt-2 text-2xl font-semibold">{t("resetTitle")}</h1>
+        <SiteLogo height={28} priority variant="compact" />
+        <h1 className="mt-3 text-2xl font-semibold">{t("resetTitle")}</h1>
         <p className="mt-2 text-sm text-[var(--muted)]">{t("resetHint")}</p>
       </div>
       <form onSubmit={onSubmit} className="space-y-3">

@@ -1,8 +1,11 @@
 {
   "app": {
-    "name": "Q-Stock",
-    "tagline": "美股、港股與數位貨幣行情",
-    "terminal": "Terminal v1.0"
+    "name": "錢力股",
+    "tagline": "智慧投資 · 價值發現 · AI 輔助決策",
+    "terminal": "Terminal v1.0",
+    "domain": "q-stock.cn",
+    "slogan": "智慧投資 · 價值發現",
+    "fintech": "FINTECH PLATFORM"
   },
   "nav": {
     "main": "導航",
@@ -19,6 +22,10 @@
     "register": "註冊",
     "logout": "登出",
     "marketOpen": "開市中",
+    "marketClosed": "休市",
+    "marketOpenUs": "美股開市中",
+    "marketOpenHk": "港股開市中",
+    "marketOpenBoth": "美港開市中",
     "about": "關於我"
   },
   "market": {
@@ -315,8 +322,8 @@
     "inviteUsed": "已使用",
     "inviteEmpty": "暫無邀請碼",
     "inviteLoadError": "載入邀請碼失敗",
-    "inviteShareCode": "邀請你一起用 Q-Stock 看美股 / 港股 / 數字貨幣。註冊時填寫邀請碼：{code}",
-    "inviteShareLink": "邀請你一起用 Q-Stock 看美股 / 港股 / 數字貨幣。點此註冊：{link}"
+    "inviteShareCode": "邀請你一起使用錢力股：借力 AI，輔助更冷靜地看盤與復盤，盡量削弱貪婪、恐懼等人性弱點。註冊時填寫邀請碼：{code}",
+    "inviteShareLink": "邀請你一起使用錢力股：借力 AI，輔助更冷靜地看盤與復盤，盡量削弱貪婪、恐懼等人性弱點。點此註冊：{link}"
   },
   "alerts": {
     "title": "價格提醒",
@@ -479,6 +486,6 @@
     "qrHint": "掃碼支持一下；也可寄信溝通合作。",
     "mainlandNotice": "中國大陸朋友提醒：目前境外投資股票、BTC 是違法行為。本站僅供學習參考，請遵守當地法律法規。",
     "platformTitle": "關於錢力股",
-    "platformBody": "錢力股圍繞「潛能投資」與「價值發現」而生：借力 AI，輔助更冷靜的看盤與復盤，盡量削弱貪婪、恐懼等人性弱點對判斷的干擾。行情與內容僅供學習參考，不構成投資建議。"
+    "platformBody": "錢力股圍繞「智慧投資」與「價值發現」而生：借力 AI，輔助更冷靜的看盤與復盤，盡量削弱貪婪、恐懼等人性弱點對判斷的干擾。行情與內容僅供學習參考，不構成投資建議。"
   }
 }
