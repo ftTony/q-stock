@@ -6,6 +6,7 @@ import type { EarningsMetric } from "@/components/market/earnings-panel";
 import { QuoteStatsGrid } from "@/components/market/quote-stats";
 import { ChangePct, PriceText } from "@/components/market/price";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { IconHeart } from "@/components/ui/icon-heart";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
@@ -40,21 +41,48 @@ function WatchButton({
   | "loadingLabel"
   | "onToggleWatchlist"
 >) {
+  const label = inWatchlist ? watchLabelActive : watchLabel;
   return (
     <SubmitButton
       type="button"
       disabled={watchBusy}
       loading={watchBusy}
-      loadingLabel={loadingLabel}
+      loadingLabel={<span className="sr-only">{loadingLabel}</span>}
       onClick={onToggleWatchlist}
-      className={`qt-btn shrink-0 px-2.5 py-1 text-[11px] font-medium leading-none sm:text-xs ${
+      title={label}
+      aria-label={label}
+      aria-pressed={inWatchlist}
+      className={`qt-btn h-7 w-7 shrink-0 rounded-full p-0 ${
         inWatchlist
-          ? "qt-btn-ghost text-[var(--brand-text)]"
-          : "qt-btn-primary"
+          ? "qt-btn-ghost text-[var(--down)]"
+          : "qt-btn-ghost text-[var(--muted)] hover:text-[var(--down)]"
       }`}
     >
-      {inWatchlist ? watchLabelActive : watchLabel}
+      <IconHeart filled={inWatchlist} />
     </SubmitButton>
+  );
+}
+
+function BackLink({ label }: { label: string }) {
+  return (
+    <Link
+      href="/"
+      className="inline-flex shrink-0 items-center gap-0.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--brand-text)]"
+    >
+      <svg
+        className="h-3.5 w-3.5 shrink-0"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        aria-hidden
+      >
+        <path d="M15 18l-6-6 6-6" />
+      </svg>
+      {label}
+    </Link>
   );
 }
 
@@ -70,21 +98,23 @@ function SymbolPriceRow({
   updatedAt: Date | null;
 }) {
   return (
-    <div className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
-      <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
+    <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+      <h1 className="text-sm font-semibold tracking-tight">
         {symbol}{" "}
-        <span className="text-xs font-normal text-[var(--muted)] sm:text-sm">
+        <span className="text-[11px] font-normal text-[var(--muted)]">
           {displayName(symbol, assetType)}
         </span>
       </h1>
       {quote && (
         <>
-          <span className="text-lg font-semibold tabular-nums sm:text-xl">
+          <span className="text-sm font-semibold tabular-nums">
             <PriceText value={quote.price} change={quote.change} />
           </span>
-          <ChangePct value={quote.percentChange} />
+          <span className="text-xs">
+            <ChangePct value={quote.percentChange} />
+          </span>
           {updatedAt && (
-            <span className="text-[11px] text-[var(--muted)]">
+            <span className="text-[10px] text-[var(--muted)]">
               {updatedAt.toLocaleTimeString()}
             </span>
           )}
@@ -138,7 +168,6 @@ export function SymbolHeader({
     const update = () => {
       const el = sentinelRef.current;
       if (!el) return;
-      // After header (56px): blend over next ~72px of scroll
       const past = 56 - el.getBoundingClientRect().bottom;
       setDockBlend(Math.min(1, Math.max(0, past / 72)));
     };
@@ -158,88 +187,47 @@ export function SymbolHeader({
 
   const dockBg = `color-mix(in srgb, var(--panel) ${Math.round((1 - dockBlend) * 100)}%, var(--background) ${Math.round(dockBlend * 100)}%)`;
 
+  const titleRow = (
+    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+      <BackLink label={backLabel} />
+      <span className="hidden h-3.5 w-px shrink-0 bg-[var(--border)] sm:block" aria-hidden />
+      <SymbolPriceRow
+        symbol={symbol}
+        assetType={assetType}
+        quote={quote}
+        updatedAt={updatedAt}
+      />
+    </div>
+  );
+
   return (
     <>
       {showDock && (
         <div
-          className="fixed inset-x-0 top-14 z-30 border-b border-[var(--border)] backdrop-blur-xl lg:left-[260px]"
+          className="fixed inset-x-0 top-14 z-30 border-b border-[var(--border)] backdrop-blur-xl lg:left-[var(--sidebar-w,270px)]"
           style={{ backgroundColor: dockBg }}
         >
-          <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 sm:px-6 sm:py-3">
-            <div className="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1">
-              <Link
-                href="/"
-                className="inline-flex shrink-0 items-center gap-1 text-sm font-medium text-[var(--muted)] hover:text-[var(--brand-text)] sm:text-base"
-              >
-                <svg
-                  className="h-4 w-4 shrink-0"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  aria-hidden
-                >
-                  <path d="M15 18l-6-6 6-6" />
-                </svg>
-                {backLabel}
-              </Link>
-              <span
-                className="hidden h-4 w-px shrink-0 bg-[var(--border)] sm:block"
-                aria-hidden
-              />
-              <SymbolPriceRow
-                symbol={symbol}
-                assetType={assetType}
-                quote={quote}
-                updatedAt={updatedAt}
-              />
-            </div>
+          <div className="flex items-center justify-between gap-2 px-4 py-1.5 sm:px-6">
+            {titleRow}
             <WatchButton {...watchProps} />
           </div>
         </div>
       )}
 
-      <div className="space-y-2">
-        <div className="text-sm text-[var(--muted)] sm:text-base">
-          <Link
-            href="/"
-            className="inline-flex items-center gap-1 hover:text-[var(--brand-text)]"
-          >
-            <svg
-              className="h-4 w-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              aria-hidden
-            >
-              <path d="M15 18l-6-6 6-6" />
-            </svg>
-            {backLabel}
-          </Link>
+      <div ref={sentinelRef} className="qt-panel px-3 py-2 sm:px-4">
+        <div className="flex items-center justify-between gap-2">
+          {titleRow}
+          <WatchButton {...watchProps} />
         </div>
-
-        <div ref={sentinelRef} className="qt-panel space-y-3 p-3 sm:px-5 sm:py-4">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <SymbolPriceRow
-              symbol={symbol}
-              assetType={assetType}
-              quote={quote}
-              updatedAt={updatedAt}
-            />
-            <WatchButton {...watchProps} />
-          </div>
-          {quote && (
-            <QuoteStatsGrid
-              quote={quote}
-              metrics={metrics}
-              assetType={assetType}
-              className="border-t border-[var(--border)]/70 pt-3"
-            />
-          )}
-        </div>
+        {quote && (
+          <QuoteStatsGrid
+            quote={quote}
+            metrics={metrics}
+            assetType={assetType}
+            className="mt-2 border-t border-[var(--border)]/70 pt-2"
+          />
+        )}
       </div>
     </>
   );
 }
-

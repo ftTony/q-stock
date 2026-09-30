@@ -74,16 +74,16 @@ export default function SymbolPage() {
         <div className="space-y-4 min-w-0 lg:col-start-1">
           <form
             onSubmit={s.createAlert}
-            className="qt-panel flex flex-wrap items-center gap-2 p-4"
+            className="qt-panel flex flex-wrap items-center gap-2 px-3 py-2.5 sm:px-4"
           >
-            <div className="text-sm font-medium leading-none">
+            <div className="text-xs font-medium leading-none">
               {s.t("setAlert")}
             </div>
             <QtSelect
               value={s.alertCondition}
               onChange={(v) => s.setAlertCondition(v as "gte" | "lte")}
-              className="w-36"
-              triggerClassName="h-9 px-2.5 text-sm"
+              className="w-32"
+              triggerClassName="h-7 px-2 text-xs"
               options={[
                 { value: "gte", label: s.tAlerts("gte") },
                 { value: "lte", label: s.tAlerts("lte") },
@@ -96,18 +96,18 @@ export default function SymbolPage() {
               value={s.alertPrice}
               onChange={(e) => s.setAlertPrice(e.target.value)}
               placeholder={s.tAlerts("triggerPrice")}
-              className="qt-input h-9 w-32 px-2 text-sm"
+              className="qt-input h-7 w-28 px-2 text-xs"
             />
             <SubmitButton
               type="submit"
               loading={s.alertBusy}
               loadingLabel={s.tCommon("loading")}
-              className="qt-btn-primary h-9 px-3 text-sm"
+              className="qt-btn-primary h-7 rounded-md px-2.5 text-[10px] font-medium leading-none"
             >
               {s.tAlerts("create")}
             </SubmitButton>
             {s.alertMsg && (
-              <span className="text-xs text-[var(--muted)]">{s.alertMsg}</span>
+              <span className="text-[11px] text-[var(--muted)]">{s.alertMsg}</span>
             )}
           </form>
 

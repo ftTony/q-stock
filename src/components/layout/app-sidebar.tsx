@@ -150,37 +150,36 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
   const isPortfolio = pathname.startsWith("/portfolio");
   const isAlerts = pathname.startsWith("/alerts");
 
-  const width = collapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED;
   const toggleLabel = collapsed ? t("expandSidebar") : t("collapseSidebar");
 
   return (
-    <aside
-      className="relative flex h-full flex-col border-r border-[var(--border)] bg-[var(--sidebar)] transition-[width] duration-200 ease-out"
-      style={{ width }}
-    >
-      <button
-        type="button"
-        onClick={() => onCollapsedChange(!collapsed)}
-        aria-label={toggleLabel}
-        title={toggleLabel}
-        className="absolute top-16 -right-3 z-50 flex h-6 w-6 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--panel)] text-[var(--muted)] shadow-sm transition hover:border-[var(--brand)] hover:text-[var(--brand-text)]"
-      >
-        <IconChevron collapsed={collapsed} />
-      </button>
-
+    <aside className="flex h-full w-full flex-col border-r border-[var(--border)] bg-[var(--sidebar)]">
       <div
-        className={`border-b border-[var(--border)] ${
-          collapsed ? "flex justify-center px-2 py-3" : "pr-3"
+        className={`flex items-center border-b border-[var(--border)] ${
+          collapsed ? "flex-col gap-2 px-2 py-3" : "gap-1 pr-2"
         }`}
-        style={collapsed ? undefined : { paddingTop: 7, paddingLeft: 16, paddingBottom: 2 }}
+        style={collapsed ? undefined : { paddingTop: 7, paddingLeft: 12, paddingBottom: 2 }}
       >
-        <Link href="/" className="block" aria-label={t("markets")}>
+        <Link
+          href="/"
+          className={`min-w-0 ${collapsed ? "" : "flex-1"}`}
+          aria-label={t("markets")}
+        >
           <SiteLogo
             height={collapsed ? 32 : 40}
             priority
             variant={collapsed ? "mark" : "full"}
           />
         </Link>
+        <button
+          type="button"
+          onClick={() => onCollapsedChange(!collapsed)}
+          aria-label={toggleLabel}
+          title={toggleLabel}
+          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--muted)] transition hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+        >
+          <IconChevron collapsed={collapsed} />
+        </button>
       </div>
 
       <div

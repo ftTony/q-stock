@@ -4,6 +4,8 @@ import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import {
   AppSidebar,
+  SIDEBAR_WIDTH_COLLAPSED,
+  SIDEBAR_WIDTH_EXPANDED,
   useSidebarCollapsed,
 } from "@/components/layout/app-sidebar";
 import { TopBarActions } from "@/components/layout/topbar-actions";
@@ -66,6 +68,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/auth/");
 
+  const sidebarWidth = collapsed
+    ? SIDEBAR_WIDTH_COLLAPSED
+    : SIDEBAR_WIDTH_EXPANDED;
+
   if (isAuth) {
     return (
       <div className="min-h-dvh">
@@ -77,20 +83,18 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-dvh lg:flex">
+    <div
+      className="min-h-dvh lg:flex"
+      style={{ ["--sidebar-w" as string]: `${sidebarWidth}px` }}
+    >
       <div
-        className={`hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:overflow-visible ${
-          collapsed ? "lg:w-[72px]" : "lg:w-[270px]"
-        }`}
+        className="hidden shrink-0 transition-[width] duration-200 ease-out lg:sticky lg:top-0 lg:flex lg:h-dvh lg:self-start"
+        style={{ width: sidebarWidth }}
       >
         <AppSidebar collapsed={collapsed} onCollapsedChange={setCollapsed} />
       </div>
 
-      <div
-        className={`flex min-h-dvh flex-1 flex-col transition-[padding] duration-200 ease-out ${
-          collapsed ? "lg:pl-[72px]" : "lg:pl-[270px]"
-        }`}
-      >
+      <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
           <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-3">

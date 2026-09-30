@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { ChangePct, PriceText } from "@/components/market/price";
+import { IconHeart } from "@/components/ui/icon-heart";
 import { displayName } from "@/lib/market-names";
 import type { AssetType } from "@/lib/types";
 import type { RankQuote } from "@/components/market/markets-types";
@@ -119,17 +120,18 @@ export function RankBoardPanel({
                     <div className="flex items-center justify-end gap-1.5">
                       <button
                         type="button"
-                        className={`text-sm ${
+                        className={`${
                           isWatched
-                            ? "text-[var(--brand-text)]"
-                            : "text-[var(--muted)] hover:text-[var(--brand-text)]"
+                            ? "text-[var(--down)]"
+                            : "text-[var(--muted)] hover:text-[var(--down)]"
                         }`}
                         title={isWatched ? t("remove") : t("addWatch")}
+                        aria-label={isWatched ? t("remove") : t("addWatch")}
                         onClick={() =>
                           void onToggleWatch(item.symbol, item.assetType)
                         }
                       >
-                        {isWatched ? "★" : "☆"}
+                        <IconHeart filled={isWatched} className="h-3.5 w-3.5" />
                       </button>
                       <Link
                         href={`/symbol/${item.assetType}/${item.symbol}`}

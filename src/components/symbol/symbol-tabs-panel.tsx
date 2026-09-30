@@ -189,22 +189,22 @@ export function SymbolTabsPanel({
                 renderItem={(n, i) => (
                   <li
                     key={`${n.url || n.headline}-${i}`}
-                    className="border-b border-[var(--border)] pb-3 last:border-0"
+                    className="border-b border-[var(--border)] pb-2.5 last:border-0"
                   >
                     <a
                       href={n.url || "#"}
                       target="_blank"
                       rel="noreferrer"
-                      className="font-medium hover:text-[var(--brand)]"
+                      className="text-sm font-medium leading-snug hover:text-[var(--brand)]"
                     >
                       {n.headline}
                     </a>
                     {n.summary && (
-                      <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
+                      <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[var(--muted)]">
                         {n.summary}
                       </p>
                     )}
-                    <div className="mt-1 text-xs text-[var(--muted)]">
+                    <div className="mt-0.5 text-[11px] text-[var(--muted)]">
                       {n.source}
                       {n.datetime
                         ? ` · ${new Date(
@@ -245,22 +245,22 @@ export function SymbolTabsPanel({
                   renderItem={(p, i) => (
                     <li
                       key={`${p.url || p.headline}-${i}`}
-                      className="border-b border-[var(--border)] pb-3 last:border-0"
+                      className="border-b border-[var(--border)] pb-2.5 last:border-0"
                     >
                       <a
                         href={p.url || "#"}
                         target="_blank"
                         rel="noreferrer"
-                        className="font-medium hover:text-[var(--brand)]"
+                        className="text-sm font-medium leading-snug hover:text-[var(--brand)]"
                       >
                         {p.headline || p.description || "Press release"}
                       </a>
                       {p.description && p.headline && (
-                        <p className="mt-1 line-clamp-2 text-sm text-[var(--muted)]">
+                        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[var(--muted)]">
                           {p.description}
                         </p>
                       )}
-                      <div className="mt-1 text-xs text-[var(--muted)]">
+                      <div className="mt-0.5 text-[11px] text-[var(--muted)]">
                         {p.datetime
                           ? new Date(p.datetime).toLocaleString()
                           : ""}
