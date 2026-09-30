@@ -26,7 +26,9 @@
     "marketOpenUs": "สหรัฐเปิด",
     "marketOpenHk": "ฮ่องกงเปิด",
     "marketOpenBoth": "สหรัฐและฮ่องกงเปิด",
-    "about": "About"
+    "about": "About",
+    "collapseSidebar": "ย่อแถบด้านข้าง",
+    "expandSidebar": "ขยายแถบด้านข้าง"
   },
   "market": {
     "stocks": "หุ้นสหรัฐฯ",

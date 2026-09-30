@@ -26,7 +26,9 @@
     "marketOpenUs": "US Open",
     "marketOpenHk": "HK Open",
     "marketOpenBoth": "US & HK Open",
-    "about": "About"
+    "about": "About",
+    "collapseSidebar": "Collapse sidebar",
+    "expandSidebar": "Expand sidebar"
   },
   "market": {
     "stocks": "US Stocks",

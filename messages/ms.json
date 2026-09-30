@@ -26,7 +26,9 @@
     "marketOpenUs": "AS Dibuka",
     "marketOpenHk": "HK Dibuka",
     "marketOpenBoth": "AS & HK Dibuka",
-    "about": "About"
+    "about": "About",
+    "collapseSidebar": "Kuncupkan bar sisi",
+    "expandSidebar": "Kembangkan bar sisi"
   },
   "market": {
     "stocks": "Saham US",

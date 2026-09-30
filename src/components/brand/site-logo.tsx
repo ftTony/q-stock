@@ -16,8 +16,8 @@ type SiteLogoProps = {
   /** Icon mark height in px. */
   height?: number;
   priority?: boolean;
-  /** full = screenshot lockup; compact = icon + name (mobile / auth). */
-  variant?: "full" | "compact";
+  /** full = screenshot lockup; compact = icon + name; mark = icon only. */
+  variant?: "full" | "compact" | "mark";
 };
 
 export function SiteLogo({
@@ -62,7 +62,7 @@ export function SiteLogo({
         onError={() => setImgFailed(true)}
       />
 
-      {variant === "compact" ? (
+      {variant === "mark" ? null : variant === "compact" ? (
         <span
           className="truncate font-bold tracking-tight text-[var(--foreground)]"
           style={{ fontSize: Math.max(16, Math.round(height * 0.55)) }}

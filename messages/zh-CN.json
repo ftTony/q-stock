@@ -26,7 +26,9 @@
     "marketOpenUs": "美股开市中",
     "marketOpenHk": "港股开市中",
     "marketOpenBoth": "美港开市中",
-    "about": "关于我"
+    "about": "关于我",
+    "collapseSidebar": "收起侧栏",
+    "expandSidebar": "展开侧栏"
   },
   "market": {
     "stocks": "美股",

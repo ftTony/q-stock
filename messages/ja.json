@@ -26,7 +26,9 @@
     "marketOpenUs": "米国株開場中",
     "marketOpenHk": "香港株開場中",
     "marketOpenBoth": "米・香港開場中",
-    "about": "About"
+    "about": "About",
+    "collapseSidebar": "サイドバーを折りたたむ",
+    "expandSidebar": "サイドバーを展開"
   },
   "market": {
     "stocks": "米国株",
