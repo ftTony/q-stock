@@ -1,13 +1,13 @@
 import { cachedFetch } from "@/lib/cache";
-import { getMarketCreds } from "@/lib/market/creds-context";
 import type { MarketDataProvider, QuoteWithSource } from "@/lib/market/types";
 import { MarketDataError } from "@/lib/market/types";
+import { resolveOkxCreds } from "@/lib/market/resolve-market-creds";
 import type { OhlcvBar, SearchResult } from "@/lib/types";
 import { normalizeSymbol } from "@/lib/types";
 
 /**
  * OKX v5 public market API — no key required for ticker/candles.
- * Optional user API key headers when BYOK is saved (private endpoints later).
+ * Optional API key headers when env or BYOK is present.
  */
 const BASES = [
   process.env.OKX_API_URL?.replace(/\/+$/, "") || "https://www.okx.com",
@@ -26,7 +26,7 @@ function toInstId(symbol: string): string {
 }
 
 function hasUserApiKey(): boolean {
-  return Boolean(getMarketCreds().okx?.apiKey?.trim());
+  return Boolean(resolveOkxCreds()?.apiKey?.trim());
 }
 
 async function okxFetch<T>(
@@ -37,7 +37,7 @@ async function okxFetch<T>(
   for (const [k, v] of Object.entries(query)) {
     qs.set(k, String(v));
   }
-  const creds = getMarketCreds().okx;
+  const creds = resolveOkxCreds();
   let lastErr: Error | null = null;
 
   for (const base of BASES) {

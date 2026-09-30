@@ -42,10 +42,15 @@ cp .env.example .env
 APP_URL=http://localhost:3000
 AUTH_SECRET=请替换为足够长的随机字符串
 DATABASE_URL=postgresql://qstock:qstock@localhost:5432/qstock?schema=public
-# 加密用户自带的长桥/富途 Key（设置页 BYOK）
+# 加密用户 BYOK（设置页保存长桥/富途等 Key 时需要）
 CREDENTIALS_ENCRYPTION_KEY=请填入64位hex（node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"）
-# 平台行情兜底（游客与无 BYOK 用户可用）
+# 平台行情兜底（推荐至少配一个）
 FINNHUB_API_KEY=
+# 可选平台长桥 / 富途（有则全站优先用 env，无则走用户 BYOK）
+# LONGBRIDGE_APP_KEY=
+# LONGBRIDGE_APP_SECRET=
+# LONGBRIDGE_ACCESS_TOKEN=
+# FUTU_ACCESS_TOKEN=
 ```
 
 可选：
@@ -58,7 +63,7 @@ ALERT_POLL_INTERVAL_MS=45000
 MARKET_DATA_PROVIDERS=longbridge,futu,finnhub,binance
 ```
 
-登录后在 **设置 → 行情数据源** 填写你自己的长桥 / 富途 OpenAPI 凭证；服务端 `.env` 的 `LONGBRIDGE_*` / `FUTU_*` **不再**用于 Web 行情接口。
+**凭证优先级**：服务端 `LONGBRIDGE_*` / `FUTU_*` / `FUYAO_API_KEY` / `BINANCE_API_KEY` / `OKX_*` 等环境变量 **优先**；未配置时，登录用户可在 **设置 → 行情数据源** 填写个人 BYOK（加密存 `UserMarketCredential`）。设置页「已配置」状态只反映用户自己的 Key，不含平台 env。
 
 ### 2.3 启动数据库
 
@@ -91,7 +96,7 @@ npm run db:migrate:dev
 npm run dev
 ```
 
-浏览器打开 [http://localhost:3000](http://localhost:3000)，会跳转到默认语言 `/zh-CN`。
+浏览器打开 [http://localhost:3000](http://localhost:3000)，默认进入 `/en`（可在界面切换语言；共 10 种 locale）。
 
 ### 2.6 启动价格提醒 Worker
 
@@ -111,9 +116,15 @@ Worker 按 `ALERT_POLL_INTERVAL_MS`（默认 45000ms）轮询 `active` 提醒并
 | `AUTH_SECRET` | 是 | Auth.js 密钥 |
 | `AUTH_TRUST_HOST` | 建议 | Docker / 代理场景设为 `true` |
 | `DATABASE_URL` | 是 | Prisma PostgreSQL 连接串 |
-| `CREDENTIALS_ENCRYPTION_KEY` | 是* | 32 字节 hex/base64；加密用户长桥/富途 Key。缺则无法保存 BYOK |
+| `CREDENTIALS_ENCRYPTION_KEY` | 是* | 32 字节 hex/base64；加密用户 BYOK。缺则无法在设置页保存 Key |
 | `MARKET_DATA_PROVIDERS` | 否 | 行情源优先级 CSV，默认含 longbridge,futu,finnhub,binance |
-| `FINNHUB_API_KEY` | 否* | 平台 Finnhub；游客与无 BYOK 时的股票行情兜底 |
+| `LONGBRIDGE_APP_KEY` / `APP_SECRET` / `ACCESS_TOKEN` | 否 | 平台长桥；三键齐全则优先于用户 BYOK |
+| `FUTU_ACCESS_TOKEN` | 否 | 平台富途 Bearer（推荐） |
+| `FUTU_APP_KEY` + `FUTU_PRIVATE_KEY` | 否 | 平台富途 AppKey 签名（可选） |
+| `FUYAO_API_KEY` | 否 | 平台扶摇；优先于用户 BYOK |
+| `BINANCE_API_KEY` / `API_SECRET` | 否 | 可选；有 Key 时走官方 API Host |
+| `OKX_API_KEY` / `API_SECRET` / `PASSPHRASE` | 否 | 可选 |
+| `FINNHUB_API_KEY` | 否* | 平台 Finnhub；无长桥/富途时的股票行情与资讯兜底 |
 | `ADANOS_API_KEY` | 否 | 缺失时情绪区降级 |
 | `EMAIL_FROM` | 发信时 | 发件人地址 |
 | `RESEND_API_KEY` | 否 | 优先邮件通道 |
@@ -125,7 +136,8 @@ Worker 按 `ALERT_POLL_INTERVAL_MS`（默认 45000ms）轮询 `active` 提醒并
 
 说明：
 
-- **长桥 / 富途**：由登录用户在设置页自带 Key（BYOK），加密存库；不通过服务端 env 向访客转发行情。
+- **凭证解析**：实现见 [`src/lib/market/resolve-market-creds.ts`](../src/lib/market/resolve-market-creds.ts)——**env 优先，否则用户 BYOK（ALS）**。
+- **长桥 / 富途 / 扶摇等**：可只配平台 env，或只让用户在设置页自带 Key，或两者都配（运行时仍优先 env）。
 - 未配置 `RESEND_API_KEY` 且无 `SMTP_HOST` 时，提醒触发只写日志，不真正发信。
 - Compose 中 `web` / `worker` 的 `DATABASE_URL` 会覆盖为指向服务名 `db` 的内网地址。
 

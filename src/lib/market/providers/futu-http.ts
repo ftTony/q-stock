@@ -1,13 +1,13 @@
 import crypto from "crypto";
-import { getMarketCreds } from "@/lib/market/creds-context";
 import type { FutuCreds } from "@/lib/market/creds-types";
+import { resolveFutuCreds } from "@/lib/market/resolve-market-creds";
 import { MarketDataError } from "@/lib/market/types";
 
 /**
  * Futu OpenAPI cloud REST client — https://open.futunn.com/api/overview/getting-started
  * Host: https://webapi.futunn.com
  *
- * Auth uses per-request BYOK from AsyncLocalStorage (not process.env).
+ * Auth: platform env first (`FUTU_*`), else per-request BYOK from ALS.
  * - Method 2: X-Api-Key + Ed25519/RSA signature
  * - Method 1: Authorization: Bearer {access_token}
  */
@@ -20,7 +20,7 @@ let timeSyncedAt = 0;
 const TIME_SYNC_TTL_MS = 5 * 60_000;
 
 function currentFutuCreds(): FutuCreds | undefined {
-  return getMarketCreds().futu;
+  return resolveFutuCreds();
 }
 
 export function hasBearerAuth(): boolean {

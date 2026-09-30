@@ -2,38 +2,41 @@
 
 **語言：** [简体中文](./README.md) · [English](./README.en.md) · [繁體中文](./README.zh-TW.md)
 
-美股 / 港股 / 加密貨幣行情 Web & H5 應用：多源行情、K 線指標、資訊評論、模擬交易、價格郵件提醒與市場情緒。
+美股 / 港股 / A 股 / 加密貨幣行情 Web & H5：多源行情、K 線指標、資訊評論、模擬交易、價格郵件提醒、市場情緒與 AI 分析。
 
 ## 功能亮點
 
 | 模組 | 說明 |
 |---|---|
-| 行情瀏覽 | 美股 / 港股 / 加密熱門列表、搜尋、漲跌榜、靜默刷新 |
-| 多源行情 | **長橋 → 富途 OpenAPI → Finnhub** 可設定優先級，失敗自動回退 |
-| 個股詳情 | 日/季/年 K、MA / EMA / BOLL / RSI / MACD、詳細報價盤口 |
-| 資訊 | 新聞、財報（驚喜/日曆/財務指標 + EPS/營收 SVG 圖）、公告；加密無財報時友善提示 |
-| 模擬交易 | 僅做多；市價 / 限價 / 止損；個股右側下單；Portfolio 資金/持倉/掛單 |
-| 自選 & 資產 | 自選 CRUD、sparkline、資產概覽 KPI |
-| 價格提醒 | 條件觸發郵件（Resend / SMTP）；後台 Worker 輪詢 |
-| 情緒 | Adanos 輿情（長快取，額度不足時降級） |
-| AI 分析 | Vercel AI SDK + DeepSeek；結合新聞 / 財報 / 報價輸出看多·中性·看空（約 30 分鐘快取） |
-| 體驗 | 簡/繁/英、亮暗主題、紅漲綠跌 / 綠漲紅跌 |
+| 行情瀏覽 | 美股 / 港股 / **A 股** / 加密熱門與漲跌榜；搜尋；約 45s 靜默刷新 |
+| 多源行情 | 股票：**長橋 ↔ 富途 → Finnhub**；加密：**Binance ↔ OKX → Finnhub**；憑證 **平台 env 優先，否則使用者 BYOK** |
+| 市場頁 | KPI、排行榜（愛心自選）、行業熱力、港股 IPO、情緒；頂欄指數輪播 |
+| 個股詳情 | 日/季/年 K、指標與畫線；緊湊報價頭 + 愛心；右側模擬下單 |
+| 資訊 Tab | 新聞（長橋→富途→Finnhub）、財報/公告、公司/高管、評論、情緒、AI |
+| 標的分析 | `/analysis` 熱門卡片 |
+| 自選 & 資產 | CRUD（含 cn）、sparkline；Portfolio 資金/持倉/掛單/重置 |
+| 價格提醒 | ≥ / ≤ 郵件；Worker 輪詢 |
+| 模擬交易 | 僅做多；市價/限價/止損；初始 **$100,000** |
+| 設定 | 語言/主題/漲跌色；長橋·富途·幣安·OKX BYOK；多廠商 AI；邀請碼 |
+| 體驗 | 10 語言、亮暗主題；側欄可收起；H5 底欄 |
 
 技術棧：Next.js 15 · TypeScript · Tailwind · KLineChart · Auth.js · Prisma · PostgreSQL · Docker。
+
+> 扶搖（Fuyao）程式仍在倉庫，**路由層已屏蔽**且設定頁不展示；A 股走長橋/富途/Finnhub。
 
 ## 環境需求
 
 - Node.js **20+**（建議 22）
 - npm 10+
-- Docker（可選，用於 Postgres 或全棧）
+- Docker（可選）
 
-至少設定 **一個** 行情源憑證（長橋 / 富途 / Finnhub）。資訊依賴 Finnhub；情緒依賴 Adanos（可選）；AI 分析依賴 `DEEPSEEK_API_KEY`（可選）。
+至少設定 **一個** 行情源（平台 env 與/或設定頁 BYOK）。
 
 ## 快速開始
 
 ```bash
 cp .env.example .env
-# 編輯 .env，至少填寫 AUTH_SECRET、DATABASE_URL，以及一個行情源 Key
+# 編輯 AUTH_SECRET、DATABASE_URL、CREDENTIALS_ENCRYPTION_KEY，以及至少一個行情源
 
 docker compose up -d db
 npm install
@@ -41,15 +44,11 @@ npm run db:migrate
 npm run dev
 ```
 
-另開終端啟動 Worker（價格提醒 + 模擬限價/止損撮合）：
-
 ```bash
 npm run worker
 ```
 
-瀏覽器開啟 [http://localhost:3000](http://localhost:3000)（預設進入 `/zh-CN`，可在介面切換語言）。
-
-全棧一鍵：
+開啟 [http://localhost:3000](http://localhost:3000)（預設 locale `/en`）。
 
 ```bash
 docker compose up --build
@@ -57,76 +56,49 @@ docker compose up --build
 
 ## 環境設定
 
-複製 [.env.example](./.env.example) 為 `.env`。常用變數：
+見 [.env.example](./.env.example)。
 
-### 應用與資料庫
-
-| 變數 | 必填 | 說明 |
-|---|---|---|
-| `APP_URL` | 建議 | 如 `http://localhost:3000` |
-| `AUTH_SECRET` | 是 | Auth.js 金鑰，足夠長的隨機字串 |
-| `AUTH_TRUST_HOST` | 建議 | Docker / 反向代理時設 `true` |
-| `DATABASE_URL` | 是 | PostgreSQL 連線字串 |
-
-本機 Compose 資料庫預設：
-
-```text
-postgresql://qstock:qstock@localhost:5432/qstock?schema=public
-```
-
-### 行情資料源
+憑證解析：**伺服器環境變數優先**，否則使用者 BYOK（加密存庫）。
 
 | 變數 | 說明 |
 |---|---|
-| `MARKET_DATA_PROVIDERS` | 優先級 CSV，預設 `longbridge,futu,finnhub`；省略則依已設定憑證自動探測 |
-| `LONGBRIDGE_APP_KEY` / `SECRET` / `ACCESS_TOKEN` | [長橋 OpenAPI](https://open.longbridge.com/)，三鍵齊全即啟用 |
-| `FUTU_ACCESS_TOKEN` | [富途雲端 OpenAPI](https://open.futunn.com/zh-cn/api/overview/) Bearer（建議，無需 OpenD） |
-| `FUTU_APP_KEY` + `FUTU_PRIVATE_KEY` | 富途 Legacy AppKey 簽名（可選） |
-| `FINNHUB_API_KEY` | Finnhub：回退行情 + 新聞/財報/公告 |
+| `LONGBRIDGE_*` / `FUTU_*` | 平台長橋 / 富途 |
+| `BINANCE_*` / `OKX_*` | 可選加密 Key |
+| `FINNHUB_API_KEY` | 回退行情 + 資訊 |
+| `CREDENTIALS_ENCRYPTION_KEY` | 加密使用者 BYOK |
+| `ADANOS_API_KEY` / `DEEPSEEK_API_KEY` | 情緒 / 平台 AI |
+| `AUTH_GOOGLE_*` / `AUTH_GITHUB_*` | 可選 OAuth |
 
-### 其他
-
-| 變數 | 說明 |
-|---|---|
-| `ADANOS_API_KEY` | 市場情緒；缺失則 UI 降級 |
-| `DEEPSEEK_API_KEY` | AI 趨勢分析（Vercel AI SDK + DeepSeek）；缺失則 Tab 降級 |
-| `DEEPSEEK_MODEL` | 可選，預設 `deepseek-v4-flash` |
-| `DEEPSEEK_BASE_URL` | 可選，預設 DeepSeek 官方 API |
-| `EMAIL_FROM` / `RESEND_API_KEY` | 提醒郵件（優先 Resend） |
-| `SMTP_*` | Resend 不可用時的 SMTP 回退 |
-| `ALERT_POLL_INTERVAL_MS` | Worker 輪詢間隔，預設 `45000` |
+實作細節：[docs/market-trading-tech.md](./docs/market-trading-tech.md)、[docs/architecture.md](./docs/architecture.md)。
 
 ## 常用指令
 
 ```bash
-npm run dev              # 開發（Turbopack）
+npm run dev
 npm run build && npm start
-npm run worker           # 提醒 + 模擬掛單撮合
-npm run db:migrate       # 套用遷移
-npm run db:migrate:dev   # 開發期改 schema
+npm run worker
+npm run db:migrate
 npm run lint
 ```
 
-## 使用說明（產品側）
+## 使用說明
 
-1. **註冊 / 登入**：郵箱密碼；登入後可自選、評論、提醒、模擬交易。
-2. **市場頁**：切換美股 / 港股 / 加密，搜尋進入詳情（港股如 `00700`）。
-3. **詳情頁**：看 K 線與指標、詳細報價盤口（振幅/量額/買賣一等）；右側做模擬買賣；下方 Tab 看新聞/財報（含 SVG 圖）/公告/評論/情緒/AI 分析。
-4. **自選 / Portfolio**：管理關注標的；查看模擬帳戶資金、持倉浮盈、掛單。
-5. **提醒**：詳情頁或提醒頁設定價格 ≥ / ≤ 觸發價，需設定郵件通道並由 Worker 運行。
-6. **設定**：語言、主題、漲跌色偏好可持久化。
-
-模擬交易初始資金 **$100,000**（僅做多）；可在 Portfolio 重置帳戶。真實券商下單介面已預留，尚未接通。
+1. **註冊 / 登入**：郵箱密碼；可選 Google / GitHub。
+2. **市場頁**：美股/港股/A股/加密；愛心加入自選。
+3. **詳情頁**：K 線、模擬交易、Tab、價格提醒。
+4. **自選 / Portfolio**：關注清單與模擬帳戶。
+5. **提醒**：需郵件 + Worker。
+6. **設定**：偏好、BYOK、AI Key、邀請碼；側欄可收起為圖示。
 
 ## 文件
 
 | 文件 | 說明 |
 |---|---|
 | [docs/](./docs/) | 文件中心 |
-| [需求](./docs/requirements.md) | 功能範圍與驗收 |
-| [啟動與環境](./docs/getting-started.md) | 更細的安裝與排錯 |
-| [行情多源與模擬交易實現思路](./docs/market-trading-tech.md) | Provider / 撮合設計 |
-| [架構](./docs/architecture.md) · [API](./docs/api.md) · [資料庫](./docs/database.md) | 技術細節 |
+| [需求](./docs/requirements.md) | 功能範圍 |
+| [啟動與環境](./docs/getting-started.md) | 安裝 |
+| [行情與模擬交易](./docs/market-trading-tech.md) | Provider / 撮合 |
+| [架構](./docs/architecture.md) · [API](./docs/api.md) · [資料庫](./docs/database.md) | 技術 |
 | [部署](./docs/deployment.md) · [排障](./docs/troubleshooting.md) | 運維 |
 
 ## License

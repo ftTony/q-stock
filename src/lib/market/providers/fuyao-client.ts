@@ -48,11 +48,11 @@ export type FuyaoTickerHit = {
   exchange?: string;
 };
 
-/** User BYOK first, then optional platform env. */
+/** User BYOK or platform env. Prefer env when set. */
 export function resolveFuyaoApiKey(): string | undefined {
-  const byok = getMarketCreds().fuyao?.apiKey?.trim();
-  if (byok) return byok;
-  return process.env.FUYAO_API_KEY?.trim() || undefined;
+  const fromEnv = process.env.FUYAO_API_KEY?.trim();
+  if (fromEnv) return fromEnv;
+  return getMarketCreds().fuyao?.apiKey?.trim() || undefined;
 }
 
 export function hasFuyaoCreds(): boolean {

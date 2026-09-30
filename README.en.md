@@ -2,38 +2,41 @@
 
 **Languages:** [简体中文](./README.md) · [English](./README.en.md) · [繁體中文](./README.zh-TW.md)
 
-A Web & H5 market terminal for **US stocks**, **HK stocks**, and **crypto**: multi-source quotes, candlestick charts with indicators, news & earnings, paper trading, price email alerts, and market sentiment.
+Web & H5 terminal for **US / HK / A-share / crypto** markets: multi-source quotes, charts & indicators, news, paper trading, price email alerts, sentiment, and AI analysis.
 
 ## Features
 
 | Area | What you get |
 |---|---|
-| Markets | Popular lists (US / HK / crypto), search, gainers/losers, quiet polling refresh |
-| Multi-source quotes | **Longbridge → Futu OpenAPI → Finnhub**, configurable priority with automatic failover |
-| Symbol detail | Daily / quarterly / yearly candles; MA / EMA / BOLL / RSI / MACD; rich quote panel (amplitude / volume / bid-ask) |
-| News & filings | News, earnings (surprises / calendar / metrics + EPS SVG charts), press releases |
-| Paper trading | Long-only; market / limit / stop; side panel on symbol page; Portfolio cash & positions |
-| Watchlist & portfolio | CRUD watchlist, sparklines, overview KPIs |
-| Price alerts | Email on ≥ / ≤ trigger (Resend / SMTP); background worker |
-| Sentiment | Adanos (cached; degrades gracefully without a key) |
-| AI analysis | Vercel AI SDK + DeepSeek; news + earnings + quote → bullish / neutral / bearish (~30 min cache) |
-| UX | zh-CN / zh-TW / en, light/dark theme, CN or US up/down colors |
+| Markets | US / HK / **CN** / crypto lists & boards; search; ~45s quiet refresh |
+| Multi-source quotes | Equity: **Longbridge ↔ Futu → Finnhub** (preferred broker in Settings); Crypto: **Binance ↔ OKX → Finnhub**; creds = **platform env first, else user BYOK** |
+| Markets home | KPIs, rank boards (heart watchlist), industry heatmap (non-crypto), HK IPO, sentiment; topbar index carousel |
+| Symbol detail | D/Q/Y candles (KLineChart + drawings), MA/EMA/BOLL/RSI/MACD; compact header + heart; paper trade panel |
+| Tabs | News (LB→Futu→Finnhub), earnings/press, company/officers, comments, sentiment, AI |
+| Analysis | `/analysis` popular cards by market |
+| Watchlist & portfolio | CRUD (incl. cn), sparklines; paper cash/positions/orders/reset |
+| Alerts | ≥ / ≤ email (Resend/SMTP); worker poll |
+| Paper trading | Long-only; market/limit/stop; **$100,000** start |
+| Settings | Language/theme/colors; LB/Futu/Binance/OKX BYOK; multi-vendor AI keys; invites |
+| UX | 10 locales, light/dark, CN/US color schemes; collapsible sidebar; H5 bottom nav |
 
 Stack: Next.js 15 · TypeScript · Tailwind · KLineChart · Auth.js · Prisma · PostgreSQL · Docker.
+
+> Fuyao client code exists but is **hard-disabled** in the market router and hidden from Settings. CN quotes use Longbridge / Futu / Finnhub.
 
 ## Requirements
 
 - Node.js **20+** (22 recommended)
 - npm 10+
-- Docker (optional, for Postgres or full stack)
+- Docker (optional)
 
-Configure **at least one** quote provider (Longbridge / Futu / Finnhub). News & earnings need Finnhub. Sentiment needs Adanos (optional). AI analysis needs `DEEPSEEK_API_KEY` (optional).
+Configure **at least one** quote path: platform env and/or Settings BYOK. News needs Finnhub or broker content APIs. Sentiment needs Adanos (optional). AI needs user BYOK or `DEEPSEEK_API_KEY` (optional).
 
 ## Quick start
 
 ```bash
 cp .env.example .env
-# Set AUTH_SECRET, DATABASE_URL, and at least one market-data key
+# Set AUTH_SECRET, DATABASE_URL, CREDENTIALS_ENCRYPTION_KEY, and at least one market key
 
 docker compose up -d db
 npm install
@@ -41,15 +44,13 @@ npm run db:migrate
 npm run dev
 ```
 
-In another terminal, start the worker (alerts + paper limit/stop fills):
+Worker (alerts + paper limit/stop fills):
 
 ```bash
 npm run worker
 ```
 
-Open [http://localhost:3000](http://localhost:3000) (defaults to `/zh-CN`; switch language in the UI).
-
-Full stack:
+Open [http://localhost:3000](http://localhost:3000) (default locale `/en`).
 
 ```bash
 docker compose up --build
@@ -57,78 +58,84 @@ docker compose up --build
 
 ## Environment configuration
 
-Copy [.env.example](./.env.example) to `.env`.
+See [.env.example](./.env.example).
 
 ### App & database
 
 | Variable | Required | Notes |
 |---|---|---|
 | `APP_URL` | Recommended | e.g. `http://localhost:3000` |
-| `AUTH_SECRET` | Yes | Long random secret for Auth.js |
-| `AUTH_TRUST_HOST` | Recommended | `true` behind Docker / reverse proxy |
-| `DATABASE_URL` | Yes | PostgreSQL connection string |
-
-Default Compose DB:
-
-```text
-postgresql://qstock:qstock@localhost:5432/qstock?schema=public
-```
+| `AUTH_SECRET` | Yes | Auth.js secret |
+| `AUTH_TRUST_HOST` | Recommended | `true` behind proxy |
+| `DATABASE_URL` | Yes | PostgreSQL |
+| `AUTH_GOOGLE_*` / `AUTH_GITHUB_*` | No | Optional OAuth |
 
 ### Market data
 
+Resolution (`resolve-market-creds.ts`): **env first**, then Settings BYOK (encrypted).
+
 | Variable | Notes |
 |---|---|
-| `MARKET_DATA_PROVIDERS` | Priority CSV; default `longbridge,futu,finnhub`; omit to auto-detect from credentials |
-| `LONGBRIDGE_APP_KEY` / `SECRET` / `ACCESS_TOKEN` | [Longbridge OpenAPI](https://open.longbridge.com/) — all three required to enable |
-| `FUTU_ACCESS_TOKEN` | [Futu cloud OpenAPI](https://open.futunn.com/api/overview/) Bearer token (no OpenD) |
-| `FUTU_APP_KEY` + `FUTU_PRIVATE_KEY` | Legacy AppKey signing (optional) |
-| `FINNHUB_API_KEY` | Fallback quotes + news / earnings / press |
+| `MARKET_DATA_PROVIDERS` | Priority CSV |
+| `LONGBRIDGE_*` (3 keys) | Platform Longbridge |
+| `FUTU_ACCESS_TOKEN` or AppKey+PK | Platform Futu |
+| `BINANCE_API_KEY` / `SECRET` | Optional |
+| `OKX_API_KEY` / `SECRET` / `PASSPHRASE` | Optional |
+| `FINNHUB_API_KEY` | Fallback quotes + news |
+| `CREDENTIALS_ENCRYPTION_KEY` | Encrypts user BYOK |
 
 ### Other
 
 | Variable | Notes |
 |---|---|
-| `ADANOS_API_KEY` | Sentiment; UI degrades if missing |
-| `DEEPSEEK_API_KEY` | AI trend analysis (Vercel AI SDK + DeepSeek); Tab degrades if missing |
-| `DEEPSEEK_MODEL` | Optional, default `deepseek-v4-flash` |
-| `DEEPSEEK_BASE_URL` | Optional, default DeepSeek official API |
-| `EMAIL_FROM` / `RESEND_API_KEY` | Alert email (Resend preferred) |
-| `SMTP_*` | SMTP fallback |
-| `ALERT_POLL_INTERVAL_MS` | Worker interval, default `45000` |
+| `ADANOS_API_KEY` | Sentiment |
+| `DEEPSEEK_API_KEY` | Platform AI fallback |
+| `EMAIL_FROM` / `RESEND_API_KEY` / `SMTP_*` | Mail |
+| `ALERT_POLL_INTERVAL_MS` | Worker interval (default `45000`) |
+
+## Implementation sketch
+
+| Concern | Where |
+|---|---|
+| Market facade | `@/lib/market` + `router` failover by asset & vendor prefs |
+| Creds | `withUserMarket` ALS; `UserMarketCredential` encrypted |
+| Shell | `AppShell` + collapsible `AppSidebar`; `TopbarIndexTicker` |
+| Charts | `CandleChart` + drawing tools |
+| Paper | `@/lib/trading/*` + worker |
+| AI | `@/lib/ai` + `/api/ai/analyze` |
+
+Details: [docs/market-trading-tech.md](./docs/market-trading-tech.md), [docs/architecture.md](./docs/architecture.md).
 
 ## Scripts
 
 ```bash
-npm run dev              # Dev server (Turbopack)
+npm run dev
 npm run build && npm start
-npm run worker           # Alerts + paper pending orders
-npm run db:migrate       # Apply migrations
-npm run db:migrate:dev   # Dev schema changes
+npm run worker
+npm run db:migrate
 npm run lint
 ```
 
-## How to use the product
+## How to use
 
-1. **Sign up / sign in** — email + password; required for watchlist, comments, alerts, paper trading.
-2. **Markets** — switch US / HK / crypto, search into a symbol (HK e.g. `00700`).
-3. **Symbol page** — charts & indicators, rich quote panel; paper trade on the right; news / earnings (with SVG charts) / press / comments / sentiment / AI analysis tabs.
-4. **Watchlist / Portfolio** — manage symbols; view paper cash, P&L, open orders.
-5. **Alerts** — set price ≥ / ≤; needs email config + running worker.
-6. **Settings** — language, theme, up/down color scheme (persisted).
+1. **Sign up / in** — email/password; optional Google/GitHub.
+2. **Markets** — US/HK/CN/crypto; search; heart = watchlist.
+3. **Symbol** — chart, paper trade, tabs, alerts.
+4. **Watchlist / Portfolio** — manage symbols; paper P&L; reset account.
+5. **Alerts** — need mail + worker.
+6. **Settings** — prefs, BYOK, AI keys, invites; collapse sidebar to icons.
 
-Paper trading starts with **$100,000** (long-only); reset from Portfolio. Live broker order routing is stubbed for a later phase.
+## Docs
 
-## Documentation
-
-| Doc | Content |
+| Doc | Topic |
 |---|---|
-| [docs/](./docs/) | Doc hub |
-| [Requirements](./docs/requirements.md) | Scope & acceptance (Chinese) |
-| [Getting started](./docs/getting-started.md) | Deeper setup |
-| [Market & trading design](./docs/market-trading-tech.md) | Providers & paper matching |
-| [Architecture](./docs/architecture.md) · [API](./docs/api.md) · [Database](./docs/database.md) | Implementation detail |
-| [Deployment](./docs/deployment.md) · [Troubleshooting](./docs/troubleshooting.md) | Ops |
+| [docs/](./docs/) | Hub |
+| [Requirements](./docs/requirements.md) | Scope |
+| [Getting started](./docs/getting-started.md) | Install |
+| [Market & paper trading](./docs/market-trading-tech.md) | Providers / matching |
+| [Architecture](./docs/architecture.md) · [API](./docs/api.md) · [DB](./docs/database.md) | Tech |
+| [Deploy](./docs/deployment.md) · [Troubleshooting](./docs/troubleshooting.md) | Ops |
 
 ## License
 
-Private / per repository terms.
+Private / as agreed for this repository.

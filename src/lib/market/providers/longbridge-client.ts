@@ -1,4 +1,4 @@
-import { getMarketCreds } from "@/lib/market/creds-context";
+import { resolveLongbridgeCreds } from "@/lib/market/resolve-market-creds";
 import {
   fingerprintLongbridge,
   type LongbridgeCreds,
@@ -38,7 +38,7 @@ function trimMap<K, V>(map: Map<K, V>, max: number) {
 export type LbLanguageId = 0 | 1 | 2 | "default";
 
 function requireLongbridgeCreds(): LongbridgeCreds {
-  const c = getMarketCreds().longbridge;
+  const c = resolveLongbridgeCreds();
   if (!c) {
     throw new MarketDataError(
       "Longbridge credentials not configured for this user",
@@ -48,9 +48,9 @@ function requireLongbridgeCreds(): LongbridgeCreds {
   return c;
 }
 
-/** True when the current request ALS has Longbridge BYOK credentials. */
+/** True when platform env or request ALS has Longbridge credentials. */
 export function hasLongbridgeCreds(): boolean {
-  return Boolean(getMarketCreds().longbridge);
+  return Boolean(resolveLongbridgeCreds());
 }
 
 export async function loadLb(): Promise<LbModule> {

@@ -91,13 +91,15 @@ interface MarketDataProvider {
 
 [`src/lib/market/router.ts`](../src/lib/market/router.ts)：
 
-1. 读取 `MARKET_DATA_PROVIDERS`（CSV）；未配置则按默认顺序过滤「当前请求已配置」的源
-2. 默认顺序：`longbridge,futu,finnhub,binance`
-3. **长桥 / 富途「已配置」= 当前登录用户在设置页保存了 BYOK**（AsyncLocalStorage），不是服务端 env
-4. 游客或无 BYOK：仅 Finnhub / Binance
-5. `withProviderFailover`：按序调用，失败记日志并试下一个；全部失败再抛错
+1. 读取 `MARKET_DATA_PROVIDERS`（CSV）；未配置则按资产类型与「已配置」源过滤
+2. 股票（`stock`/`hk`/`cn`）：按用户 `equityVendor`（长桥或富途）排首选，再另一券商，再 Finnhub
+3. 加密：按 `cryptoVendor`（Binance 或 OKX）排首选，再另一所，再 Finnhub
+4. **「已配置」** = 平台 env（`LONGBRIDGE_*` / `FUTU_*` / …）**或** 请求 ALS 中的用户 BYOK（`resolve-market-creds.ts`）
+5. **`fuyao` 在 `isProviderEnabled` 中恒为 false**（代码保留，不参与链）
+6. 无券商凭据：回退 Finnhub / Binance 公共行情
+7. `withProviderFailover`：按序调用，失败换下一个
 
-API 路由通过 `withUserMarket(session?.user?.id, …)` 注入凭证。门面 [`src/lib/market/index.ts`](../src/lib/market/index.ts) 对外只暴露：
+API 经 `withUserMarket(session?.user?.id, …)` 注入 BYOK 后再与 env 合并（env 优先）。门面 [`src/lib/market/index.ts`](../src/lib/market/index.ts) 暴露：
 
 - `getQuote` / `getQuotes`
 - `getDailyCandles` / `getMonthlyCandles`
@@ -106,7 +108,7 @@ API 路由通过 `withUserMarket(session?.user?.id, …)` 注入凭证。门面 
 
 ### 3.3 符号映射
 
-`AssetType`：`stock`（美股）| `hk`（港股）| `crypto`。
+`AssetType`：`stock`（美股）| `hk`（港股）| `cn`（A 股）| `crypto`。
 
 内部短码约定：
 
@@ -114,18 +116,19 @@ API 路由通过 `withUserMarket(session?.user?.id, …)` 注入凭证。门面 
 |---|---|---|
 | 美股 | 裸 ticker | `AAPL` |
 | 港股 | **5 位补零**，无 `.HK` | `00700` |
+| A 股 | 按 provider 映射（长桥/富途/Finnhub） | 如 `600519` |
 | 加密 | 基础币种 | `BTC` |
 
-出站再按源映射（仅当 `assetType === "hk"` 才走港股后缀，美股路径不再把数字码误判为港股）：
+出站再按源映射（仅当 `assetType === "hk"` 才走港股后缀）：
 
 | 源 | 美股 | 港股 | 加密 |
 |---|---|---|---|
-| Longbridge | `AAPL.US` | `00700.HK` | `BTC.US` |
+| Longbridge | `AAPL.US` | `00700.HK` | （另有加密路径） |
 | Futu | `US.AAPL` | `HK.00700` | 不支持 |
 | Finnhub | `AAPL` | `700.HK` | `BINANCE:BTCUSDT` |
-| Binance | — | — | `BTCUSDT`（公共 kline，无需 Key） |
+| Binance / OKX | — | — | 交易对 / 合约 ID |
 
-实现：[`src/lib/market/symbols.ts`](../src/lib/market/symbols.ts)、[`src/lib/types.ts`](../src/lib/types.ts)（`normalizeSymbol` / `toFinnhubSymbol`）
+实现：[`src/lib/market/symbols.ts`](../src/lib/market/symbols.ts)、[`src/lib/types.ts`](../src/lib/types.ts)
 
 ### 3.4 各 Provider 要点
 
@@ -133,7 +136,7 @@ API 路由通过 `withUserMarket(session?.user?.id, …)` 注入凭证。门面 
 
 - 依赖 npm `longbridge`
 - `Config.fromApikey` + `QuoteContext.quote` / `candlesticks`
-- **凭证**：用户 BYOK（`UserMarketCredential` + ALS），非 `LONGBRIDGE_*` env
+- **凭证**：`resolveLongbridgeCreds()` — **`LONGBRIDGE_*` env 优先**，否则用户 BYOK（`UserMarketCredential` + ALS）
 - Next 配置：`serverExternalPackages: ["longbridge"]`（原生绑定）
 
 #### 富途（`providers/futu.ts`）— 云端 OpenAPI，**不用 OpenD**
@@ -146,19 +149,25 @@ API 路由通过 `withUserMarket(session?.user?.id, …)` 注入凭证。门面 
 | 快照 | `POST /api/v1.0/quote/snapshot` body `{ code_list: ["US.AAPL"] }` |
 | 历史 K | `GET /api/v1.0/quote/{symbol}/history-kline?ktype=2\|4&…` |
 
-鉴权（用户在设置页二选一）：
+鉴权（`resolveFutuCreds()`）：
 
-1. **AppKey + 私钥**（推荐）：Ed25519 / RSA 签名
-2. **Bearer Access Token**
-
-服务端 `FUTU_*` env **不参与** Web 行情。
+1. 平台 env：`FUTU_ACCESS_TOKEN`（Bearer）或 `FUTU_APP_KEY` + `FUTU_PRIVATE_KEY`
+2. 否则用户设置页 BYOK（同上两种模式）
 
 #### Finnhub（`providers/finnhub.ts`）
 
 - REST：`/quote`、`/stock/candle`、`/crypto/candle`、`/search`
-- 同时作为**加密主源**与**资讯后端**
-- 资讯仍由 [`src/lib/finnhub/client.ts`](../src/lib/finnhub/client.ts) 提供（news / earnings / press / metric）
-- 旧的 `getQuote` 等从 `@/lib/finnhub/client` re-export 到 `@/lib/market`，避免双份逻辑
+- 股票与资讯兜底；加密亦可回退
+- 资讯另见 [`src/lib/finnhub/client.ts`](../src/lib/finnhub/client.ts)
+
+#### Binance / OKX
+
+- 公共行情可无 Key；有 env 或 BYOK 时 Binance 可走官方 API Host
+- 用户在设置页选择优先交易所（`cryptoVendor`）
+
+#### 扶摇（`providers/fuyao.ts`）
+
+- 客户端与 BYOK/API 仍在仓库，**`isProviderEnabled("fuyao")` 恒 false**，不参与行情链；设置页不展示表单
 
 ### 3.5 缓存
 
@@ -250,13 +259,17 @@ getBrokerGateway(): BrokerGateway | null  // 当前恒为 null
 ```bash
 MARKET_DATA_PROVIDERS=longbridge,futu,finnhub,binance
 
-# 用户 BYOK 加密密钥（必填才能保存长桥/富途）
+# 用户 BYOK 加密密钥（设置页保存长桥/富途等时需要）
 CREDENTIALS_ENCRYPTION_KEY=
 
-# 平台 Finnhub（游客 / 无 BYOK 兜底）
+# 平台 Finnhub（无长桥/富途时的兜底）
 FINNHUB_API_KEY=
 
-# 长桥 / 富途：请在 Web 设置页填写，不要再用服务端 env 给访客转行情
+# 平台长桥 / 富途（可选；配置后优先于用户 BYOK）
+# LONGBRIDGE_APP_KEY=
+# LONGBRIDGE_APP_SECRET=
+# LONGBRIDGE_ACCESS_TOKEN=
+# FUTU_ACCESS_TOKEN=
 ```
 
 完整说明见 [启动与环境](./getting-started.md) 与仓库根目录 [.env.example](../.env.example)。

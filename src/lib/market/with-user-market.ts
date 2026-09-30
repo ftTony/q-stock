@@ -1,9 +1,12 @@
 import {
-  getMarketCreds,
+  resolveFutuCreds,
+  resolveLongbridgeCreds,
+} from "@/lib/market/resolve-market-creds";
+import type { MarketCredsStore } from "@/lib/market/creds-types";
+import {
   loadUserMarketCreds,
   runWithMarketCreds,
 } from "@/lib/market/creds-context";
-import type { MarketCredsStore } from "@/lib/market/creds-types";
 
 /**
  * Load the user's BYOK credentials (if any) into AsyncLocalStorage for the
@@ -20,14 +23,13 @@ export async function withUserMarket<T>(
   return runWithMarketCreds(store, () => fn());
 }
 
-/** Effective Longbridge / Futu configured flags for the current ALS store. */
+/** Effective Longbridge / Futu configured flags (env or BYOK). */
 export function brokerConfiguredFromStore(): {
   longbridge: boolean;
   futu: boolean;
 } {
-  const c = getMarketCreds();
   return {
-    longbridge: Boolean(c.longbridge),
-    futu: Boolean(c.futu),
+    longbridge: Boolean(resolveLongbridgeCreds()),
+    futu: Boolean(resolveFutuCreds()),
   };
 }

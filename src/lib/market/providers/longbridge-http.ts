@@ -1,12 +1,12 @@
 import { createHash, createHmac } from "crypto";
-import { getMarketCreds } from "@/lib/market/creds-context";
+import { resolveLongbridgeCreds } from "@/lib/market/resolve-market-creds";
 
 const HOST =
   process.env.LONGBRIDGE_HTTP_HOST?.trim() ||
   "https://openapi.longbridge.cn";
 
 function hasLongbridgeCreds(): boolean {
-  return Boolean(getMarketCreds().longbridge);
+  return Boolean(resolveLongbridgeCreds());
 }
 
 export { hasLongbridgeCreds as hasLongbridgeHttpCreds };
@@ -39,12 +39,12 @@ function signGet(
   )}`;
 }
 
-/** Signed Longbridge OpenAPI GET (JSON body). Uses request ALS BYOK. */
+/** Signed Longbridge OpenAPI GET (JSON body). Env keys first, else BYOK. */
 export async function longbridgeHttpGet<T = unknown>(
   path: string,
   params: Record<string, string | number | undefined>,
 ): Promise<T> {
-  const creds = getMarketCreds().longbridge;
+  const creds = resolveLongbridgeCreds();
   if (!creds) {
     throw new Error("Longbridge credentials not configured");
   }

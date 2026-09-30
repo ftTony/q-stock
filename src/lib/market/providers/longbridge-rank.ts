@@ -1,7 +1,7 @@
 import { cachedFetch } from "@/lib/cache";
-import { getMarketCreds } from "@/lib/market/creds-context";
 import { fingerprintLongbridge } from "@/lib/market/creds-types";
 import { hasLongbridgeCreds, loadLb } from "@/lib/market/providers/longbridge-client";
+import { resolveLongbridgeCreds } from "@/lib/market/resolve-market-creds";
 import { normalizeSymbol } from "@/lib/market/symbols";
 import type { AssetType, Quote } from "@/lib/types";
 
@@ -15,7 +15,7 @@ const marketCtxCache = new Map<
 >();
 
 async function getMarketCtx(): Promise<InstanceType<LbModule["MarketContext"]>> {
-  const creds = getMarketCreds().longbridge;
+  const creds = resolveLongbridgeCreds();
   if (!creds) throw new Error("Longbridge credentials not configured");
   const key = fingerprintLongbridge(creds);
   const hit = marketCtxCache.get(key);

@@ -1,12 +1,12 @@
 import { cachedFetch } from "@/lib/cache";
-import { getMarketCreds } from "@/lib/market/creds-context";
 import type { MarketDataProvider, QuoteWithSource } from "@/lib/market/types";
 import { MarketDataError } from "@/lib/market/types";
+import { resolveBinanceCreds } from "@/lib/market/resolve-market-creds";
 import type { OhlcvBar, SearchResult } from "@/lib/types";
 import { normalizeSymbol } from "@/lib/types";
 
 /**
- * Official REST hosts (prefer when user saved Binance API Key).
+ * Official REST hosts (prefer when API key is available via env or BYOK).
  * Web hosts = same /api/v3 JSON served from binance.com (no key; CN-friendlier).
  */
 const API_BASES = [
@@ -37,7 +37,7 @@ function toPair(symbol: string): string {
 }
 
 function hasUserApiKey(): boolean {
-  return Boolean(getMarketCreds().binance?.apiKey?.trim());
+  return Boolean(resolveBinanceCreds()?.apiKey?.trim());
 }
 
 async function binanceFetch<T>(
@@ -51,7 +51,7 @@ async function binanceFetch<T>(
   const useKey = hasUserApiKey();
   const bases = useKey ? API_BASES : WEB_BASES;
   const via: "api" | "web" = useKey ? "api" : "web";
-  const apiKey = getMarketCreds().binance?.apiKey?.trim();
+  const apiKey = resolveBinanceCreds()?.apiKey?.trim();
 
   let lastErr: Error | null = null;
   for (const base of bases) {
