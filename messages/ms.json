@@ -465,7 +465,6 @@
     "degraded": "Sebahagian data tidak tersedia untuk pelan anda",
     "prevPage": "Sebelumnya",
     "nextPage": "Seterusnya",
-    "pageOf": "{page} / {total}",
     "dataSource": "Sumber data",
     "providerLongbridge": "Longbridge",
     "providerFutu": "Futu",

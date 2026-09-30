@@ -465,7 +465,6 @@
     "degraded": "Some data unavailable for your plan",
     "prevPage": "Previous",
     "nextPage": "Next",
-    "pageOf": "{page} / {total}",
     "dataSource": "Data source",
     "providerLongbridge": "Longbridge",
     "providerFutu": "Futu",

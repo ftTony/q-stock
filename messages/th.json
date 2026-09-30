@@ -465,7 +465,6 @@
     "degraded": "ข้อมูลบางส่วนไม่พร้อมใช้งานสำหรับแผนของคุณ",
     "prevPage": "ก่อนหน้า",
     "nextPage": "ถัดไป",
-    "pageOf": "{page} / {total}",
     "dataSource": "แหล่งข้อมูล",
     "providerLongbridge": "Longbridge",
     "providerFutu": "Futu",

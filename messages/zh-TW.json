@@ -465,7 +465,6 @@
     "degraded": "部分資料因方案限制暫不可用",
     "prevPage": "上一頁",
     "nextPage": "下一頁",
-    "pageOf": "{page} / {total}",
     "dataSource": "資料來源",
     "providerLongbridge": "長橋",
     "providerFutu": "富途",

@@ -1,5 +1,8 @@
-/* Minimal offline shell for installed PWA. Splash / brand uses /logo.png. */
-const CACHE = "q-stock-shell-v3";
+/* Minimal offline shell for installed PWA. Splash / brand uses /logo.png.
+ * Do NOT cache-first /_next/* — Turbopack/webpack chunk URLs reuse paths in
+ * dev and will pin stale client bundles (e.g. broken i18n pagination UI).
+ */
+const CACHE = "q-stock-shell-v4";
 const PRECACHE = [
   "/",
   "/manifest.webmanifest",
@@ -33,7 +36,10 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // Network-first for navigations; cache-first for static assets.
+  // App Router / Turbopack / webpack — always hit network.
+  if (url.pathname.startsWith("/_next/")) return;
+
+  // Network-first for navigations; cache fallback only when offline.
   if (req.mode === "navigate") {
     event.respondWith(
       fetch(req)
@@ -47,10 +53,8 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (
-    url.pathname.startsWith("/_next/static/") ||
-    url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|woff2?|webmanifest)$/i)
-  ) {
+  // Cache-first only for static brand assets (not JS/CSS bundles).
+  if (url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|woff2?|webmanifest)$/i)) {
     event.respondWith(
       caches.match(req).then(
         (hit) =>

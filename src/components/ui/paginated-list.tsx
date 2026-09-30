@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale } from "next-intl";
 
 type Props<T> = {
   items: T[];
@@ -32,6 +32,18 @@ function pageWindow(current: number, total: number, max = 5): number[] {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i);
 }
 
+function pagerLabels(locale: string) {
+  const zh = locale.startsWith("zh");
+  return {
+    prev: zh ? "上一页" : "Prev",
+    next: zh ? "下一页" : "Next",
+  };
+}
+
+/**
+ * Client-side list pager. Page indicator is plain text (no next-intl ICU)
+ * to avoid FORMATTING_ERROR / raw keys like "common.pageOf".
+ */
 export function PaginatedList<T>({
   items,
   pageSize = 8,
@@ -39,7 +51,8 @@ export function PaginatedList<T>({
   empty,
   renderItem,
 }: Props<T>) {
-  const t = useTranslations("common");
+  const locale = useLocale();
+  const labels = pagerLabels(locale);
   const [page, setPage] = useState(1);
   const rootRef = useRef<HTMLDivElement>(null);
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
@@ -71,11 +84,13 @@ export function PaginatedList<T>({
   }
 
   const pages = pageWindow(page, totalPages);
-  // Avoid ICU "{page}" / "{total}" — next-intl has been dropping these args in this client path.
-  const pageLabel = `${page} / ${totalPages}`;
 
   return (
-    <div ref={rootRef} className="space-y-3 scroll-mt-24">
+    <div
+      ref={rootRef}
+      className="space-y-3 scroll-mt-24"
+      data-pager="paginated-list-v2"
+    >
       <ul className="space-y-3">
         {slice.map((item, i) => renderItem(item, (page - 1) * pageSize + i))}
       </ul>
@@ -87,7 +102,7 @@ export function PaginatedList<T>({
             disabled={page <= 1}
             onClick={() => goTo(page - 1)}
           >
-            {t("prevPage")}
+            {labels.prev}
           </button>
           <div className="flex flex-wrap items-center justify-center gap-1">
             {pages.map((p) => (
@@ -107,7 +122,7 @@ export function PaginatedList<T>({
               </button>
             ))}
             <span className="ml-1 text-xs tabular-nums text-[var(--muted)]">
-              {pageLabel}
+              {page} / {totalPages}
             </span>
           </div>
           <button
@@ -116,7 +131,7 @@ export function PaginatedList<T>({
             disabled={page >= totalPages}
             onClick={() => goTo(page + 1)}
           >
-            {t("nextPage")}
+            {labels.next}
           </button>
         </div>
       )}

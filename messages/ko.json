@@ -465,7 +465,6 @@
     "degraded": "이용 중인 요금제에서는 일부 데이터를 사용할 수 없습니다",
     "prevPage": "이전",
     "nextPage": "다음",
-    "pageOf": "{page} / {total}",
     "dataSource": "데이터 소스",
     "providerLongbridge": "Longbridge",
     "providerFutu": "Futu",

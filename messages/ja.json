@@ -465,7 +465,6 @@
     "degraded": "お使いのプランでは一部データが利用できません",
     "prevPage": "前へ",
     "nextPage": "次へ",
-    "pageOf": "{page} / {total}",
     "dataSource": "データソース",
     "providerLongbridge": "Longbridge",
     "providerFutu": "Futu",
