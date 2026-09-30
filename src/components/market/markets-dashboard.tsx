@@ -4,15 +4,13 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
 import { CryptoPopularTable } from "@/components/market/crypto-popular-table";
-import { IndexStrip } from "@/components/market/index-strip";
 import { IndustryHeatmap } from "@/components/market/industry-heatmap";
 import { IpoPanel } from "@/components/market/ipo-panel";
 import { KpiCard } from "@/components/market/kpi-card";
+import { MarketsHeaderToolbar } from "@/components/market/markets-header-toolbar";
 import { RankBoardPanel } from "@/components/market/rank-board-panel";
-import type { IndexQuote, RankQuote } from "@/components/market/markets-types";
-import { SegmentedControl } from "@/components/ui/segmented-control";
+import type { RankQuote } from "@/components/market/markets-types";
 import type { AssetType } from "@/lib/types";
 
 type Tab = AssetType;
@@ -39,12 +37,17 @@ export default function MarketsDashboard() {
   const searchParams = useSearchParams();
   const listParam = searchParams.get("list");
   const initialTab: Tab =
-    listParam === "crypto" ? "crypto" : listParam === "hk" ? "hk" : "stock";
+    listParam === "crypto"
+      ? "crypto"
+      : listParam === "hk"
+        ? "hk"
+        : listParam === "cn"
+          ? "cn"
+          : "stock";
 
   const [tab, setTab] = useState<Tab>(initialTab);
   const [q, setQ] = useState("");
   const [boards, setBoards] = useState<Boards>(EMPTY_BOARDS);
-  const [indices, setIndices] = useState<IndexQuote[]>([]);
   const [watched, setWatched] = useState<Set<string>>(new Set());
   const [results, setResults] = useState<
     { symbol: string; description: string; assetType: AssetType }[]
@@ -67,6 +70,21 @@ export default function MarketsDashboard() {
   useEffect(() => {
     setTab(initialTab);
   }, [initialTab]);
+
+  useEffect(() => {
+    if (!q.trim()) {
+      setResults([]);
+      return;
+    }
+    const handle = setTimeout(async () => {
+      const res = await fetch(
+        `/api/search?q=${encodeURIComponent(q)}&assetType=${tab}`,
+      );
+      const data = await res.json();
+      setResults(data.results ?? []);
+    }, 250);
+    return () => clearTimeout(handle);
+  }, [q, tab]);
 
   useEffect(() => {
     if (!session?.user) {
@@ -123,46 +141,39 @@ export default function MarketsDashboard() {
         setLoading(true);
         setError(null);
         setBoards(EMPTY_BOARDS);
-        if (assetType !== "crypto") setIndices([]);
       }
       try {
         const quoteUrl =
           assetType === "crypto"
             ? `/api/quotes?popular=1&assetType=crypto`
             : `/api/ranks?assetType=${assetType}&board=all&limit=7`;
-        const indexPromise =
-          assetType === "crypto"
-            ? Promise.resolve(null)
-            : fetch(`/api/indices?assetType=${assetType}`).catch(() => null);
-        const [qr, sr, nr, ar, ir] = await Promise.all([
+        const [qr, sr, nr, ar] = await Promise.all([
           fetch(quoteUrl),
-          assetType === "hk"
+          assetType === "hk" || assetType === "cn"
             ? Promise.resolve(null)
             : fetch(`/api/sentiment?assetType=${assetType}`),
-          fetch(`/api/news?assetType=${assetType}`),
+          assetType === "cn"
+            ? Promise.resolve(null)
+            : fetch(`/api/news?assetType=${assetType}`),
           fetch("/api/alerts").catch(() => null),
-          indexPromise,
         ]);
         const qj = await qr.json();
         const sj = sr ? await sr.json() : null;
-        const nj = await nr.json();
+        const nj = nr ? await nr.json() : { news: [] };
         if (!qr.ok) throw new Error(qj.error || "quotes failed");
         if (assetType === "crypto") {
           const quotes = (qj.quotes ?? []) as RankQuote[];
           setBoards({ hot: quotes, gainers: [], losers: [] });
-          setIndices([]);
         } else {
           setBoards({
             hot: qj.boards?.hot ?? [],
             gainers: qj.boards?.gainers ?? [],
             losers: qj.boards?.losers ?? [],
           });
-          if (ir && ir.ok) {
-            const ij = await ir.json();
-            setIndices(ij.indices ?? []);
-          }
         }
-        setSentiment(assetType === "hk" ? null : (sj?.market ?? null));
+        setSentiment(
+          assetType === "hk" || assetType === "cn" ? null : (sj?.market ?? null),
+        );
         setNews((nj.news ?? []).slice(0, 4));
         setUpdatedAt(new Date());
         if (ar && ar.ok) {
@@ -190,21 +201,6 @@ export default function MarketsDashboard() {
     const timer = setInterval(() => void loadBoards(tab, true), 45000);
     return () => clearInterval(timer);
   }, [tab, loadBoards]);
-
-  useEffect(() => {
-    if (!q.trim()) {
-      setResults([]);
-      return;
-    }
-    const handle = setTimeout(async () => {
-      const res = await fetch(
-        `/api/search?q=${encodeURIComponent(q)}&assetType=${tab}`,
-      );
-      const data = await res.json();
-      setResults(data.results ?? []);
-    }, 250);
-    return () => clearTimeout(handle);
-  }, [q, tab]);
 
   const kpiQuotes = boards.hot;
   const avgChange = useMemo(() => {
@@ -240,76 +236,13 @@ export default function MarketsDashboard() {
 
   return (
     <div className="space-y-5 animate-[qtFade_0.45s_ease]">
-      <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div className="space-y-1">
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-            {tab === "crypto"
-              ? t("titleCrypto")
-              : tab === "hk"
-                ? t("titleHk")
-                : t("titleStock")}
-          </h1>
-          <p className="text-xs text-[var(--muted)] sm:text-sm">
-            {tab === "crypto"
-              ? t("descCrypto")
-              : tab === "hk"
-                ? t("descHk")
-                : t("descStock")}
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <SegmentedControl
-            value={tab}
-            onChange={(key) => {
-              setTab(key);
-              setQ("");
-            }}
-            className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1"
-            buttonClassName="px-2.5 py-1 text-[11px] font-medium sm:text-xs"
-            options={[
-              { value: "stock", label: t("stocks") },
-              { value: "hk", label: t("hk") },
-              { value: "crypto", label: t("crypto") },
-            ]}
-          />
-
-          <div className="relative min-w-[220px] flex-1 sm:flex-none">
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={t("search")}
-              className="qt-input w-full px-3 py-2 text-xs sm:text-sm"
-            />
-            {results.length > 0 && (
-              <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl">
-                {results.map((r) => (
-                  <li key={`${r.assetType}-${r.symbol}`}>
-                    <Link
-                      href={`/symbol/${r.assetType}/${r.symbol}`}
-                      className="block px-3 py-2.5 text-sm hover:bg-[var(--sidebar-hover)]"
-                      onClick={() => setQ("")}
-                    >
-                      <span className="font-semibold">{r.symbol}</span>
-                      <span className="ml-2 text-[var(--muted)]">
-                        {r.description}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <Link href="/alerts" className="qt-btn qt-btn-primary h-9 px-3 text-xs">
-            + {t("create")}
-          </Link>
-        </div>
-      </section>
-
-      {tab !== "crypto" && (
-        <IndexStrip indices={indices} loading={loading} t={t} />
-      )}
+      <MarketsHeaderToolbar
+        tab={tab}
+        q={q}
+        results={results}
+        onTabChange={setTab}
+        onQueryChange={setQ}
+      />
 
       <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
         <KpiCard
@@ -393,114 +326,116 @@ export default function MarketsDashboard() {
           ))}
       </section>
 
-      <section className="grid items-stretch gap-4 lg:grid-cols-2">
-        <div className="qt-panel flex h-full flex-col p-4">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="font-semibold">{t("narrative")}</h2>
-            <span className="text-xs text-[var(--brand-text)]">{t("viewAll")}</span>
-          </div>
-          <ul className="space-y-3">
-            {news.length === 0 && (
-              <li className="text-sm text-[var(--muted)]">{t("unavailable")}</li>
-            )}
-            {news.map((n, i) => (
-              <li
-                key={i}
-                className="flex gap-3 border-b border-[var(--border)] pb-3 last:border-0 last:pb-0"
-              >
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-2)]">
-                  {n.image ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={n.image} alt="" className="h-full w-full object-cover" />
-                  ) : (
-                    <div className="flex h-full items-center justify-center text-[10px] text-[var(--muted)]">
-                      NEWS
-                    </div>
-                  )}
-                </div>
-                <div className="min-w-0">
-                  <div className="mb-1 flex flex-wrap items-center gap-2 text-[10px] tracking-wide text-[var(--muted)] uppercase">
-                    <span>{n.category || n.source || "MARKET"}</span>
-                    {n.datetime ? (
-                      <span>
-                        {Math.max(
-                          1,
-                          Math.round((Date.now() / 1000 - n.datetime) / 60),
-                        )}
-                        m
-                      </span>
-                    ) : null}
-                  </div>
-                  <a
-                    href={n.url || "#"}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="line-clamp-2 text-sm font-medium hover:text-[var(--brand-text)]"
-                  >
-                    {n.headline}
-                  </a>
-                </div>
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {tab === "hk" ? (
-          <IpoPanel assetType="hk" />
-        ) : (
+      {tab !== "cn" && (
+        <section className="grid items-stretch gap-4 lg:grid-cols-2">
           <div className="qt-panel flex h-full flex-col p-4">
-            <h2 className="mb-4 font-semibold">{t("sentiment")}</h2>
-            {sentiment?.available === false ? (
-              <p className="text-sm text-[var(--muted)]">
-                {sentiment.message || t("unavailable")}
-              </p>
-            ) : (
-              <>
-                <div className="mb-4 flex h-3 overflow-hidden rounded-full bg-[var(--surface-2)]">
-                  <div className="bg-[var(--up)]" style={{ width: `${bullish}%` }} />
-                  <div
-                    className="bg-[var(--muted)]"
-                    style={{ width: `${neutral}%` }}
-                  />
-                  <div
-                    className="bg-[var(--down)]"
-                    style={{ width: `${bearish}%` }}
-                  />
-                </div>
-                <div className="grid grid-cols-3 gap-3 text-center">
-                  <div>
-                    <div className="text-xl font-semibold text-[var(--up)]">
-                      {bullish.toFixed(0)}%
-                    </div>
-                    <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
-                      {t("bullish")}
-                    </div>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="font-semibold">{t("narrative")}</h2>
+              <span className="text-xs text-[var(--brand-text)]">{t("viewAll")}</span>
+            </div>
+            <ul className="space-y-3">
+              {news.length === 0 && (
+                <li className="text-sm text-[var(--muted)]">{t("unavailable")}</li>
+              )}
+              {news.map((n, i) => (
+                <li
+                  key={i}
+                  className="flex gap-3 border-b border-[var(--border)] pb-3 last:border-0 last:pb-0"
+                >
+                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-2)]">
+                    {n.image ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={n.image} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full items-center justify-center text-[10px] text-[var(--muted)]">
+                        NEWS
+                      </div>
+                    )}
                   </div>
-                  <div>
-                    <div className="text-xl font-semibold text-[var(--muted)]">
-                      {neutral.toFixed(0)}%
+                  <div className="min-w-0">
+                    <div className="mb-1 flex flex-wrap items-center gap-2 text-[10px] tracking-wide text-[var(--muted)] uppercase">
+                      <span>{n.category || n.source || "MARKET"}</span>
+                      {n.datetime ? (
+                        <span>
+                          {Math.max(
+                            1,
+                            Math.round((Date.now() / 1000 - n.datetime) / 60),
+                          )}
+                          m
+                        </span>
+                      ) : null}
                     </div>
-                    <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
-                      {t("neutral")}
-                    </div>
+                    <a
+                      href={n.url || "#"}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="line-clamp-2 text-sm font-medium hover:text-[var(--brand-text)]"
+                    >
+                      {n.headline}
+                    </a>
                   </div>
-                  <div>
-                    <div className="text-xl font-semibold text-[var(--down)]">
-                      {bearish.toFixed(0)}%
-                    </div>
-                    <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
-                      {t("bearish")}
-                    </div>
-                  </div>
-                </div>
-                <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
-                  {t("sentimentHint")}
-                </p>
-              </>
-            )}
+                </li>
+              ))}
+            </ul>
           </div>
-        )}
-      </section>
+
+          {tab === "hk" ? (
+            <IpoPanel assetType="hk" />
+          ) : (
+            <div className="qt-panel flex h-full flex-col p-4">
+              <h2 className="mb-4 font-semibold">{t("sentiment")}</h2>
+              {sentiment?.available === false ? (
+                <p className="text-sm text-[var(--muted)]">
+                  {sentiment.message || t("unavailable")}
+                </p>
+              ) : (
+                <>
+                  <div className="mb-4 flex h-3 overflow-hidden rounded-full bg-[var(--surface-2)]">
+                    <div className="bg-[var(--up)]" style={{ width: `${bullish}%` }} />
+                    <div
+                      className="bg-[var(--muted)]"
+                      style={{ width: `${neutral}%` }}
+                    />
+                    <div
+                      className="bg-[var(--down)]"
+                      style={{ width: `${bearish}%` }}
+                    />
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 text-center">
+                    <div>
+                      <div className="text-xl font-semibold text-[var(--up)]">
+                        {bullish.toFixed(0)}%
+                      </div>
+                      <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
+                        {t("bullish")}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-semibold text-[var(--muted)]">
+                        {neutral.toFixed(0)}%
+                      </div>
+                      <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
+                        {t("neutral")}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xl font-semibold text-[var(--down)]">
+                        {bearish.toFixed(0)}%
+                      </div>
+                      <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
+                        {t("bearish")}
+                      </div>
+                    </div>
+                  </div>
+                  <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
+                    {t("sentimentHint")}
+                  </p>
+                </>
+              )}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

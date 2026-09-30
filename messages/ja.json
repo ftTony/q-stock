@@ -31,9 +31,11 @@
   "market": {
     "stocks": "米国株",
     "hk": "香港株",
+    "cn": "A株",
     "crypto": "暗号通貨",
     "stocksPlaylist": "テック大手",
     "hkPlaylist": "香港主要株",
+    "cnPlaylist": "A株人気",
     "cryptoPlaylist": "暗号通貨の動向",
     "search": "銘柄コードを追加 (例: NVDA / 00700)...",
     "filter": "フィルター",
@@ -70,9 +72,11 @@
     "unavailable": "データを取得できません",
     "titleStock": "テック大手ウォッチリスト",
     "titleHk": "香港主要株ウォッチリスト",
+    "titleCn": "A株ウォッチリスト",
     "titleCrypto": "暗号通貨ウォッチリスト",
     "descStock": "高時価総額テック株と主要米国株のリアルタイム監視",
     "descHk": "ハンセン構成銘柄と主要香港株のリアルタイム監視",
+    "descCn": "長橋 / 富途経由で A 株をリアルタイム追跡",
     "descCrypto": "主要暗号通貨のリアルタイム監視",
     "kpiTickers": "アクティブ銘柄",
     "kpiAvgChange": "平均変動率",
@@ -94,7 +98,12 @@
     "ipoEmpty": "直近のIPOはありません",
     "ipoListing": "上場中",
     "ipoListed": "上場済",
-    "ipoFiling": "申請中"
+    "ipoFiling": "申請中",
+    "indexSsec": "上海総合",
+    "indexSzi": "深圳成指",
+    "indexChinext": "創業板",
+    "cnSectorGainers": "業種上昇",
+    "cnSectorLosers": "業種下落"
   },
   "symbol": {
     "chart": "チャート",
@@ -323,7 +332,11 @@
     "inviteEmpty": "招待コードがありません",
     "inviteLoadError": "招待コードの読み込みに失敗しました",
     "inviteShareCode": "銭力股（Q-Stock）へご招待。AIを借りて、より冷静な相場観察と振り返りを支え、強欲や恐怖などの人性の弱みを抑える。招待コード：{code}",
-    "inviteShareLink": "銭力股（Q-Stock）へご招待。AIを借りて、より冷静な相場観察と振り返りを支え、強欲や恐怖などの人性の弱みを抑える。登録はこちら：{link}"
+    "inviteShareLink": "銭力股（Q-Stock）へご招待。AIを借りて、より冷静な相場観察と振り返りを支え、強欲や恐怖などの人性の弱みを抑える。登録はこちら：{link}",
+    "credsFuyao": "同花順扶揺 Fuyao（A株）",
+    "credsFuyaoHint": "Fuyao の X-api-key を登録すると A 株の気配・指数・業種が利用可能。暗号化保存。",
+    "credsFuyaoApiKey": "API Key（X-api-key）",
+    "credsSaveFuyao": "Fuyao を保存"
   },
   "alerts": {
     "title": "価格アラート",

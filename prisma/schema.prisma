@@ -11,6 +11,7 @@ enum AssetType {
   stock
   hk
   crypto
+  cn
 }
 
 enum ThemeMode {
@@ -134,6 +135,7 @@ enum MarketCredentialProvider {
   futu
   binance
   okx
+  fuyao
 }
 
 /** Encrypted per-user broker/exchange credentials (BYOK). */

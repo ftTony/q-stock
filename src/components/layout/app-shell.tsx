@@ -1,10 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { TopBarActions } from "@/components/layout/topbar-actions";
+import { TopbarIndexTicker } from "@/components/layout/topbar-index-ticker";
 import { DataSourceBadge } from "@/components/layout/data-source-badge";
 import { MarketCredentialsPrompt } from "@/components/settings/market-credentials-prompt";
 import { SiteLogo } from "@/components/brand/site-logo";
@@ -83,35 +82,25 @@ function IconUser({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-function IconMenu({ className = "h-5 w-5" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M4 7h16M4 12h16M4 17h16" />
-    </svg>
-  );
-}
-
 function NavItem({
   href,
   active,
   icon,
   children,
-  onClick,
 }: {
   href: string;
   active?: boolean;
   icon: React.ReactNode;
   children: React.ReactNode;
-  onClick?: () => void;
 }) {
   return (
     <Link
       href={href}
-      onClick={onClick}
-      className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${active
-        ? "bg-[var(--sidebar-active)] text-[var(--brand-text)]"
-        : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-        }`}
+      className={`relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${
+        active
+          ? "bg-[var(--sidebar-active)] text-[var(--brand-text)]"
+          : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+      }`}
     >
       {active && (
         <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[var(--brand)]" />
@@ -124,12 +113,7 @@ function NavItem({
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("nav");
-  const tApp = useTranslations("app");
-  const tMarket = useTranslations("market");
-  const { data: session } = useSession();
   const pathname = usePathname();
-  const [open, setOpen] = useState(false);
-  const [counts, setCounts] = useState({ stock: 0, hk: 0, crypto: 0 });
 
   const isHome = pathname === "/";
   const isAnalysis = pathname.startsWith("/analysis");
@@ -144,36 +128,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/auth/");
 
-  useEffect(() => {
-    if (!session?.user) {
-      setCounts({ stock: 0, hk: 0, crypto: 0 });
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const res = await fetch("/api/watchlist");
-      if (!res.ok || cancelled) return;
-      const data = await res.json();
-      setCounts({
-        stock: data.counts?.stock ?? 0,
-        hk: data.counts?.hk ?? 0,
-        crypto: data.counts?.crypto ?? 0,
-      });
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [session, pathname]);
-
-  const close = () => setOpen(false);
-
   const sidebar = (
     <aside className="flex h-full w-[270px] flex-col border-r border-[var(--border)] bg-[var(--sidebar)]">
       <div
         className="border-b border-[var(--border)] pr-3 pb-3"
         style={{ paddingTop: 7, paddingLeft: 16, paddingBottom: 2 }}
       >
-        <Link href="/" onClick={close} className="block">
+        <Link href="/" className="block">
           <SiteLogo height={40} priority variant="full" />
         </Link>
       </div>
@@ -183,69 +144,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <div className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-[var(--muted)] uppercase">
             {t("main")}
           </div>
-          <NavItem href="/" active={isHome} icon={<IconGrid />} onClick={close}>
+          <NavItem href="/" active={isHome} icon={<IconGrid />}>
             {t("markets")}
           </NavItem>
-          <NavItem
-            href="/analysis"
-            active={isAnalysis || isSymbol}
-            icon={<IconChart />}
-            onClick={close}
-          >
+          <NavItem href="/analysis" active={isAnalysis || isSymbol} icon={<IconChart />}>
             {t("analysis")}
           </NavItem>
-          <NavItem href="/watchlist" active={isWatchlist} icon={<IconStar />} onClick={close}>
+          <NavItem href="/watchlist" active={isWatchlist} icon={<IconStar />}>
             {t("watchlist")}
           </NavItem>
-          <NavItem href="/portfolio" active={isPortfolio} icon={<IconBag />} onClick={close}>
+          <NavItem href="/portfolio" active={isPortfolio} icon={<IconBag />}>
             {t("portfolio")}
           </NavItem>
-          <NavItem href="/alerts" active={isAlerts} icon={<IconBell />} onClick={close}>
+          <NavItem href="/alerts" active={isAlerts} icon={<IconBell />}>
             {t("alerts")}
           </NavItem>
-        </div>
-
-        <div className="space-y-1">
-          <div className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-[var(--muted)] uppercase">
-            {t("playlists")}
-          </div>
-          <Link
-            href="/watchlist?list=stock"
-            onClick={close}
-            className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-          >
-            <span>{tMarket("stocksPlaylist")}</span>
-            <span className="rounded-md bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px]">
-              {counts.stock}
-            </span>
-          </Link>
-          <Link
-            href="/watchlist?list=hk"
-            onClick={close}
-            className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-          >
-            <span>{tMarket("hkPlaylist")}</span>
-            <span className="rounded-md bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px]">
-              {counts.hk}
-            </span>
-          </Link>
-          <Link
-            href="/watchlist?list=crypto"
-            onClick={close}
-            className="flex items-center justify-between rounded-xl px-3 py-2.5 text-sm text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-          >
-            <span>{tMarket("cryptoPlaylist")}</span>
-            <span className="rounded-md bg-[var(--surface-2)] px-1.5 py-0.5 text-[11px]">
-              {counts.crypto}
-            </span>
-          </Link>
-          <Link
-            href="/watchlist"
-            onClick={close}
-            className="flex items-center rounded-xl px-3 py-2.5 text-sm text-[var(--brand-text)] hover:bg-[var(--sidebar-hover)]"
-          >
-            + {t("newWatchlist")}
-          </Link>
         </div>
       </div>
 
@@ -253,7 +166,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="grid grid-cols-3 gap-1.5">
           <Link
             href="/alerts"
-            onClick={close}
             aria-label={t("quickTrade")}
             title={t("quickTrade")}
             className="qt-btn qt-btn-primary flex h-9 items-center justify-center rounded-lg"
@@ -262,7 +174,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <Link
             href="/settings"
-            onClick={close}
             aria-label={t("settings")}
             title={t("settings")}
             className="qt-btn qt-btn-ghost flex h-9 items-center justify-center rounded-lg border border-[var(--border)]"
@@ -271,7 +182,6 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <Link
             href="/about"
-            onClick={close}
             aria-label={t("about")}
             title={t("about")}
             className="qt-btn qt-btn-ghost flex h-9 items-center justify-center rounded-lg border border-[var(--border)]"
@@ -286,7 +196,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (isAuth) {
     return (
       <div className="min-h-dvh">
-        <div className="mx-auto flex min-h-dvh max-w-lg items-center px-4 py-8">{children}</div>
+        <div className="mx-auto flex min-h-dvh max-w-lg items-center px-4 py-8">
+          {children}
+        </div>
       </div>
     );
   }
@@ -295,74 +207,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="min-h-dvh lg:flex">
       <div className="hidden lg:fixed lg:inset-y-0 lg:flex lg:w-[270px]">{sidebar}</div>
 
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            type="button"
-            className="absolute inset-0 bg-black/55"
-            aria-label="Close menu"
-            onClick={close}
-          />
-          <div className="absolute inset-y-0 left-0 shadow-2xl">{sidebar}</div>
-        </div>
-      )}
-
       <div className="flex min-h-dvh flex-1 flex-col lg:pl-[270px]">
         <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
           <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                className="qt-btn qt-btn-ghost h-9 w-9 lg:hidden"
-                onClick={() => setOpen(true)}
-                aria-label="Open menu"
-              >
-                <IconMenu />
-              </button>
-              <Link href="/" className="flex items-center lg:hidden">
+            <div className="flex min-w-0 flex-1 items-center gap-3">
+              <Link href="/" className="flex shrink-0 items-center lg:hidden">
                 <SiteLogo height={28} variant="compact" />
               </Link>
-              <nav className="hidden items-center gap-1 text-sm md:flex">
-                <Link
-                  href="/watchlist"
-                  className={`rounded-lg px-3 py-1.5 transition ${isWatchlist
-                    ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
-                    : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-                    }`}
-                >
-                  {t("watchlist")}
-                </Link>
-                <Link
-                  href="/analysis"
-                  className={`rounded-lg px-3 py-1.5 transition ${isAnalysis
-                    ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
-                    : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-                    }`}
-                >
-                  {t("analysis")}
-                </Link>
-                <Link
-                  href="/portfolio"
-                  className={`rounded-lg px-3 py-1.5 transition ${isPortfolio
-                    ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
-                    : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-                    }`}
-                >
-                  {t("portfolio")}
-                </Link>
-                <Link
-                  href="/alerts"
-                  className={`rounded-lg px-3 py-1.5 transition ${isAlerts
-                    ? "bg-[var(--sidebar-active)] font-medium text-[var(--brand-text)]"
-                    : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-                    }`}
-                >
-                  {t("alerts")}
-                </Link>
-              </nav>
+              <TopbarIndexTicker />
             </div>
-
-            <div className="flex items-center gap-2 sm:gap-3">
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
               <TopBarActions />
             </div>
           </div>
@@ -370,7 +224,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <MarketCredentialsPrompt />
 
-        <main className="flex-1 px-4 py-5 pb-24 sm:px-6 sm:py-6 lg:pb-6">{children}</main>
+        <main className="flex-1 px-4 py-5 pb-24 sm:px-6 sm:py-6 lg:pb-6">
+          {children}
+        </main>
 
         <DataSourceBadge />
 

@@ -47,6 +47,10 @@ function marketOf(assetType: AssetType): "US" | "HK" | null {
   return null;
 }
 
+function cnPlateMarkets(): Array<"SH" | "SZ"> {
+  return ["SH", "SZ"];
+}
+
 function pctChange(last: number, prev: number): number {
   if (!(prev > 0) || !Number.isFinite(last)) return 0;
   return ((last - prev) / prev) * 100;
@@ -112,17 +116,35 @@ export async function getFutuIndustryHeatmap(
   limit = 40,
 ): Promise<IndustryHeatCell[]> {
   if (!isFutuConfigured()) return [];
-  const market = marketOf(assetType);
-  if (!market) return [];
+  const markets: string[] =
+    assetType === "cn"
+      ? cnPlateMarkets()
+      : (() => {
+          const m = marketOf(assetType);
+          return m ? [m] : [];
+        })();
+  if (!markets.length) return [];
 
-  const key = `futu:industry:v2:${market}:${limit}`;
+  const key = `futu:industry:v2:${markets.join("+")}:${limit}`;
   return cachedFetch(key, 120_000, async () => {
-    const { data } = await futuRequest<{ plate_list?: PlateRow[] }>(
-      "GET",
-      "/api/v1.0/quote/plate-list",
-      { query: { market, plate_class: "INDUSTRY" } },
-    );
-    const plates = (data.plate_list ?? []).filter((p) => p.code);
+    const plates: PlateRow[] = [];
+    for (const market of markets) {
+      try {
+        const { data } = await futuRequest<{ plate_list?: PlateRow[] }>(
+          "GET",
+          "/api/v1.0/quote/plate-list",
+          { query: { market, plate_class: "INDUSTRY" } },
+        );
+        for (const p of data.plate_list ?? []) {
+          if (p.code) plates.push(p);
+        }
+      } catch (err) {
+        console.warn(
+          `[futu-industry] plate-list ${market} failed:`,
+          err instanceof Error ? err.message : err,
+        );
+      }
+    }
     if (!plates.length) return [];
 
     const plateSnaps = await snapshotCodes(plates.map((p) => p.code!));
@@ -182,12 +204,16 @@ export async function getFutuIndustryHeatmap(
         .map((r) => {
           const code = r.code;
           if (!code) return null;
-          const bare = code.replace(/^(US|HK)\./i, "");
+          const bare = code.replace(/^(US|HK|SH|SZ|BJ)\./i, "");
           const snap = stockSnaps.get(code);
           const last = Number(snap?.last_price ?? 0);
           const prev = Number(snap?.prev_close_price ?? 0);
+          const symbol =
+            assetType === "cn"
+              ? normalizeSymbol(code, "cn")
+              : normalizeSymbol(bare, assetType);
           return {
-            symbol: normalizeSymbol(bare, assetType),
+            symbol,
             name: (
               r.sc_name ||
               snap?.sc_name ||

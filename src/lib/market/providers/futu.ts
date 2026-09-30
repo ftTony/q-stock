@@ -92,7 +92,7 @@ function mapFutuSnapshot(
 }
 
 function assertEquity(assetType: AssetType): void {
-  if (assetType !== "stock" && assetType !== "hk") {
+  if (assetType !== "stock" && assetType !== "hk" && assetType !== "cn") {
     throw new MarketDataError("Futu supports equities only", "futu");
   }
 }
@@ -105,7 +105,7 @@ export const futuProvider: MarketDataProvider = {
   },
 
   supports(assetType) {
-    return assetType === "stock" || assetType === "hk";
+    return assetType === "stock" || assetType === "hk" || assetType === "cn";
   },
 
   async getQuote(symbol, assetType) {

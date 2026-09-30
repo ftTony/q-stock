@@ -31,9 +31,11 @@
   "market": {
     "stocks": "미국 주식",
     "hk": "홍콩 주식",
+    "cn": "A주",
     "crypto": "암호화폐",
     "stocksPlaylist": "테크 대형주",
     "hkPlaylist": "홍콩 리더",
+    "cnPlaylist": "A주 인기",
     "cryptoPlaylist": "크립토 펄스",
     "search": "종목 코드 추가 (예: NVDA / 00700)...",
     "filter": "필터",
@@ -70,9 +72,11 @@
     "unavailable": "데이터를 일시적으로 사용할 수 없습니다",
     "titleStock": "테크 대형주 관심 목록",
     "titleHk": "홍콩 리더 관심 목록",
+    "titleCn": "A주 관심 목록",
     "titleCrypto": "크립토 펄스 관심 목록",
     "descStock": "대형주 테크 및 주요 미국 종목 실시간 모니터링",
     "descHk": "항셍 리더 및 홍콩 종목 실시간 모니터링",
+    "descCn": "롱브릿지 / 퓨투로 A주 실시간 추적",
     "descCrypto": "주요 암호화폐 실시간 모니터링",
     "kpiTickers": "활성 종목",
     "kpiAvgChange": "일평균 변동",
@@ -94,7 +98,12 @@
     "ipoEmpty": "최근 IPO가 없습니다",
     "ipoListing": "상장중",
     "ipoListed": "상장완료",
-    "ipoFiling": "제출중"
+    "ipoFiling": "제출중",
+    "indexSsec": "상하이종합",
+    "indexSzi": "선전성분",
+    "indexChinext": "창업판",
+    "cnSectorGainers": "업종 상승",
+    "cnSectorLosers": "업종 하락"
   },
   "symbol": {
     "chart": "차트",
@@ -323,7 +332,11 @@
     "inviteEmpty": "초대 코드 없음",
     "inviteLoadError": "초대 코드를 불러오지 못했습니다",
     "inviteShareCode": "전리구(Q-Stock)에 초대합니다. AI로 더 차분한 시세 관찰·복기를 돕고, 탐욕·공포 같은 인간적 약점을 줄여 보세요. 초대 코드: {code}",
-    "inviteShareLink": "전리구(Q-Stock)에 초대합니다. AI로 더 차분한 시세 관찰·복기를 돕고, 탐욕·공포 같은 인간적 약점을 줄여 보세요. 가입 링크: {link}"
+    "inviteShareLink": "전리구(Q-Stock)에 초대합니다. AI로 더 차분한 시세 관찰·복기를 돕고, 탐욕·공포 같은 인간적 약점을 줄여 보세요. 가입 링크: {link}",
+    "credsFuyao": "동화순 Fuyao (A주)",
+    "credsFuyaoHint": "Fuyao X-api-key를 입력하면 A주 시세·지수·업종을 사용할 수 있습니다. 암호화 저장.",
+    "credsFuyaoApiKey": "API Key (X-api-key)",
+    "credsSaveFuyao": "Fuyao 저장"
   },
   "alerts": {
     "title": "가격 알림",

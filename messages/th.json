@@ -31,9 +31,11 @@
   "market": {
     "stocks": "หุ้นสหรัฐฯ",
     "hk": "หุ้นฮ่องกง",
+    "cn": "หุ้น A",
     "crypto": "คริปโต",
     "stocksPlaylist": "กลุ่มเทคยักษ์ใหญ่",
     "hkPlaylist": "ผู้นำตลาดฮ่องกง",
+    "cnPlaylist": "หุ้น A ยอดนิยม",
     "cryptoPlaylist": "จับชีพจรคริปโต",
     "search": "เพิ่มสัญลักษณ์ (เช่น NVDA / 00700)...",
     "filter": "กรอง",
@@ -70,9 +72,11 @@
     "unavailable": "ข้อมูลไม่พร้อมใช้งานชั่วคราว",
     "titleStock": "รายการติดตามกลุ่มเทคยักษ์ใหญ่",
     "titleHk": "รายการติดตามผู้นำฮ่องกง",
+    "titleCn": "รายการติดตามหุ้น A",
     "titleCrypto": "รายการติดตามจับชีพจรคริปโต",
     "descStock": "ติดตามแบบเรียลไทม์สำหรับหุ้นเทคโนโลยีมูลค่าสูงและหุ้นสหรัฐฯ หลัก",
     "descHk": "ติดตามแบบเรียลไทม์สำหรับผู้นำดัชนีฮั่งเส็งและหุ้นฮ่องกง",
+    "descCn": "ติดตามหุ้น A แบบเรียลไทม์ผ่าน Longbridge / Futu",
     "descCrypto": "ติดตามแบบเรียลไทม์สำหรับคริปโตเคอร์เรนซีหลัก",
     "kpiTickers": "สัญลักษณ์ที่ใช้งาน",
     "kpiAvgChange": "การเปลี่ยนแปลงเฉลี่ยรายวัน",
@@ -94,7 +98,12 @@
     "ipoEmpty": "ไม่มี IPO ล่าสุด",
     "ipoListing": "กำลังเข้าจด",
     "ipoListed": "จดทะเบียนแล้ว",
-    "ipoFiling": "ยื่นแล้ว"
+    "ipoFiling": "ยื่นแล้ว",
+    "indexSsec": "SSE Composite",
+    "indexSzi": "SZSE Component",
+    "indexChinext": "ChiNext",
+    "cnSectorGainers": "กลุ่มหุ้นขึ้น",
+    "cnSectorLosers": "กลุ่มหุ้นลง"
   },
   "symbol": {
     "chart": "กราฟ",
@@ -323,7 +332,11 @@
     "inviteEmpty": "ยังไม่มีรหัสเชิญ",
     "inviteLoadError": "โหลดรหัสเชิญไม่สำเร็จ",
     "inviteShareCode": "ชวนใช้ Qianli Gu (Q-Stock): ใช้ AI ช่วยดูตลาดและทบทวนอย่างใจเย็นขึ้น ลดความโลภ ความกลัว และจุดอ่อนของมนุษย์ รหัสเชิญ: {code}",
-    "inviteShareLink": "ชวนใช้ Qianli Gu (Q-Stock): ใช้ AI ช่วยดูตลาดและทบทวนอย่างใจเย็นขึ้น ลดความโลภ ความกลัว และจุดอ่อนของมนุษย์ สมัครที่นี่: {link}"
+    "inviteShareLink": "ชวนใช้ Qianli Gu (Q-Stock): ใช้ AI ช่วยดูตลาดและทบทวนอย่างใจเย็นขึ้น ลดความโลภ ความกลัว และจุดอ่อนของมนุษย์ สมัครที่นี่: {link}",
+    "credsFuyao": "Tonghuashun Fuyao (A-shares)",
+    "credsFuyaoHint": "ใส่ X-api-key ของ Fuyao สำหรับราคา ดัชนี และกลุ่มหุ้น A เก็บแบบเข้ารหัส",
+    "credsFuyaoApiKey": "API Key (X-api-key)",
+    "credsSaveFuyao": "บันทึก Fuyao"
   },
   "alerts": {
     "title": "การแจ้งเตือนราคา",

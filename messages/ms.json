@@ -31,9 +31,11 @@
   "market": {
     "stocks": "Saham US",
     "hk": "Saham HK",
+    "cn": "Saham A",
     "crypto": "Kripto",
     "stocksPlaylist": "Gergasi Teknologi",
     "hkPlaylist": "Pemimpin HK",
+    "cnPlaylist": "Pemimpin A",
     "cryptoPlaylist": "Nadi Kripto",
     "search": "Tambah simbol (cth. NVDA / 00700)...",
     "filter": "Tapis",
@@ -70,9 +72,11 @@
     "unavailable": "Data tidak tersedia buat sementara",
     "titleStock": "Senarai Pantau Gergasi Teknologi",
     "titleHk": "Senarai Pantau Pemimpin HK",
+    "titleCn": "Senarai Pantau Saham A",
     "titleCrypto": "Senarai Pantau Nadi Kripto",
     "descStock": "Pemantauan masa nyata saham teknologi bermodal tinggi dan utama AS",
     "descHk": "Pemantauan masa nyata pemimpin Hang Seng dan nama HK",
+    "descCn": "Pantau saham A masa nyata melalui Longbridge / Futu",
     "descCrypto": "Pemantauan masa nyata mata wang kripto utama",
     "kpiTickers": "Simbol Aktif",
     "kpiAvgChange": "Perubahan Harian Purata",
@@ -94,7 +98,12 @@
     "ipoEmpty": "Tiada IPO terkini",
     "ipoListing": "Menyenarai",
     "ipoListed": "Tersenarai",
-    "ipoFiling": "Dihantar"
+    "ipoFiling": "Dihantar",
+    "indexSsec": "SSE Composite",
+    "indexSzi": "SZSE Component",
+    "indexChinext": "ChiNext",
+    "cnSectorGainers": "Sektor Naik",
+    "cnSectorLosers": "Sektor Turun"
   },
   "symbol": {
     "chart": "Carta",
@@ -323,7 +332,11 @@
     "inviteEmpty": "Tiada kod jemputan",
     "inviteLoadError": "Gagal memuatkan kod jemputan",
     "inviteShareCode": "Sertai saya di Qianli Gu (Q-Stock): guna AI untuk pantau & ulas pasaran dengan lebih tenang, kurangkan ketamakan, ketakutan dan kelemahan manusia. Kod: {code}",
-    "inviteShareLink": "Sertai saya di Qianli Gu (Q-Stock): guna AI untuk pantau & ulas pasaran dengan lebih tenang, kurangkan ketamakan, ketakutan dan kelemahan manusia. Daftar: {link}"
+    "inviteShareLink": "Sertai saya di Qianli Gu (Q-Stock): guna AI untuk pantau & ulas pasaran dengan lebih tenang, kurangkan ketamakan, ketakutan dan kelemahan manusia. Daftar: {link}",
+    "credsFuyao": "Tonghuashun Fuyao (saham A)",
+    "credsFuyaoHint": "Masukkan X-api-key Fuyao untuk sebut harga, indeks dan sektor A. Disimpan disulitkan.",
+    "credsFuyaoApiKey": "API Key (X-api-key)",
+    "credsSaveFuyao": "Simpan Fuyao"
   },
   "alerts": {
     "title": "Amaran harga",

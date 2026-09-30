@@ -6,7 +6,7 @@ import { normalizeSymbol, parseAssetType } from "@/lib/types";
 
 const createSchema = z.object({
   symbol: z.string().min(1).max(20),
-  assetType: z.enum(["stock", "hk", "crypto"]),
+  assetType: z.enum(["stock", "hk", "crypto", "cn"]),
   content: z.string().min(1).max(2000),
 });
 

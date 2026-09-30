@@ -37,12 +37,17 @@ const okxSchema = z.object({
   passphrase: z.string().max(256).optional(),
 });
 
+const fuyaoSchema = z.object({
+  apiKey: z.string().min(1).max(512),
+});
+
 const putSchema = z
   .object({
     longbridge: longbridgeSchema.optional(),
     futu: z.union([futuBearerSchema, futuAppKeySchema]).optional(),
     binance: binanceSchema.optional(),
     okx: okxSchema.optional(),
+    fuyao: fuyaoSchema.optional(),
     equityVendor: z.enum(["longbridge", "futu"]).optional(),
     cryptoVendor: z.enum(["binance", "okx"]).optional(),
   })
@@ -52,6 +57,7 @@ const putSchema = z
       v.futu != null ||
       v.binance != null ||
       v.okx != null ||
+      v.fuyao != null ||
       v.equityVendor != null ||
       v.cryptoVendor != null,
     { message: "Provide credentials and/or vendor preference" },
@@ -159,6 +165,17 @@ export async function PUT(req: Request) {
         update: { payload },
       });
     }
+
+    if (parsed.data.fuyao) {
+      const payload = encryptJson({
+        apiKey: parsed.data.fuyao.apiKey,
+      });
+      await prisma.userMarketCredential.upsert({
+        where: { userId_provider: { userId, provider: "fuyao" } },
+        create: { userId, provider: "fuyao", payload },
+        update: { payload },
+      });
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Save failed";
     console.error("[market-credentials] save failed:", msg);
@@ -191,10 +208,11 @@ export async function DELETE(req: Request) {
     provider !== "longbridge" &&
     provider !== "futu" &&
     provider !== "binance" &&
-    provider !== "okx"
+    provider !== "okx" &&
+    provider !== "fuyao"
   ) {
     return NextResponse.json(
-      { error: "provider must be longbridge, futu, binance, or okx" },
+      { error: "provider must be longbridge, futu, binance, okx, or fuyao" },
       { status: 400 },
     );
   }

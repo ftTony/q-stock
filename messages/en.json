@@ -31,9 +31,11 @@
   "market": {
     "stocks": "US Stocks",
     "hk": "HK Stocks",
+    "cn": "A-Shares",
     "crypto": "Crypto",
     "stocksPlaylist": "Tech Giants",
     "hkPlaylist": "HK Leaders",
+    "cnPlaylist": "A-Share Leaders",
     "cryptoPlaylist": "Crypto Pulse",
     "search": "Add ticker (e.g. NVDA / 00700)...",
     "filter": "Filter",
@@ -70,9 +72,11 @@
     "unavailable": "Data temporarily unavailable",
     "titleStock": "Tech Giants Watchlist",
     "titleHk": "HK Leaders Watchlist",
+    "titleCn": "A-Share Leaders Watchlist",
     "titleCrypto": "Crypto Pulse Watchlist",
     "descStock": "Real-time monitoring of high-cap technology stocks",
     "descHk": "Real-time monitoring of Hang Seng leaders and HK names",
+    "descCn": "Real-time A-share quotes via Longbridge / Futu",
     "descCrypto": "Real-time monitoring of major cryptocurrencies",
     "kpiTickers": "Active Tickers",
     "kpiAvgChange": "Avg. Daily Change",
@@ -94,7 +98,12 @@
     "ipoEmpty": "No recent IPO listings",
     "ipoListing": "Listing",
     "ipoListed": "Listed",
-    "ipoFiling": "Filing"
+    "ipoFiling": "Filing",
+    "indexSsec": "SSE Composite",
+    "indexSzi": "SZSE Component",
+    "indexChinext": "ChiNext",
+    "cnSectorGainers": "Sector Gainers",
+    "cnSectorLosers": "Sector Losers"
   },
   "symbol": {
     "chart": "Chart",
@@ -323,7 +332,11 @@
     "inviteEmpty": "No invite codes yet",
     "inviteLoadError": "Failed to load invite codes",
     "inviteShareCode": "Join me on Qianli Gu (Q-Stock): use AI for calmer market watching and reviews—and dial down greed, fear, and other human biases. Invite code: {code}",
-    "inviteShareLink": "Join me on Qianli Gu (Q-Stock): use AI for calmer market watching and reviews—and dial down greed, fear, and other human biases. Sign up: {link}"
+    "inviteShareLink": "Join me on Qianli Gu (Q-Stock): use AI for calmer market watching and reviews—and dial down greed, fear, and other human biases. Sign up: {link}",
+    "credsFuyao": "Tonghuashun Fuyao (A-shares)",
+    "credsFuyaoHint": "Paste your Fuyao X-api-key for A-share quotes, indices, and sectors. Stored encrypted.",
+    "credsFuyaoApiKey": "API Key (X-api-key)",
+    "credsSaveFuyao": "Save Fuyao"
   },
   "alerts": {
     "title": "Price alerts",

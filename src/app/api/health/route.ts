@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getActiveProviders, getProviderPriority } from "@/lib/market";
 import { hasLongbridgeCreds } from "@/lib/market/providers/longbridge-client";
 import { isFutuConfigured } from "@/lib/market/providers/futu-http";
+import { hasFuyaoCreds } from "@/lib/market/providers/fuyao-client";
 import { withUserMarket } from "@/lib/market/with-user-market";
 
 export async function GET() {
@@ -22,6 +23,7 @@ export async function GET() {
         providerPriority: getProviderPriority(),
         brokers: listBrokerGateways(),
         finnhub: Boolean(process.env.FINNHUB_API_KEY),
+        fuyao: hasFuyaoCreds(),
         longbridge: hasLongbridgeCreds(),
         futu: isFutuConfigured(),
         adanos: Boolean(process.env.ADANOS_API_KEY),

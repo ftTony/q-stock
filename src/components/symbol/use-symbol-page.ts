@@ -47,7 +47,9 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
     macd: false,
   });
   const candles = useSymbolCandles(symbol, assetType, resolution);
-  const [tab, setTab] = useState<SymbolTab>("news");
+  const [tab, setTab] = useState<SymbolTab>(
+    assetType === "cn" ? "ai" : "news",
+  );
   const [news, setNews] = useState<NewsRow[]>([]);
   const [earnings, setEarnings] = useState<EarningsSurprise[]>([]);
   const [earningsUpcoming, setEarningsUpcoming] = useState<EarningsCalendarRow[]>([]);
@@ -282,6 +284,14 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
           x.id !== "officers",
       );
     }
+    // A-shares: no Finnhub/Adanos news·sentiment — keep comments + AI (+ chart above)
+    if (assetType === "cn") {
+      return all.filter(
+        (x) =>
+          x.id === "comments" ||
+          x.id === "ai",
+      );
+    }
     if (assetType === "hk") {
       return all.filter((x) => x.id !== "sentiment");
     }
@@ -300,6 +310,13 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
     }
     if (assetType === "hk" && tab === "sentiment") {
       setTab("news");
+    }
+    if (
+      assetType === "cn" &&
+      tab !== "comments" &&
+      tab !== "ai"
+    ) {
+      setTab("ai");
     }
   }, [assetType, isIndex, tab]);
 

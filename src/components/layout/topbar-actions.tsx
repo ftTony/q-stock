@@ -33,11 +33,21 @@ function useEquitySessionLabel(t: (key: string) => string) {
     return () => window.clearInterval(id);
   }, []);
 
+  if (session.usOpen && session.hkOpen && session.cnOpen) {
+    return { open: true, label: t("marketOpenMulti") };
+  }
   if (session.usOpen && session.hkOpen) {
     return { open: true, label: t("marketOpenBoth") };
   }
+  if (session.usOpen && session.cnOpen) {
+    return { open: true, label: t("marketOpenUsCn") };
+  }
+  if (session.hkOpen && session.cnOpen) {
+    return { open: true, label: t("marketOpenHkCn") };
+  }
   if (session.usOpen) return { open: true, label: t("marketOpenUs") };
   if (session.hkOpen) return { open: true, label: t("marketOpenHk") };
+  if (session.cnOpen) return { open: true, label: t("marketOpenCn") };
   return { open: false, label: t("marketClosed") };
 }
 

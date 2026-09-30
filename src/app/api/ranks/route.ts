@@ -14,6 +14,7 @@ import { isFutuConfigured } from "@/lib/market/providers/futu-http";
 import { getQuotes } from "@/lib/market";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import {
+  POPULAR_CN,
   POPULAR_CRYPTO,
   POPULAR_HK,
   POPULAR_STOCKS,
@@ -66,6 +67,7 @@ export async function GET(req: Request) {
         });
       }
 
+      // Equity boards: Longbridge → Futu → popular fallback
       if (isLongbridgeRankConfigured()) {
         try {
           if (board === "all") {
@@ -83,13 +85,13 @@ export async function GET(req: Request) {
           });
         } catch (err) {
           console.warn(
-            "[ranks] longbridge failed, fallback popular:",
+            "[ranks] longbridge failed, fallback:",
             err instanceof Error ? err.message : err,
           );
         }
       }
 
-      if (isFutuConfigured()) {
+      if (assetType !== "cn" && isFutuConfigured()) {
         try {
           if (board === "all") {
             const boards = await getFutuRankBoards(assetType, limit);
@@ -108,10 +110,12 @@ export async function GET(req: Request) {
       const list =
         assetType === "hk"
           ? POPULAR_HK.map((s) => ({ symbol: s, assetType: "hk" as const }))
-          : POPULAR_STOCKS.map((s) => ({
-            symbol: s,
-            assetType: "stock" as const,
-          }));
+          : assetType === "cn"
+            ? POPULAR_CN.map((s) => ({ symbol: s, assetType: "cn" as const }))
+            : POPULAR_STOCKS.map((s) => ({
+                symbol: s,
+                assetType: "stock" as const,
+              }));
       const quotes = await getQuotes(list);
       if (board === "all") {
         return NextResponse.json({

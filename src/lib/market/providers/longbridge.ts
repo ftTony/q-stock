@@ -32,7 +32,7 @@ export const longbridgeProvider: MarketDataProvider = {
 
   supports(assetType) {
     // Crypto quotes/candles go through Binance / Finnhub
-    return assetType === "stock" || assetType === "hk";
+    return assetType === "stock" || assetType === "hk" || assetType === "cn";
   },
 
   async getQuote(symbol, assetType) {
@@ -110,7 +110,10 @@ export const longbridgeProvider: MarketDataProvider = {
 
   async getQuotes(items) {
     const equityItems = items.filter(
-      (i) => i.assetType === "stock" || i.assetType === "hk",
+      (i) =>
+        i.assetType === "stock" ||
+        i.assetType === "hk" ||
+        i.assetType === "cn",
     );
     if (!equityItems.length) return [];
 
@@ -182,18 +185,29 @@ export const longbridgeProvider: MarketDataProvider = {
     if (assetType === "crypto") return [];
     const query = q.trim().toUpperCase();
     if (!query) return [];
-    const type: AssetType = assetType === "hk" ? "hk" : "stock";
-    const sym = normalizeSymbol(
-      query.replace(/\.US$/i, "").replace(/\.HK$/i, "").replace(/^HK\./, ""),
-      type,
-    );
+    const type: AssetType =
+      assetType === "hk" ? "hk" : assetType === "cn" ? "cn" : "stock";
+    const cleaned = query
+      .replace(/\.US$/i, "")
+      .replace(/\.HK$/i, "")
+      .replace(/^HK\./, "")
+      .replace(/^SH\./, "")
+      .replace(/^SZ\./, "")
+      .replace(/^BJ\./, "");
+    const sym = normalizeSymbol(cleaned, type);
+    const display =
+      type === "hk"
+        ? `${sym}.HK`
+        : type === "cn"
+          ? sym
+          : `${sym}.US`;
     return [
       {
         symbol: sym,
-        displaySymbol: type === "hk" ? `${sym}.HK` : `${sym}.US`,
+        displaySymbol: display,
         description: `${sym} (Longbridge)`,
         assetType: type,
-        type: "Common Stock",
+        type: type === "cn" ? "A-Share" : "Common Stock",
       },
     ];
   },

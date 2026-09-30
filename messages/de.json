@@ -31,9 +31,11 @@
   "market": {
     "stocks": "US-Aktien",
     "hk": "HK-Aktien",
+    "cn": "A-Aktien",
     "crypto": "Krypto",
     "stocksPlaylist": "Tech-Giganten",
     "hkPlaylist": "HK-Topwerte",
+    "cnPlaylist": "A-Aktien Top",
     "cryptoPlaylist": "Krypto-Puls",
     "search": "Symbol hinzufügen (z. B. NVDA / 00700)...",
     "filter": "Filtern",
@@ -70,9 +72,11 @@
     "unavailable": "Daten vorübergehend nicht verfügbar",
     "titleStock": "Tech-Giganten Watchlist",
     "titleHk": "HK-Topwerte Watchlist",
+    "titleCn": "A-Aktien Watchlist",
     "titleCrypto": "Krypto-Puls Watchlist",
     "descStock": "Echtzeit-Überwachung von Tech-Aktien mit hoher Marktkapitalisierung und wichtigen US-Werten",
     "descHk": "Echtzeit-Überwachung von Hang-Seng Führungswerten und HK-Namen",
+    "descCn": "Echtzeit-A-Aktien über Longbridge / Futu",
     "descCrypto": "Echtzeit-Überwachung der wichtigsten Kryptowährungen",
     "kpiTickers": "Aktive Ticker",
     "kpiAvgChange": "Ø tägliche Änderung",
@@ -94,7 +98,12 @@
     "ipoEmpty": "Keine aktuellen IPOs",
     "ipoListing": "Im Listing",
     "ipoListed": "Gelistet",
-    "ipoFiling": "Eingereicht"
+    "ipoFiling": "Eingereicht",
+    "indexSsec": "SSE Composite",
+    "indexSzi": "SZSE Component",
+    "indexChinext": "ChiNext",
+    "cnSectorGainers": "Sektoren Gewinner",
+    "cnSectorLosers": "Sektoren Verlierer"
   },
   "symbol": {
     "chart": "Chart",
@@ -323,7 +332,11 @@
     "inviteEmpty": "Keine Einladungscodes",
     "inviteLoadError": "Einladungscodes konnten nicht geladen werden",
     "inviteShareCode": "Komm zu Qianli Gu (Q-Stock): mit KI ruhiger Märkte beobachten und Reviews machen—Gier, Angst und andere Schwächen etwas zurücknehmen. Code: {code}",
-    "inviteShareLink": "Komm zu Qianli Gu (Q-Stock): mit KI ruhiger Märkte beobachten und Reviews machen—Gier, Angst und andere Schwächen etwas zurücknehmen. Registrierung: {link}"
+    "inviteShareLink": "Komm zu Qianli Gu (Q-Stock): mit KI ruhiger Märkte beobachten und Reviews machen—Gier, Angst und andere Schwächen etwas zurücknehmen. Registrierung: {link}",
+    "credsFuyao": "Tonghuashun Fuyao (A-Aktien)",
+    "credsFuyaoHint": "Fuyao X-api-key für A-Aktien-Kurse, Indizes und Sektoren. Verschlüsselt gespeichert.",
+    "credsFuyaoApiKey": "API Key (X-api-key)",
+    "credsSaveFuyao": "Fuyao speichern"
   },
   "alerts": {
     "title": "Kursalarme",

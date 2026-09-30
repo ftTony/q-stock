@@ -37,11 +37,19 @@ export default function AnalysisPage() {
         <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
           {tNav("analysis")}
         </h1>
-        <p className="text-sm text-[var(--muted)]">{t("descStock")}</p>
+        <p className="text-sm text-[var(--muted)]">
+          {tab === "stock"
+            ? t("descStock")
+            : tab === "hk"
+              ? t("descHk")
+              : tab === "cn"
+                ? t("descCn")
+                : t("descCrypto")}
+        </p>
       </section>
 
       <div className="flex rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1 w-fit">
-        {(["stock", "hk", "crypto"] as AssetType[]).map((key) => (
+        {(["stock", "hk", "cn", "crypto"] as AssetType[]).map((key) => (
           <button
             key={key}
             type="button"
@@ -52,7 +60,13 @@ export default function AnalysisPage() {
                 : "text-[var(--muted)]"
             }`}
           >
-            {key === "stock" ? t("stocks") : key === "hk" ? t("hk") : t("crypto")}
+            {key === "stock"
+              ? t("stocks")
+              : key === "hk"
+                ? t("hk")
+                : key === "cn"
+                  ? t("cn")
+                  : t("crypto")}
           </button>
         ))}
       </div>

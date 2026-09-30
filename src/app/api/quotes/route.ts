@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { getQuote, getQuotes } from "@/lib/market";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import {
+  POPULAR_CN,
   POPULAR_CRYPTO,
   POPULAR_HK,
   POPULAR_STOCKS,
@@ -27,10 +28,15 @@ export async function GET(req: Request) {
               }))
             : assetType === "hk"
               ? POPULAR_HK.map((s) => ({ symbol: s, assetType: "hk" as const }))
-              : POPULAR_STOCKS.map((s) => ({
-                  symbol: s,
-                  assetType: "stock" as const,
-                }));
+              : assetType === "cn"
+                ? POPULAR_CN.map((s) => ({
+                    symbol: s,
+                    assetType: "cn" as const,
+                  }))
+                : POPULAR_STOCKS.map((s) => ({
+                    symbol: s,
+                    assetType: "stock" as const,
+                  }));
         const quotes = await getQuotes(list);
         return NextResponse.json({ quotes });
       }

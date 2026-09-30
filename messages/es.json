@@ -31,9 +31,11 @@
   "market": {
     "stocks": "Acciones US",
     "hk": "Acciones HK",
+    "cn": "Acciones A",
     "crypto": "Cripto",
     "stocksPlaylist": "Gigantes tecnológicos",
     "hkPlaylist": "Líderes HK",
+    "cnPlaylist": "Líderes A",
     "cryptoPlaylist": "Pulso cripto",
     "search": "Añadir ticker (p. ej. NVDA / 00700)...",
     "filter": "Filtrar",
@@ -70,9 +72,11 @@
     "unavailable": "Datos temporalmente no disponibles",
     "titleStock": "Lista de gigantes tecnológicos",
     "titleHk": "Lista de líderes HK",
+    "titleCn": "Lista Acciones A",
     "titleCrypto": "Lista pulso cripto",
     "descStock": "Seguimiento en tiempo real de acciones tecnológicas de alta capitalización y valores US destacados",
     "descHk": "Seguimiento en tiempo real de los líderes del Hang Seng y valores HK",
+    "descCn": "Seguimiento A-shares en tiempo real vía Longbridge / Futu",
     "descCrypto": "Seguimiento en tiempo real de las principales criptomonedas",
     "kpiTickers": "Tickers activos",
     "kpiAvgChange": "Cambio diario medio",
@@ -94,7 +98,12 @@
     "ipoEmpty": "Sin IPOs recientes",
     "ipoListing": "En listado",
     "ipoListed": "Listado",
-    "ipoFiling": "Presentado"
+    "ipoFiling": "Presentado",
+    "indexSsec": "SSE Composite",
+    "indexSzi": "SZSE Component",
+    "indexChinext": "ChiNext",
+    "cnSectorGainers": "Sectores al alza",
+    "cnSectorLosers": "Sectores a la baja"
   },
   "symbol": {
     "chart": "Gráfico",
@@ -323,7 +332,11 @@
     "inviteEmpty": "Sin códigos de invitación",
     "inviteLoadError": "No se pudieron cargar los códigos",
     "inviteShareCode": "Únete a Qianli Gu (Q-Stock): con IA para mirar y repasar el mercado con más calma, y atenuar avaricia, miedo y otros sesgos. Código: {code}",
-    "inviteShareLink": "Únete a Qianli Gu (Q-Stock): con IA para mirar y repasar el mercado con más calma, y atenuar avaricia, miedo y otros sesgos. Regístrate: {link}"
+    "inviteShareLink": "Únete a Qianli Gu (Q-Stock): con IA para mirar y repasar el mercado con más calma, y atenuar avaricia, miedo y otros sesgos. Regístrate: {link}",
+    "credsFuyao": "Tonghuashun Fuyao (acciones A)",
+    "credsFuyaoHint": "Pega tu X-api-key de Fuyao para cotizaciones, índices y sectores A. Se guarda cifrado.",
+    "credsFuyaoApiKey": "API Key (X-api-key)",
+    "credsSaveFuyao": "Guardar Fuyao"
   },
   "alerts": {
     "title": "Alertas de precio",

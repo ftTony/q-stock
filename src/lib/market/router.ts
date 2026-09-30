@@ -1,6 +1,7 @@
 import { binanceProvider } from "@/lib/market/providers/binance";
 import { finnhubProvider } from "@/lib/market/providers/finnhub";
 import { futuProvider } from "@/lib/market/providers/futu";
+import { fuyaoProvider } from "@/lib/market/providers/fuyao";
 import { longbridgeProvider } from "@/lib/market/providers/longbridge";
 import { okxProvider } from "@/lib/market/providers/okx";
 import { getMarketCreds } from "@/lib/market/creds-context";
@@ -19,6 +20,7 @@ const REGISTRY: Record<MarketProviderId, MarketDataProvider> = {
   finnhub: finnhubProvider,
   binance: binanceProvider,
   okx: okxProvider,
+  fuyao: fuyaoProvider,
 };
 
 const DEFAULT_ORDER: MarketProviderId[] = [
@@ -48,6 +50,8 @@ function envProviderList(): MarketProviderId[] | null {
 }
 
 export function isProviderEnabled(id: MarketProviderId): boolean {
+  // Fuyao temporarily shielded from the live provider chain.
+  if (id === "fuyao") return false;
   const list = envProviderList();
   if (!list) return true;
   return list.includes(id);
@@ -135,19 +139,24 @@ export function listProvidersFor(
     );
   }
 
-  // US / HK equity: user-selected broker first, then the other, then Finnhub
-  const primary = preferredEquityVendor();
-  const secondary: EquityVendorId =
-    primary === "longbridge" ? "futu" : "longbridge";
-  const ordered: MarketProviderId[] = [primary, secondary, "finnhub"];
-  // Also allow env-ordered extras if enabled
-  const fromEnv = envProviderList();
-  if (fromEnv) {
-    for (const id of fromEnv) {
-      if (!ordered.includes(id)) ordered.push(id);
+  // A-shares use the same broker chain as US/HK (Longbridge ↔ Futu)
+  if (assetType === "cn" || assetType === "stock" || assetType === "hk") {
+    const primary = preferredEquityVendor();
+    const secondary: EquityVendorId =
+      primary === "longbridge" ? "futu" : "longbridge";
+    const ordered: MarketProviderId[] = [primary, secondary, "finnhub"];
+    const fromEnv = envProviderList();
+    if (fromEnv) {
+      for (const id of fromEnv) {
+        if (!ordered.includes(id)) ordered.push(id);
+      }
     }
+    return uniqueProviders(ordered).filter(
+      (p) => p.supports?.(assetType) !== false,
+    );
   }
-  return uniqueProviders(ordered).filter(
+
+  return uniqueProviders(DEFAULT_ORDER).filter(
     (p) => p.supports?.(assetType) !== false,
   );
 }

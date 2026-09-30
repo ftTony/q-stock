@@ -31,9 +31,11 @@
   "market": {
     "stocks": "美股",
     "hk": "港股",
+    "cn": "A股",
     "crypto": "數位貨幣",
     "stocksPlaylist": "美股熱門",
     "hkPlaylist": "港股熱門",
+    "cnPlaylist": "A股熱門",
     "cryptoPlaylist": "加密脈搏",
     "search": "新增代碼（如 NVDA / 00700）…",
     "filter": "篩選",
@@ -70,9 +72,11 @@
     "unavailable": "資料暫時不可用",
     "titleStock": "美股熱門自選",
     "titleHk": "港股熱門自選",
+    "titleCn": "A股熱門自選",
     "titleCrypto": "加密脈搏自選",
     "descStock": "即時追蹤高市值科技股與主流美股",
     "descHk": "即時追蹤恆生成分與熱門港股",
+    "descCn": "即時追蹤滬深京 A 股熱門標的（長橋 / 富途）",
     "descCrypto": "即時追蹤主流數位貨幣行情",
     "kpiTickers": "活躍標的",
     "kpiAvgChange": "平均漲跌幅",
@@ -94,7 +98,12 @@
     "ipoEmpty": "暫無近期 IPO 資料",
     "ipoListing": "上市中",
     "ipoListed": "已上市",
-    "ipoFiling": "提交中"
+    "ipoFiling": "提交中",
+    "indexSsec": "上證指數",
+    "indexSzi": "深證成指",
+    "indexChinext": "創業板指",
+    "cnSectorGainers": "板塊漲幅榜",
+    "cnSectorLosers": "板塊跌幅榜"
   },
   "symbol": {
     "chart": "K線",
@@ -323,7 +332,11 @@
     "inviteEmpty": "暫無邀請碼",
     "inviteLoadError": "載入邀請碼失敗",
     "inviteShareCode": "邀請你一起使用錢力股：借力 AI，輔助更冷靜地看盤與復盤，盡量削弱貪婪、恐懼等人性弱點。註冊時填寫邀請碼：{code}",
-    "inviteShareLink": "邀請你一起使用錢力股：借力 AI，輔助更冷靜地看盤與復盤，盡量削弱貪婪、恐懼等人性弱點。點此註冊：{link}"
+    "inviteShareLink": "邀請你一起使用錢力股：借力 AI，輔助更冷靜地看盤與復盤，盡量削弱貪婪、恐懼等人性弱點。點此註冊：{link}",
+    "credsFuyao": "同花順扶搖 Fuyao（A股）",
+    "credsFuyaoHint": "填寫扶搖 X-api-key 後可拉取 A 股行情、指數與板塊；密鑰加密存於本站。",
+    "credsFuyaoApiKey": "API Key（X-api-key）",
+    "credsSaveFuyao": "儲存扶搖"
   },
   "alerts": {
     "title": "價格提醒",

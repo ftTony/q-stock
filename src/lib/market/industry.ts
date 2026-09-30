@@ -22,7 +22,10 @@ function equityOrder(): EquityVendorId[] {
   return [primary, secondary];
 }
 
-export function isIndustryHeatmapAvailable(): boolean {
+export function isIndustryHeatmapAvailable(
+  assetType?: AssetType,
+): boolean {
+  if (assetType === "crypto") return false;
   for (const id of equityOrder()) {
     if (id === "longbridge" && isProviderEnabled("longbridge") && hasLongbridgeCreds()) {
       return true;
@@ -31,6 +34,10 @@ export function isIndustryHeatmapAvailable(): boolean {
       return true;
     }
   }
+  // Longbridge industry chart is public HTTP (works without BYOK for US/HK/CN)
+  if (assetType === "stock" || assetType === "hk" || assetType === "cn" || assetType === undefined) {
+    return isProviderEnabled("longbridge");
+  }
   return false;
 }
 
@@ -38,12 +45,12 @@ export async function getIndustryHeatmap(
   assetType: AssetType,
   limit = 40,
 ): Promise<IndustryHeatmapResult> {
-  if (assetType !== "stock" && assetType !== "hk") {
+  if (assetType !== "stock" && assetType !== "hk" && assetType !== "cn") {
     return { industries: [], source: null };
   }
 
   for (const id of equityOrder()) {
-    if (id === "longbridge" && isProviderEnabled("longbridge") && hasLongbridgeCreds()) {
+    if (id === "longbridge" && isProviderEnabled("longbridge")) {
       try {
         const industries = await getLongbridgeIndustryHeatmap(assetType, limit);
         if (industries.length > 0) {
@@ -68,6 +75,21 @@ export async function getIndustryHeatmap(
           err instanceof Error ? err.message : err,
         );
       }
+    }
+  }
+
+  // Public Longbridge chart as last resort (no BYOK required)
+  if (isProviderEnabled("longbridge")) {
+    try {
+      const industries = await getLongbridgeIndustryHeatmap(assetType, limit);
+      if (industries.length > 0) {
+        return { industries, source: "longbridge" };
+      }
+    } catch (err) {
+      console.warn(
+        "[industry] longbridge public failed:",
+        err instanceof Error ? err.message : err,
+      );
     }
   }
 

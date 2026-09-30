@@ -16,7 +16,7 @@ export async function GET(req: Request) {
       if (assetType === "crypto") {
         return NextResponse.json({ industries: [], source: null });
       }
-      if (!isIndustryHeatmapAvailable()) {
+      if (!isIndustryHeatmapAvailable(assetType)) {
         return NextResponse.json({
           industries: [],
           source: null,

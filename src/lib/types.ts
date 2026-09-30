@@ -1,6 +1,6 @@
-export type AssetType = "stock" | "hk" | "crypto";
+export type AssetType = "stock" | "hk" | "crypto" | "cn";
 
-export const ASSET_TYPES = ["stock", "hk", "crypto"] as const;
+export const ASSET_TYPES = ["stock", "hk", "crypto", "cn"] as const;
 
 export type CandleResolution = "D" | "Q" | "Y";
 
@@ -80,17 +80,30 @@ export const POPULAR_CRYPTO = [
   "AVAX",
 ] as const;
 
+/** A-share thscode (exchange suffix required). */
+export const POPULAR_CN = [
+  "600519.SH",
+  "000001.SZ",
+  "000858.SZ",
+  "601318.SH",
+  "300750.SZ",
+  "002594.SZ",
+  "601012.SH",
+  "000333.SZ",
+] as const;
+
 export function parseAssetType(
   value: string | null | undefined,
 ): AssetType {
   if (value === "crypto") return "crypto";
   if (value === "hk") return "hk";
+  if (value === "cn") return "cn";
   return "stock";
 }
 
-/** US or HK listed equities (not crypto). */
+/** US, HK, or CN listed equities (not crypto). */
 export function isEquity(assetType: AssetType): boolean {
-  return assetType === "stock" || assetType === "hk";
+  return assetType === "stock" || assetType === "hk" || assetType === "cn";
 }
 
 /** Finnhub fundamentals / US-centric company endpoints. */
@@ -133,5 +146,34 @@ export function normalizeSymbol(symbol: string, assetType: AssetType): string {
     if (!raw) return s;
     return raw.padStart(5, "0");
   }
+  if (assetType === "cn") {
+    return normalizeCnThscode(s);
+  }
   return s.replace(/\.US$/i, "").replace(/^US\./, "");
+}
+
+/** Infer SH/SZ/BJ exchange from bare A-share code digits. */
+export function inferCnExchange(code: string): "SH" | "SZ" | "BJ" {
+  const digits = code.replace(/\D/g, "");
+  if (digits.startsWith("6") || digits.startsWith("9")) return "SH";
+  if (digits.startsWith("4") || digits.startsWith("8")) return "BJ";
+  return "SZ";
+}
+
+/** Canonical A-share id: `600519.SH`. */
+export function normalizeCnThscode(symbol: string): string {
+  let s = symbol.toUpperCase().trim();
+  s = s.replace(/^SH\./, "").replace(/^SZ\./, "").replace(/^BJ\./, "");
+  const m = s.match(/^(\d{6})\.(SH|SZ|BJ)$/);
+  if (m) return `${m[1]}.${m[2]}`;
+  const digits = s.replace(/\D/g, "");
+  if (digits.length >= 6) {
+    const code = digits.slice(-6);
+    return `${code}.${inferCnExchange(code)}`;
+  }
+  if (digits.length > 0) {
+    const code = digits.padStart(6, "0");
+    return `${code}.${inferCnExchange(code)}`;
+  }
+  return s;
 }

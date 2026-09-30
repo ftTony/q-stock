@@ -81,6 +81,7 @@ export function MarketCredentialsForm() {
                 futu: detail.futu ?? prev.futu,
                 binance: detail.binance ?? prev.binance,
                 okx: detail.okx ?? prev.okx,
+                fuyao: detail.fuyao ?? prev.fuyao,
               }
             : detail,
         );

@@ -4,6 +4,7 @@ import { decryptJson } from "@/lib/crypto/secret-box";
 import type {
   BinanceCreds,
   FutuCreds,
+  FuyaoCreds,
   LongbridgeCreds,
   MarketCredsStore,
   OkxCreds,
@@ -93,6 +94,14 @@ function parseOkx(raw: unknown): OkxCreds | undefined {
   };
 }
 
+function parseFuyao(raw: unknown): FuyaoCreds | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  const apiKey = String(o.apiKey ?? "").trim();
+  if (!apiKey) return undefined;
+  return { apiKey };
+}
+
 export async function loadUserMarketCreds(
   userId: string,
 ): Promise<MarketCredsStore> {
@@ -125,6 +134,8 @@ export async function loadUserMarketCreds(
         store.binance = parseBinance(parsed);
       } else if (row.provider === "okx") {
         store.okx = parseOkx(parsed);
+      } else if (row.provider === "fuyao") {
+        store.fuyao = parseFuyao(parsed);
       }
     } catch (err) {
       console.warn(
@@ -143,6 +154,7 @@ export async function getUserMarketCredsStatus(userId: string): Promise<{
   futu: { configured: boolean; mode?: "bearer" | "appkey" };
   binance: { configured: boolean };
   okx: { configured: boolean };
+  fuyao: { configured: boolean };
   equityVendor: EquityVendorId;
   cryptoVendor: CryptoVendorId;
 }> {
@@ -155,6 +167,7 @@ export async function getUserMarketCredsStatus(userId: string): Promise<{
     },
     binance: { configured: Boolean(store.binance) },
     okx: { configured: Boolean(store.okx) },
+    fuyao: { configured: Boolean(store.fuyao) },
     equityVendor: store.equityVendor ?? "longbridge",
     cryptoVendor: store.cryptoVendor ?? "binance",
   };

@@ -1,3 +1,6 @@
+import type { AssetType } from "@/lib/types";
+import { normalizeCnThscode } from "@/lib/types";
+
 export const STOCK_NAMES: Record<string, string> = {
   AAPL: "Apple Inc.",
   MSFT: "Microsoft Corp.",
@@ -20,6 +23,17 @@ export const HK_NAMES: Record<string, string> = {
   "00388": "香港交易所",
 };
 
+export const CN_NAMES: Record<string, string> = {
+  "600519.SH": "贵州茅台",
+  "000001.SZ": "平安银行",
+  "000858.SZ": "五粮液",
+  "601318.SH": "中国平安",
+  "300750.SZ": "宁德时代",
+  "002594.SZ": "比亚迪",
+  "601012.SH": "隆基绿能",
+  "000333.SZ": "美的集团",
+};
+
 export const CRYPTO_NAMES: Record<string, string> = {
   BTC: "Bitcoin",
   ETH: "Ethereum",
@@ -31,15 +45,16 @@ export const CRYPTO_NAMES: Record<string, string> = {
   AVAX: "Avalanche",
 };
 
-export function displayName(
-  symbol: string,
-  assetType: "stock" | "hk" | "crypto",
-): string {
+export function displayName(symbol: string, assetType: AssetType): string {
   const key = symbol.toUpperCase();
   if (assetType === "crypto") return CRYPTO_NAMES[key] || key;
   if (assetType === "hk") {
     const padded = key.replace(/\D/g, "").padStart(5, "0");
     return HK_NAMES[padded] || HK_NAMES[key] || key;
+  }
+  if (assetType === "cn") {
+    const ths = normalizeCnThscode(key);
+    return CN_NAMES[ths] || ths;
   }
   return STOCK_NAMES[key] || key;
 }

@@ -3,6 +3,7 @@ export type MarketCredsStatus = {
   futu: { configured: boolean; mode?: "bearer" | "appkey" };
   binance?: { configured: boolean };
   okx?: { configured: boolean };
+  fuyao?: { configured: boolean };
   equityVendor?: "longbridge" | "futu";
   cryptoVendor?: "binance" | "okx";
 };

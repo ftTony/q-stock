@@ -29,7 +29,9 @@ function WatchlistContent() {
   const searchParams = useSearchParams();
   const list = searchParams.get("list");
   const [filter, setFilter] = useState<AssetType | "all">(
-    list === "crypto" || list === "stock" || list === "hk" ? list : "all",
+    list === "crypto" || list === "stock" || list === "hk" || list === "cn"
+      ? list
+      : "all",
   );
   const [rows, setRows] = useState<Row[]>([]);
   const [loading, setLoading] = useState(true);
@@ -42,7 +44,9 @@ function WatchlistContent() {
   const [adding, setAdding] = useState(false);
 
   useEffect(() => {
-    if (list === "crypto" || list === "stock" || list === "hk") setFilter(list);
+    if (list === "crypto" || list === "stock" || list === "hk" || list === "cn") {
+      setFilter(list);
+    }
   }, [list]);
 
   const load = useCallback(async () => {
@@ -78,9 +82,17 @@ function WatchlistContent() {
           ? ["BTC", "ETH", "SOL", "BNB"]
           : filter === "hk"
             ? ["00700", "09988", "03690", "01810"]
-            : ["AAPL", "MSFT", "NVDA", "TSLA", "META", "AMZN"];
+            : filter === "cn"
+              ? ["600519.SH", "000001.SZ", "300750.SZ", "000858.SZ"]
+              : ["AAPL", "MSFT", "NVDA", "TSLA", "META", "AMZN"];
       const assetType: AssetType =
-        filter === "crypto" ? "crypto" : filter === "hk" ? "hk" : "stock";
+        filter === "crypto"
+          ? "crypto"
+          : filter === "hk"
+            ? "hk"
+            : filter === "cn"
+              ? "cn"
+              : "stock";
       await Promise.all(
         list.map((symbol) =>
           fetch("/api/watchlist", {
@@ -165,6 +177,7 @@ function WatchlistContent() {
               ["all", t("popular")],
               ["stock", t("stocks")],
               ["hk", t("hk")],
+              ["cn", t("cn")],
               ["crypto", t("crypto")],
             ] as const
           ).map(([key, label]) => (

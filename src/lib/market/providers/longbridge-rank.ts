@@ -35,9 +35,10 @@ async function getMarketCtx(): Promise<InstanceType<LbModule["MarketContext"]>> 
   return ctx;
 }
 
-function marketCode(assetType: AssetType): "US" | "HK" | null {
+function marketCode(assetType: AssetType): "US" | "HK" | "CN" | null {
   if (assetType === "stock") return "US";
   if (assetType === "hk") return "HK";
+  if (assetType === "cn") return "CN";
   return null;
 }
 
@@ -49,9 +50,10 @@ function marketCode(assetType: AssetType): "US" | "HK" | null {
  * `change_top` / `change_bottom` map to `ib_change_*` and return 400 —
  * gainers/losers are derived by sorting the heat list by `chg`.
  */
-const HOT_KEYS: Record<"US" | "HK", string> = {
+const HOT_KEYS: Record<"US" | "HK" | "CN", string> = {
   US: "hot_all-us",
   HK: "hot_all-hk",
+  CN: "hot_all-cn",
 };
 
 function asPlain(row: unknown): Record<string, unknown> {
@@ -106,12 +108,12 @@ export type RankQuote = Quote & { name?: string; source?: string };
 
 function mapRankItem(row: unknown, assetType: AssetType): RankQuote | null {
   const o = asPlain(row);
-  const rawCode = String(field(o, "code", "symbol") || "").replace(
-    /\.(US|HK)$/i,
-    "",
-  );
+  const rawCode = String(field(o, "code", "symbol") || "");
   if (!rawCode) return null;
-  const symbol = normalizeSymbol(rawCode, assetType);
+  const symbol =
+    assetType === "cn"
+      ? normalizeSymbol(rawCode, "cn")
+      : normalizeSymbol(rawCode.replace(/\.(US|HK)$/i, ""), assetType);
   const price = num(field(o, "lastDone", "last_done"));
   if (!(price > 0)) return null;
   const change = num(field(o, "change"));
@@ -143,7 +145,7 @@ function mapRankItem(row: unknown, assetType: AssetType): RankQuote | null {
 /** Shared heat list (cached) — one Longbridge call per market. */
 async function getHeatQuotes(
   assetType: AssetType,
-  market: "US" | "HK",
+  market: "US" | "HK" | "CN",
 ): Promise<RankQuote[]> {
   const cacheKey = `lb:rank:heat:v1:${assetType}`;
   return cachedFetch(cacheKey, 60_000, async () => {
@@ -174,7 +176,7 @@ function sliceBoard(heat: RankQuote[], board: RankBoard, limit: number): RankQuo
 }
 
 /**
- * US/HK leaderboards via Longbridge MarketContext.rankList.
+ * US/HK/CN leaderboards via Longbridge MarketContext.rankList.
  * Hot = 热度排行; gainers/losers = same universe sorted by chg.
  */
 export async function getLongbridgeRankList(
@@ -187,7 +189,7 @@ export async function getLongbridgeRankList(
   }
   const market = marketCode(assetType);
   if (!market) {
-    throw new Error("Rank lists are US/HK only");
+    throw new Error("Rank lists are US/HK/CN only");
   }
   const heat = await getHeatQuotes(assetType, market);
   return sliceBoard(heat, board, limit);
@@ -203,7 +205,7 @@ export async function getLongbridgeRankBoards(
   }
   const market = marketCode(assetType);
   if (!market) {
-    throw new Error("Rank lists are US/HK only");
+    throw new Error("Rank lists are US/HK/CN only");
   }
   const heat = await getHeatQuotes(assetType, market);
   return {

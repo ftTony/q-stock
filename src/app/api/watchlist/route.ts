@@ -8,7 +8,7 @@ import { normalizeSymbol } from "@/lib/types";
 
 const upsertSchema = z.object({
   symbol: z.string().min(1).max(20),
-  assetType: z.enum(["stock", "hk", "crypto"]),
+  assetType: z.enum(["stock", "hk", "crypto", "cn"]),
 });
 
 export async function GET(req: Request) {
@@ -30,6 +30,7 @@ export async function GET(req: Request) {
         stock: items.filter((i) => i.assetType === "stock").length,
         hk: items.filter((i) => i.assetType === "hk").length,
         crypto: items.filter((i) => i.assetType === "crypto").length,
+        cn: items.filter((i) => i.assetType === "cn").length,
         total: items.length,
       },
     });
@@ -52,6 +53,7 @@ export async function GET(req: Request) {
         stock: items.filter((i) => i.assetType === "stock").length,
         hk: items.filter((i) => i.assetType === "hk").length,
         crypto: items.filter((i) => i.assetType === "crypto").length,
+        cn: items.filter((i) => i.assetType === "cn").length,
         total: items.length,
       },
     });

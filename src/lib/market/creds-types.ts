@@ -31,12 +31,17 @@ export type OkxCreds = {
   passphrase?: string;
 };
 
+export type FuyaoCreds = {
+  apiKey: string;
+};
+
 export type MarketCredsStore = {
   userId?: string;
   longbridge?: LongbridgeCreds;
   futu?: FutuCreds;
   binance?: BinanceCreds;
   okx?: OkxCreds;
+  fuyao?: FuyaoCreds;
   /** Preferred US/HK broker when configured. */
   equityVendor?: EquityVendorId;
   /** Preferred crypto exchange. */
@@ -56,4 +61,8 @@ export function fingerprintFutu(c: FutuCreds): string {
 
 export function fingerprintBinance(c: BinanceCreds): string {
   return `bn:${c.apiKey.slice(0, 8)}`;
+}
+
+export function fingerprintFuyao(c: FuyaoCreds): string {
+  return `fy:${c.apiKey.slice(0, 8)}`;
 }

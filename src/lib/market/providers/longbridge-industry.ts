@@ -105,9 +105,10 @@ function mapCell(
   };
 }
 
-function marketOf(assetType: AssetType): "US" | "HK" | null {
+function marketOf(assetType: AssetType): "US" | "HK" | "CN" | null {
   if (assetType === "stock") return "US";
   if (assetType === "hk") return "HK";
+  if (assetType === "cn") return "CN";
   return null;
 }
 

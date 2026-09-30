@@ -5,7 +5,8 @@ export type MarketProviderId =
   | "futu"
   | "finnhub"
   | "binance"
-  | "okx";
+  | "okx"
+  | "fuyao";
 
 export type EquityVendorId = "longbridge" | "futu";
 export type CryptoVendorId = "binance" | "okx";

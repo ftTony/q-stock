@@ -3,6 +3,7 @@
 export type EquitySession = {
   usOpen: boolean;
   hkOpen: boolean;
+  cnOpen: boolean;
   /** At least one equity market in regular session. */
   anyOpen: boolean;
 };
@@ -18,7 +19,6 @@ function zonedClock(now: Date, timeZone: string) {
   const get = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((p) => p.type === type)?.value ?? "";
   let hour = Number(get("hour"));
-  // Some engines emit "24" for midnight.
   if (hour === 24) hour = 0;
   return {
     weekday: get("weekday"),
@@ -46,8 +46,18 @@ export function isHkRegularSessionOpen(now = new Date()): boolean {
   return morning || afternoon;
 }
 
+/** A-share: Mon–Fri 09:30–11:30 & 13:00–15:00 Asia/Shanghai */
+export function isCnRegularSessionOpen(now = new Date()): boolean {
+  const { weekday, minutes } = zonedClock(now, "Asia/Shanghai");
+  if (!isWeekday(weekday)) return false;
+  const morning = minutes >= 9 * 60 + 30 && minutes < 11 * 60 + 30;
+  const afternoon = minutes >= 13 * 60 && minutes < 15 * 60;
+  return morning || afternoon;
+}
+
 export function getEquitySession(now = new Date()): EquitySession {
   const usOpen = isUsRegularSessionOpen(now);
   const hkOpen = isHkRegularSessionOpen(now);
-  return { usOpen, hkOpen, anyOpen: usOpen || hkOpen };
+  const cnOpen = isCnRegularSessionOpen(now);
+  return { usOpen, hkOpen, cnOpen, anyOpen: usOpen || hkOpen || cnOpen };
 }
