@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import { getQuote } from "../lib/market";
 import { withUserMarket } from "../lib/market/with-user-market";
+import type { AssetType } from "../lib/types";
 import {
   resolveAlertMailTransport,
   sendAlertEmail,
@@ -36,7 +37,7 @@ async function tickAlerts() {
   for (const [userId, userAlerts] of byUser) {
     const unique = new Map<
       string,
-      { symbol: string; assetType: "stock" | "hk" | "crypto" }
+      { symbol: string; assetType: AssetType }
     >();
     for (const a of userAlerts) {
       unique.set(`${a.assetType}:${a.symbol}`, {
@@ -125,7 +126,7 @@ async function tickPaperOrders() {
   for (const [userId, orders] of byUser) {
     const unique = new Map<
       string,
-      { symbol: string; assetType: "stock" | "hk" | "crypto" }
+      { symbol: string; assetType: AssetType }
     >();
     for (const o of orders) {
       unique.set(`${o.assetType}:${o.symbol}`, {
@@ -191,7 +192,7 @@ async function tick() {
 
 async function main() {
   console.info(`[worker] started, interval=${intervalMs}ms`);
-  for (;;) {
+  for (; ;) {
     try {
       await tick();
     } catch (err) {
