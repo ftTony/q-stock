@@ -25,7 +25,11 @@
     "marketClosed": "Pasaran Ditutup",
     "marketOpenUs": "AS Dibuka",
     "marketOpenHk": "HK Dibuka",
+    "marketOpenCn": "China Dibuka",
     "marketOpenBoth": "AS & HK Dibuka",
+    "marketOpenUsCn": "AS & China Dibuka",
+    "marketOpenHkCn": "HK & China Dibuka",
+    "marketOpenMulti": "AS, HK & China Dibuka",
     "about": "About",
     "collapseSidebar": "Kuncupkan bar sisi",
     "expandSidebar": "Kembangkan bar sisi"

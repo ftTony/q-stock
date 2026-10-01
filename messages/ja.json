@@ -25,7 +25,11 @@
     "marketClosed": "休場",
     "marketOpenUs": "米国株開場中",
     "marketOpenHk": "香港株開場中",
+    "marketOpenCn": "中国株開場中",
     "marketOpenBoth": "米・香港開場中",
+    "marketOpenUsCn": "米国・中国株開場中",
+    "marketOpenHkCn": "香港・中国株開場中",
+    "marketOpenMulti": "米国・香港・中国株開場中",
     "about": "About",
     "collapseSidebar": "サイドバーを折りたたむ",
     "expandSidebar": "サイドバーを展開"

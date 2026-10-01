@@ -25,7 +25,11 @@
     "marketClosed": "Mercado cerrado",
     "marketOpenUs": "EE.UU. abierto",
     "marketOpenHk": "HK abierto",
+    "marketOpenCn": "China abierto",
     "marketOpenBoth": "EE.UU. y HK abiertos",
+    "marketOpenUsCn": "EE.UU. y China abiertos",
+    "marketOpenHkCn": "HK y China abiertos",
+    "marketOpenMulti": "EE.UU., HK y China abiertos",
     "about": "About",
     "collapseSidebar": "Contraer barra lateral",
     "expandSidebar": "Expandir barra lateral"

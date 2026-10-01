@@ -25,7 +25,11 @@
     "marketClosed": "휴장",
     "marketOpenUs": "미장 개장",
     "marketOpenHk": "홍콩 개장",
+    "marketOpenCn": "중국장 개장",
     "marketOpenBoth": "미·홍콩 개장",
+    "marketOpenUsCn": "미국·중국장 개장",
+    "marketOpenHkCn": "홍콩·중국장 개장",
+    "marketOpenMulti": "미국·홍콩·중국장 개장",
     "about": "About",
     "collapseSidebar": "사이드바 접기",
     "expandSidebar": "사이드바 펼치기"

@@ -25,7 +25,11 @@
     "marketClosed": "休市",
     "marketOpenUs": "美股開市中",
     "marketOpenHk": "港股開市中",
+    "marketOpenCn": "A股開市中",
     "marketOpenBoth": "美港開市中",
+    "marketOpenUsCn": "美股和A股開市中",
+    "marketOpenHkCn": "港股和A股開市中",
+    "marketOpenMulti": "美港A股開市中",
     "about": "關於我",
     "collapseSidebar": "收起側欄",
     "expandSidebar": "展開側欄"

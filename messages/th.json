@@ -25,7 +25,11 @@
     "marketClosed": "ตลาดปิด",
     "marketOpenUs": "สหรัฐเปิด",
     "marketOpenHk": "ฮ่องกงเปิด",
+    "marketOpenCn": "จีนเปิด",
     "marketOpenBoth": "สหรัฐและฮ่องกงเปิด",
+    "marketOpenUsCn": "สหรัฐและจีนเปิด",
+    "marketOpenHkCn": "ฮ่องกงและจีนเปิด",
+    "marketOpenMulti": "สหรัฐ ฮ่องกง และจีนเปิด",
     "about": "About",
     "collapseSidebar": "ย่อแถบด้านข้าง",
     "expandSidebar": "ขยายแถบด้านข้าง"

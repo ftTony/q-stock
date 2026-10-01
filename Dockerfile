@@ -1,5 +1,5 @@
 # ---- base ----
-FROM node:22-slim AS base
+FROM node:22-trixie-slim AS base
 RUN apt-get update && apt-get install -y --no-install-recommends openssl \
     && rm -rf /var/lib/apt/lists/*
 
@@ -8,7 +8,8 @@ FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
-RUN npm ci
+RUN npm ci --include=optional \
+    && node -e "import('longbridge').then(() => { console.log('Longbridge SDK loaded'); process.exit(0); }, (error) => { console.error(error); process.exit(1); })"
 
 # ---- builder ----
 FROM base AS builder

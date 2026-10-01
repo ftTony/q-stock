@@ -19,7 +19,7 @@
 ### 2.1 密钥与配置
 
 - [ ] 使用强随机 `AUTH_SECRET`（勿用示例值）
-- [ ] `APP_URL` 设为真实公网 HTTPS 地址
+- [ ] `APP_URL` 与 `AUTH_URL` 都设为真实公网 HTTPS 地址（同一 origin）
 - [ ] `AUTH_TRUST_HOST=true`（反向代理场景）
 - [ ] `FINNHUB_API_KEY` 有效且额度足够
 - [ ] （可选）`ADANOS_API_KEY`；无则情绪降级
