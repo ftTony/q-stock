@@ -137,11 +137,23 @@ export function MarketOkxCredentialsForm() {
       <p className="text-sm text-[var(--muted)]">{t("credsOkxHint")}</p>
       {message ? (
         <p
-          className="text-sm"
-          style={{
-            color: messageKind === "ok" ? "var(--up)" : "var(--down)",
-          }}
+          role="status"
+          className="animate-[qtFade_0.25s_ease] rounded-lg px-3 py-2 text-sm"
+          style={
+            messageKind === "ok"
+              ? {
+                  background:
+                    "color-mix(in srgb, var(--success) 12%, transparent)",
+                  color: "var(--success)",
+                }
+              : {
+                  background:
+                    "color-mix(in srgb, var(--danger) 12%, transparent)",
+                  color: "var(--danger)",
+                }
+          }
         >
+          {messageKind === "ok" ? "✓ " : ""}
           {message}
         </p>
       ) : null}

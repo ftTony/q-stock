@@ -16,6 +16,7 @@
   --sidebar-active: rgba(91, 124, 250, 0.12);
   --panel: #ffffff;
   --input: #ffffff;
+  --success: #16a34a;
   --danger: #f87171;
   --up: #e11d48;
   --down: #16a34a;
@@ -44,6 +45,7 @@ html.dark {
   --sidebar-active: rgba(158, 182, 255, 0.12);
   --panel: #0f1520;
   --input: #0b1018;
+  --success: #34d399;
   --danger: #fb7185;
   --up: #e11d48;
   --down: #34d399;

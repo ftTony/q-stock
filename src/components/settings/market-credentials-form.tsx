@@ -292,13 +292,15 @@ export function MarketCredentialsForm() {
           style={
             messageKind === "ok"
               ? {
-                  background: "color-mix(in srgb, var(--up) 12%, transparent)",
-                  color: "var(--up)",
-                }
-              : {
-                  background: "color-mix(in srgb, var(--down) 12%, transparent)",
-                  color: "var(--down)",
-                }
+                background:
+                  "color-mix(in srgb, var(--success) 12%, transparent)",
+                color: "var(--success)",
+              }
+            : {
+                background:
+                  "color-mix(in srgb, var(--danger) 12%, transparent)",
+                color: "var(--danger)",
+              }
           }
         >
           {messageKind === "ok" ? "✓ " : ""}
