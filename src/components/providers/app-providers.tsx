@@ -18,7 +18,12 @@ export function AppProviders({
 }) {
   return (
     <SessionProvider>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="dark"
+        enableSystem={false}
+        disableTransitionOnChange
+      >
         <PreferenceProvider initialScheme={changeColorScheme}>
           <PwaRegister />
           {children}

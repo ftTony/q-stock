@@ -11,6 +11,7 @@ import { KpiCard } from "@/components/market/kpi-card";
 import { MarketsHeaderToolbar } from "@/components/market/markets-header-toolbar";
 import { RankBoardPanel } from "@/components/market/rank-board-panel";
 import type { RankQuote } from "@/components/market/markets-types";
+import { formatTime } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 
 type Tab = AssetType;
@@ -282,7 +283,7 @@ export default function MarketsDashboard() {
             {loading
               ? tCommon("loading")
               : updatedAt
-                ? `${t("updated")} ${updatedAt.toLocaleTimeString()}`
+                ? `${t("updated")} ${formatTime(updatedAt)}`
                 : ""}
           </span>
         </div>

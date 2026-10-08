@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { EarningsCharts } from "@/components/market/earnings-charts";
+import { formatNumber } from "@/lib/format-number";
 
 export type EarningsSurprise = {
   actual: number | null;
@@ -51,7 +52,7 @@ const METRIC_LABEL_KEYS: Record<string, string> = {
 
 function fmtNum(v: number | null | undefined, digits = 2): string {
   if (v === null || v === undefined || Number.isNaN(v)) return "-";
-  return v.toLocaleString(undefined, {
+  return formatNumber(v, {
     maximumFractionDigits: digits,
     minimumFractionDigits: 0,
   });

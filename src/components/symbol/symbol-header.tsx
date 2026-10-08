@@ -7,6 +7,7 @@ import { QuoteStatsGrid } from "@/components/market/quote-stats";
 import { ChangePct, PriceText } from "@/components/market/price";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { IconHeart } from "@/components/ui/icon-heart";
+import { formatTime } from "@/lib/format-number";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
@@ -115,7 +116,7 @@ function SymbolPriceRow({
           </span>
           {updatedAt && (
             <span className="text-[10px] text-[var(--muted)]">
-              {updatedAt.toLocaleTimeString()}
+              {formatTime(updatedAt)}
             </span>
           )}
         </>

@@ -18,6 +18,7 @@ import {
 import { PaginatedList } from "@/components/ui/paginated-list";
 import { SubmitButton } from "@/components/ui/submit-button";
 import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
+import { formatDate, formatDateTime } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 
 export type SymbolTab =
@@ -207,9 +208,9 @@ export function SymbolTabsPanel({
                     <div className="mt-0.5 text-[11px] text-[var(--muted)]">
                       {n.source}
                       {n.datetime
-                        ? ` · ${new Date(
+                        ? ` · ${formatDate(
                             n.datetime > 1e12 ? n.datetime : n.datetime * 1000,
-                          ).toLocaleDateString()}`
+                          )}`
                         : ""}
                     </div>
                   </li>
@@ -261,9 +262,7 @@ export function SymbolTabsPanel({
                         </p>
                       )}
                       <div className="mt-0.5 text-[11px] text-[var(--muted)]">
-                        {p.datetime
-                          ? new Date(p.datetime).toLocaleString()
-                          : ""}
+                        {p.datetime ? formatDateTime(p.datetime) : ""}
                         {p.source ? ` · ${p.source}` : ""}
                       </div>
                     </li>
@@ -309,7 +308,7 @@ export function SymbolTabsPanel({
                     <li key={c.id} className="border-b border-[var(--border)] pb-2">
                       <div className="flex items-center justify-between gap-2 text-xs text-[var(--muted)]">
                         <span>
-                          {c.author} · {new Date(c.createdAt).toLocaleString()}
+                          {c.author} · {formatDateTime(c.createdAt)}
                         </span>
                         {currentUserId === c.userId && (
                           <button

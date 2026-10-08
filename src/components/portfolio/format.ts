@@ -1,5 +1,7 @@
+import { formatNumber } from "@/lib/format-number";
+
 export function fmtMoney(n: number): string {
-  return n.toLocaleString(undefined, {
+  return formatNumber(n, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });

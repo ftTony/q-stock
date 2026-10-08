@@ -155,6 +155,16 @@ Compose 已注入 `DATABASE_URL=...@db:5432...`。不要在容器里用 `localho
 
 可先 `npx tsc --noEmit` 快速定位。
 
+### 生产控制台 `Minified React error #418`（hydration）
+
+表示服务端 HTML 与客户端首次渲染不一致。常见原因：
+
+1. **日期时间**：`toLocaleString()` / `toLocaleTimeString()` 未固定 locale（已统一走 `formatTime` / `formatDateTime`）
+2. **Service Worker 缓存了旧 HTML**（例如仍带 `/en` 的页面）：部署后强制刷新，或注销 SW；当前 `sw.js` 已改为不缓存导航 HTML（`q-stock-shell-v5`）
+3. **浏览器扩展**改动 DOM：用无痕窗口复现以排除
+
+部署后若仍见旧错：让用户硬刷新一次，或清站点数据后再开。
+
 ## 8. 快速自检清单
 
 ```bash

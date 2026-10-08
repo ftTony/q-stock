@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { formatNumber } from "@/lib/format-number";
 import type { IndexQuote } from "@/components/market/markets-types";
 import type { AssetType } from "@/lib/types";
 
@@ -40,7 +41,7 @@ function IndexChip({ item }: { item: IndexQuote }) {
       {item.price != null ? (
         <>
           <span className="text-xs font-semibold tabular-nums sm:text-sm">
-            {item.price.toLocaleString(undefined, {
+            {formatNumber(item.price, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}

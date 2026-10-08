@@ -1,10 +1,10 @@
-/* Minimal offline shell for installed PWA. Splash / brand uses /logo.png.
- * Do NOT cache-first /_next/* — Turbopack/webpack chunk URLs reuse paths in
- * dev and will pin stale client bundles (e.g. broken i18n pagination UI).
+/* Minimal offline shell for installed PWA.
+ * Never precache HTML navigations — locale/URL changes (e.g. /en → /) would
+ * serve stale markup against new JS and trigger React hydration #418.
+ * Do NOT cache-first /_next/* — chunk URLs must always hit network.
  */
-const CACHE = "q-stock-shell-v4";
+const CACHE = "q-stock-shell-v5";
 const PRECACHE = [
-  "/",
   "/manifest.webmanifest",
   "/logo.png",
   "/logo-cn.png",
@@ -39,16 +39,15 @@ self.addEventListener("fetch", (event) => {
   // App Router / Turbopack / webpack — always hit network.
   if (url.pathname.startsWith("/_next/")) return;
 
-  // Network-first for navigations; cache fallback only when offline.
+  // Navigations: network-only (no HTML cache) so locale routing stays consistent.
   if (req.mode === "navigate") {
     event.respondWith(
-      fetch(req)
-        .then((res) => {
-          const copy = res.clone();
-          caches.open(CACHE).then((c) => c.put(req, copy));
-          return res;
-        })
-        .catch(() => caches.match(req).then((r) => r || caches.match("/"))),
+      fetch(req).catch(() => caches.match("/manifest.webmanifest").then(() =>
+        new Response("Offline", {
+          status: 503,
+          headers: { "Content-Type": "text/plain; charset=utf-8" },
+        }),
+      )),
     );
     return;
   }

@@ -4,11 +4,12 @@ import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import type { EarningsMetric } from "@/components/market/earnings-panel";
 import { ChangeAbs, ChangePct } from "@/components/market/price";
+import { formatNumber } from "@/lib/format-number";
 import type { AssetType, Quote } from "@/lib/types";
 
 function fmt(v: number | null | undefined, digits = 2): string {
   if (v == null || Number.isNaN(v)) return "-";
-  return v.toLocaleString(undefined, {
+  return formatNumber(v, {
     maximumFractionDigits: digits,
     minimumFractionDigits: 0,
   });

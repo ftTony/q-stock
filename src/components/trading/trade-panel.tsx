@@ -8,6 +8,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { TopToast, type ToastTone } from "@/components/ui/top-toast";
+import { formatNumber } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 
 type Side = "buy" | "sell";
@@ -27,7 +28,7 @@ type Order = {
 };
 
 function fmtMoney(n: number): string {
-  return n.toLocaleString(undefined, {
+  return formatNumber(n, {
     minimumFractionDigits: 2,
     maximumFractionDigits: 2,
   });

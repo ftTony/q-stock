@@ -12,6 +12,7 @@ import {
   localizedPath,
   type AppLocale,
 } from "@/i18n/config";
+import { useMounted } from "@/hooks/use-mounted";
 import { getEquitySession } from "@/lib/market/session";
 
 type AlertItem = {
@@ -25,7 +26,13 @@ type AlertItem = {
 };
 
 function useEquitySessionLabel(t: (key: string) => string) {
-  const [session, setSession] = useState(() => getEquitySession());
+  const ready = useMounted();
+  const [session, setSession] = useState(() => ({
+    usOpen: false,
+    hkOpen: false,
+    cnOpen: false,
+    anyOpen: false,
+  }));
 
   useEffect(() => {
     const tick = () => setSession(getEquitySession());
@@ -33,6 +40,11 @@ function useEquitySessionLabel(t: (key: string) => string) {
     const id = window.setInterval(tick, 30_000);
     return () => window.clearInterval(id);
   }, []);
+
+  // Stable SSR + first paint label; avoid open/closed flip during hydration.
+  if (!ready) {
+    return { open: false, label: t("marketClosed") };
+  }
 
   if (session.usOpen && session.hkOpen && session.cnOpen) {
     return { open: true, label: t("marketOpenMulti") };
@@ -60,6 +72,7 @@ export function TopBarActions() {
   const locale = useLocale();
   const pathname = usePathname();
   const router = useRouter();
+  const mounted = useMounted();
   const [alertCount, setAlertCount] = useState(0);
   const [recent, setRecent] = useState<AlertItem[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -103,7 +116,7 @@ export function TopBarActions() {
     return () => document.removeEventListener("mousedown", onDoc);
   }, []);
 
-  const dark = (resolvedTheme || theme) === "dark";
+  const dark = mounted && (resolvedTheme || theme) === "dark";
   const market = useEquitySessionLabel((key) => t(key as "marketOpen"));
 
   return (
@@ -128,7 +141,9 @@ export function TopBarActions() {
         aria-label="Toggle theme"
         onClick={() => setTheme(dark ? "light" : "dark")}
       >
-        {dark ? (
+        {!mounted ? (
+          <span className="h-4 w-4" aria-hidden />
+        ) : dark ? (
           <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
             <circle cx="12" cy="12" r="4" />
             <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
