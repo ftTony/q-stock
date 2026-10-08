@@ -113,7 +113,7 @@ server {
 | 提醒不触发 | worker 未起或 quote 失败 |
 | 提醒触发无邮件 | 未配 Resend/SMTP（仅日志） |
 
-Worker 日志关键字：`[alerts] triggered`、`[email]`、`quote failed`。
+Worker 日志关键字：`[alerts] triggered`、`[alerts] re-armed`、`[email]`、`quote failed`。
 
 ## 7. 安全建议
 

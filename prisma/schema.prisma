@@ -94,6 +94,7 @@ model User {
   paperAccount       PaperAccount?
   paperPositions     PaperPosition[]
   paperOrders        PaperOrder[]
+  reviewNotes        ReviewNote[]
   marketCredentials   UserMarketCredential[]
   serviceCredentials  UserServiceCredential[]
   passwordResetTokens PasswordResetToken[]
@@ -260,6 +261,20 @@ model ApiCache {
   createdAt DateTime @default(now())
 
   @@index([expiresAt])
+}
+
+/** Structured AI paper-trading review note. */
+model ReviewNote {
+  id             String   @id @default(cuid())
+  userId         String
+  period         String
+  content        Json
+  sourceOrderIds String[]
+  createdAt      DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
 }
 
 model PaperAccount {

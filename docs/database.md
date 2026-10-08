@@ -74,8 +74,8 @@ ApiCache（独立缓存表）
 |---|---|
 | condition | `gte` / `lte` |
 | triggerPrice | `Decimal(18,8)` |
-| status | Worker 只处理 `active` |
-| triggeredAt | 触发时间；重新启用时清空 |
+| status | Worker 处理 `active`（监视）与 `triggered`（已发信，等回落后自动再武装） |
+| triggeredAt | 最近一次触发时间；手动重新启用时清空 |
 
 索引：`status`、`userId`、`(symbol, assetType)`。
 

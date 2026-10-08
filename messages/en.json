@@ -32,7 +32,8 @@
     "marketOpenMulti": "US, HK & China Open",
     "about": "About",
     "collapseSidebar": "Collapse sidebar",
-    "expandSidebar": "Expand sidebar"
+    "expandSidebar": "Expand sidebar",
+    "review": "Review"
   },
   "market": {
     "stocks": "US Stocks",
@@ -160,7 +161,11 @@
     "officers": "Executives",
     "fullscreen": "Fullscreen",
     "exitFullscreen": "Exit fullscreen",
-    "back": "Back"
+    "back": "Back",
+    "openAi": "AI",
+    "aiDeskTitle": "{symbol} · AI desk",
+    "aiDeskSubtitle": "Chart read and chat with quotes, news, and earnings context.",
+    "backToSymbol": "Back to symbol"
   },
   "company": {
     "na": "No company profile available for this asset",
@@ -189,7 +194,8 @@
     "openWatchlist": "Open watchlist",
     "openAlerts": "Open alerts",
     "openAnalysis": "Open analysis",
-    "openSettings": "Open settings"
+    "openSettings": "Open settings",
+    "openReview": "Review notes"
   },
   "auth": {
     "email": "Email",
@@ -353,12 +359,14 @@
     "create": "Create alert",
     "status": "Status",
     "active": "Active",
-    "triggered": "Triggered",
+    "triggered": "Triggered — re-arms after recovery",
     "disabled": "Disabled",
     "disable": "Disable",
-    "reactivate": "Reactivate",
+    "reactivate": "Re-arm now",
+    "delete": "Delete",
     "empty": "No alerts yet",
-    "loginRequired": "Sign in to manage alerts"
+    "loginRequired": "Sign in to manage alerts",
+    "hint": "Each cross sends one email. After the price moves back past the threshold, the alert re-arms automatically. It will not spam while the breach persists."
   },
   "comments": {
     "placeholder": "Share your view…",
@@ -508,5 +516,53 @@
     "mainlandNotice": "Note for friends in mainland China: investing in overseas stocks or BTC is currently illegal. This site is for learning only — please follow local laws.",
     "platformTitle": "About Qianli Gu",
     "platformBody": "Qianli Gu (钱力股) is built around smart investing and value discovery. We use AI to support calmer research and review—and to help blunt the impact of fear, greed, and other human biases. Market data and content are for learning only, not investment advice."
+  },
+  "aiChart": {
+    "title": "AI chart read",
+    "subtitle": "Structure, levels, and what would change the view — from recent candles only.",
+    "run": "Read chart",
+    "error": "Chart read failed",
+    "structure": "Structure",
+    "keyLevels": "Key levels",
+    "invalidation": "What would change my mind",
+    "bars": "{count} bars used"
+  },
+  "aiChat": {
+    "title": "Ask AI",
+    "subtitle": "Chat about {symbol} using quotes, news, and earnings context.",
+    "empty": "Ask a question about this symbol…",
+    "placeholder": "e.g. What are the near-term risks?",
+    "send": "Send",
+    "error": "Chat failed"
+  },
+  "aiScenario": {
+    "title": "Scenario map",
+    "subtitle": "Possible regimes, invalidation levels, and an optional paper-trade draft.",
+    "run": "Map scenarios",
+    "error": "Scenario map failed",
+    "invalidation": "Invalidation",
+    "levels": "Watch levels",
+    "draft": "Paper draft",
+    "applyDraft": "Apply to paper order",
+    "paperOnly": "Drafts apply to paper trading only"
+  },
+  "review": {
+    "title": "Review notes",
+    "subtitle": "Process review from paper fills; emotions and checklists save as notes.",
+    "generateTitle": "Generate review",
+    "generateHint": "Summarize fills, positions, and cash for today or the past week.",
+    "periodDay": "Today",
+    "periodWeek": "Past week",
+    "run": "Run review",
+    "error": "Review failed",
+    "emptyLatest": "Pick a note on the right, or run a new review.",
+    "summary": "Summary",
+    "well": "What went well",
+    "improve": "What to improve",
+    "emotions": "Emotion flags",
+    "checklist": "Next checklist",
+    "notesTitle": "Saved notes",
+    "notesHint": "Latest 10, saved automatically.",
+    "notesEmpty": "No notes yet"
   }
 }

@@ -32,7 +32,8 @@
     "marketOpenMulti": "US, HK und China offen",
     "about": "About",
     "collapseSidebar": "Seitenleiste einklappen",
-    "expandSidebar": "Seitenleiste ausklappen"
+    "expandSidebar": "Seitenleiste ausklappen",
+    "review": "Review"
   },
   "market": {
     "stocks": "US-Aktien",
@@ -160,7 +161,11 @@
     "officers": "Führungskräfte",
     "fullscreen": "Vollbild",
     "exitFullscreen": "Vollbild beenden",
-    "back": "Zurück"
+    "back": "Zurück",
+    "openAi": "AI",
+    "aiDeskTitle": "{symbol} · KI-Desk",
+    "aiDeskSubtitle": "Chartlesen und Chat mit Kurs-, News- und Earnings-Kontext.",
+    "backToSymbol": "Zurück zum Symbol"
   },
   "company": {
     "na": "Kein Unternehmensprofil für diesen Vermögenswert verfügbar",
@@ -189,7 +194,8 @@
     "openWatchlist": "Liste öffnen",
     "openAlerts": "Alarme öffnen",
     "openAnalysis": "Analyse öffnen",
-    "openSettings": "Einstellungen öffnen"
+    "openSettings": "Einstellungen öffnen",
+    "openReview": "Review notes"
   },
   "auth": {
     "email": "E-Mail",
@@ -357,8 +363,10 @@
     "disabled": "Deaktiviert",
     "disable": "Deaktivieren",
     "reactivate": "Reaktivieren",
+    "delete": "Löschen",
     "empty": "Noch keine Alarme",
-    "loginRequired": "Anmelden, um Alarme zu verwalten"
+    "loginRequired": "Anmelden, um Alarme zu verwalten",
+    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached."
   },
   "comments": {
     "placeholder": "Teilen Sie Ihre Meinung…",
@@ -508,5 +516,53 @@
     "mainlandNotice": "Hinweis für Freunde in Festlandchina: Anlagen in ausländische Aktien oder BTC sind derzeit rechtswidrig. Diese Seite dient nur dem Lernen — bitte geltendes Recht beachten.",
     "platformTitle": "Über Qianli Gu",
     "platformBody": "Qianli Gu (钱力股) dreht sich um intelligentes Investing und Wertfindung. KI soll ruhigere Analyse und Review unterstützen und den Einfluss von Angst, Gier und anderen menschlichen Schwächen mindern. Marktdaten und Inhalte dienen nur dem Lernen, nicht der Anlageberatung."
+  },
+  "aiChart": {
+    "title": "AI chart read",
+    "subtitle": "Structure, levels, and what would change the view — from recent candles only.",
+    "run": "Read chart",
+    "error": "Chart read failed",
+    "structure": "Structure",
+    "keyLevels": "Key levels",
+    "invalidation": "What would change my mind",
+    "bars": "{count} bars used"
+  },
+  "aiChat": {
+    "title": "Ask AI",
+    "subtitle": "Chat about {symbol} using quotes, news, and earnings context.",
+    "empty": "Ask a question about this symbol…",
+    "placeholder": "e.g. What are the near-term risks?",
+    "send": "Send",
+    "error": "Chat failed"
+  },
+  "aiScenario": {
+    "title": "Scenario map",
+    "subtitle": "Possible regimes, invalidation levels, and an optional paper-trade draft.",
+    "run": "Map scenarios",
+    "error": "Scenario map failed",
+    "invalidation": "Invalidation",
+    "levels": "Watch levels",
+    "draft": "Paper draft",
+    "applyDraft": "Apply to paper order",
+    "paperOnly": "Drafts apply to paper trading only"
+  },
+  "review": {
+    "title": "Review notes",
+    "subtitle": "Process review from paper fills; emotions and checklists save as notes.",
+    "generateTitle": "Generate review",
+    "generateHint": "Summarize fills, positions, and cash for today or the past week.",
+    "periodDay": "Today",
+    "periodWeek": "Past week",
+    "run": "Run review",
+    "error": "Review failed",
+    "emptyLatest": "Pick a note on the right, or run a new review.",
+    "summary": "Summary",
+    "well": "What went well",
+    "improve": "What to improve",
+    "emotions": "Emotion flags",
+    "checklist": "Next checklist",
+    "notesTitle": "Saved notes",
+    "notesHint": "Latest 10, saved automatically.",
+    "notesEmpty": "No notes yet"
   }
 }

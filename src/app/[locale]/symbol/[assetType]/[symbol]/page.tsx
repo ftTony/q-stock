@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import { TradePanel } from "@/components/trading/trade-panel";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
+import { SymbolAiFab } from "@/components/symbol/symbol-ai-fab";
 import { SymbolHeader } from "@/components/symbol/symbol-header";
 import { SymbolChartSection } from "@/components/symbol/symbol-chart-section";
 import { SymbolTabsPanel } from "@/components/symbol/symbol-tabs-panel";
@@ -119,6 +120,7 @@ export default function SymbolPage() {
             degradedLabel={s.tCommon("degraded")}
             tabLoading={s.tabLoading}
             loadingLabel={s.tCommon("loading")}
+            symbol={symbol}
             assetType={assetType}
             isIndex={isIndex}
             news={s.news}
@@ -155,6 +157,8 @@ export default function SymbolPage() {
           />
         </div>
       </div>
+
+      <SymbolAiFab symbol={symbol} assetType={assetType} />
     </div>
   );
 }

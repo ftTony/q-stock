@@ -52,7 +52,9 @@ function AlertsContent() {
     const s = searchParams.get("symbol");
     const a = searchParams.get("assetType");
     if (s) setSymbol(s.toUpperCase());
-    if (a === "crypto" || a === "stock" || a === "hk") setAssetType(a);
+    if (a === "crypto" || a === "stock" || a === "hk" || a === "cn") {
+      setAssetType(a);
+    }
   }, [searchParams]);
 
   if (status === "loading") {
@@ -123,7 +125,10 @@ function AlertsContent() {
 
   return (
     <div className="space-y-5 animate-[qtFade_0.45s_ease]">
-      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
+        <p className="mt-1.5 text-sm text-[var(--muted)]">{t("hint")}</p>
+      </div>
       <form onSubmit={onCreate} className="qt-panel grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
         <label className="space-y-1 text-sm">
           <span className="text-[var(--muted)]">Symbol</span>
@@ -142,6 +147,7 @@ function AlertsContent() {
             options={[
               { value: "stock", label: tMarket("stocks") },
               { value: "hk", label: tMarket("hk") },
+              { value: "cn", label: tMarket("cn") },
               { value: "crypto", label: tMarket("crypto") },
             ]}
           />
@@ -226,7 +232,7 @@ function AlertsContent() {
                 className="qt-btn-ghost px-2.5 py-1.5 text-[var(--down)]"
                 onClick={() => void remove(a.id)}
               >
-                Delete
+                {t("delete")}
               </SubmitButton>
             </div>
           </li>

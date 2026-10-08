@@ -362,6 +362,13 @@ export function TopBarActions() {
               >
                 {t("portfolio")}
               </Link>
+              <Link
+                href="/review"
+                className="block px-3 py-2 text-sm hover:bg-[var(--sidebar-hover)]"
+                onClick={() => setMenuOpen(false)}
+              >
+                {t("review")}
+              </Link>
               <button
                 type="button"
                 className="block w-full px-3 py-2 text-left text-sm text-[var(--down)] hover:bg-[var(--sidebar-hover)]"

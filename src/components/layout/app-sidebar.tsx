@@ -57,6 +57,16 @@ function IconBag({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+function IconNotebook({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M7 3.5h10a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 7 3.5z" />
+      <path d="M9.5 8h5M9.5 12h5M9.5 16h3.5" />
+      <path d="M5.5 8H4M5.5 12H4M5.5 16H4" />
+    </svg>
+  );
+}
+
 function IconGear({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -148,6 +158,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
   const isSymbol = pathname.startsWith("/symbol");
   const isWatchlist = pathname.startsWith("/watchlist");
   const isPortfolio = pathname.startsWith("/portfolio");
+  const isReview = pathname.startsWith("/review");
   const isAlerts = pathname.startsWith("/alerts");
 
   const toggleLabel = collapsed ? t("expandSidebar") : t("collapseSidebar");
@@ -219,6 +230,13 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             active={isPortfolio}
             icon={<IconBag />}
             label={t("portfolio")}
+            collapsed={collapsed}
+          />
+          <NavItem
+            href="/review"
+            active={isReview}
+            icon={<IconNotebook />}
+            label={t("review")}
             collapsed={collapsed}
           />
           <NavItem

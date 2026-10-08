@@ -196,6 +196,9 @@ export default function PortfolioPage() {
           <p className="text-sm text-[var(--muted)]">{t("desc")}</p>
         </div>
         <div className="flex flex-wrap gap-2">
+          <Link href="/review" className="qt-btn qt-btn-ghost h-10 px-3 text-sm">
+            {t("openReview")}
+          </Link>
           <Link href="/watchlist" className="qt-btn qt-btn-ghost h-10 px-3 text-sm">
             {t("openWatchlist")}
           </Link>

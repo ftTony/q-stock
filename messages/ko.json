@@ -32,7 +32,8 @@
     "marketOpenMulti": "미국·홍콩·중국장 개장",
     "about": "About",
     "collapseSidebar": "사이드바 접기",
-    "expandSidebar": "사이드바 펼치기"
+    "expandSidebar": "사이드바 펼치기",
+    "review": "Review"
   },
   "market": {
     "stocks": "미국 주식",
@@ -160,7 +161,11 @@
     "officers": "임원진",
     "fullscreen": "전체 화면",
     "exitFullscreen": "전체 화면 종료",
-    "back": "뒤로"
+    "back": "뒤로",
+    "openAi": "AI",
+    "aiDeskTitle": "{symbol} · AI 대화",
+    "aiDeskSubtitle": "차트 읽기와 시세·뉴스·실적 맥락의 대화.",
+    "backToSymbol": "종목으로 돌아가기"
   },
   "company": {
     "na": "이 자산에 대한 기업 정보가 없습니다",
@@ -189,7 +194,8 @@
     "openWatchlist": "관심 목록 열기",
     "openAlerts": "알림 열기",
     "openAnalysis": "분석 열기",
-    "openSettings": "설정 열기"
+    "openSettings": "설정 열기",
+    "openReview": "Review notes"
   },
   "auth": {
     "email": "이메일",
@@ -357,8 +363,10 @@
     "disabled": "비활성",
     "disable": "비활성화",
     "reactivate": "다시 활성화",
+    "delete": "삭제",
     "empty": "아직 알림이 없습니다",
-    "loginRequired": "알림 관리하려면 로그인하세요"
+    "loginRequired": "알림 관리하려면 로그인하세요",
+    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached."
   },
   "comments": {
     "placeholder": "의견을 공유하세요…",
@@ -508,5 +516,53 @@
     "mainlandNotice": "중국 본토 이용자 안내: 현재 해외 주식·BTC 투자는 불법입니다. 본 사이트는 학습용이며 현지 법령을 지켜 주세요.",
     "platformTitle": "Qianli Gu 소개",
     "platformBody": "Qianli Gu(钱力股)는 ‘스마트 투자’와 ‘가치 발굴’을 중심으로 합니다. AI로 더 차분한 리서치·복기를 돕고, 탐욕·공포 등 인간 약점이 판단을 흔드는 것을 줄이고자 합니다. 시세와 콘텐츠는 학습용이며 투자 권유가 아닙니다."
+  },
+  "aiChart": {
+    "title": "AI chart read",
+    "subtitle": "Structure, levels, and what would change the view — from recent candles only.",
+    "run": "Read chart",
+    "error": "Chart read failed",
+    "structure": "Structure",
+    "keyLevels": "Key levels",
+    "invalidation": "What would change my mind",
+    "bars": "{count} bars used"
+  },
+  "aiChat": {
+    "title": "Ask AI",
+    "subtitle": "Chat about {symbol} using quotes, news, and earnings context.",
+    "empty": "Ask a question about this symbol…",
+    "placeholder": "e.g. What are the near-term risks?",
+    "send": "Send",
+    "error": "Chat failed"
+  },
+  "aiScenario": {
+    "title": "Scenario map",
+    "subtitle": "Possible regimes, invalidation levels, and an optional paper-trade draft.",
+    "run": "Map scenarios",
+    "error": "Scenario map failed",
+    "invalidation": "Invalidation",
+    "levels": "Watch levels",
+    "draft": "Paper draft",
+    "applyDraft": "Apply to paper order",
+    "paperOnly": "Drafts apply to paper trading only"
+  },
+  "review": {
+    "title": "Review notes",
+    "subtitle": "Process review from paper fills; emotions and checklists save as notes.",
+    "generateTitle": "Generate review",
+    "generateHint": "Summarize fills, positions, and cash for today or the past week.",
+    "periodDay": "Today",
+    "periodWeek": "Past week",
+    "run": "Run review",
+    "error": "Review failed",
+    "emptyLatest": "Pick a note on the right, or run a new review.",
+    "summary": "Summary",
+    "well": "What went well",
+    "improve": "What to improve",
+    "emotions": "Emotion flags",
+    "checklist": "Next checklist",
+    "notesTitle": "Saved notes",
+    "notesHint": "Latest 10, saved automatically.",
+    "notesEmpty": "No notes yet"
   }
 }

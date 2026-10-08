@@ -1,4 +1,8 @@
 import { PrismaClient } from "@prisma/client";
+import {
+  isAlertThresholdHit,
+  nextPriceAlertAction,
+} from "../lib/alerts/threshold";
 import { tickWatchlistDigest } from "../lib/digest/run-watchlist-digest";
 import { getQuote } from "../lib/market";
 import { withUserMarket } from "../lib/market/with-user-market";
@@ -18,13 +22,14 @@ const prisma = new PrismaClient();
 const intervalMs = Number(process.env.ALERT_POLL_INTERVAL_MS || 45000);
 
 async function tickAlerts() {
+  // active: armed; triggered: fired, wait until price leaves breach then re-arm
   const alerts = await prisma.priceAlert.findMany({
-    where: { status: "active" },
+    where: { status: { in: ["active", "triggered"] } },
     include: { user: { select: { id: true, email: true } } },
   });
 
   if (!alerts.length) {
-    console.info(`[alerts] no active alerts @ ${new Date().toISOString()}`);
+    console.info(`[alerts] no watch alerts @ ${new Date().toISOString()}`);
     return;
   }
 
@@ -64,9 +69,21 @@ async function tickAlerts() {
       if (price === undefined || Number.isNaN(price)) continue;
 
       const trigger = Number(alert.triggerPrice);
-      const hit =
-        alert.condition === "gte" ? price >= trigger : price <= trigger;
-      if (!hit) continue;
+      const hit = isAlertThresholdHit(alert.condition, price, trigger);
+      const action = nextPriceAlertAction(alert.status, hit);
+
+      if (action === "hold") continue;
+
+      if (action === "rearm") {
+        await prisma.priceAlert.update({
+          where: { id: alert.id },
+          data: { status: "active" },
+        });
+        console.info(
+          `[alerts] re-armed ${alert.symbol} ${alert.condition} ${trigger} @ ${price}`,
+        );
+        continue;
+      }
 
       try {
         const transport = await resolveAlertMailTransport(alert.userId);

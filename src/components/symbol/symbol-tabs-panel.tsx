@@ -65,6 +65,7 @@ type Props = {
   degradedLabel: string;
   tabLoading: boolean;
   loadingLabel: string;
+  symbol: string;
   assetType: AssetType;
   isIndex: boolean;
   news: NewsRow[];
@@ -111,6 +112,7 @@ export function SymbolTabsPanel({
   degradedLabel,
   tabLoading,
   loadingLabel,
+  symbol,
   assetType,
   isIndex,
   news,

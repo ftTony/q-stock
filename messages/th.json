@@ -32,7 +32,8 @@
     "marketOpenMulti": "สหรัฐ ฮ่องกง และจีนเปิด",
     "about": "About",
     "collapseSidebar": "ย่อแถบด้านข้าง",
-    "expandSidebar": "ขยายแถบด้านข้าง"
+    "expandSidebar": "ขยายแถบด้านข้าง",
+    "review": "Review"
   },
   "market": {
     "stocks": "หุ้นสหรัฐฯ",
@@ -160,7 +161,11 @@
     "officers": "ผู้บริหาร",
     "fullscreen": "เต็มหน้าจอ",
     "exitFullscreen": "ออกจากเต็มหน้าจอ",
-    "back": "กลับ"
+    "back": "กลับ",
+    "openAi": "AI",
+    "aiDeskTitle": "{symbol} · โต๊ะ AI",
+    "aiDeskSubtitle": "อ่านกราฟและสนทนาพร้อมบริบทราคา ข่าว และงบการเงิน",
+    "backToSymbol": "กลับไปยังสัญลักษณ์"
   },
   "company": {
     "na": "ไม่มีข้อมูลบริษัทสำหรับสินทรัพย์นี้",
@@ -189,7 +194,8 @@
     "openWatchlist": "เปิดรายการติดตาม",
     "openAlerts": "เปิดการแจ้งเตือน",
     "openAnalysis": "เปิดการวิเคราะห์",
-    "openSettings": "เปิดการตั้งค่า"
+    "openSettings": "เปิดการตั้งค่า",
+    "openReview": "Review notes"
   },
   "auth": {
     "email": "อีเมล",
@@ -357,8 +363,10 @@
     "disabled": "ปิดใช้งาน",
     "disable": "ปิดใช้งาน",
     "reactivate": "เปิดใช้งานใหม่",
+    "delete": "ลบ",
     "empty": "ยังไม่มีการแจ้งเตือน",
-    "loginRequired": "เข้าสู่ระบบเพื่อจัดการการแจ้งเตือน"
+    "loginRequired": "เข้าสู่ระบบเพื่อจัดการการแจ้งเตือน",
+    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached."
   },
   "comments": {
     "placeholder": "แบ่งปันความคิดเห็นของคุณ…",
@@ -508,5 +516,53 @@
     "mainlandNotice": "เตือนเพื่อนในจีนแผ่นดินใหญ่: ปัจจุบันการลงทุนหุ้นต่างประเทศหรือ BTC เป็นการกระทำผิดกฎหมาย เว็บนี้เพื่อการเรียนรู้เท่านั้น กรุณาปฏิบัติตามกฎหมายท้องถิ่น",
     "platformTitle": "เกี่ยวกับ Qianli Gu",
     "platformBody": "Qianli Gu (钱力股) โฟกัสการลงทุนอัจฉริยะและการค้นพบมูลค่า ใช้ AI ช่วยวิเคราะห์และทบทวนอย่างใจเย็นยิ่งขึ้น และลดผลของความโลภ ความกลัว และจุดอ่อนของมนุษย์ ข้อมูลและเนื้อหาเพื่อการเรียนรู้เท่านั้น ไม่ใช่คำแนะนำการลงทุน"
+  },
+  "aiChart": {
+    "title": "AI chart read",
+    "subtitle": "Structure, levels, and what would change the view — from recent candles only.",
+    "run": "Read chart",
+    "error": "Chart read failed",
+    "structure": "Structure",
+    "keyLevels": "Key levels",
+    "invalidation": "What would change my mind",
+    "bars": "{count} bars used"
+  },
+  "aiChat": {
+    "title": "Ask AI",
+    "subtitle": "Chat about {symbol} using quotes, news, and earnings context.",
+    "empty": "Ask a question about this symbol…",
+    "placeholder": "e.g. What are the near-term risks?",
+    "send": "Send",
+    "error": "Chat failed"
+  },
+  "aiScenario": {
+    "title": "Scenario map",
+    "subtitle": "Possible regimes, invalidation levels, and an optional paper-trade draft.",
+    "run": "Map scenarios",
+    "error": "Scenario map failed",
+    "invalidation": "Invalidation",
+    "levels": "Watch levels",
+    "draft": "Paper draft",
+    "applyDraft": "Apply to paper order",
+    "paperOnly": "Drafts apply to paper trading only"
+  },
+  "review": {
+    "title": "Review notes",
+    "subtitle": "Process review from paper fills; emotions and checklists save as notes.",
+    "generateTitle": "Generate review",
+    "generateHint": "Summarize fills, positions, and cash for today or the past week.",
+    "periodDay": "Today",
+    "periodWeek": "Past week",
+    "run": "Run review",
+    "error": "Review failed",
+    "emptyLatest": "Pick a note on the right, or run a new review.",
+    "summary": "Summary",
+    "well": "What went well",
+    "improve": "What to improve",
+    "emotions": "Emotion flags",
+    "checklist": "Next checklist",
+    "notesTitle": "Saved notes",
+    "notesHint": "Latest 10, saved automatically.",
+    "notesEmpty": "No notes yet"
   }
 }

@@ -32,7 +32,8 @@
     "marketOpenMulti": "美港A股開市中",
     "about": "關於我",
     "collapseSidebar": "收起側欄",
-    "expandSidebar": "展開側欄"
+    "expandSidebar": "展開側欄",
+    "review": "複盤筆記"
   },
   "market": {
     "stocks": "美股",
@@ -160,7 +161,11 @@
     "officers": "高管團隊",
     "fullscreen": "全螢幕",
     "exitFullscreen": "退出全螢幕",
-    "back": "返回"
+    "back": "返回",
+    "openAi": "AI",
+    "aiDeskTitle": "{symbol} · AI 對話",
+    "aiDeskSubtitle": "讀圖與問答；結合行情、新聞與財報上下文。",
+    "backToSymbol": "返回個股"
   },
   "company": {
     "na": "該資產暫無公司概況",
@@ -189,7 +194,8 @@
     "openWatchlist": "打開自選",
     "openAlerts": "打開提醒",
     "openAnalysis": "打開分析",
-    "openSettings": "打開設定"
+    "openSettings": "打開設定",
+    "openReview": "複盤筆記"
   },
   "auth": {
     "email": "郵箱",
@@ -353,12 +359,14 @@
     "create": "建立提醒",
     "status": "狀態",
     "active": "生效中",
-    "triggered": "已觸發",
+    "triggered": "已觸發 · 回落後自動再監視",
     "disabled": "已停用",
     "disable": "停用",
-    "reactivate": "重新啟用",
+    "reactivate": "立即再監視",
+    "delete": "刪除",
     "empty": "暫無提醒",
-    "loginRequired": "登入後可管理提醒"
+    "loginRequired": "登入後可管理提醒",
+    "hint": "觸發後寄一封信；價格回到閾值另一側後會自動再次監視，下次穿越會再提醒。持續停在突破一側不會重複寄信。"
   },
   "comments": {
     "placeholder": "分享你的看法…",
@@ -508,5 +516,53 @@
     "mainlandNotice": "中國大陸朋友提醒：目前境外投資股票、BTC 是違法行為。本站僅供學習參考，請遵守當地法律法規。",
     "platformTitle": "關於錢力股",
     "platformBody": "錢力股圍繞「智慧投資」與「價值發現」而生：借力 AI，輔助更冷靜的看盤與復盤，盡量削弱貪婪、恐懼等人性弱點對判斷的干擾。行情與內容僅供學習參考，不構成投資建議。"
+  },
+  "aiChart": {
+    "title": "AI 讀圖",
+    "subtitle": "僅基於近期 K 線：結構、關鍵位，以及什麼情況會推翻判斷。",
+    "run": "開始讀圖",
+    "error": "讀圖失敗",
+    "structure": "結構",
+    "keyLevels": "關鍵價位",
+    "invalidation": "什麼會改變判斷",
+    "bars": "使用 {count} 根 K 線"
+  },
+  "aiChat": {
+    "title": "問 AI",
+    "subtitle": "圍繞 {symbol} 結合行情、新聞與財報上下文對話。",
+    "empty": "就這檔標的提問…",
+    "placeholder": "例如：近期主要風險是什麼？",
+    "send": "傳送",
+    "error": "對話失敗"
+  },
+  "aiScenario": {
+    "title": "情景推演",
+    "subtitle": "可能的情景、失效條件，以及可選的模擬交易草案。",
+    "run": "產生情景",
+    "error": "情景產生失敗",
+    "invalidation": "失效條件",
+    "levels": "關注價位",
+    "draft": "模擬草案",
+    "applyDraft": "套用到模擬下單",
+    "paperOnly": "草案僅用於模擬交易"
+  },
+  "review": {
+    "title": "複盤筆記",
+    "subtitle": "基於模擬成交做過程複盤；情緒與清單會自動儲存為筆記。",
+    "generateTitle": "產生複盤",
+    "generateHint": "彙總當日或近一週的成交、持倉與現金。",
+    "periodDay": "今日",
+    "periodWeek": "近一週",
+    "run": "開始複盤",
+    "error": "複盤失敗",
+    "emptyLatest": "選擇右側筆記，或點「開始複盤」產生一份。",
+    "summary": "摘要",
+    "well": "做得好的",
+    "improve": "待改進",
+    "emotions": "情緒標記",
+    "checklist": "下次清單",
+    "notesTitle": "歷史筆記",
+    "notesHint": "最近 10 條，自動儲存。",
+    "notesEmpty": "暫無筆記"
   }
 }

@@ -359,7 +359,7 @@ Body：`{ symbol, assetType, side, type, qty, limitPrice?, stopPrice? }`
 { "id": "...", "status": "active" }
 ```
 
-`status`：`active` | `disabled`（重新启用会清空 `triggeredAt`）
+`status`：`active` | `disabled`（手动重新监视会清空 `triggeredAt`；若价格仍在突破一侧，下一轮 Worker 可能立即再发信）
 
 ### `DELETE /api/alerts?id=`（需登录）
 
@@ -373,9 +373,11 @@ Body：`{ symbol, assetType, side, type, qty, limitPrice?, stopPrice? }`
 
 行为摘要：
 
-1. 读取 `status=active` 的提醒
-2. 按 symbol 去重请求 Finnhub quote
-3. 满足条件则发邮件并标记 `triggered`，写入 `AlertDeliveryLog`
+1. 读取 `status` 为 `active` 或 `triggered` 的提醒（`disabled` 不监视）
+2. 按用户 + 标的去重拉取 quote
+3. `active` 且穿越阈值：发邮件、置 `triggered`、写 `AlertDeliveryLog`
+4. `triggered` 且价格已回到阈值另一侧：自动改回 `active`（下次穿越再发信）
+5. 美股收盘窗口内向有自选的用户发送每日摘要（`WatchlistDigestLog` 按用户+ET 交易日幂等）
 
 环境变量见 [启动与环境](./getting-started.md)。
 

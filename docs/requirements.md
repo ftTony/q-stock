@@ -90,7 +90,7 @@
 ### 3.9 价格提醒与邮件
 
 - 条件 ≥ / ≤；状态 active / triggered / disabled
-- Worker 拉 `market.getQuote`，发信后幂等置 triggered
+- Worker 拉 `market.getQuote`：命中后发信并置 `triggered`；**价格回到阈值另一侧后自动重新武装为 `active`**，可再次穿越提醒（不会在持续突破期间每轮重发）
 - Resend 或 SMTP；未配置则仅日志
 
 ### 3.10 模拟交易

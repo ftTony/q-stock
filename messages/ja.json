@@ -32,7 +32,8 @@
     "marketOpenMulti": "米国・香港・中国株開場中",
     "about": "About",
     "collapseSidebar": "サイドバーを折りたたむ",
-    "expandSidebar": "サイドバーを展開"
+    "expandSidebar": "サイドバーを展開",
+    "review": "Review"
   },
   "market": {
     "stocks": "米国株",
@@ -160,7 +161,11 @@
     "officers": "役員チーム",
     "fullscreen": "全画面",
     "exitFullscreen": "全画面を終了",
-    "back": "戻る"
+    "back": "戻る",
+    "openAi": "AI",
+    "aiDeskTitle": "{symbol} · AI 対話",
+    "aiDeskSubtitle": "チャート読み取りと、相場・ニュース・決算を踏まえた対話。",
+    "backToSymbol": "銘柄に戻る"
   },
   "company": {
     "na": "この資産の会社概要はありません",
@@ -189,7 +194,8 @@
     "openWatchlist": "ウォッチリストを開く",
     "openAlerts": "アラートを開く",
     "openAnalysis": "分析を開く",
-    "openSettings": "設定を開く"
+    "openSettings": "設定を開く",
+    "openReview": "Review notes"
   },
   "auth": {
     "email": "メールアドレス",
@@ -357,8 +363,10 @@
     "disabled": "無効",
     "disable": "無効化",
     "reactivate": "再有効化",
+    "delete": "削除",
     "empty": "アラートはまだありません",
-    "loginRequired": "アラート管理にはログインが必要です"
+    "loginRequired": "アラート管理にはログインが必要です",
+    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached."
   },
   "comments": {
     "placeholder": "あなたの見解を共有…",
@@ -508,5 +516,53 @@
     "mainlandNotice": "中国本土の方向け：現在、海外株・BTC への投資は違法とされています。本サイトは学習用であり、現地の法令を遵守してください。",
     "platformTitle": "銭力股について",
     "platformBody": "銭力股（钱力股）は「スマート投資」と「価値発見」を軸にしています。AI の力で、より冷静な相場観察と振り返りを支え、強欲・恐怖など人間の弱点が判断を歪めるのを少しでも和らげます。相場とコンテンツは学習用であり、投資助言ではありません。"
+  },
+  "aiChart": {
+    "title": "AI chart read",
+    "subtitle": "Structure, levels, and what would change the view — from recent candles only.",
+    "run": "Read chart",
+    "error": "Chart read failed",
+    "structure": "Structure",
+    "keyLevels": "Key levels",
+    "invalidation": "What would change my mind",
+    "bars": "{count} bars used"
+  },
+  "aiChat": {
+    "title": "Ask AI",
+    "subtitle": "Chat about {symbol} using quotes, news, and earnings context.",
+    "empty": "Ask a question about this symbol…",
+    "placeholder": "e.g. What are the near-term risks?",
+    "send": "Send",
+    "error": "Chat failed"
+  },
+  "aiScenario": {
+    "title": "Scenario map",
+    "subtitle": "Possible regimes, invalidation levels, and an optional paper-trade draft.",
+    "run": "Map scenarios",
+    "error": "Scenario map failed",
+    "invalidation": "Invalidation",
+    "levels": "Watch levels",
+    "draft": "Paper draft",
+    "applyDraft": "Apply to paper order",
+    "paperOnly": "Drafts apply to paper trading only"
+  },
+  "review": {
+    "title": "Review notes",
+    "subtitle": "Process review from paper fills; emotions and checklists save as notes.",
+    "generateTitle": "Generate review",
+    "generateHint": "Summarize fills, positions, and cash for today or the past week.",
+    "periodDay": "Today",
+    "periodWeek": "Past week",
+    "run": "Run review",
+    "error": "Review failed",
+    "emptyLatest": "Pick a note on the right, or run a new review.",
+    "summary": "Summary",
+    "well": "What went well",
+    "improve": "What to improve",
+    "emotions": "Emotion flags",
+    "checklist": "Next checklist",
+    "notesTitle": "Saved notes",
+    "notesHint": "Latest 10, saved automatically.",
+    "notesEmpty": "No notes yet"
   }
 }
