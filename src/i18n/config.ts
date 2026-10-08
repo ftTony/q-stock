@@ -1,7 +1,7 @@
 export const locales = [
+  "en",
   "zh-CN",
   "zh-TW",
-  "en",
   "ja",
   "fr",
   "ms",
@@ -27,9 +27,9 @@ export function fromDbLocale(locale: string): AppLocale {
 }
 
 export const languageLabels: Record<AppLocale, string> = {
+  en: "English",
   "zh-CN": "简体中文",
   "zh-TW": "繁體中文",
-  en: "English",
   ja: "日本語",
   fr: "Français",
   ms: "Bahasa Melayu",
@@ -42,4 +42,18 @@ export const languageLabels: Record<AppLocale, string> = {
 export function localeCode(locale: string): string {
   const base = locale.includes("-") ? locale.split("-")[1] : locale;
   return base.toUpperCase();
+}
+
+/**
+ * Public pathname for a locale. Default locale (`en`) has no `/en` prefix.
+ * @example localizedPath("en", "/login") => "/login"
+ * @example localizedPath("zh-CN", "/login") => "/zh-CN/login"
+ */
+export function localizedPath(locale: string, path = "/"): string {
+  const raw = path.startsWith("/") ? path : `/${path}`;
+  const suffix = raw === "/" ? "" : raw;
+  if (!locale || locale === defaultLocale) {
+    return suffix || "/";
+  }
+  return `/${locale}${suffix}`;
 }

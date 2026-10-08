@@ -20,7 +20,7 @@ export async function GET(req: Request) {
       }
 
       const assetType = parseAssetType(searchParams.get("assetType"));
-      const locale = searchParams.get("locale") || "zh-CN";
+      const locale = searchParams.get("locale") || "en";
       const sym = symbol.toUpperCase();
       const scope = userId || "env";
       const cacheKey = `ai:trend:${scope}:${assetType}:${sym}:${locale}`;

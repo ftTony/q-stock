@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
+import { localizedPath } from "@/i18n/config";
 
 type OAuthId = "google" | "github";
 
@@ -67,7 +68,7 @@ export function OAuthSignInButtons({ disabled, onBusyChange }: Props) {
             onClick={() => {
               setBusy(id);
               void signIn(id, {
-                callbackUrl: `/${locale}/auth/continue`,
+                callbackUrl: localizedPath(locale, "/auth/continue"),
               });
             }}
             className="qt-btn flex h-12 w-12 items-center justify-center rounded-xl"

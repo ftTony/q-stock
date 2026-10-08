@@ -8,7 +8,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendWelcomeEmail } from "@/lib/email";
 import { getProxyAwareFetch } from "@/lib/http/proxy-fetch";
-import { fromDbLocale, toDbLocale } from "@/i18n/config";
+import { fromDbLocale, toDbLocale, defaultLocale, localizedPath } from "@/i18n/config";
 
 const credentialsSchema = z.object({
   email: z.string().email(),
@@ -31,10 +31,10 @@ async function localeFromRequestCookie(): Promise<string> {
     return (
       jar.get("NEXT_LOCALE")?.value ||
       jar.get("NEXT_LOCALE".toLowerCase())?.value ||
-      "zh-CN"
+      defaultLocale
     );
   } catch {
-    return "zh-CN";
+    return defaultLocale;
   }
 }
 
@@ -74,8 +74,8 @@ async function upsertOAuthUser(opts: {
 export const { handlers, auth, signIn, signOut } = NextAuth({
   session: { strategy: "jwt" },
   pages: {
-    signIn: "/zh-CN/login",
-    error: "/zh-CN/login",
+    signIn: localizedPath(defaultLocale, "/login"),
+    error: localizedPath(defaultLocale, "/login"),
   },
   providers: [
     ...(googleConfigured

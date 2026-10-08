@@ -50,7 +50,7 @@ npm run dev
 npm run worker
 ```
 
-浏览器打开 [http://localhost:3000](http://localhost:3000)（默认 locale 为 `/en`，可在界面切换）。
+浏览器打开 [http://localhost:3000](http://localhost:3000)（默认英文，地址无 `/en` 前缀；其它语言为 `/zh-CN/...` 等）。
 
 全栈一键：
 

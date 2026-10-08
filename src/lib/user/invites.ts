@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { prisma } from "@/lib/db";
+import { localizedPath } from "@/i18n/config";
 
 export const INITIAL_INVITE_COUNT = 3;
 
@@ -46,7 +47,7 @@ export function inviteRegisterUrl(opts: {
   code: string;
 }): string {
   const base = opts.baseUrl.replace(/\/+$/, "");
-  return `${base}/${opts.locale}/register?invite=${encodeURIComponent(opts.code)}`;
+  return `${base}${localizedPath(opts.locale, "/register")}?invite=${encodeURIComponent(opts.code)}`;
 }
 
 export function appBaseUrl(): string {

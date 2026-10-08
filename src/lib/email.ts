@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import { Resend } from "resend";
+import { defaultLocale, localizedPath } from "@/i18n/config";
 import { loadUserServiceCreds } from "@/lib/user/service-creds";
 import type { EmailCreds } from "@/lib/user/service-creds-types";
 
@@ -226,8 +227,8 @@ export async function sendAlertEmail(payload: AlertEmailPayload): Promise<void> 
   const current = formatPrice(payload.currentPrice);
   const cond = formatCondition(payload.condition);
   const when = new Date().toISOString().replace("T", " ").slice(0, 19) + " UTC";
-  const symbolUrl = `${base}/zh-CN/symbol/${encodeURIComponent(payload.assetType)}/${encodeURIComponent(payload.symbol)}`;
-  const alertsUrl = `${base}/zh-CN/alerts`;
+  const symbolUrl = `${base}${localizedPath(defaultLocale, `/symbol/${encodeURIComponent(payload.assetType)}/${encodeURIComponent(payload.symbol)}`)}`;
+  const alertsUrl = `${base}${localizedPath(defaultLocale, "/alerts")}`;
 
   const subject = `[Q-STOCK] ${payload.symbol} 价格提醒已触发 / Price alert triggered`;
 
@@ -294,8 +295,14 @@ export async function sendAlertEmail(payload: AlertEmailPayload): Promise<void> 
 function localePathFromOpt(locale?: string): string {
   const l = (locale || "").toLowerCase();
   if (l.startsWith("zh-tw") || l.startsWith("zh_tw")) return "zh-TW";
-  if (l.startsWith("en")) return "en";
-  return "zh-CN";
+  if (l.startsWith("zh")) return "zh-CN";
+  if (l.startsWith("en") || !l) return "en";
+  // Other UI locales still map to English public paths for email links
+  // unless they match a known prefixed locale.
+  if (l === "ja" || l === "fr" || l === "ms" || l === "th" || l === "ko" || l === "de" || l === "es") {
+    return l;
+  }
+  return "en";
 }
 
 export async function sendWelcomeEmail(opts: {
@@ -306,9 +313,9 @@ export async function sendWelcomeEmail(opts: {
   const who = escapeHtml(opts.name?.trim() || opts.to);
   const base = appBaseUrl();
   const localePath = localePathFromOpt(opts.locale);
-  const homeUrl = `${base}/${localePath}`;
-  const loginUrl = `${homeUrl}/login`;
-  const settingsUrl = `${homeUrl}/settings`;
+  const homeUrl = `${base}${localizedPath(localePath)}`;
+  const loginUrl = `${base}${localizedPath(localePath, "/login")}`;
+  const settingsUrl = `${base}${localizedPath(localePath, "/settings")}`;
 
   const subject = "欢迎来到钱力股 Q-STOCK / Welcome to Qianli Gu (Q-STOCK)";
 
@@ -385,8 +392,8 @@ export async function sendPasswordResetEmail(opts: {
   locale?: string;
 }): Promise<void> {
   const localePath = localePathFromOpt(opts.locale);
-  const resetUrl = `${appBaseUrl()}/${localePath}/reset-password?token=${encodeURIComponent(opts.token)}`;
-  const loginUrl = `${appBaseUrl()}/${localePath}/login`;
+  const resetUrl = `${appBaseUrl()}${localizedPath(localePath, "/reset-password")}?token=${encodeURIComponent(opts.token)}`;
+  const loginUrl = `${appBaseUrl()}${localizedPath(localePath, "/login")}`;
   const emailSafe = escapeHtml(opts.to);
 
   const subject =

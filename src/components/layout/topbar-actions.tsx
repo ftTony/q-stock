@@ -9,6 +9,7 @@ import {
   locales,
   languageLabels,
   localeCode,
+  localizedPath,
   type AppLocale,
 } from "@/i18n/config";
 import { getEquitySession } from "@/lib/market/session";
@@ -349,7 +350,7 @@ export function TopBarActions() {
               <button
                 type="button"
                 className="block w-full px-3 py-2 text-left text-sm text-[var(--down)] hover:bg-[var(--sidebar-hover)]"
-                onClick={() => signOut({ callbackUrl: `/${locale}` })}
+                onClick={() => signOut({ callbackUrl: localizedPath(locale) })}
               >
                 {t("logout")}
               </button>

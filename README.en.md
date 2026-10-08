@@ -50,7 +50,7 @@ Worker (alerts + paper limit/stop fills):
 npm run worker
 ```
 
-Open [http://localhost:3000](http://localhost:3000) (default locale `/en`).
+Open [http://localhost:3000](http://localhost:3000) (default English, no `/en` prefix; other locales use `/zh-CN/...`, etc.).
 
 ```bash
 docker compose up --build

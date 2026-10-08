@@ -48,7 +48,7 @@ npm run dev
 npm run worker
 ```
 
-開啟 [http://localhost:3000](http://localhost:3000)（預設 locale `/en`）。
+開啟 [http://localhost:3000](http://localhost:3000)（預設英文，網址無 `/en` 前綴；其它語言為 `/zh-CN/...` 等）。
 
 ```bash
 docker compose up --build

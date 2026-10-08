@@ -18,7 +18,7 @@
 | 框架 | Next.js 15（App Router）+ TypeScript |
 | UI | Tailwind CSS；亮/暗主题 |
 | 图表 | KLineChart（含画线工具） |
-| 国际化 | next-intl：**10 语言**（`zh-CN` / `zh-TW` / `en` / `ja` / `fr` / `ms` / `th` / `ko` / `de` / `es`）；默认 `en`。用户偏好入库仅 `zh-CN`/`zh-TW`/`en`，其余映射为 `en` |
+| 国际化 | next-intl：**10 语言**；默认 `en`，**URL 无前缀**（`/`、`/login`）；其它语言带前缀（`/zh-CN/...`）。用户偏好入库仅 `zh-CN`/`zh-TW`/`en`，其余映射为 `en` |
 | 主题 | next-themes（亮 / 暗 / 跟随系统）+ 涨跌色 `cn` / `us` |
 | 数据库 | PostgreSQL + Prisma |
 | 鉴权 | Auth.js：邮箱密码 Credentials + JWT；可选 Google / GitHub OAuth |
@@ -34,7 +34,7 @@
 
 ### 3.1 多语言与多主题
 
-- 路由始终带 locale 前缀
+- 默认英文无 locale 前缀；非英文路由带 locale 前缀
 - 主题与涨跌色可持久化（Session + DB）
 - 桌面侧栏可收起为仅图标（`localStorage`）
 

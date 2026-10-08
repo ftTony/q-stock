@@ -96,7 +96,7 @@ npm run db:migrate:dev
 npm run dev
 ```
 
-浏览器打开 [http://localhost:3000](http://localhost:3000)，默认进入 `/en`（可在界面切换语言；共 10 种 locale）。
+浏览器打开 [http://localhost:3000](http://localhost:3000)，默认英文（URL 无 `/en` 前缀，如 `/`、`/login`）；其它语言带前缀（如 `/zh-CN/...`）。共 10 种 locale，可在界面切换。
 
 ### 2.6 启动价格提醒 Worker
 

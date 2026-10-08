@@ -34,7 +34,7 @@ export async function POST(req: Request) {
       );
     }
 
-    const locale = parsed.data.locale || "zh-CN";
+    const locale = parsed.data.locale || "en";
     const passwordHash = await bcrypt.hash(parsed.data.password, 10);
     const rawInvite = parsed.data.inviteCode?.trim();
 

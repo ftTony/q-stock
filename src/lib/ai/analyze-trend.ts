@@ -82,7 +82,7 @@ export async function analyzeTrend(opts: {
 }): Promise<AnalyzeTrendResult> {
   const symbol = opts.symbol.toUpperCase();
   const assetType = opts.assetType;
-  const locale = opts.locale || "zh-CN";
+  const locale = opts.locale || "en";
   const disclaimer = disclaimerFor(locale);
 
   if (!(await isAiConfigured(opts.userId))) {

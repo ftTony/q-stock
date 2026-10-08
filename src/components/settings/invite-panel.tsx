@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { localizedPath } from "@/i18n/config";
 
 type InviteRow = {
   code: string;
@@ -55,7 +56,7 @@ export function InvitePanel() {
 
   function linkFor(row: InviteRow): string {
     if (typeof window !== "undefined") {
-      return `${window.location.origin}/${locale}/register?invite=${encodeURIComponent(row.code)}`;
+      return `${window.location.origin}${localizedPath(locale, "/register")}?invite=${encodeURIComponent(row.code)}`;
     }
     return row.inviteLink;
   }
