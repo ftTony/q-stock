@@ -106,7 +106,7 @@ npm run dev
 npm run worker
 ```
 
-Worker 按 `ALERT_POLL_INTERVAL_MS`（默认 45000ms）轮询 `active` 提醒并尝试发信。
+Worker 按 `ALERT_POLL_INTERVAL_MS`（默认 45000ms）轮询 `active` 提醒并尝试发信；在美股常规收盘后窗口（默认 16:00–17:00 ET）向有自选股的用户发送每日摘要邮件（行情、涨跌幅、情绪、AI 建议）。
 
 ## 3. 环境变量说明
 
@@ -133,6 +133,9 @@ Worker 按 `ALERT_POLL_INTERVAL_MS`（默认 45000ms）轮询 `active` 提醒并
 | `SMTP_USER` / `SMTP_PASS` | 否 | SMTP 认证 |
 | `SMTP_SECURE` | 否 | `true` 启用 TLS |
 | `ALERT_POLL_INTERVAL_MS` | 否 | Worker 轮询间隔，默认 45000 |
+| `WATCHLIST_DIGEST_ENABLED` | 否 | 美股收盘自选摘要，默认开启；设 `false` 关闭 |
+| `WATCHLIST_DIGEST_START_ET` / `END_ET` | 否 | 发信窗口（ET），默认 `16:00`–`17:00` |
+| `WATCHLIST_DIGEST_AI_MAX` | 否 | 每用户 AI 分析标的上限，默认 `8` |
 
 说明：
 

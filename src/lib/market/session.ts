@@ -37,6 +37,31 @@ export function isUsRegularSessionOpen(now = new Date()): boolean {
   return minutes >= 9 * 60 + 30 && minutes < 16 * 60;
 }
 
+/** Calendar trade date `YYYY-MM-DD` in America/New_York. */
+export function usTradeDate(now = new Date()): string {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/New_York",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(now);
+}
+
+/**
+ * Post-close window for daily digests: weekday after US regular close.
+ * Default 16:00–17:00 ET (inclusive start, exclusive end).
+ */
+export function isUsMarketCloseWindow(
+  now = new Date(),
+  opts?: { startMinutes?: number; endMinutes?: number },
+): boolean {
+  const start = opts?.startMinutes ?? 16 * 60;
+  const end = opts?.endMinutes ?? 17 * 60;
+  const { weekday, minutes } = zonedClock(now, "America/New_York");
+  if (!isWeekday(weekday)) return false;
+  return minutes >= start && minutes < end;
+}
+
 /** HK continuous: Mon–Fri 09:30–12:00 & 13:00–16:00 Asia/Hong_Kong */
 export function isHkRegularSessionOpen(now = new Date()): boolean {
   const { weekday, minutes } = zonedClock(now, "Asia/Hong_Kong");

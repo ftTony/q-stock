@@ -15,7 +15,7 @@ Web & H5 terminal for **US / HK / A-share / crypto** markets: multi-source quote
 | Tabs | News (LB→Futu→Finnhub), earnings/press, company/officers, comments, sentiment, AI |
 | Analysis | `/analysis` popular cards by market |
 | Watchlist & portfolio | CRUD (incl. cn), sparklines; paper cash/positions/orders/reset |
-| Alerts | ≥ / ≤ email (Resend/SMTP); worker poll |
+| Alerts | ≥ / ≤ email (Resend/SMTP); worker poll; US-close watchlist digest |
 | Paper trading | Long-only; market/limit/stop; **$100,000** start |
 | Settings | Language/theme/colors; LB/Futu/Binance/OKX BYOK; multi-vendor AI keys; invites |
 | UX | 10 locales, light/dark, CN/US color schemes; collapsible sidebar; H5 bottom nav |

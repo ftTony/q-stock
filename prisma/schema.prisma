@@ -90,6 +90,7 @@ model User {
   priceAlerts        PriceAlert[]
   comments           Comment[]
   alertDeliveries    AlertDeliveryLog[]
+  watchlistDigests   WatchlistDigestLog[]
   paperAccount       PaperAccount?
   paperPositions     PaperPosition[]
   paperOrders        PaperOrder[]
@@ -186,6 +187,20 @@ model WatchlistItem {
 
   @@unique([userId, symbol, assetType])
   @@index([userId])
+}
+
+/** One email per user per US trade date (America/New_York calendar day). */
+model WatchlistDigestLog {
+  id        String   @id @default(cuid())
+  userId    String
+  tradeDate String
+  itemCount Int      @default(0)
+  sentAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, tradeDate])
+  @@index([tradeDate])
 }
 
 model PriceAlert {

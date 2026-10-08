@@ -44,7 +44,7 @@ npm run db:migrate
 npm run dev
 ```
 
-另开终端启动 Worker（价格提醒 + 模拟限价/止损撮合）：
+另开终端启动 Worker（价格提醒 + 模拟限价/止损撮合 + 美股收盘自选摘要）：
 
 ```bash
 npm run worker
@@ -95,6 +95,7 @@ docker compose up --build
 | `DEEPSEEK_API_KEY` | 平台 AI 兜底（用户也可在设置页配多厂商 Key） |
 | `EMAIL_FROM` / `RESEND_API_KEY` / `SMTP_*` | 提醒与找回密码邮件 |
 | `ALERT_POLL_INTERVAL_MS` | Worker 轮询间隔，默认 `45000` |
+| `WATCHLIST_DIGEST_*` | 美股收盘自选摘要（见 `.env.example`） |
 
 ## 实现要点（简）
 
@@ -114,7 +115,7 @@ docker compose up --build
 ```bash
 npm run dev              # 开发（Turbopack）
 npm run build && npm start
-npm run worker           # 提醒 + 模拟挂单撮合
+npm run worker           # 提醒 + 模拟挂单撮合 + 收盘自选摘要
 npm run db:migrate
 npm run lint
 ```

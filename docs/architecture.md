@@ -43,7 +43,7 @@
 | 单元 | 入口 | 职责 |
 |---|---|---|
 | web | Next.js | UI + BFF + Auth |
-| worker | `src/workers/price-alerts.ts` | 提醒邮件 + 模拟限价/止损撮合 |
+| worker | `src/workers/price-alerts.ts` | 提醒邮件 + 模拟限价/止损撮合 + 美股收盘自选摘要 |
 | db | PostgreSQL 16 | 持久化 |
 
 ## 3. 目录结构（节选）
@@ -65,6 +65,7 @@ src/
     ai/                  # 多厂商 AI
     news.ts              # 个股新闻聚合
     adanos/              # 情绪
+    digest/              # 美股收盘自选摘要邮件
     crypto/secret-box.ts # BYOK 加解密
   workers/price-alerts.ts
   i18n/

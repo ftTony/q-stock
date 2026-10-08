@@ -227,6 +227,7 @@ API 经 `withUserMarket(session?.user?.id, …)` 注入 BYOK 后再与 env 合�
 
 1. 处理价格提醒邮件
 2. 扫描 `pending` 的 limit/stop，命中则 `fillPendingOrder`；资金/持仓不足则 `rejected`
+3. 美股收盘窗口内发送自选摘要（[`src/lib/digest/*`](../src/lib/digest/)；`WatchlistDigestLog` 按用户+ET 交易日幂等）
 
 ---
 

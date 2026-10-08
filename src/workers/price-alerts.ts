@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { tickWatchlistDigest } from "../lib/digest/run-watchlist-digest";
 import { getQuote } from "../lib/market";
 import { withUserMarket } from "../lib/market/with-user-market";
 import type { AssetType } from "../lib/types";
@@ -188,6 +189,7 @@ async function tickPaperOrders() {
 async function tick() {
   await tickAlerts();
   await tickPaperOrders();
+  await tickWatchlistDigest(prisma);
 }
 
 async function main() {
