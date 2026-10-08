@@ -353,12 +353,19 @@
     "create": "Create alert",
     "status": "Status",
     "active": "Active",
-    "triggered": "Triggered",
+    "triggered": "Triggered — re-arms after recovery",
     "disabled": "Disabled",
     "disable": "Disable",
-    "reactivate": "Reactivate",
+    "reactivate": "Re-arm now",
     "empty": "No alerts yet",
-    "loginRequired": "Sign in to manage alerts"
+    "loginRequired": "Sign in to manage alerts",
+    "symbol": "Symbol",
+    "assetType": "Market",
+    "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
+    "symbolRequired": "Please enter or pick a symbol",
+    "triggerPricePlaceholder": "e.g. 200",
+    "hint": "One email per threshold cross; re-arms after the price recovers. No spam while still breached.",
+    "delete": "Delete"
   },
   "comments": {
     "placeholder": "Share your view…",

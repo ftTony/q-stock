@@ -353,12 +353,19 @@
     "create": "建立提醒",
     "status": "狀態",
     "active": "生效中",
-    "triggered": "已觸發",
+    "triggered": "已觸發 · 回落後自動再監視",
     "disabled": "已停用",
     "disable": "停用",
-    "reactivate": "重新啟用",
+    "reactivate": "立即再監視",
     "empty": "暫無提醒",
-    "loginRequired": "登入後可管理提醒"
+    "loginRequired": "登入後可管理提醒",
+    "symbol": "標的代碼",
+    "assetType": "市場類型",
+    "symbolPlaceholder": "搜尋代碼或名稱，如 NVDA / 騰訊 / 00700",
+    "symbolRequired": "請先選擇或輸入標的代碼",
+    "triggerPricePlaceholder": "例如 200",
+    "hint": "觸發後寄一封信；價格回到閾值另一側後會自動再次監視，下次穿越會再提醒。",
+    "delete": "刪除"
   },
   "comments": {
     "placeholder": "分享你的看法…",

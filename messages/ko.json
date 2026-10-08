@@ -353,12 +353,19 @@
     "create": "알림 만들기",
     "status": "상태",
     "active": "활성",
-    "triggered": "발동됨",
+    "triggered": "Triggered — re-arms after recovery",
     "disabled": "비활성",
     "disable": "비활성화",
-    "reactivate": "다시 활성화",
+    "reactivate": "Re-arm now",
     "empty": "아직 알림이 없습니다",
-    "loginRequired": "알림 관리하려면 로그인하세요"
+    "loginRequired": "알림 관리하려면 로그인하세요",
+    "symbol": "Symbol",
+    "assetType": "Market",
+    "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
+    "symbolRequired": "Please enter or pick a symbol",
+    "triggerPricePlaceholder": "e.g. 200",
+    "hint": "One email per threshold cross; re-arms after the price recovers. No spam while still breached.",
+    "delete": "Delete"
   },
   "comments": {
     "placeholder": "의견을 공유하세요…",

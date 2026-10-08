@@ -353,12 +353,19 @@
     "create": "アラート作成",
     "status": "状態",
     "active": "有効",
-    "triggered": "発動済み",
+    "triggered": "Triggered — re-arms after recovery",
     "disabled": "無効",
     "disable": "無効化",
-    "reactivate": "再有効化",
+    "reactivate": "Re-arm now",
     "empty": "アラートはまだありません",
-    "loginRequired": "アラート管理にはログインが必要です"
+    "loginRequired": "アラート管理にはログインが必要です",
+    "symbol": "Symbol",
+    "assetType": "Market",
+    "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
+    "symbolRequired": "Please enter or pick a symbol",
+    "triggerPricePlaceholder": "e.g. 200",
+    "hint": "One email per threshold cross; re-arms after the price recovers. No spam while still breached.",
+    "delete": "Delete"
   },
   "comments": {
     "placeholder": "あなたの見解を共有…",

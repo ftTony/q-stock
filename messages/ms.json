@@ -353,12 +353,19 @@
     "create": "Cipta amaran",
     "status": "Status",
     "active": "Aktif",
-    "triggered": "Dicetuskan",
+    "triggered": "Triggered — re-arms after recovery",
     "disabled": "Dilumpuhkan",
     "disable": "Lumpuhkan",
-    "reactivate": "Aktif semula",
+    "reactivate": "Re-arm now",
     "empty": "Tiada amaran lagi",
-    "loginRequired": "Log masuk untuk mengurus amaran"
+    "loginRequired": "Log masuk untuk mengurus amaran",
+    "symbol": "Symbol",
+    "assetType": "Market",
+    "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
+    "symbolRequired": "Please enter or pick a symbol",
+    "triggerPricePlaceholder": "e.g. 200",
+    "hint": "One email per threshold cross; re-arms after the price recovers. No spam while still breached.",
+    "delete": "Delete"
   },
   "comments": {
     "placeholder": "Kongsi pandangan anda…",

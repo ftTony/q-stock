@@ -353,12 +353,19 @@
     "create": "创建提醒",
     "status": "状态",
     "active": "生效中",
-    "triggered": "已触发",
+    "triggered": "已触发 · 回落后自动再监视",
     "disabled": "已停用",
     "disable": "停用",
-    "reactivate": "重新启用",
+    "reactivate": "立即再监视",
     "empty": "暂无提醒",
-    "loginRequired": "登录后可管理提醒"
+    "loginRequired": "登录后可管理提醒",
+    "symbol": "标的代码",
+    "assetType": "市场类型",
+    "symbolPlaceholder": "搜索代码或名称，如 NVDA / 腾讯 / 00700",
+    "symbolRequired": "请先选择或输入标的代码",
+    "triggerPricePlaceholder": "例如 200",
+    "hint": "触发后发一封邮件；价格回到阈值另一侧后会自动再次监视，下次穿越会再提醒。",
+    "delete": "删除"
   },
   "comments": {
     "placeholder": "分享你的看法…",

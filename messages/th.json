@@ -353,12 +353,19 @@
     "create": "สร้างการแจ้งเตือน",
     "status": "สถานะ",
     "active": "ใช้งาน",
-    "triggered": "ถูกเรียก",
+    "triggered": "Triggered — re-arms after recovery",
     "disabled": "ปิดใช้งาน",
     "disable": "ปิดใช้งาน",
-    "reactivate": "เปิดใช้งานใหม่",
+    "reactivate": "Re-arm now",
     "empty": "ยังไม่มีการแจ้งเตือน",
-    "loginRequired": "เข้าสู่ระบบเพื่อจัดการการแจ้งเตือน"
+    "loginRequired": "เข้าสู่ระบบเพื่อจัดการการแจ้งเตือน",
+    "symbol": "Symbol",
+    "assetType": "Market",
+    "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
+    "symbolRequired": "Please enter or pick a symbol",
+    "triggerPricePlaceholder": "e.g. 200",
+    "hint": "One email per threshold cross; re-arms after the price recovers. No spam while still breached.",
+    "delete": "Delete"
   },
   "comments": {
     "placeholder": "แบ่งปันความคิดเห็นของคุณ…",
