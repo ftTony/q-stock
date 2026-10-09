@@ -31,6 +31,10 @@ export const BASIC_METRIC_KEYS = [
   "52WeekLow",
   "beta",
   "marketCapitalization",
+  /** Debt / equity — used when series-based debt ratio unavailable */
+  "totalDebt/totalEquityAnnual",
+  "totalDebt/totalEquityQuarterly",
+  "longTermDebt/equityAnnual",
 ] as const;
 
 export interface EarningsItem {
