@@ -364,6 +364,8 @@
     "disable": "停用",
     "reactivate": "立即再监视",
     "empty": "暂无提醒",
+    "listTitle": "我的提醒",
+    "emptyHint": "在左侧填写标的与价格后创建即可。",
     "loginRequired": "登录后可管理提醒",
     "symbol": "标的代码",
     "assetType": "市场类型",

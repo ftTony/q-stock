@@ -72,55 +72,58 @@ export function MarketVendorPrefs() {
   }
 
   return (
-    <div className="qt-panel w-full space-y-5 p-5 sm:p-6 lg:p-8">
-      <div>
-        <h2 className="text-lg font-semibold tracking-tight">
+    <section className="qt-panel overflow-hidden">
+      <div className="border-b border-[var(--border)] px-4 py-2.5">
+        <h2 className="text-sm font-semibold tracking-tight">
           {t("vendorTitle")}
         </h2>
-        <p className="mt-1 text-sm text-[var(--muted)]">{t("vendorHint")}</p>
       </div>
-
-      <div className="grid gap-5 lg:grid-cols-2">
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("vendorEquity")}</span>
-          <QtSelect
-            value={equity}
-            onChange={(v) => {
-              const next = v as EquityVendorId;
-              setEquity(next);
-              void saveVendors({ equityVendor: next });
-            }}
-            options={[
-              { value: "longbridge", label: t("credsLongbridge") },
-              { value: "futu", label: t("credsFutu") },
-            ]}
-          />
-          <p className="text-xs text-[var(--muted)]">{t("vendorEquityHint")}</p>
-        </label>
-
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("vendorCrypto")}</span>
-          <QtSelect
-            value={crypto}
-            onChange={(v) => {
-              const next = v as CryptoVendorId;
-              setCrypto(next);
-              void saveVendors({ cryptoVendor: next });
-            }}
-            options={[
-              { value: "binance", label: t("credsBinance") },
-              { value: "okx", label: t("credsOkx") },
-            ]}
-          />
-          <p className="text-xs text-[var(--muted)]">{t("vendorCryptoHint")}</p>
-        </label>
-      </div>
-
-      {saving || message ? (
-        <p className="text-xs text-[var(--muted)]">
-          {saving ? "…" : message}
+      <div className="space-y-3 p-4">
+        <p className="text-xs leading-relaxed text-[var(--muted)]">
+          {t("vendorHint")}
         </p>
-      ) : null}
-    </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5 text-sm">
+            <span className="block text-[var(--muted)]">{t("vendorEquity")}</span>
+            <QtSelect
+              value={equity}
+              onChange={(v) => {
+                const next = v as EquityVendorId;
+                setEquity(next);
+                void saveVendors({ equityVendor: next });
+              }}
+              options={[
+                { value: "longbridge", label: t("credsLongbridge") },
+                { value: "futu", label: t("credsFutu") },
+              ]}
+            />
+            <p className="text-[11px] text-[var(--muted)]">
+              {t("vendorEquityHint")}
+            </p>
+          </div>
+          <div className="space-y-1.5 text-sm">
+            <span className="block text-[var(--muted)]">{t("vendorCrypto")}</span>
+            <QtSelect
+              value={crypto}
+              onChange={(v) => {
+                const next = v as CryptoVendorId;
+                setCrypto(next);
+                void saveVendors({ cryptoVendor: next });
+              }}
+              options={[
+                { value: "binance", label: t("credsBinance") },
+                { value: "okx", label: t("credsOkx") },
+              ]}
+            />
+            <p className="text-[11px] text-[var(--muted)]">
+              {t("vendorCryptoHint")}
+            </p>
+          </div>
+        </div>
+        {saving || message ? (
+          <p className="text-xs text-[var(--muted)]">{saving ? "…" : message}</p>
+        ) : null}
+      </div>
+    </section>
   );
 }

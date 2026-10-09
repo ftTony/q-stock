@@ -364,6 +364,8 @@
     "disable": "無効化",
     "reactivate": "再有効化",
     "empty": "アラートはまだありません",
+    "listTitle": "マイアラート",
+    "emptyHint": "左のフォームで銘柄と価格を設定してください。",
     "loginRequired": "アラート管理にはログインが必要です",
     "symbol": "Symbol",
     "assetType": "Market",

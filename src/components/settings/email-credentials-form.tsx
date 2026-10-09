@@ -189,7 +189,7 @@ export function EmailCredentialsForm() {
             required
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="qt-input w-full px-3 py-2.5"
+            className="qt-input h-9 w-full px-3 text-sm leading-none"
             disabled={saving}
             placeholder="alerts@example.com"
           />
@@ -206,7 +206,7 @@ export function EmailCredentialsForm() {
               placeholder={
                 status?.configured ? t("credsKeepPlaceholder") : undefined
               }
-              className="qt-input w-full px-3 py-2.5"
+              className="qt-input h-9 w-full px-3 text-sm leading-none"
               disabled={saving}
             />
           </label>
@@ -217,7 +217,7 @@ export function EmailCredentialsForm() {
               <input
                 value={smtpHost}
                 onChange={(e) => setSmtpHost(e.target.value)}
-                className="qt-input w-full px-3 py-2.5"
+                className="qt-input h-9 w-full px-3 text-sm leading-none"
                 disabled={saving}
                 placeholder="smtp.example.com"
               />
@@ -227,7 +227,7 @@ export function EmailCredentialsForm() {
               <input
                 value={smtpPort}
                 onChange={(e) => setSmtpPort(e.target.value)}
-                className="qt-input w-full px-3 py-2.5"
+                className="qt-input h-9 w-full px-3 text-sm leading-none"
                 disabled={saving}
               />
             </label>
@@ -236,7 +236,7 @@ export function EmailCredentialsForm() {
               <input
                 value={smtpUser}
                 onChange={(e) => setSmtpUser(e.target.value)}
-                className="qt-input w-full px-3 py-2.5"
+                className="qt-input h-9 w-full px-3 text-sm leading-none"
                 disabled={saving}
               />
             </label>
@@ -250,7 +250,7 @@ export function EmailCredentialsForm() {
                 placeholder={
                   status?.configured ? t("credsKeepPlaceholder") : undefined
                 }
-                className="qt-input w-full px-3 py-2.5"
+                className="qt-input h-9 w-full px-3 text-sm leading-none"
                 disabled={saving}
               />
             </label>
@@ -270,7 +270,7 @@ export function EmailCredentialsForm() {
           <SubmitButton
             loading={saving}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary h-[42px] px-4 text-sm"
+            className="qt-btn-primary h-9 px-3 text-sm font-medium"
           >
             {t("emailSave")}
           </SubmitButton>
@@ -279,7 +279,7 @@ export function EmailCredentialsForm() {
               type="button"
               onClick={onClear}
               disabled={saving}
-              className="qt-btn h-[42px] px-4 text-sm"
+              className="qt-btn qt-btn-ghost h-9 px-3 text-sm font-medium"
             >
               {t("credsClear")}
             </button>

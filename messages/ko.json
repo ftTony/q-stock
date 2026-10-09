@@ -364,6 +364,8 @@
     "disable": "비활성화",
     "reactivate": "다시 활성화",
     "empty": "아직 알림이 없습니다",
+    "listTitle": "내 알림",
+    "emptyHint": "왼쪽에서 종목과 가격을 입력해 시작하세요.",
     "loginRequired": "알림 관리하려면 로그인하세요",
     "symbol": "Symbol",
     "assetType": "Market",

@@ -364,6 +364,8 @@
     "disable": "Lumpuhkan",
     "reactivate": "Aktif semula",
     "empty": "Tiada amaran lagi",
+    "listTitle": "Amaran saya",
+    "emptyHint": "Isi borang di kiri untuk bermula.",
     "loginRequired": "Log masuk untuk mengurus amaran",
     "symbol": "Symbol",
     "assetType": "Market",

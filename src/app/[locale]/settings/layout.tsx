@@ -16,5 +16,5 @@ export async function generateMetadata({
 }
 
 export default function PrivateLayout({ children }: Props) {
-  return children;
+  return <div className="settings-ui">{children}</div>;
 }

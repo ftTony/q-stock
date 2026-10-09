@@ -159,25 +159,23 @@ export function AiCredentialsForm() {
 
   if (loading) {
     return (
-      <div className="qt-panel space-y-3 p-5 sm:p-6">
+      <div className="qt-panel space-y-3 p-4">
         <p className="text-sm text-[var(--muted)]">{tCommon("loading")}</p>
       </div>
     );
   }
 
   return (
-    <div className="qt-panel space-y-4 p-5 sm:p-6">
+    <div className="qt-panel space-y-3 p-4">
       <div>
-        <h2 className="text-lg font-semibold">{t("aiTitle")}</h2>
-        <p className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--brand-soft)] px-3 py-2.5 text-sm text-[var(--foreground)]">
+        <h2 className="text-sm font-semibold">{t("aiTitle")}</h2>
+        <p className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--brand-soft)] px-3 py-2 text-xs leading-relaxed text-[var(--foreground)]">
           {t("credsTrustNote")}
         </p>
-        <p className="mt-2 text-xs">
+        <p className="mt-2 text-[11px]">
           <span
             className={
-              status?.configured
-                ? "text-[var(--up)]"
-                : "text-[var(--muted)]"
+              status?.configured ? "text-[var(--up)]" : "text-[var(--muted)]"
             }
           >
             {status?.configured
@@ -188,85 +186,93 @@ export function AiCredentialsForm() {
       </div>
 
       <form onSubmit={onSave} className="space-y-3">
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("aiVendor")}</span>
-          <QtSelect
-            value={vendor}
-            onChange={(v) => setVendor(v as AiVendor)}
-            options={[
-              { value: "deepseek", label: t("aiVendorDeepseek") },
-              { value: "openai", label: t("aiVendorOpenai") },
-              { value: "gemini", label: t("aiVendorGemini") },
-              { value: "anthropic", label: t("aiVendorAnthropic") },
-              { value: "openai_compat", label: t("aiVendorCompat") },
-            ]}
-            disabled={saving}
-          />
-        </label>
-
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("aiApiKey")}</span>
-          <input
-            type="password"
-            autoComplete="off"
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            placeholder={
-              status?.configured ? t("credsKeepPlaceholder") : undefined
-            }
-            className="qt-input w-full px-3 py-2.5"
-            disabled={saving}
-          />
-        </label>
-
-        {showBaseUrl ? (
-          <label className="block space-y-1 text-sm">
-            <span className="text-[var(--muted)]">{t("aiBaseUrl")}</span>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <span className="block text-xs text-[var(--muted)]">
+              {t("aiVendor")}
+            </span>
+            <QtSelect
+              value={vendor}
+              onChange={(v) => setVendor(v as AiVendor)}
+              options={[
+                { value: "deepseek", label: t("aiVendorDeepseek") },
+                { value: "openai", label: t("aiVendorOpenai") },
+                { value: "gemini", label: t("aiVendorGemini") },
+                { value: "anthropic", label: t("aiVendorAnthropic") },
+                { value: "openai_compat", label: t("aiVendorCompat") },
+              ]}
+              disabled={saving}
+            />
+          </div>
+          <label className="block space-y-1.5">
+            <span className="block text-xs text-[var(--muted)]">
+              {t("aiApiKey")}
+            </span>
             <input
-              type="url"
-              value={baseUrl}
-              onChange={(e) => setBaseUrl(e.target.value)}
+              type="password"
+              autoComplete="off"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
               placeholder={
-                vendor === "openai_compat"
-                  ? "https://api.example.com/v1"
-                  : t("aiBaseUrlOptional")
+                status?.configured ? t("credsKeepPlaceholder") : undefined
               }
-              className="qt-input w-full px-3 py-2.5"
+              className="qt-input h-9 w-full px-3 text-[14px] leading-none"
               disabled={saving}
-              required={vendor === "openai_compat"}
             />
           </label>
-        ) : null}
-
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("aiModel")}</span>
-          <QtSelect
-            value={modelPick}
-            onChange={setModelPick}
-            options={modelOptions}
-            disabled={saving}
-          />
-        </label>
-
-        {modelPick === CUSTOM ? (
-          <label className="block space-y-1 text-sm">
-            <span className="text-[var(--muted)]">{t("aiModelId")}</span>
-            <input
-              required
-              value={modelCustom}
-              onChange={(e) => setModelCustom(e.target.value)}
-              className="qt-input w-full px-3 py-2.5"
+          <div className="space-y-1.5">
+            <span className="block text-xs text-[var(--muted)]">
+              {t("aiModel")}
+            </span>
+            <QtSelect
+              value={modelPick}
+              onChange={setModelPick}
+              options={modelOptions}
               disabled={saving}
-              placeholder="claude-opus-4-20250514"
             />
-          </label>
-        ) : null}
+          </div>
+          {showBaseUrl ? (
+            <label className="block space-y-1.5">
+              <span className="block text-xs text-[var(--muted)]">
+                {t("aiBaseUrl")}
+              </span>
+              <input
+                type="url"
+                value={baseUrl}
+                onChange={(e) => setBaseUrl(e.target.value)}
+                placeholder={
+                  vendor === "openai_compat"
+                    ? "https://api.example.com/v1"
+                    : t("aiBaseUrlOptional")
+                }
+                className="qt-input h-9 w-full px-3 text-[14px] leading-none"
+                disabled={saving}
+                required={vendor === "openai_compat"}
+              />
+            </label>
+          ) : null}
+          {modelPick === CUSTOM ? (
+            <label className="block space-y-1.5 sm:col-span-2">
+              <span className="block text-xs text-[var(--muted)]">
+                {t("aiModelId")}
+              </span>
+              <input
+                required
+                value={modelCustom}
+                onChange={(e) => setModelCustom(e.target.value)}
+                className="qt-input h-9 w-full px-3 text-[14px] leading-none"
+                disabled={saving}
+                placeholder="claude-opus-4-20250514"
+              />
+            </label>
+          ) : null}
+        </div>
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2">
           <SubmitButton
             loading={saving}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary h-[42px] px-4 text-sm"
+            className="qt-btn-primary h-9 px-3 font-medium"
           >
             {t("aiSave")}
           </SubmitButton>
@@ -275,14 +281,14 @@ export function AiCredentialsForm() {
               type="button"
               onClick={onClear}
               disabled={saving}
-              className="qt-btn h-[42px] px-4 text-sm"
+              className="qt-btn qt-btn-ghost h-9 px-3 font-medium"
             >
               {t("credsClear")}
             </button>
           ) : null}
           {message ? (
             <p
-              className={`text-sm ${messageKind === "ok" ? "text-[var(--up)]" : "text-[var(--down)]"}`}
+              className={`text-xs ${messageKind === "ok" ? "text-[var(--up)]" : "text-[var(--down)]"}`}
             >
               {message}
             </p>

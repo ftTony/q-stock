@@ -364,6 +364,8 @@
     "disable": "Deaktivieren",
     "reactivate": "Reaktivieren",
     "empty": "Noch keine Alarme",
+    "listTitle": "Meine Alarme",
+    "emptyHint": "Legen Sie links Symbol und Preis fest, um zu starten.",
     "loginRequired": "Anmelden, um Alarme zu verwalten",
     "symbol": "Symbol",
     "assetType": "Market",

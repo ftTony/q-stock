@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -9,9 +9,9 @@ import { ChangePct, PriceText } from "@/components/market/price";
 import { Sparkline } from "@/components/market/sparkline";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
+import { SegmentedTabs } from "@/components/ui/segmented-tabs";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
-import { Suspense } from "react";
 
 type Row = {
   id: string;
@@ -128,6 +128,15 @@ function WatchlistContent() {
     [rows, filter],
   );
 
+  const descKey =
+    filter === "hk"
+      ? "descHk"
+      : filter === "cn"
+        ? "descCn"
+        : filter === "crypto"
+          ? "descCrypto"
+          : "descStock";
+
   async function remove(id: string) {
     await fetch(`/api/watchlist?id=${id}`, { method: "DELETE" });
     await load();
@@ -155,9 +164,12 @@ function WatchlistContent() {
 
   if (!session?.user) {
     return (
-      <div className="qt-panel p-6 text-sm">
+      <div className="mx-auto max-w-md qt-panel p-6 text-sm">
         <p>{tAlerts("loginRequired")}</p>
-        <Link href="/login" className="qt-btn qt-btn-primary mt-3 inline-flex px-3 py-1.5 text-sm">
+        <Link
+          href="/login"
+          className="qt-btn qt-btn-primary mt-3 inline-flex h-9 px-3 text-sm"
+        >
           {tNav("login")}
         </Link>
       </div>
@@ -165,47 +177,45 @@ function WatchlistContent() {
   }
 
   return (
-    <div className="space-y-5 animate-[qtFade_0.45s_ease]">
-      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">{tNav("watchlist")}</h1>
-          <p className="text-sm text-[var(--muted)]">{t("descStock")}</p>
+    <div className="mx-auto max-w-5xl space-y-4 animate-[qtFade_0.45s_ease]">
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-baseline gap-2">
+            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+              {tNav("watchlist")}
+            </h1>
+            {rows.length > 0 && (
+              <span className="rounded-md bg-[var(--surface-2)] px-1.5 py-0.5 text-xs tabular-nums text-[var(--muted)]">
+                {visible.length}
+                {filter !== "all" ? ` / ${rows.length}` : ""}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-[var(--muted)] sm:text-sm">{t(descKey)}</p>
         </div>
-        <div className="flex rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1">
-          {(
-            [
-              ["all", t("popular")],
-              ["stock", t("stocks")],
-              ["hk", t("hk")],
-              ["cn", t("cn")],
-              ["crypto", t("crypto")],
-            ] as const
-          ).map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => setFilter(key)}
-              className={`rounded-lg px-2.5 py-1 text-[11px] font-medium sm:text-xs ${
-                filter === key
-                  ? "bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                  : "text-[var(--muted)]"
-              }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      </section>
+        <SegmentedTabs
+          value={filter}
+          onChange={setFilter}
+          options={[
+            { value: "all", label: t("popular") },
+            { value: "stock", label: t("stocks") },
+            { value: "hk", label: t("hk") },
+            { value: "cn", label: t("cn") },
+            { value: "crypto", label: t("crypto") },
+          ]}
+        />
+      </header>
 
-      <section className="qt-panel relative p-4">
-        <div className="flex flex-wrap gap-2">
+      <section className="qt-panel relative p-3">
+        <div className="flex max-w-xl items-center gap-2">
           <QtSelect
             value={addType}
             onChange={(v) => setAddType(v as AssetType)}
-            className="w-36"
+            className="w-[7.5rem] shrink-0"
             options={[
               { value: "stock", label: t("stocks") },
               { value: "hk", label: t("hk") },
+              { value: "cn", label: t("cn") },
               { value: "crypto", label: t("crypto") },
             ]}
           />
@@ -213,29 +223,33 @@ function WatchlistContent() {
             value={q}
             onChange={(e) => setQ(e.target.value)}
             placeholder={t("search")}
-            className="qt-input min-w-[220px] flex-1 px-3 py-2.5 text-sm"
+            className="qt-input h-9 min-w-0 flex-1 px-3 text-sm leading-none"
           />
           {adding && (
-            <span className="self-center text-xs text-[var(--muted)]">
+            <span className="shrink-0 text-xs text-[var(--muted)]">
               {tCommon("loading")}
             </span>
           )}
         </div>
         {results.length > 0 && (
-          <ul className="absolute left-4 right-4 z-20 mt-2 max-h-56 overflow-auto rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl">
+          <ul className="absolute left-3 top-[calc(100%-0.25rem)] z-20 max-h-56 w-[min(100%-1.5rem,36rem)] overflow-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-xl qt-scroll">
             {results.map((r) => (
               <li key={`${r.assetType}-${r.symbol}`}>
                 <button
                   type="button"
                   disabled={adding}
-                  className="flex w-full items-center justify-between px-3 py-2.5 text-left text-sm hover:bg-[var(--sidebar-hover)] disabled:opacity-50"
+                  className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--sidebar-hover)] disabled:opacity-50"
                   onClick={() => void addSymbol(r.symbol, r.assetType)}
                 >
-                  <span>
+                  <span className="min-w-0 truncate">
                     <span className="font-semibold">{r.symbol}</span>
-                    <span className="ml-2 text-[var(--muted)]">{r.description}</span>
+                    <span className="ml-2 text-xs text-[var(--muted)]">
+                      {r.description}
+                    </span>
                   </span>
-                  <span className="text-xs text-[var(--brand-text)]">+ {t("addWatch")}</span>
+                  <span className="shrink-0 text-[11px] text-[var(--brand-text)]">
+                    + {t("addWatch")}
+                  </span>
                 </button>
               </li>
             ))}
@@ -245,93 +259,101 @@ function WatchlistContent() {
 
       <section className="qt-panel overflow-hidden">
         {loading && (
-          <div className="p-6 text-sm text-[var(--muted)]">{tCommon("loading")}</div>
+          <div className="px-4 py-8 text-sm text-[var(--muted)]">
+            {tCommon("loading")}
+          </div>
         )}
         {error && (
-          <div className="space-y-2 p-4 text-sm">
+          <div className="space-y-2 px-4 py-4 text-sm">
             <p className="text-[var(--down)]">{error}</p>
-            <button type="button" className="qt-btn qt-btn-ghost px-3 py-1.5" onClick={() => void load()}>
+            <button
+              type="button"
+              className="qt-btn qt-btn-ghost h-8 px-3 text-xs"
+              onClick={() => void load()}
+            >
               {tCommon("retry")}
             </button>
           </div>
         )}
         {!loading && !error && (
           <div className="overflow-x-auto qt-scroll">
-            <table className="min-w-[720px] w-full text-sm">
+            <table className="min-w-[640px] w-full text-sm">
               <thead>
-                <tr className="border-b border-[var(--border)] text-left text-[11px] tracking-wider text-[var(--muted)] uppercase">
-                  <th className="px-4 py-3 font-semibold">{t("symbol")}</th>
-                  <th className="px-4 py-3 font-semibold">{t("price")}</th>
-                  <th className="px-4 py-3 font-semibold">{t("change")}</th>
-                  <th className="px-4 py-3 font-semibold">{t("last24h")}</th>
-                  <th className="px-4 py-3 font-semibold">{t("actions")}</th>
+                <tr className="border-b border-[var(--border)] text-left text-[11px] tracking-wide text-[var(--muted)]">
+                  <th className="px-4 py-2.5 font-medium">{t("symbol")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("price")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("change")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("last24h")}</th>
+                  <th className="px-4 py-2.5 font-medium">{t("actions")}</th>
                 </tr>
               </thead>
               <tbody>
                 {visible.map((item) => {
-                  const q = item.quote;
-                  const up = (q?.percentChange ?? 0) >= 0;
+                  const quote = item.quote;
+                  const up = (quote?.percentChange ?? 0) >= 0;
                   return (
                     <tr
                       key={item.id}
                       className="border-b border-[var(--border)]/70 last:border-0 hover:bg-[var(--sidebar-hover)]/60"
                     >
-                      <td className="px-4 py-3">
+                      <td className="px-4 py-2.5">
                         <Link
                           href={`/symbol/${item.assetType}/${item.symbol}`}
-                          className="flex items-center gap-3"
+                          className="flex items-center gap-2.5"
                         >
-                          <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-2)] text-[11px] font-bold text-[var(--brand-text)]">
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] text-[10px] font-bold text-[var(--brand-text)]">
                             {item.symbol.slice(0, 2)}
                           </span>
-                          <span>
-                            <span className="block font-semibold">{item.symbol}</span>
-                            <span className="block text-xs text-[var(--muted)]">
+                          <span className="min-w-0">
+                            <span className="block text-sm font-semibold leading-tight">
+                              {item.symbol}
+                            </span>
+                            <span className="block truncate text-[11px] text-[var(--muted)]">
                               {displayName(item.symbol, item.assetType)}
                             </span>
                           </span>
                         </Link>
                       </td>
-                      <td className="px-4 py-3 font-medium tabular-nums">
-                        {q ? (
+                      <td className="px-4 py-2.5 font-medium tabular-nums">
+                        {quote ? (
                           <>
                             $
                             <PriceText
-                              value={q.price}
-                              change={q.percentChange}
+                              value={quote.price}
+                              change={quote.percentChange}
                             />
                           </>
                         ) : (
                           "-"
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        {q ? <ChangePct value={q.percentChange} /> : "-"}
+                      <td className="px-4 py-2.5">
+                        {quote ? <ChangePct value={quote.percentChange} /> : "-"}
                       </td>
-                      <td className="px-4 py-3">
-                        {q ? (
+                      <td className="px-4 py-2.5">
+                        {quote ? (
                           <Sparkline
-                            open={q.open}
-                            high={q.high}
-                            low={q.low}
-                            close={q.price}
+                            open={quote.open}
+                            high={quote.high}
+                            low={quote.low}
+                            close={quote.price}
                             up={up}
                           />
                         ) : (
                           "-"
                         )}
                       </td>
-                      <td className="px-4 py-3">
-                        <div className="flex items-center gap-3">
+                      <td className="px-4 py-2.5">
+                        <div className="flex items-center gap-2">
                           <Link
                             href={`/symbol/${item.assetType}/${item.symbol}`}
-                            className="qt-link-up text-xs font-bold hover:opacity-80"
+                            className="qt-link-up text-xs font-medium hover:opacity-80"
                           >
                             {t("buy")}
                           </Link>
                           <button
                             type="button"
-                            className="qt-link-down text-xs font-bold hover:opacity-80"
+                            className="text-xs font-medium text-[var(--muted)] hover:text-[var(--down)]"
                             onClick={() => void remove(item.id)}
                           >
                             {t("remove")}
@@ -343,14 +365,16 @@ function WatchlistContent() {
                 })}
                 {visible.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-10 text-center">
-                      <p className="mb-3 text-[var(--muted)]">{t("watchlistEmpty")}</p>
+                    <td colSpan={5} className="px-4 py-12 text-center">
+                      <p className="mb-3 text-sm text-[var(--muted)]">
+                        {t("watchlistEmpty")}
+                      </p>
                       <SubmitButton
                         type="button"
                         loading={adding}
                         loadingLabel={tCommon("loading")}
                         onClick={() => void seedPopular()}
-                        className="qt-btn-primary px-4 py-2 text-sm"
+                        className="qt-btn-primary h-9 px-3 text-xs font-medium"
                       >
                         {t("seedPopular")}
                       </SubmitButton>
@@ -368,7 +392,13 @@ function WatchlistContent() {
 
 export default function WatchlistPage() {
   return (
-    <Suspense fallback={<div className="qt-panel p-6 text-sm text-[var(--muted)]">…</div>}>
+    <Suspense
+      fallback={
+        <div className="mx-auto max-w-5xl qt-panel p-6 text-sm text-[var(--muted)]">
+          …
+        </div>
+      }
+    >
       <WatchlistContent />
     </Suspense>
   );

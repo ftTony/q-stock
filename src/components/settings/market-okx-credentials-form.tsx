@@ -125,20 +125,20 @@ export function MarketOkxCredentialsForm() {
   }
 
   return (
-    <div className="qt-panel w-full space-y-4 p-5 sm:p-6 lg:p-8">
+    <div className="qt-panel w-full space-y-3 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-base font-semibold">{t("credsOkx")}</h3>
-        <span className="text-xs text-[var(--muted)]">
+        <h3 className="text-sm font-semibold">{t("credsOkx")}</h3>
+        <span className="text-[11px] text-[var(--muted)]">
           {status?.okx?.configured
             ? t("credsConfigured")
             : t("credsNotConfigured")}
         </span>
       </div>
-      <p className="text-sm text-[var(--muted)]">{t("credsOkxHint")}</p>
+      <p className="text-xs text-[var(--muted)]">{t("credsOkxHint")}</p>
       {message ? (
         <p
           role="status"
-          className="animate-[qtFade_0.25s_ease] rounded-lg px-3 py-2 text-sm"
+          className="animate-[qtFade_0.25s_ease] rounded-lg px-3 py-1.5 text-xs"
           style={
             messageKind === "ok"
               ? {
@@ -158,44 +158,50 @@ export function MarketOkxCredentialsForm() {
         </p>
       ) : null}
       <form onSubmit={onSave} className="space-y-3">
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("credsBinanceApiKey")}</span>
-          <input
-            value={apiKey}
-            onChange={(e) => setApiKey(e.target.value)}
-            autoComplete="off"
-            className="qt-input w-full px-3 py-2.5 font-mono text-xs"
-          />
-        </label>
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">
-            {t("credsBinanceApiSecret")}
-          </span>
-          <input
-            type="password"
-            value={apiSecret}
-            onChange={(e) => setApiSecret(e.target.value)}
-            autoComplete="off"
-            className="qt-input w-full px-3 py-2.5 font-mono text-xs"
-            placeholder={t("credsOkxOptional")}
-          />
-        </label>
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("credsOkxPassphrase")}</span>
-          <input
-            type="password"
-            value={passphrase}
-            onChange={(e) => setPassphrase(e.target.value)}
-            autoComplete="off"
-            className="qt-input w-full px-3 py-2.5 font-mono text-xs"
-            placeholder={t("credsOkxOptional")}
-          />
-        </label>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <label className="block space-y-1.5">
+            <span className="block text-xs text-[var(--muted)]">
+              {t("credsBinanceApiKey")}
+            </span>
+            <input
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              autoComplete="off"
+              className="qt-input h-9 w-full px-3 font-mono text-[14px] leading-none"
+            />
+          </label>
+          <label className="block space-y-1.5">
+            <span className="block text-xs text-[var(--muted)]">
+              {t("credsBinanceApiSecret")}
+            </span>
+            <input
+              type="password"
+              value={apiSecret}
+              onChange={(e) => setApiSecret(e.target.value)}
+              autoComplete="off"
+              className="qt-input h-9 w-full px-3 font-mono text-[14px] leading-none"
+              placeholder={t("credsOkxOptional")}
+            />
+          </label>
+          <label className="block space-y-1.5 sm:col-span-2">
+            <span className="block text-xs text-[var(--muted)]">
+              {t("credsOkxPassphrase")}
+            </span>
+            <input
+              type="password"
+              value={passphrase}
+              onChange={(e) => setPassphrase(e.target.value)}
+              autoComplete="off"
+              className="qt-input h-9 w-full px-3 font-mono text-[14px] leading-none"
+              placeholder={t("credsOkxOptional")}
+            />
+          </label>
+        </div>
         <div className="flex flex-wrap gap-2">
           <SubmitButton
             loading={saving}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary h-[42px] px-4 text-sm"
+            className="qt-btn-primary h-9 px-3 font-medium"
             disabled={!apiKey.trim()}
           >
             {t("credsSaveOkx")}
@@ -204,7 +210,7 @@ export function MarketOkxCredentialsForm() {
             <button
               type="button"
               onClick={onClear}
-              className="qt-btn h-[42px] px-4 text-sm"
+              className="qt-btn qt-btn-ghost h-9 px-3 font-medium"
             >
               {t("credsClear")}
             </button>

@@ -83,8 +83,8 @@ export function QtSelect({
         aria-controls={listId}
         onClick={() => !disabled && setOpen((v) => !v)}
         onKeyDown={onTriggerKey}
-        className={`qt-input flex w-full cursor-pointer items-center gap-2 text-left disabled:cursor-not-allowed disabled:opacity-55 ${
-          triggerClassName ?? "px-3 py-2.5 text-sm"
+        className={`qt-input inline-flex w-full cursor-pointer items-center gap-2 text-left leading-none disabled:cursor-not-allowed disabled:opacity-55 ${
+          triggerClassName ?? "h-9 px-3 text-[14px]"
         }`}
       >
         {selected?.badge ? (

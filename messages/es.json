@@ -364,6 +364,8 @@
     "disable": "Desactivar",
     "reactivate": "Reactivar",
     "empty": "Aún no hay alertas",
+    "listTitle": "Mis alertas",
+    "emptyHint": "Complete el formulario de la izquierda para empezar.",
     "loginRequired": "Inicia sesión para gestionar alertas",
     "symbol": "Symbol",
     "assetType": "Market",
