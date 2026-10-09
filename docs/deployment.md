@@ -37,6 +37,9 @@
 
 - [ ] `web` 与 `worker` 同时运行（缺 worker 则提醒不触发）
 - [ ] `ALERT_POLL_INTERVAL_MS` 按 Finnhub 限额调整（默认 45000）
+- [ ] SEO：公网 `APP_URL` 正确；`/sitemap.xml`、`/robots.txt` 可访问；向 Google Search Console 提交 sitemap（仅含公开页；账号页 noindex）
+- [ ] 统计：配置 `NEXT_PUBLIC_GA_MEASUREMENT_ID`（GA4）；可选 `GOOGLE_SITE_VERIFICATION` 完成站长验证
+- [ ] Worker 在美东 00:00–01:00 写按市场拆分的 sitemap（按 ET 日去重；`sitemap.xml` 索引 + `sitemap-stock|hk|cn|crypto[-N].xml`；Compose 共享卷 `sitemaps`；也可 `npm run seo:sitemap`）
 - [ ] 日志可采集（stdout）
 
 ### 2.4 网络与 TLS

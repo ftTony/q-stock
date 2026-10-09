@@ -363,10 +363,15 @@
     "disabled": "Deaktiviert",
     "disable": "Deaktivieren",
     "reactivate": "Reaktivieren",
-    "delete": "Löschen",
     "empty": "Noch keine Alarme",
     "loginRequired": "Anmelden, um Alarme zu verwalten",
-    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached."
+    "symbol": "Symbol",
+    "assetType": "Market",
+    "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
+    "symbolRequired": "Please enter or pick a symbol",
+    "triggerPricePlaceholder": "e.g. 200",
+    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached.",
+    "delete": "Löschen"
   },
   "comments": {
     "placeholder": "Teilen Sie Ihre Meinung…",
@@ -564,5 +569,29 @@
     "notesTitle": "Saved notes",
     "notesHint": "Latest 10, saved automatically.",
     "notesEmpty": "No notes yet"
+  },
+  "seo": {
+    "titleDefault": "Qianli Gu Q-Stock",
+    "titleTemplate": "%s · Qianli Gu",
+    "applicationName": "Qianli Gu",
+    "siteName": "Qianli Gu Q-Stock",
+    "author": "Qianli Gu",
+    "description": "Intelligentes Investieren · Wertfindung · KI-gestützte Entscheidungen — US-, HK-, A-Aktien & Krypto, Watchlists, Alerts und Paper-Review",
+    "descriptionShort": "Intelligentes Investieren · Wertfindung · KI — US, HK, A-Aktien & Krypto",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol} ({name}) letzter Kurs {price} ({change}), Stand {date}. Live-Kurse auf Qianli Gu.",
+    "symbolDescriptionNoPrice": "{symbol} ({name}) Kurse, Charts und KI-Analyse auf Qianli Gu.",
+    "relatedSymbols": "Verwandte Symbole",
+    "keywords": [
+      "Qianli Gu",
+      "Q-Stock",
+      "US-Aktien",
+      "HK-Aktien",
+      "A-Aktien",
+      "Aktien",
+      "Krypto",
+      "KI"
+    ]
   }
 }

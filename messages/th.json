@@ -363,10 +363,15 @@
     "disabled": "ปิดใช้งาน",
     "disable": "ปิดใช้งาน",
     "reactivate": "เปิดใช้งานใหม่",
-    "delete": "ลบ",
     "empty": "ยังไม่มีการแจ้งเตือน",
     "loginRequired": "เข้าสู่ระบบเพื่อจัดการการแจ้งเตือน",
-    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached."
+    "symbol": "Symbol",
+    "assetType": "Market",
+    "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
+    "symbolRequired": "Please enter or pick a symbol",
+    "triggerPricePlaceholder": "e.g. 200",
+    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached.",
+    "delete": "ลบ"
   },
   "comments": {
     "placeholder": "แบ่งปันความคิดเห็นของคุณ…",
@@ -564,5 +569,29 @@
     "notesTitle": "Saved notes",
     "notesHint": "Latest 10, saved automatically.",
     "notesEmpty": "No notes yet"
+  },
+  "seo": {
+    "titleDefault": "Qianli Gu Q-Stock",
+    "titleTemplate": "%s · Qianli Gu",
+    "applicationName": "Qianli Gu",
+    "siteName": "Qianli Gu Q-Stock",
+    "author": "Qianli Gu",
+    "description": "การลงทุนอัจฉริยะ · ค้นหาคุณค่า · ตัดสินใจด้วย AI — ราคาหุ้นสหรัฐ ฮ่องกง A-share และคริปโต รายการโปรด การแจ้งเตือน และทบทวนจำลอง",
+    "descriptionShort": "การลงทุนอัจฉริยะ · คุณค่า · AI — สหรัฐ ฮ่องกง A-share และคริปโต",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol} ({name}) ราคาล่าสุด {price} ({change}) ณ {date} ดูราคาแบบเรียลไทม์บน Qianli Gu",
+    "symbolDescriptionNoPrice": "{symbol} ({name}) ราคา กราฟ และการวิเคราะห์ AI บน Qianli Gu",
+    "relatedSymbols": "สัญลักษณ์ที่เกี่ยวข้อง",
+    "keywords": [
+      "Qianli Gu",
+      "Q-Stock",
+      "หุ้นสหรัฐ",
+      "หุ้นฮ่องกง",
+      "A-share",
+      "หุ้น",
+      "คริปโต",
+      "AI"
+    ]
   }
 }

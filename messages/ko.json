@@ -363,10 +363,15 @@
     "disabled": "비활성",
     "disable": "비활성화",
     "reactivate": "다시 활성화",
-    "delete": "삭제",
     "empty": "아직 알림이 없습니다",
     "loginRequired": "알림 관리하려면 로그인하세요",
-    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached."
+    "symbol": "Symbol",
+    "assetType": "Market",
+    "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
+    "symbolRequired": "Please enter or pick a symbol",
+    "triggerPricePlaceholder": "e.g. 200",
+    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached.",
+    "delete": "삭제"
   },
   "comments": {
     "placeholder": "의견을 공유하세요…",
@@ -564,5 +569,29 @@
     "notesTitle": "Saved notes",
     "notesHint": "Latest 10, saved automatically.",
     "notesEmpty": "No notes yet"
+  },
+  "seo": {
+    "titleDefault": "전리구 Q-Stock",
+    "titleTemplate": "%s · 전리구",
+    "applicationName": "전리구",
+    "siteName": "전리구 Q-Stock",
+    "author": "전리구",
+    "description": "스마트 투자 · 가치 발견 · AI 지원 — 미국·홍콩·중국 주식과 암호화폐 시세, 관심종목, 알림, 모의 복기",
+    "descriptionShort": "스마트 투자 · 가치 발견 · AI 지원 — 미국·홍콩·A주와 암호화폐",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol}({name}) 최신가 {price}({change}), {date} 기준. 전리구 실시간 시세.",
+    "symbolDescriptionNoPrice": "{symbol}({name}) 시세·차트·AI 분석 — 전리구.",
+    "relatedSymbols": "관련 종목",
+    "keywords": [
+      "전리구",
+      "Q-Stock",
+      "미국주식",
+      "홍콩주식",
+      "A주",
+      "주식",
+      "암호화폐",
+      "AI"
+    ]
   }
 }

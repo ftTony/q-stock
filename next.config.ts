@@ -6,6 +6,17 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["longbridge"],
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "**.finnhub.io" },
+      { protocol: "https", hostname: "static.finnhub.io" },
+      { protocol: "https", hostname: "**.futunn.com" },
+      { protocol: "https", hostname: "**.longbridge.com" },
+      { protocol: "https", hostname: "**.lbkrs.com" },
+      { protocol: "https", hostname: "**.binance.com" },
+      { protocol: "https", hostname: "**.binance.vision" },
+    ],
+  },
   headers: async () => [
     {
       source: "/sw.js",

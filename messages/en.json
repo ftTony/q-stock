@@ -363,10 +363,15 @@
     "disabled": "Disabled",
     "disable": "Disable",
     "reactivate": "Re-arm now",
-    "delete": "Delete",
     "empty": "No alerts yet",
     "loginRequired": "Sign in to manage alerts",
-    "hint": "Each cross sends one email. After the price moves back past the threshold, the alert re-arms automatically. It will not spam while the breach persists."
+    "symbol": "Symbol",
+    "assetType": "Market",
+    "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
+    "symbolRequired": "Please enter or pick a symbol",
+    "triggerPricePlaceholder": "e.g. 200",
+    "hint": "Each cross sends one email. After the price moves back past the threshold, the alert re-arms automatically. It will not spam while the breach persists.",
+    "delete": "Delete"
   },
   "comments": {
     "placeholder": "Share your view…",
@@ -564,5 +569,29 @@
     "notesTitle": "Saved notes",
     "notesHint": "Latest 10, saved automatically.",
     "notesEmpty": "No notes yet"
+  },
+  "seo": {
+    "titleDefault": "Qianli Gu Q-Stock",
+    "titleTemplate": "%s · Qianli Gu",
+    "applicationName": "Qianli Gu",
+    "siteName": "Qianli Gu Q-Stock",
+    "author": "Qianli Gu",
+    "description": "Smart investing · Value discovery · AI-assisted decisions — US, HK, China A-shares & crypto quotes, watchlists, alerts, and paper review",
+    "descriptionShort": "Smart investing · Value discovery · AI-assisted decisions — US, HK, A-shares & crypto",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol} ({name}) latest price {price} ({change}), as of {date}. Live quotes on Qianli Gu.",
+    "symbolDescriptionNoPrice": "{symbol} ({name}) quotes, charts and AI analysis on Qianli Gu.",
+    "relatedSymbols": "Related symbols",
+    "keywords": [
+      "Qianli Gu",
+      "Q-Stock",
+      "US stocks",
+      "HK stocks",
+      "A-shares",
+      "stocks",
+      "crypto",
+      "AI"
+    ]
   }
 }

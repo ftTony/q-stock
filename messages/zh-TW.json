@@ -363,10 +363,15 @@
     "disabled": "已停用",
     "disable": "停用",
     "reactivate": "立即再監視",
-    "delete": "刪除",
     "empty": "暫無提醒",
     "loginRequired": "登入後可管理提醒",
-    "hint": "觸發後寄一封信；價格回到閾值另一側後會自動再次監視，下次穿越會再提醒。持續停在突破一側不會重複寄信。"
+    "symbol": "標的代碼",
+    "assetType": "市場類型",
+    "symbolPlaceholder": "搜尋代碼或名稱，如 NVDA / 騰訊 / 00700",
+    "symbolRequired": "請先選擇或輸入標的代碼",
+    "triggerPricePlaceholder": "例如 200",
+    "hint": "觸發後寄一封信；價格回到閾值另一側後會自動再次監視，下次穿越會再提醒。持續停在突破一側不會重複寄信。",
+    "delete": "刪除"
   },
   "comments": {
     "placeholder": "分享你的看法…",
@@ -564,5 +569,29 @@
     "notesTitle": "歷史筆記",
     "notesHint": "最近 10 條，自動儲存。",
     "notesEmpty": "暫無筆記"
+  },
+  "seo": {
+    "titleDefault": "錢力股 Q-Stock",
+    "titleTemplate": "%s · 錢力股",
+    "applicationName": "錢力股",
+    "siteName": "錢力股 Q-Stock",
+    "author": "錢力股",
+    "description": "智能投資 · 價值發現 · AI 輔助決策 — 美股、港股、A股與數位貨幣行情、自選、提醒與模擬複盤",
+    "descriptionShort": "智能投資 · 價值發現 · AI 輔助決策 — 美股、港股、A股與數位貨幣",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol}（{name}）最新價 {price}（{change}），截至 {date}。錢力股即時行情。",
+    "symbolDescriptionNoPrice": "{symbol}（{name}）行情、圖表與 AI 分析 — 錢力股。",
+    "relatedSymbols": "相關標的",
+    "keywords": [
+      "錢力股",
+      "Q-Stock",
+      "美股",
+      "港股",
+      "A股",
+      "股票",
+      "加密貨幣",
+      "AI"
+    ]
   }
 }

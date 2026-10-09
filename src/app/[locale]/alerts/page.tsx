@@ -7,6 +7,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
+import { SymbolSearchField } from "@/components/ui/symbol-search-field";
 import type { AssetType } from "@/lib/types";
 import { parseAssetType } from "@/lib/types";
 
@@ -26,7 +27,7 @@ function AlertsContent() {
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const [alerts, setAlerts] = useState<AlertRow[]>([]);
-  const [symbol, setSymbol] = useState(searchParams.get("symbol") || "AAPL");
+  const [symbol, setSymbol] = useState(searchParams.get("symbol") || "");
   const [assetType, setAssetType] = useState<AssetType>(
     parseAssetType(searchParams.get("assetType")),
   );
@@ -65,7 +66,10 @@ function AlertsContent() {
     return (
       <div className="qt-panel p-6 text-sm">
         <p>{t("loginRequired")}</p>
-        <Link href="/login" className="qt-btn qt-btn-primary mt-3 inline-flex px-3 py-1.5 text-sm">
+        <Link
+          href="/login"
+          className="qt-btn qt-btn-primary mt-3 inline-flex px-3 py-1.5 text-sm"
+        >
           {tNav("login")}
         </Link>
       </div>
@@ -75,13 +79,17 @@ function AlertsContent() {
   async function onCreate(e: FormEvent) {
     e.preventDefault();
     setError(null);
+    if (!symbol.trim()) {
+      setError(t("symbolRequired"));
+      return;
+    }
     setSubmitting(true);
     try {
       const res = await fetch("/api/alerts", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          symbol,
+          symbol: symbol.trim(),
           assetType,
           condition,
           triggerPrice: Number(triggerPrice),
@@ -89,7 +97,7 @@ function AlertsContent() {
       });
       const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Error");
+        setError(data.error || tCommon("error"));
         return;
       }
       setTriggerPrice("");
@@ -129,18 +137,24 @@ function AlertsContent() {
         <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
         <p className="mt-1.5 text-sm text-[var(--muted)]">{t("hint")}</p>
       </div>
-      <form onSubmit={onCreate} className="qt-panel grid gap-3 p-4 sm:grid-cols-2 sm:p-5">
+      <form
+        onSubmit={onCreate}
+        className="qt-panel grid gap-3 p-4 sm:grid-cols-2 sm:p-5"
+      >
+        <SymbolSearchField
+          value={symbol}
+          assetType={assetType}
+          onChange={setSymbol}
+          onSelect={(r) => {
+            setSymbol(r.symbol);
+            setAssetType(r.assetType);
+          }}
+          label={t("symbol")}
+          placeholder={t("symbolPlaceholder")}
+          required
+        />
         <label className="space-y-1 text-sm">
-          <span className="text-[var(--muted)]">Symbol</span>
-          <input
-            value={symbol}
-            onChange={(e) => setSymbol(e.target.value.toUpperCase())}
-            className="qt-input w-full px-3 py-2.5"
-            required
-          />
-        </label>
-        <label className="space-y-1 text-sm">
-          <span className="text-[var(--muted)]">Type</span>
+          <span className="text-[var(--muted)]">{t("assetType")}</span>
           <QtSelect
             value={assetType}
             onChange={(v) => setAssetType(v as AssetType)}
@@ -172,10 +186,13 @@ function AlertsContent() {
             required
             value={triggerPrice}
             onChange={(e) => setTriggerPrice(e.target.value)}
+            placeholder={t("triggerPricePlaceholder")}
             className="qt-input w-full px-3 py-2.5"
           />
         </label>
-        {error && <p className="text-sm text-[var(--down)] sm:col-span-2">{error}</p>}
+        {error && (
+          <p className="text-sm text-[var(--down)] sm:col-span-2">{error}</p>
+        )}
         <SubmitButton
           loading={submitting}
           loadingLabel={tCommon("loading")}
@@ -187,7 +204,9 @@ function AlertsContent() {
 
       <ul className="qt-panel divide-y divide-[var(--border)] overflow-hidden">
         {alerts.length === 0 && (
-          <li className="px-4 py-8 text-center text-sm text-[var(--muted)]">{t("empty")}</li>
+          <li className="px-4 py-8 text-center text-sm text-[var(--muted)]">
+            {t("empty")}
+          </li>
         )}
         {alerts.map((a) => (
           <li
@@ -197,10 +216,13 @@ function AlertsContent() {
             <div className="text-sm">
               <div className="font-semibold">
                 {a.symbol}{" "}
-                <span className="font-normal text-[var(--muted)]">({a.assetType})</span>
+                <span className="font-normal text-[var(--muted)]">
+                  ({a.assetType})
+                </span>
               </div>
               <div className="text-[var(--muted)]">
-                {a.condition === "gte" ? t("gte") : t("lte")} {a.triggerPrice} · {t(a.status)}
+                {a.condition === "gte" ? t("gte") : t("lte")} {a.triggerPrice} ·{" "}
+                {t(a.status)}
               </div>
             </div>
             <div className="flex gap-2 text-xs">
@@ -244,7 +266,11 @@ function AlertsContent() {
 
 export default function AlertsPage() {
   return (
-    <Suspense fallback={<div className="qt-panel p-6 text-sm text-[var(--muted)]">…</div>}>
+    <Suspense
+      fallback={
+        <div className="qt-panel p-6 text-sm text-[var(--muted)]">…</div>
+      }
+    >
       <AlertsContent />
     </Suspense>
   );

@@ -363,10 +363,15 @@
     "disabled": "無効",
     "disable": "無効化",
     "reactivate": "再有効化",
-    "delete": "削除",
     "empty": "アラートはまだありません",
     "loginRequired": "アラート管理にはログインが必要です",
-    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached."
+    "symbol": "Symbol",
+    "assetType": "Market",
+    "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
+    "symbolRequired": "Please enter or pick a symbol",
+    "triggerPricePlaceholder": "e.g. 200",
+    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached.",
+    "delete": "削除"
   },
   "comments": {
     "placeholder": "あなたの見解を共有…",
@@ -564,5 +569,29 @@
     "notesTitle": "Saved notes",
     "notesHint": "Latest 10, saved automatically.",
     "notesEmpty": "No notes yet"
+  },
+  "seo": {
+    "titleDefault": "銭力股 Q-Stock",
+    "titleTemplate": "%s · 銭力股",
+    "applicationName": "銭力股",
+    "siteName": "銭力股 Q-Stock",
+    "author": "銭力股",
+    "description": "スマート投資 · 価値発見 · AI支援 — 米国株・香港株・中国株・暗号資産の相場、ウォッチリスト、アラート、シミュレーション振り返り",
+    "descriptionShort": "スマート投資 · 価値発見 · AI支援 — 米国・香港・中国株と暗号資産",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol}（{name}）最新価格 {price}（{change}）、{date} 時点。銭力股のリアルタイム相場。",
+    "symbolDescriptionNoPrice": "{symbol}（{name}）の相場・チャート・AI分析 — 銭力股。",
+    "relatedSymbols": "関連銘柄",
+    "keywords": [
+      "銭力股",
+      "Q-Stock",
+      "米国株",
+      "香港株",
+      "中国株",
+      "株式",
+      "暗号資産",
+      "AI"
+    ]
   }
 }

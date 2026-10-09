@@ -28,7 +28,21 @@ const TAB_LOADING: ReadonlySet<SymbolTab> = new Set([
   "officers",
 ]);
 
-export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boolean) {
+/** Stable clock from quote payload (avoids SSR `new Date()` hydration skew). */
+function quoteTimestamp(quote: Quote | null): Date | null {
+  if (!quote?.timestamp) return null;
+  const ms =
+    quote.timestamp > 1e12 ? quote.timestamp : quote.timestamp * 1000;
+  const d = new Date(ms);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
+export function useSymbolPage(
+  symbol: string,
+  assetType: AssetType,
+  isIndex: boolean,
+  initialQuote: Quote | null = null,
+) {
   const locale = useLocale();
   const t = useTranslations("symbol");
   const tCommon = useTranslations("common");
@@ -37,7 +51,7 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
   const tEarnings = useTranslations("earnings");
   const { data: session } = useSession();
 
-  const [quote, setQuote] = useState<Quote | null>(null);
+  const [quote, setQuote] = useState<Quote | null>(initialQuote);
   const [resolution, setResolution] = useState<CandleResolution>("D");
   const [flags, setFlags] = useState<IndicatorFlags>({
     ma: true,
@@ -81,7 +95,9 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
   const [degraded, setDegraded] = useState(false);
   const [inWatchlist, setInWatchlist] = useState(false);
   const [watchBusy, setWatchBusy] = useState(false);
-  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(() =>
+    quoteTimestamp(initialQuote),
+  );
 
   const loadQuote = useCallback(async () => {
     const res = await fetch(`/api/quotes?symbol=${symbol}&assetType=${assetType}`);
@@ -216,9 +232,12 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
   }, [tab, symbol, assetType, locale, isIndex]);
 
   useEffect(() => {
-    setAlertPrice("");
+    setQuote(initialQuote);
+    setUpdatedAt(quoteTimestamp(initialQuote));
+    setAlertPrice(
+      initialQuote?.price ? String(Number(initialQuote.price.toFixed(4))) : "",
+    );
     setAlertMsg(null);
-    setQuote(null);
     setEarnings([]);
     setEarningsUpcoming([]);
     setEarningsRecent([]);
@@ -227,7 +246,7 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
     setOfficers([]);
     earningsLoadedRef.current = false;
     setTab("news");
-  }, [symbol, assetType]);
+  }, [symbol, assetType, initialQuote]);
 
   useEffect(() => {
     void loadQuote();

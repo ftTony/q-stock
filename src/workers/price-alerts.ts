@@ -4,6 +4,8 @@ import {
   nextPriceAlertAction,
 } from "../lib/alerts/threshold";
 import { tickWatchlistDigest } from "../lib/digest/run-watchlist-digest";
+import { writeDailySitemapFile } from "../lib/seo/write-daily-sitemap";
+import { isUsMidnightWindow } from "../lib/market/session";
 import { getQuote } from "../lib/market";
 import { withUserMarket } from "../lib/market/with-user-market";
 import type { AssetType } from "../lib/types";
@@ -203,10 +205,24 @@ async function tickPaperOrders() {
   }
 }
 
+/** Once per ET calendar day, only during 00:00–01:00 America/New_York. */
+async function tickSeoSitemap() {
+  if (!isUsMidnightWindow()) return;
+  try {
+    const result = await writeDailySitemapFile({ prisma });
+    if (result.wrote) {
+      console.info(`[seo] sitemap generated for ET day=${result.day}`);
+    }
+  } catch (err) {
+    console.error("[seo] sitemap write failed", err);
+  }
+}
+
 async function tick() {
   await tickAlerts();
   await tickPaperOrders();
   await tickWatchlistDigest(prisma);
+  await tickSeoSitemap();
 }
 
 async function main() {

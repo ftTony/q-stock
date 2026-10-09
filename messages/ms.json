@@ -363,10 +363,15 @@
     "disabled": "Dilumpuhkan",
     "disable": "Lumpuhkan",
     "reactivate": "Aktif semula",
-    "delete": "Padam",
     "empty": "Tiada amaran lagi",
     "loginRequired": "Log masuk untuk mengurus amaran",
-    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached."
+    "symbol": "Symbol",
+    "assetType": "Market",
+    "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
+    "symbolRequired": "Please enter or pick a symbol",
+    "triggerPricePlaceholder": "e.g. 200",
+    "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached.",
+    "delete": "Padam"
   },
   "comments": {
     "placeholder": "Kongsi pandangan anda…",
@@ -564,5 +569,29 @@
     "notesTitle": "Saved notes",
     "notesHint": "Latest 10, saved automatically.",
     "notesEmpty": "No notes yet"
+  },
+  "seo": {
+    "titleDefault": "Qianli Gu Q-Stock",
+    "titleTemplate": "%s · Qianli Gu",
+    "applicationName": "Qianli Gu",
+    "siteName": "Qianli Gu Q-Stock",
+    "author": "Qianli Gu",
+    "description": "Pelaburan pintar · Penemuan nilai · Keputusan dibantu AI — sebut harga AS, HK, A-share & kripto, senarai pantau, amaran dan semakan simulasi",
+    "descriptionShort": "Pelaburan pintar · Nilai · AI — AS, HK, A-share & kripto",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol} ({name}) harga terkini {price} ({change}), pada {date}. Sebut harga langsung di Qianli Gu.",
+    "symbolDescriptionNoPrice": "{symbol} ({name}) sebut harga, carta dan analisis AI di Qianli Gu.",
+    "relatedSymbols": "Simbol berkaitan",
+    "keywords": [
+      "Qianli Gu",
+      "Q-Stock",
+      "saham AS",
+      "saham HK",
+      "A-share",
+      "saham",
+      "kripto",
+      "AI"
+    ]
   }
 }
