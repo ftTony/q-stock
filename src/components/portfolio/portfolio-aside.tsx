@@ -37,7 +37,7 @@ export function PortfolioAside({
       <div className="qt-panel p-4">
         <div className="mb-3 flex items-center justify-between">
           <h2 className="font-semibold">{labels.narrative}</h2>
-          <Link href="/" className="text-xs text-[var(--brand-text)]">
+          <Link href="/markets" className="text-xs text-[var(--brand-text)]">
             {labels.viewAll}
           </Link>
         </div>

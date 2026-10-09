@@ -67,7 +67,7 @@ function WatchButton({
 function BackLink({ label }: { label: string }) {
   return (
     <Link
-      href="/"
+      href="/markets"
       className="inline-flex shrink-0 items-center gap-0.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--brand-text)]"
     >
       <svg

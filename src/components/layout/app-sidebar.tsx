@@ -153,7 +153,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
   const t = useTranslations("nav");
   const pathname = usePathname();
 
-  const isHome = pathname === "/";
+  const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isAnalysis = pathname.startsWith("/analysis");
   const isSymbol = pathname.startsWith("/symbol");
   const isWatchlist = pathname.startsWith("/watchlist");
@@ -172,7 +172,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
         style={collapsed ? undefined : { paddingTop: 7, paddingLeft: 12, paddingBottom: 2 }}
       >
         <Link
-          href="/"
+          href="/markets"
           className={`min-w-0 ${collapsed ? "" : "flex-1"}`}
           aria-label={t("markets")}
         >
@@ -205,8 +205,8 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             </div>
           )}
           <NavItem
-            href="/"
-            active={isHome}
+            href="/markets"
+            active={isMarkets}
             icon={<IconGrid />}
             label={t("markets")}
             collapsed={collapsed}

@@ -52,12 +52,22 @@ function IconBag({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
+function isMarketingPath(pathname: string) {
+  return (
+    pathname === "/" ||
+    pathname.startsWith("/disclaimer") ||
+    pathname.startsWith("/learn") ||
+    pathname.startsWith("/tools")
+  );
+}
+
 export function AppShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("nav");
+  const tM = useTranslations("marketing");
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useSidebarCollapsed();
 
-  const isHome = pathname === "/";
+  const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isWatchlist = pathname.startsWith("/watchlist");
   const isPortfolio = pathname.startsWith("/portfolio");
   const isAlerts = pathname.startsWith("/alerts");
@@ -67,6 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/auth/");
+  const isMarketing = isMarketingPath(pathname);
 
   const sidebarWidth = collapsed
     ? SIDEBAR_WIDTH_COLLAPSED
@@ -78,6 +89,45 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="mx-auto flex min-h-dvh max-w-lg items-center px-4 py-8">
           {children}
         </div>
+      </div>
+    );
+  }
+
+  if (isMarketing) {
+    const isLandingHome = pathname === "/";
+    return (
+      <div
+        className={
+          isLandingHome
+            ? "flex h-dvh flex-col overflow-hidden"
+            : "min-h-dvh"
+        }
+      >
+        <header className="sticky top-0 z-40 shrink-0 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
+          <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
+            <Link href="/" className="flex shrink-0 items-center">
+              <SiteLogo height={28} variant="compact" />
+            </Link>
+            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
+              <Link
+                href="/markets"
+                className="qt-btn qt-btn-primary h-9 px-3 text-xs"
+              >
+                {tM("ctaEnter")}
+              </Link>
+              <TopBarActions />
+            </div>
+          </div>
+        </header>
+        <main
+          className={
+            isLandingHome
+              ? "mkt-scroll min-h-0 flex-1 snap-y snap-mandatory overflow-y-auto overscroll-y-contain"
+              : "flex-1"
+          }
+        >
+          {children}
+        </main>
       </div>
     );
   }
@@ -98,7 +148,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
           <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-3">
-              <Link href="/" className="flex shrink-0 items-center lg:hidden">
+              <Link href="/markets" className="flex shrink-0 items-center lg:hidden">
                 <SiteLogo height={28} variant="compact" />
               </Link>
               <TopbarIndexTicker />
@@ -120,8 +170,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--border)] bg-[var(--sidebar)]/95 backdrop-blur-xl lg:hidden">
           <div className="grid grid-cols-4 gap-1 px-2 py-2 text-[11px]">
             <Link
-              href="/"
-              className={`flex flex-col items-center gap-1 rounded-lg py-2 ${isHome ? "text-[var(--brand-text)]" : "text-[var(--muted)]"}`}
+              href="/markets"
+              className={`flex flex-col items-center gap-1 rounded-lg py-2 ${isMarkets ? "text-[var(--brand-text)]" : "text-[var(--muted)]"}`}
             >
               <IconGrid />
               {t("markets")}

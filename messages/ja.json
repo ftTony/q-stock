@@ -653,5 +653,132 @@
     "metricNetMargin": "Net margin",
     "metricDebtToAsset": "Debt / assets",
     "metricTotalAssets": "Total assets (est.)"
+  },
+  "marketing": {
+    "seoDescription": "Smart investing · Value discovery · AI-assisted decisions. US, HK, A-shares and crypto quotes, watchlists, alerts, and paper review.",
+    "heroLine": "Smart investing · Value discovery · AI-assisted decisions",
+    "heroSupport": "Multi-market quotes, peer compare, and AI chart reads—to watch and review with a cooler head. For learning only; not investment advice.",
+    "ctaEnter": "Open markets",
+    "ctaStory": "Our approach",
+    "disclaimerShort": "Quotes and content are for learning only and are not investment advice.",
+    "featuresTitle": "What you can do",
+    "featuresSubtitle": "From watching to reviewing—tools stay restrained and checkable.",
+    "features": {
+      "markets": {
+        "title": "Multi-market quotes",
+        "body": "US, HK, A-shares, and major crypto—dashboard and boards in one place."
+      },
+      "watchlist": {
+        "title": "Watchlist & alerts",
+        "body": "Track symbols you care about; get notified when price hits a level."
+      },
+      "analysis": {
+        "title": "Peer compare",
+        "body": "Pick 2–4 names in an industry and line up valuation and fundamentals."
+      },
+      "ai": {
+        "title": "AI assist",
+        "body": "Chart reads, Q&A, and scenarios—with basis and invalidation, not order tickets."
+      },
+      "paper": {
+        "title": "Paper & review",
+        "body": "Practice with paper positions and generate review notes on process and emotion."
+      },
+      "alerts": {
+        "title": "Price alerts",
+        "body": "Set levels that matter—less refresh, less impulse."
+      }
+    },
+    "trustTitle": "Why trust it",
+    "trust": {
+      "learnOnly": {
+        "title": "Learning only",
+        "body": "No stock tips, no return promises. Conclusions stay within public quotes and filings."
+      },
+      "dataBound": {
+        "title": "Data with limits",
+        "body": "AI and compare cite what is visible; gaps are labeled, not invented."
+      },
+      "calm": {
+        "title": "No hype engine",
+        "body": "We emphasize invalidation and review over shouty narratives."
+      },
+      "privacy": {
+        "title": "Bring your own keys",
+        "body": "Broker quotes support BYOK; keys are encrypted and never echoed in plain text."
+      }
+    },
+    "storyTitle": "Why it exists",
+    "storyP1": "A decade in financial engineering—from onboarding and funding to trading, quotes, and risk. Q-Stock is a personal practice: use AI to dampen greed and fear in judgment.",
+    "storyP2": "If calmer watching beats chasing heat, start from the markets dashboard.",
+    "storyLink": "About & contact",
+    "ctaBandTitle": "Start with markets",
+    "ctaBandBody": "Open the dashboard, build a watchlist, or run a peer compare.",
+    "disclaimerFull": "Quotes, analysis, AI output, and any tool results on this site are for learning and technical exchange only and do not constitute investment advice. Markets involve risk; you are responsible for decisions and for complying with local law.",
+    "mainlandNotice": "Note for users in mainland China: overseas investment in stocks, BTC, and similar may be restricted or unlawful. This site is for learning only—please follow local regulations.",
+    "footerAbout": "About",
+    "footerMarkets": "Markets",
+    "footerDisclaimer": "Disclaimer",
+    "scrollNext": "Next section",
+    "featureZones": {
+      "capabilities": {
+        "eyebrow": "01 · Capabilities",
+        "title": "What you can do",
+        "subtitle": "From watching to reviewing—tools stay restrained and checkable."
+      }
+    },
+    "featureOpen": "Open",
+    "trustEyebrow": "02 · Trust",
+    "storyEyebrow": "03 · Origin",
+    "storyQuote": "Calmer watching lasts longer than chasing heat.",
+    "footerLearn": "Learn",
+    "dotNav": "Section navigation",
+    "dotHero": "Home",
+    "dotFeatures": "Capabilities",
+    "dotTrust": "Trust",
+    "dotStory": "Origin",
+    "footerTools": "Tools"
+  },
+  "disclaimer": {
+    "title": "Disclaimer",
+    "subtitle": "Please read before using this site",
+    "p1": "Quotes, charts, boards, watchlists, alerts, peer compare, AI chart reads and chat, scenarios, paper trading, and review notes on this site are for learning and technical exchange only. They are not investment advice, an offer, or a promise.",
+    "p2": "Financial markets involve risk. Past performance does not guarantee future results. You must decide independently and bear the consequences; consult licensed professionals when needed.",
+    "p3": "Data may come from third parties (e.g. broker OpenAPI or public feeds). We aim for availability but do not warrant timeliness, accuracy, or completeness. AI output may be wrong or outdated—verify before relying on it.",
+    "p4": "Comply with laws where you live. If local rules restrict overseas securities, crypto, or related information services, do not use this site for any unlawful purpose.",
+    "mainlandNotice": "Note for users in mainland China: overseas investment in stocks, BTC, and similar may be restricted or unlawful. This site is for learning only—please follow local regulations.",
+    "backHome": "Back to home"
+  },
+  "learn": {
+    "title": "Learn",
+    "subtitle": "Short notes on watching, tools, and mindset—for study only.",
+    "back": "All notes",
+    "tryInApp": "Want to try it? Open the matching tools in markets.",
+    "ctaMarkets": "Open markets",
+    "disclaimer": "For learning only; not investment advice.",
+    "disclaimerLink": "Disclaimer",
+    "categories": {
+      "basics": "Basics",
+      "tools": "Tools",
+      "mindset": "Mindset"
+    },
+    "comingSoon": "Coming soon",
+    "comingSoonBody": "The learn section is being prepared. Short notes will land here soon.",
+    "backHome": "Back to home"
+  },
+  "tools": {
+    "title": "Tools",
+    "comingSoon": "Coming soon",
+    "comingSoonBody": "Position, DCA, and compounding calculators are on the way.",
+    "ctaMarkets": "Open markets",
+    "backHome": "Back to home",
+    "disclaimer": "Results are hypothetical estimates only—not investment advice.",
+    "disclaimerLink": "Disclaimer"
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "This page does not exist or has been moved. Head home, or open the markets dashboard.",
+    "home": "Back home",
+    "markets": "Open markets"
   }
 }

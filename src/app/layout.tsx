@@ -65,10 +65,10 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    { media: "(prefers-color-scheme: dark)", color: "#0b1220" },
-    { media: "(prefers-color-scheme: light)", color: "#0b1220" },
+    { media: "(prefers-color-scheme: light)", color: "#f3f5f9" },
+    { media: "(prefers-color-scheme: dark)", color: "#06090f" },
   ],
-  colorScheme: "dark light",
+  colorScheme: "light dark",
 };
 
 export default async function RootLayout({
@@ -80,12 +80,15 @@ export default async function RootLayout({
   const gaId = gaMeasurementId();
 
   return (
-    <html
-      lang={locale}
-      className="dark"
-      data-change="cn"
-      suppressHydrationWarning
-    >
+    <html lang={locale} data-change="cn" suppressHydrationWarning>
+      <head>
+        {/* Apply stored theme before paint so light default is not overwritten by a dark flash. */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var t=localStorage.getItem("theme");if(t==="dark")document.documentElement.classList.add("dark");else document.documentElement.classList.remove("dark");}catch(e){}})();`,
+          }}
+        />
+      </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >

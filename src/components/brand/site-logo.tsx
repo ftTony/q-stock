@@ -39,8 +39,8 @@ export function SiteLogo({
     setImgFailed(false);
   }, [resolvedTheme]);
 
-  // Avoid hydration mismatch: default to dark mark until mounted.
-  const themed = brandMarkSrc(mounted ? resolvedTheme : "dark");
+  // Avoid hydration mismatch: default to light mark until mounted (site default).
+  const themed = brandMarkSrc(mounted ? resolvedTheme : "light");
   const src = imgFailed ? "/logo.png" : themed;
 
   return (

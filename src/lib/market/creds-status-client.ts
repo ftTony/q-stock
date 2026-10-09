@@ -35,8 +35,10 @@ export async function fetchMarketCredsStatus(): Promise<MarketCredsStatus | null
   }
 }
 
-/** After login/register: settings if no BYOK, otherwise home. */
-export async function pathAfterAuth(): Promise<"/settings?setupKeys=1" | "/"> {
+/** After login/register: settings if no BYOK, otherwise markets dashboard. */
+export async function pathAfterAuth(): Promise<
+  "/settings?setupKeys=1" | "/markets"
+> {
   const status = await fetchMarketCredsStatus();
   if (!hasAnyBrokerCreds(status)) {
     try {
@@ -46,5 +48,5 @@ export async function pathAfterAuth(): Promise<"/settings?setupKeys=1" | "/"> {
     }
     return "/settings?setupKeys=1";
   }
-  return "/";
+  return "/markets";
 }

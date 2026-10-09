@@ -119,21 +119,25 @@ export function TopBarActions() {
   const dark = mounted && (resolvedTheme || theme) === "dark";
   const market = useEquitySessionLabel((key) => t(key as "marketOpen"));
 
+  const loggedIn = Boolean(session?.user);
+
   return (
     <div className="flex items-center gap-2 sm:gap-3">
-      <span
-        className="qt-chip hidden sm:inline-flex"
-        title={market.label}
-      >
+      {loggedIn && (
         <span
-          className={`h-1.5 w-1.5 rounded-full ${
-            market.open
-              ? "bg-[var(--up)] shadow-[0_0_8px_var(--up)]"
-              : "bg-[var(--muted)]"
-          }`}
-        />
-        {market.label}
-      </span>
+          className="qt-chip hidden sm:inline-flex"
+          title={market.label}
+        >
+          <span
+            className={`h-1.5 w-1.5 rounded-full ${
+              market.open
+                ? "bg-[var(--up)] shadow-[0_0_8px_var(--up)]"
+                : "bg-[var(--muted)]"
+            }`}
+          />
+          {market.label}
+        </span>
+      )}
 
       <button
         type="button"
@@ -155,79 +159,77 @@ export function TopBarActions() {
         )}
       </button>
 
-      <div className="relative" ref={notifRef}>
-        <button
-          type="button"
-          className="qt-btn qt-btn-ghost relative h-9 w-9"
-          aria-label={t("alerts")}
-          onClick={() => {
-            if (!session?.user) {
-              router.push("/login");
-              return;
-            }
-            setNotifOpen((v) => !v);
-            setMenuOpen(false);
-          }}
-        >
-          <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-            <path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 7H3s3 0 3-7" />
-            <path d="M10 19a2 2 0 0 0 4 0" />
-          </svg>
-          {alertCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--down)] px-1 text-[10px] font-bold text-white">
-              {alertCount > 9 ? "9+" : alertCount}
-            </span>
-          )}
-        </button>
-        {notifOpen && (
-          <div className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl">
-            <div className="flex items-center justify-between border-b border-[var(--border)] px-3 py-2">
-              <span className="text-sm font-semibold">{t("alerts")}</span>
-              <Link
-                href="/alerts"
-                className="text-xs text-[var(--brand-text)]"
-                onClick={() => setNotifOpen(false)}
-              >
-                {tAlerts("title")}
-              </Link>
-            </div>
-            {recent.length === 0 ? (
-              <div className="px-3 py-6 text-center text-xs text-[var(--muted)]">
-                {tAlerts("empty")}
-              </div>
-            ) : (
-              <ul className="max-h-72 overflow-auto">
-                {recent.map((a) => (
-                  <li key={a.id} className="border-b border-[var(--border)] last:border-0">
-                    <Link
-                      href={`/alerts?symbol=${a.symbol}&assetType=${a.assetType}`}
-                      className="block px-3 py-2.5 hover:bg-[var(--sidebar-hover)]"
-                      onClick={() => setNotifOpen(false)}
-                    >
-                      <div className="flex items-center justify-between gap-2 text-sm">
-                        <span className="font-semibold">{a.symbol}</span>
-                        <span
-                          className={`text-[10px] uppercase ${
-                            a.status === "triggered"
-                              ? "text-[var(--down)]"
-                              : "text-[var(--up)]"
-                          }`}
-                        >
-                          {tAlerts(a.status)}
-                        </span>
-                      </div>
-                      <div className="mt-0.5 text-xs text-[var(--muted)]">
-                        {a.condition === "gte" ? tAlerts("gte") : tAlerts("lte")}{" "}
-                        {a.triggerPrice}
-                      </div>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+      {loggedIn && (
+        <div className="relative" ref={notifRef}>
+          <button
+            type="button"
+            className="qt-btn qt-btn-ghost relative h-9 w-9"
+            aria-label={t("alerts")}
+            onClick={() => {
+              setNotifOpen((v) => !v);
+              setMenuOpen(false);
+            }}
+          >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 7H3s3 0 3-7" />
+              <path d="M10 19a2 2 0 0 0 4 0" />
+            </svg>
+            {alertCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--down)] px-1 text-[10px] font-bold text-white">
+                {alertCount > 9 ? "9+" : alertCount}
+              </span>
             )}
-          </div>
-        )}
-      </div>
+          </button>
+          {notifOpen && (
+            <div className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl">
+              <div className="flex items-center justify-between border-b border-[var(--border)] px-3 py-2">
+                <span className="text-sm font-semibold">{t("alerts")}</span>
+                <Link
+                  href="/alerts"
+                  className="text-xs text-[var(--brand-text)]"
+                  onClick={() => setNotifOpen(false)}
+                >
+                  {tAlerts("title")}
+                </Link>
+              </div>
+              {recent.length === 0 ? (
+                <div className="px-3 py-6 text-center text-xs text-[var(--muted)]">
+                  {tAlerts("empty")}
+                </div>
+              ) : (
+                <ul className="max-h-72 overflow-auto">
+                  {recent.map((a) => (
+                    <li key={a.id} className="border-b border-[var(--border)] last:border-0">
+                      <Link
+                        href={`/alerts?symbol=${a.symbol}&assetType=${a.assetType}`}
+                        className="block px-3 py-2.5 hover:bg-[var(--sidebar-hover)]"
+                        onClick={() => setNotifOpen(false)}
+                      >
+                        <div className="flex items-center justify-between gap-2 text-sm">
+                          <span className="font-semibold">{a.symbol}</span>
+                          <span
+                            className={`text-[10px] uppercase ${
+                              a.status === "triggered"
+                                ? "text-[var(--down)]"
+                                : "text-[var(--up)]"
+                            }`}
+                          >
+                            {tAlerts(a.status)}
+                          </span>
+                        </div>
+                        <div className="mt-0.5 text-xs text-[var(--muted)]">
+                          {a.condition === "gte" ? tAlerts("gte") : tAlerts("lte")}{" "}
+                          {a.triggerPrice}
+                        </div>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="relative hidden md:block" ref={langRef}>
         <button

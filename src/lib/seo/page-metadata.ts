@@ -75,13 +75,13 @@ export async function buildPageMetadata(
       locale: loc,
       siteName: t("siteName"),
       title,
-      description: descriptionShort,
+      description: opts.description ?? descriptionShort,
       url: canonical,
     },
     twitter: {
       card: "summary_large_image",
       title,
-      description: descriptionShort,
+      description: opts.description ?? descriptionShort,
     },
   };
 }

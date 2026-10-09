@@ -60,7 +60,9 @@ export function MarketsHeaderToolbar({
           onChange={(key) => {
             onTabChange(key);
             onQueryChange("");
-            router.replace(key === "stock" ? "/" : `/?list=${key}`);
+            router.replace(
+              key === "stock" ? "/markets" : `/markets?list=${key}`,
+            );
           }}
           className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1"
           buttonClassName="px-2.5 py-1 text-[11px] font-medium sm:text-xs"
