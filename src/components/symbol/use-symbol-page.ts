@@ -28,6 +28,15 @@ const TAB_LOADING: ReadonlySet<SymbolTab> = new Set([
   "officers",
 ]);
 
+/** Stable clock from quote payload (avoids SSR `new Date()` hydration skew). */
+function quoteTimestamp(quote: Quote | null): Date | null {
+  if (!quote?.timestamp) return null;
+  const ms =
+    quote.timestamp > 1e12 ? quote.timestamp : quote.timestamp * 1000;
+  const d = new Date(ms);
+  return Number.isNaN(d.getTime()) ? null : d;
+}
+
 export function useSymbolPage(
   symbol: string,
   assetType: AssetType,
@@ -87,7 +96,7 @@ export function useSymbolPage(
   const [inWatchlist, setInWatchlist] = useState(false);
   const [watchBusy, setWatchBusy] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(() =>
-    initialQuote ? new Date() : null,
+    quoteTimestamp(initialQuote),
   );
 
   const loadQuote = useCallback(async () => {
@@ -224,7 +233,7 @@ export function useSymbolPage(
 
   useEffect(() => {
     setQuote(initialQuote);
-    setUpdatedAt(initialQuote ? new Date() : null);
+    setUpdatedAt(quoteTimestamp(initialQuote));
     setAlertPrice(
       initialQuote?.price ? String(Number(initialQuote.price.toFixed(4))) : "",
     );

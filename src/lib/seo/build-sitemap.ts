@@ -41,6 +41,7 @@ export const SITEMAP_SEGMENTS: SitemapSegmentId[] = [
   "crypto",
 ];
 
+/** Public indexable paths only (no auth / account surfaces). */
 const STATIC_PATHS: Array<{
   path: string;
   changeFrequency: SitemapEntry["changeFrequency"];
@@ -49,10 +50,6 @@ const STATIC_PATHS: Array<{
   { path: "/", changeFrequency: "daily", priority: 1 },
   { path: "/analysis", changeFrequency: "daily", priority: 0.9 },
   { path: "/about", changeFrequency: "monthly", priority: 0.5 },
-  { path: "/watchlist", changeFrequency: "weekly", priority: 0.6 },
-  { path: "/portfolio", changeFrequency: "weekly", priority: 0.5 },
-  { path: "/alerts", changeFrequency: "weekly", priority: 0.5 },
-  { path: "/review", changeFrequency: "weekly", priority: 0.5 },
 ];
 
 const MARKET_PRIORITY: Record<SitemapMarket, number> = {

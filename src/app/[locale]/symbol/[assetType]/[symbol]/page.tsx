@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SymbolPageClient } from "@/components/symbol/symbol-page-client";
 import { SymbolRelatedLinks } from "@/components/symbol/symbol-related-links";
+import { SymbolSeoHeading } from "@/components/symbol/symbol-seo-heading";
 import {
   buildSymbolMetadata,
   buildSymbolSeoCopy,
@@ -41,6 +42,7 @@ export default async function SymbolPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <SymbolSeoHeading symbol={symbol} copy={copy} />
       <SymbolPageClient
         symbol={symbol}
         assetType={assetType}

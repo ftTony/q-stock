@@ -87,6 +87,20 @@ function BackLink({ label }: { label: string }) {
   );
 }
 
+function UpdatedAtLabel({ updatedAt }: { updatedAt: Date }) {
+  /** Avoid SSR/client clock skew hydration mismatch (e.g. 09:55:42 vs :43). */
+  const [label, setLabel] = useState<string | null>(null);
+  useEffect(() => {
+    setLabel(formatTime(updatedAt));
+  }, [updatedAt]);
+  if (!label) return null;
+  return (
+    <span className="text-[10px] text-[var(--muted)]" suppressHydrationWarning>
+      {label}
+    </span>
+  );
+}
+
 function SymbolPriceRow({
   symbol,
   assetType,
@@ -100,12 +114,13 @@ function SymbolPriceRow({
 }) {
   return (
     <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-      <h1 className="text-sm font-semibold tracking-tight">
+      {/* Page H1 is server-rendered in SymbolSeoHeading; keep this as a visual title. */}
+      <p className="text-sm font-semibold tracking-tight">
         {symbol}{" "}
         <span className="text-[11px] font-normal text-[var(--muted)]">
           {displayName(symbol, assetType)}
         </span>
-      </h1>
+      </p>
       {quote && (
         <>
           <span className="text-sm font-semibold tabular-nums">
@@ -114,11 +129,7 @@ function SymbolPriceRow({
           <span className="text-xs">
             <ChangePct value={quote.percentChange} />
           </span>
-          {updatedAt && (
-            <span className="text-[10px] text-[var(--muted)]">
-              {formatTime(updatedAt)}
-            </span>
-          )}
+          {updatedAt ? <UpdatedAtLabel updatedAt={updatedAt} /> : null}
         </>
       )}
     </div>

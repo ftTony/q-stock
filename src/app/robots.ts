@@ -1,6 +1,28 @@
 import type { MetadataRoute } from "next";
 import { siteOrigin } from "@/lib/seo/site-url";
 
+const PRIVATE = [
+  "/api/",
+  "/settings",
+  "/login",
+  "/register",
+  "/forgot-password",
+  "/reset-password",
+  "/watchlist",
+  "/portfolio",
+  "/alerts",
+  "/auth/",
+  "/*/settings",
+  "/*/login",
+  "/*/register",
+  "/*/forgot-password",
+  "/*/reset-password",
+  "/*/watchlist",
+  "/*/portfolio",
+  "/*/alerts",
+  "/*/auth/",
+];
+
 export default function robots(): MetadataRoute.Robots {
   const origin = siteOrigin();
   return {
@@ -8,22 +30,9 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: [
-          "/api/",
-          "/settings",
-          "/login",
-          "/register",
-          "/forgot-password",
-          "/reset-password",
-          "/*/settings",
-          "/*/login",
-          "/*/register",
-          "/*/forgot-password",
-          "/*/reset-password",
-        ],
+        disallow: PRIVATE,
       },
     ],
-    // Indexes only — market files may be split into sitemap-stock-N.xml
     sitemap: [`${origin}/sitemap.xml`, `${origin}/sitemaps/sitemap.xml`],
   };
 }

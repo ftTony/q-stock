@@ -212,7 +212,7 @@ export async function buildSymbolMetadata(
   };
 }
 
-/** JSON-LD for crawlers (InvestmentOrSecurity + Offer price). */
+/** JSON-LD graph: InvestmentOrSecurity (+ Offer) and BreadcrumbList. */
 export function symbolJsonLd(
   locale: string,
   symbol: string,
@@ -224,20 +224,22 @@ export function symbolJsonLd(
   const loc = (locales.includes(locale as AppLocale)
     ? locale
     : defaultLocale) as AppLocale;
+  const homePath = localizedPath(loc, "/");
+  const homeUrl = homePath === "/" ? `${origin}/` : `${origin}${homePath}`;
   const path = `/symbol/${assetType}/${encodeURIComponent(symbol)}`;
   const url = `${origin}${localizedPath(loc, path)}`;
 
-  const base: Record<string, unknown> = {
-    "@context": "https://schema.org",
+  const security: Record<string, unknown> = {
     "@type": "InvestmentOrSecurity",
-    name: copy.name,
+    "@id": `${url}#security`,
+    name: copy.name !== symbol ? `${symbol} ${copy.name}` : symbol,
     tickerSymbol: symbol,
     url,
     description: copy.description,
   };
 
   if (quote && quote.price > 0) {
-    base.offers = {
+    security.offers = {
       "@type": "Offer",
       price: quote.price,
       priceCurrency: copy.currency,
@@ -248,5 +250,26 @@ export function symbolJsonLd(
     };
   }
 
-  return base;
+  const breadcrumb: Record<string, unknown> = {
+    "@type": "BreadcrumbList",
+    itemListElement: [
+      {
+        "@type": "ListItem",
+        position: 1,
+        name: "Home",
+        item: homeUrl,
+      },
+      {
+        "@type": "ListItem",
+        position: 2,
+        name: symbol,
+        item: url,
+      },
+    ],
+  };
+
+  return {
+    "@context": "https://schema.org",
+    "@graph": [security, breadcrumb],
+  };
 }
