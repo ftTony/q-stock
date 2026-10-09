@@ -29,6 +29,8 @@ services:
     environment:
       DATABASE_URL: postgresql://qstock:qstock@db:5432/qstock?schema=public
       APP_URL: http://localhost:3000
+    volumes:
+      - sitemaps:/app/public/sitemaps
     depends_on:
       db:
         condition: service_healthy
@@ -44,9 +46,13 @@ services:
       - .env
     environment:
       DATABASE_URL: postgresql://qstock:qstock@db:5432/qstock?schema=public
+      SITEMAP_OUT_DIR: /app/public/sitemaps
+    volumes:
+      - sitemaps:/app/public/sitemaps
     depends_on:
       db:
         condition: service_healthy
 
 volumes:
   pgdata:
+  sitemaps:

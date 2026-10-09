@@ -133,6 +133,11 @@ Worker 按 `ALERT_POLL_INTERVAL_MS`（默认 45000ms）轮询 `active` 提醒并
 | `SMTP_USER` / `SMTP_PASS` | 否 | SMTP 认证 |
 | `SMTP_SECURE` | 否 | `true` 启用 TLS |
 | `ALERT_POLL_INTERVAL_MS` | 否 | Worker 轮询间隔，默认 45000 |
+| `NEXT_PUBLIC_GA_MEASUREMENT_ID` | 否 | Google Analytics 4 衡量 ID（`G-…`）；未设则不加载统计 |
+| `GOOGLE_SITE_VERIFICATION` | 否 | Search Console HTML 标签验证码（`content` 值） |
+| `SITEMAP_OUT_DIR` | 否 | 每日 sitemap XML 输出目录，默认 `public/sitemaps`（Worker 仅在美东 00:00–01:00 生成，按 ET 日去重） |
+| `SITEMAP_RANK_LIMIT` | 否 | 每市场从行情榜/交易所接口拉取标的上限，默认 200 |
+| `SITEMAP_MAX_URLS_PER_FILE` | 否 | 单个 sitemap XML 最多 `<url>` 条数，默认 500；超出则拆成 `sitemap-stock-1.xml`… |
 | `WATCHLIST_DIGEST_ENABLED` | 否 | 美股收盘自选摘要，默认开启；设 `false` 关闭 |
 | `WATCHLIST_DIGEST_START_ET` / `END_ET` | 否 | 发信窗口（ET），默认 `16:00`–`17:00` |
 | `WATCHLIST_DIGEST_AI_MAX` | 否 | 每用户 AI 分析标的上限，默认 `8` |

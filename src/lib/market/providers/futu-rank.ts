@@ -74,6 +74,66 @@ async function getMarketCodes(assetType: AssetType): Promise<string[]> {
   throw new Error(`Futu stock screen exceeded ${MAX_SCREEN_PAGES} pages`);
 }
 
+/**
+ * Lightweight symbol list for SEO sitemaps: stock-screen codes only
+ * (no full-market snapshots). Stops once `limit` bare symbols are collected.
+ */
+export async function getFutuScreenSymbols(
+  assetType: AssetType,
+  limit: number,
+): Promise<string[]> {
+  if (!isFutuConfigured()) throw new Error("Futu not configured");
+  if (assetType !== "stock" && assetType !== "hk") {
+    throw new Error("Futu screen symbols support US and HK equities only");
+  }
+
+  const max = Math.min(2000, Math.max(30, Math.floor(limit)));
+  const out: string[] = [];
+  const seen = new Set<string>();
+  let nextKey: string | undefined;
+  const maxPages = Math.min(
+    MAX_SCREEN_PAGES,
+    Math.ceil(max / SCREEN_PAGE_SIZE) + 1,
+  );
+
+  for (let page = 0; page < maxPages && out.length < max; page++) {
+    const { data, hasMore, nextKey: responseNextKey } = await futuRequest<{
+      items?: ScreenItem[];
+    }>("POST", "/api/v1.0/quote/stock-screen", {
+      body: {
+        screen_queries: [
+          {
+            simple_field_query: {
+              simple_field: 1,
+              screen_value_list: [screenMarket(assetType)],
+            },
+          },
+        ],
+        limit: SCREEN_PAGE_SIZE,
+        ...(nextKey ? { next_key: nextKey } : {}),
+      },
+    });
+
+    for (const item of data.items ?? []) {
+      if (!item.code) continue;
+      const bare = normalizeSymbol(item.code, assetType);
+      if (!bare || seen.has(bare)) continue;
+      seen.add(bare);
+      out.push(bare);
+      if (out.length >= max) break;
+    }
+
+    if (!hasMore || out.length >= max) break;
+    if (!responseNextKey || responseNextKey === "-1") break;
+    nextKey = responseNextKey;
+  }
+
+  if (!out.length) {
+    throw new Error(`Futu stock screen returned no symbols for ${assetType}`);
+  }
+  return out;
+}
+
 function mapSnapshot(row: SnapshotRow, assetType: AssetType): QuoteWithSource | null {
   const price = Number(row.last_price ?? 0);
   const previousClose = Number(row.prev_close_price ?? 0);

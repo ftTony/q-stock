@@ -62,6 +62,20 @@ export function isUsMarketCloseWindow(
   return minutes >= start && minutes < end;
 }
 
+/**
+ * ET calendar midnight window (any day of week).
+ * Default 00:00–01:00 America/New_York so a ~45s worker poll can hit once.
+ */
+export function isUsMidnightWindow(
+  now = new Date(),
+  opts?: { startMinutes?: number; endMinutes?: number },
+): boolean {
+  const start = opts?.startMinutes ?? 0;
+  const end = opts?.endMinutes ?? 60;
+  const { minutes } = zonedClock(now, "America/New_York");
+  return minutes >= start && minutes < end;
+}
+
 /** HK continuous: Mon–Fri 09:30–12:00 & 13:00–16:00 Asia/Hong_Kong */
 export function isHkRegularSessionOpen(now = new Date()): boolean {
   const { weekday, minutes } = zonedClock(now, "Asia/Hong_Kong");

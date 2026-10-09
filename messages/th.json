@@ -515,5 +515,29 @@
     "mainlandNotice": "เตือนเพื่อนในจีนแผ่นดินใหญ่: ปัจจุบันการลงทุนหุ้นต่างประเทศหรือ BTC เป็นการกระทำผิดกฎหมาย เว็บนี้เพื่อการเรียนรู้เท่านั้น กรุณาปฏิบัติตามกฎหมายท้องถิ่น",
     "platformTitle": "เกี่ยวกับ Qianli Gu",
     "platformBody": "Qianli Gu (钱力股) โฟกัสการลงทุนอัจฉริยะและการค้นพบมูลค่า ใช้ AI ช่วยวิเคราะห์และทบทวนอย่างใจเย็นยิ่งขึ้น และลดผลของความโลภ ความกลัว และจุดอ่อนของมนุษย์ ข้อมูลและเนื้อหาเพื่อการเรียนรู้เท่านั้น ไม่ใช่คำแนะนำการลงทุน"
+  },
+  "seo": {
+    "titleDefault": "Qianli Gu Q-Stock",
+    "titleTemplate": "%s · Qianli Gu",
+    "applicationName": "Qianli Gu",
+    "siteName": "Qianli Gu Q-Stock",
+    "author": "Qianli Gu",
+    "description": "การลงทุนอัจฉริยะ · ค้นหาคุณค่า · ตัดสินใจด้วย AI — ราคาหุ้นสหรัฐ ฮ่องกง A-share และคริปโต รายการโปรด การแจ้งเตือน และทบทวนจำลอง",
+    "descriptionShort": "การลงทุนอัจฉริยะ · คุณค่า · AI — สหรัฐ ฮ่องกง A-share และคริปโต",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol} ({name}) ราคาล่าสุด {price} ({change}) ณ {date} ดูราคาแบบเรียลไทม์บน Qianli Gu",
+    "symbolDescriptionNoPrice": "{symbol} ({name}) ราคา กราฟ และการวิเคราะห์ AI บน Qianli Gu",
+    "relatedSymbols": "สัญลักษณ์ที่เกี่ยวข้อง",
+    "keywords": [
+      "Qianli Gu",
+      "Q-Stock",
+      "หุ้นสหรัฐ",
+      "หุ้นฮ่องกง",
+      "A-share",
+      "หุ้น",
+      "คริปโต",
+      "AI"
+    ]
   }
 }

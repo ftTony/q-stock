@@ -515,5 +515,29 @@
     "mainlandNotice": "中国本土の方向け：現在、海外株・BTC への投資は違法とされています。本サイトは学習用であり、現地の法令を遵守してください。",
     "platformTitle": "銭力股について",
     "platformBody": "銭力股（钱力股）は「スマート投資」と「価値発見」を軸にしています。AI の力で、より冷静な相場観察と振り返りを支え、強欲・恐怖など人間の弱点が判断を歪めるのを少しでも和らげます。相場とコンテンツは学習用であり、投資助言ではありません。"
+  },
+  "seo": {
+    "titleDefault": "銭力股 Q-Stock",
+    "titleTemplate": "%s · 銭力股",
+    "applicationName": "銭力股",
+    "siteName": "銭力股 Q-Stock",
+    "author": "銭力股",
+    "description": "スマート投資 · 価値発見 · AI支援 — 米国株・香港株・中国株・暗号資産の相場、ウォッチリスト、アラート、シミュレーション振り返り",
+    "descriptionShort": "スマート投資 · 価値発見 · AI支援 — 米国・香港・中国株と暗号資産",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol}（{name}）最新価格 {price}（{change}）、{date} 時点。銭力股のリアルタイム相場。",
+    "symbolDescriptionNoPrice": "{symbol}（{name}）の相場・チャート・AI分析 — 銭力股。",
+    "relatedSymbols": "関連銘柄",
+    "keywords": [
+      "銭力股",
+      "Q-Stock",
+      "米国株",
+      "香港株",
+      "中国株",
+      "株式",
+      "暗号資産",
+      "AI"
+    ]
   }
 }

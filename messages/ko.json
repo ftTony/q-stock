@@ -515,5 +515,29 @@
     "mainlandNotice": "중국 본토 이용자 안내: 현재 해외 주식·BTC 투자는 불법입니다. 본 사이트는 학습용이며 현지 법령을 지켜 주세요.",
     "platformTitle": "Qianli Gu 소개",
     "platformBody": "Qianli Gu(钱力股)는 ‘스마트 투자’와 ‘가치 발굴’을 중심으로 합니다. AI로 더 차분한 리서치·복기를 돕고, 탐욕·공포 등 인간 약점이 판단을 흔드는 것을 줄이고자 합니다. 시세와 콘텐츠는 학습용이며 투자 권유가 아닙니다."
+  },
+  "seo": {
+    "titleDefault": "전리구 Q-Stock",
+    "titleTemplate": "%s · 전리구",
+    "applicationName": "전리구",
+    "siteName": "전리구 Q-Stock",
+    "author": "전리구",
+    "description": "스마트 투자 · 가치 발견 · AI 지원 — 미국·홍콩·중국 주식과 암호화폐 시세, 관심종목, 알림, 모의 복기",
+    "descriptionShort": "스마트 투자 · 가치 발견 · AI 지원 — 미국·홍콩·A주와 암호화폐",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol}({name}) 최신가 {price}({change}), {date} 기준. 전리구 실시간 시세.",
+    "symbolDescriptionNoPrice": "{symbol}({name}) 시세·차트·AI 분석 — 전리구.",
+    "relatedSymbols": "관련 종목",
+    "keywords": [
+      "전리구",
+      "Q-Stock",
+      "미국주식",
+      "홍콩주식",
+      "A주",
+      "주식",
+      "암호화폐",
+      "AI"
+    ]
   }
 }

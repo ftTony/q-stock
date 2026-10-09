@@ -28,7 +28,12 @@ const TAB_LOADING: ReadonlySet<SymbolTab> = new Set([
   "officers",
 ]);
 
-export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boolean) {
+export function useSymbolPage(
+  symbol: string,
+  assetType: AssetType,
+  isIndex: boolean,
+  initialQuote: Quote | null = null,
+) {
   const locale = useLocale();
   const t = useTranslations("symbol");
   const tCommon = useTranslations("common");
@@ -37,7 +42,7 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
   const tEarnings = useTranslations("earnings");
   const { data: session } = useSession();
 
-  const [quote, setQuote] = useState<Quote | null>(null);
+  const [quote, setQuote] = useState<Quote | null>(initialQuote);
   const [resolution, setResolution] = useState<CandleResolution>("D");
   const [flags, setFlags] = useState<IndicatorFlags>({
     ma: true,
@@ -81,7 +86,9 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
   const [degraded, setDegraded] = useState(false);
   const [inWatchlist, setInWatchlist] = useState(false);
   const [watchBusy, setWatchBusy] = useState(false);
-  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
+  const [updatedAt, setUpdatedAt] = useState<Date | null>(() =>
+    initialQuote ? new Date() : null,
+  );
 
   const loadQuote = useCallback(async () => {
     const res = await fetch(`/api/quotes?symbol=${symbol}&assetType=${assetType}`);
@@ -216,9 +223,12 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
   }, [tab, symbol, assetType, locale, isIndex]);
 
   useEffect(() => {
-    setAlertPrice("");
+    setQuote(initialQuote);
+    setUpdatedAt(initialQuote ? new Date() : null);
+    setAlertPrice(
+      initialQuote?.price ? String(Number(initialQuote.price.toFixed(4))) : "",
+    );
     setAlertMsg(null);
-    setQuote(null);
     setEarnings([]);
     setEarningsUpcoming([]);
     setEarningsRecent([]);
@@ -227,7 +237,7 @@ export function useSymbolPage(symbol: string, assetType: AssetType, isIndex: boo
     setOfficers([]);
     earningsLoadedRef.current = false;
     setTab("news");
-  }, [symbol, assetType]);
+  }, [symbol, assetType, initialQuote]);
 
   useEffect(() => {
     void loadQuote();

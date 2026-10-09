@@ -515,5 +515,29 @@
     "mainlandNotice": "Aviso para amigos en China continental: invertir en acciones extranjeras o BTC es actualmente ilegal. Este sitio es solo para aprendizaje — cumplan las leyes locales.",
     "platformTitle": "Sobre Qianli Gu",
     "platformBody": "Qianli Gu (钱力股) gira en torno a la inversión inteligente y el descubrimiento de valor. Usamos IA para apoyar un análisis y una revisión más serenos, y atenuar el efecto del miedo, la codicia y otros sesgos humanos. Los datos y contenidos son solo para aprendizaje, no asesoramiento de inversión."
+  },
+  "seo": {
+    "titleDefault": "Qianli Gu Q-Stock",
+    "titleTemplate": "%s · Qianli Gu",
+    "applicationName": "Qianli Gu",
+    "siteName": "Qianli Gu Q-Stock",
+    "author": "Qianli Gu",
+    "description": "Inversión inteligente · Descubrimiento de valor · Decisiones con IA — cotizaciones EE.UU., HK, A-shares y cripto, listas, alertas y revisión simulada",
+    "descriptionShort": "Inversión inteligente · Valor · IA — EE.UU., HK, A-shares y cripto",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol} ({name}) último precio {price} ({change}), al {date}. Cotizaciones en vivo en Qianli Gu.",
+    "symbolDescriptionNoPrice": "{symbol} ({name}) cotizaciones, gráficos y análisis IA en Qianli Gu.",
+    "relatedSymbols": "Símbolos relacionados",
+    "keywords": [
+      "Qianli Gu",
+      "Q-Stock",
+      "acciones EE.UU.",
+      "acciones HK",
+      "A-shares",
+      "acciones",
+      "cripto",
+      "IA"
+    ]
   }
 }

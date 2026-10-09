@@ -515,5 +515,29 @@
     "mainlandNotice": "Peringatan untuk rakan di tanah besar China: melabur saham luar negara atau BTC kini adalah haram. Laman ini hanya untuk pembelajaran — patuhi undang-undang setempat.",
     "platformTitle": "Tentang Qianli Gu",
     "platformBody": "Qianli Gu (钱力股) berpaksikan pelaburan pintar dan penemuan nilai. AI membantu kajian dan semakan yang lebih tenang, serta mengurangkan gangguan ketakutan, ketamakan dan kelemahan manusia lain. Data dan kandungan hanya untuk pembelajaran, bukan nasihat pelaburan."
+  },
+  "seo": {
+    "titleDefault": "Qianli Gu Q-Stock",
+    "titleTemplate": "%s · Qianli Gu",
+    "applicationName": "Qianli Gu",
+    "siteName": "Qianli Gu Q-Stock",
+    "author": "Qianli Gu",
+    "description": "Pelaburan pintar · Penemuan nilai · Keputusan dibantu AI — sebut harga AS, HK, A-share & kripto, senarai pantau, amaran dan semakan simulasi",
+    "descriptionShort": "Pelaburan pintar · Nilai · AI — AS, HK, A-share & kripto",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol} ({name}) harga terkini {price} ({change}), pada {date}. Sebut harga langsung di Qianli Gu.",
+    "symbolDescriptionNoPrice": "{symbol} ({name}) sebut harga, carta dan analisis AI di Qianli Gu.",
+    "relatedSymbols": "Simbol berkaitan",
+    "keywords": [
+      "Qianli Gu",
+      "Q-Stock",
+      "saham AS",
+      "saham HK",
+      "A-share",
+      "saham",
+      "kripto",
+      "AI"
+    ]
   }
 }

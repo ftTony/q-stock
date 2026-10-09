@@ -515,5 +515,29 @@
     "mainlandNotice": "中國大陸朋友提醒：目前境外投資股票、BTC 是違法行為。本站僅供學習參考，請遵守當地法律法規。",
     "platformTitle": "關於錢力股",
     "platformBody": "錢力股圍繞「智慧投資」與「價值發現」而生：借力 AI，輔助更冷靜的看盤與復盤，盡量削弱貪婪、恐懼等人性弱點對判斷的干擾。行情與內容僅供學習參考，不構成投資建議。"
+  },
+  "seo": {
+    "titleDefault": "錢力股 Q-Stock",
+    "titleTemplate": "%s · 錢力股",
+    "applicationName": "錢力股",
+    "siteName": "錢力股 Q-Stock",
+    "author": "錢力股",
+    "description": "智能投資 · 價值發現 · AI 輔助決策 — 美股、港股、A股與數位貨幣行情、自選、提醒與模擬複盤",
+    "descriptionShort": "智能投資 · 價值發現 · AI 輔助決策 — 美股、港股、A股與數位貨幣",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol}（{name}）最新價 {price}（{change}），截至 {date}。錢力股即時行情。",
+    "symbolDescriptionNoPrice": "{symbol}（{name}）行情、圖表與 AI 分析 — 錢力股。",
+    "relatedSymbols": "相關標的",
+    "keywords": [
+      "錢力股",
+      "Q-Stock",
+      "美股",
+      "港股",
+      "A股",
+      "股票",
+      "加密貨幣",
+      "AI"
+    ]
   }
 }

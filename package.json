@@ -12,6 +12,7 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:push": "prisma db push",
     "worker": "tsx src/workers/price-alerts.ts",
+    "seo:sitemap": "tsx scripts/generate-sitemap.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {

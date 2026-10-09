@@ -515,5 +515,29 @@
     "mainlandNotice": "Hinweis für Freunde in Festlandchina: Anlagen in ausländische Aktien oder BTC sind derzeit rechtswidrig. Diese Seite dient nur dem Lernen — bitte geltendes Recht beachten.",
     "platformTitle": "Über Qianli Gu",
     "platformBody": "Qianli Gu (钱力股) dreht sich um intelligentes Investing und Wertfindung. KI soll ruhigere Analyse und Review unterstützen und den Einfluss von Angst, Gier und anderen menschlichen Schwächen mindern. Marktdaten und Inhalte dienen nur dem Lernen, nicht der Anlageberatung."
+  },
+  "seo": {
+    "titleDefault": "Qianli Gu Q-Stock",
+    "titleTemplate": "%s · Qianli Gu",
+    "applicationName": "Qianli Gu",
+    "siteName": "Qianli Gu Q-Stock",
+    "author": "Qianli Gu",
+    "description": "Intelligentes Investieren · Wertfindung · KI-gestützte Entscheidungen — US-, HK-, A-Aktien & Krypto, Watchlists, Alerts und Paper-Review",
+    "descriptionShort": "Intelligentes Investieren · Wertfindung · KI — US, HK, A-Aktien & Krypto",
+    "symbolTitle": "{symbol} {name} · {price}",
+    "symbolTitleNoPrice": "{symbol} {name}",
+    "symbolDescription": "{symbol} ({name}) letzter Kurs {price} ({change}), Stand {date}. Live-Kurse auf Qianli Gu.",
+    "symbolDescriptionNoPrice": "{symbol} ({name}) Kurse, Charts und KI-Analyse auf Qianli Gu.",
+    "relatedSymbols": "Verwandte Symbole",
+    "keywords": [
+      "Qianli Gu",
+      "Q-Stock",
+      "US-Aktien",
+      "HK-Aktien",
+      "A-Aktien",
+      "Aktien",
+      "Krypto",
+      "KI"
+    ]
   }
 }

@@ -1,6 +1,13 @@
+import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { getLocale } from "next-intl/server";
+import { GoogleAnalytics } from "@/components/seo/google-analytics";
+import {
+  gaMeasurementId,
+  googleSiteVerification,
+} from "@/lib/seo/analytics";
+import { siteOrigin } from "@/lib/seo/site-url";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -13,13 +20,19 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteVerification = googleSiteVerification();
+
+/** Locale-agnostic shell metadata; copy is filled in `[locale]/layout`. */
 export const metadata: Metadata = {
-  title: {
-    default: "钱力股 Q-Stock",
-    template: "%s · 钱力股",
+  metadataBase: new URL(siteOrigin()),
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: { index: true, follow: true },
   },
-  description: "智能投资 · 价值发现 · AI 辅助决策 — 美股、港股与数字货币",
-  applicationName: "钱力股",
+  ...(siteVerification
+    ? { verification: { google: siteVerification } }
+    : {}),
   manifest: "/manifest.webmanifest",
   icons: {
     icon: [
@@ -31,7 +44,6 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "钱力股",
     startupImage: [
       {
         url: "/logo.png",
@@ -65,6 +77,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
+  const gaId = gaMeasurementId();
 
   return (
     <html
@@ -77,6 +90,11 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
+        {gaId ? (
+          <Suspense fallback={null}>
+            <GoogleAnalytics measurementId={gaId} />
+          </Suspense>
+        ) : null}
       </body>
     </html>
   );
