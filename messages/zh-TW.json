@@ -358,6 +358,8 @@
     "disable": "停用",
     "reactivate": "立即再監視",
     "empty": "暫無提醒",
+    "listTitle": "我的提醒",
+    "emptyHint": "在左側填寫標的與價格後建立即可。",
     "loginRequired": "登入後可管理提醒",
     "symbol": "標的代碼",
     "assetType": "市場類型",

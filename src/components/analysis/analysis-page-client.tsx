@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { ChangePct, PriceText } from "@/components/market/price";
+import { SegmentedTabs } from "@/components/ui/segmented-tabs";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
@@ -56,28 +57,16 @@ export function AnalysisPageClient({
               : t("descCrypto")}
       </p>
 
-      <div className="flex w-fit rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1">
-        {(["stock", "hk", "cn", "crypto"] as AssetType[]).map((key) => (
-          <button
-            key={key}
-            type="button"
-            onClick={() => setTab(key)}
-            className={`rounded-lg px-3 py-1.5 text-sm font-semibold ${
-              tab === key
-                ? "bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                : "text-[var(--muted)]"
-            }`}
-          >
-            {key === "stock"
-              ? t("stocks")
-              : key === "hk"
-                ? t("hk")
-                : key === "cn"
-                  ? t("cn")
-                  : t("crypto")}
-          </button>
-        ))}
-      </div>
+      <SegmentedTabs
+        value={tab}
+        onChange={setTab}
+        options={[
+          { value: "stock", label: t("stocks") },
+          { value: "hk", label: t("hk") },
+          { value: "cn", label: t("cn") },
+          { value: "crypto", label: t("crypto") },
+        ]}
+      />
 
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {loading && (

@@ -16,7 +16,6 @@ import { MarketOkxCredentialsForm } from "@/components/settings/market-okx-crede
 import { MarketVendorPrefs } from "@/components/settings/market-vendor-prefs";
 import { AiCredentialsForm } from "@/components/settings/ai-credentials-form";
 import { InvitePanel } from "@/components/settings/invite-panel";
-import { EmailCredentialsForm } from "@/components/settings/email-credentials-form";
 import {
   locales,
   languageLabels,
@@ -28,7 +27,7 @@ function SchemePreview({ scheme }: { scheme: ChangeColorScheme }) {
   const up = scheme === "cn" ? "#e11d48" : "#22c55e";
   const down = scheme === "cn" ? "#16a34a" : "#f87171";
   return (
-    <div className="mt-2 flex items-center gap-3 text-sm tabular-nums">
+    <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] tabular-nums">
       <span className="font-semibold" style={{ color: up }}>
         ▲ 128.50 +1.24%
       </span>
@@ -90,7 +89,6 @@ export default function SettingsPage() {
     setSaving(true);
     setMessage(null);
 
-    // Color scheme applies immediately via PreferenceProvider; persist locally always.
     setChangeColorScheme(changeColorScheme);
 
     if (!loggedIn) {
@@ -149,122 +147,145 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="w-full space-y-4 animate-[qtFade_0.45s_ease]">
-      <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-      {!loggedIn && (
-        <p className="text-sm text-[var(--muted)]">
-          {t("guestHint")}{" "}
-          <Link href="/login" className="qt-btn qt-btn-primary ml-2 inline-flex h-8 px-3 text-xs align-middle">
-            {t("login")}
-          </Link>
-        </p>
-      )}
-      <form onSubmit={onSave} className="qt-panel w-full space-y-5 p-5 sm:p-6 lg:p-8">
-        {loggedIn && (
-          <label className="block space-y-1 text-sm">
-            <span className="text-[var(--muted)]">{t("name")}</span>
-            <input
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              maxLength={64}
-              placeholder={session?.user?.email?.split("@")[0] || ""}
-              className="qt-input w-full px-3 py-2.5"
-            />
-          </label>
-        )}
-        <div className="grid gap-5 lg:grid-cols-2 lg:gap-8">
-          <label className="block space-y-1 text-sm">
-            <span className="text-[var(--muted)]">{t("language")}</span>
-            <QtSelect
-              value={lang}
-              onChange={(v) => setLang(v as AppLocale)}
-              options={locales.map((l) => ({
-                value: l,
-                label: languageLabels[l],
-                badge: localeCode(l),
-              }))}
-            />
-          </label>
-
-          <label className="block space-y-1 text-sm">
-            <span className="text-[var(--muted)]">{t("theme")}</span>
-            <QtSelect
-              value={theme ?? "dark"}
-              onChange={(v) => setTheme(v)}
-              options={[
-                { value: "light", label: t("themeLight") },
-                { value: "dark", label: t("themeDark") },
-                { value: "system", label: t("themeSystem") },
-              ]}
-            />
-          </label>
-        </div>
-
-        <fieldset className="space-y-2">
-          <legend className="text-sm text-[var(--muted)]">{t("changeColor")}</legend>
-          <p className="text-xs text-[var(--muted)]">{t("changeColorHint")}</p>
-          <div className="grid gap-3 sm:grid-cols-2">
-            {(
-              [
-                { id: "cn" as const, label: t("changeCn") },
-                { id: "us" as const, label: t("changeUs") },
-              ] as const
-            ).map((opt) => {
-              const selected = changeColorScheme === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setChangeColorScheme(opt.id)}
-                  className={`rounded-xl border p-3 text-left transition sm:p-4 ${selected
-                      ? "border-[var(--brand)] bg-[var(--brand-soft)] ring-1 ring-[var(--brand)]"
-                      : "border-[var(--border)] hover:bg-[var(--sidebar-hover)]"
-                    }`}
-                >
-                  <div className="text-sm font-medium">{opt.label}</div>
-                  <SchemePreview scheme={opt.id} />
-                </button>
-              );
-            })}
-          </div>
-        </fieldset>
-
-        <div className="flex flex-wrap items-center gap-3">
-          <SubmitButton
-            loading={saving}
-            loadingLabel={tCommon("loading")}
-            className="qt-btn-primary h-[42px] px-4 text-sm"
-          >
-            {t("save")}
-          </SubmitButton>
-          {message && (
-            <p
-              role="status"
-              className="animate-[qtFade_0.25s_ease] rounded-lg px-3 py-2 text-sm"
-              style={
-                messageKind === "ok"
-                  ? {
-                    background:
-                      "color-mix(in srgb, var(--up) 12%, transparent)",
-                    color: "var(--up)",
-                  }
-                  : {
-                    background:
-                      "color-mix(in srgb, var(--down) 12%, transparent)",
-                    color: "var(--down)",
-                  }
-              }
+    <div className="settings-ui mx-auto max-w-5xl space-y-5 animate-[qtFade_0.45s_ease]">
+      <header className="flex flex-wrap items-end justify-between gap-3">
+        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+          {t("title")}
+        </h1>
+        {!loggedIn && (
+          <p className="text-xs text-[var(--muted)] sm:text-sm">
+            {t("guestHint")}{" "}
+            <Link
+              href="/login"
+              className="qt-btn qt-btn-primary ml-1.5 inline-flex h-9 px-3 align-middle"
             >
-              {messageKind === "ok" ? "✓ " : ""}
-              {message}
-            </p>
-          )}
-        </div>
-      </form>
+              {t("login")}
+            </Link>
+          </p>
+        )}
+      </header>
+
+      <div
+        className={`grid gap-4 ${
+          loggedIn
+            ? "lg:grid-cols-2 lg:items-stretch"
+            : ""
+        }`}
+      >
+        <section className="qt-panel flex h-full flex-col overflow-hidden">
+          <form onSubmit={onSave} className="flex flex-1 flex-col gap-3.5 p-4">
+            {loggedIn && (
+              <label className="block space-y-1.5 text-sm">
+                <span className="block text-[var(--muted)]">{t("name")}</span>
+                <input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  maxLength={64}
+                  placeholder={session?.user?.email?.split("@")[0] || ""}
+                  className="qt-input h-9 w-full px-3 text-[14px] leading-none"
+                />
+              </label>
+            )}
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-1.5 text-sm">
+                <span className="block text-[var(--muted)]">{t("language")}</span>
+                <QtSelect
+                  value={lang}
+                  onChange={(v) => setLang(v as AppLocale)}
+                  options={locales.map((l) => ({
+                    value: l,
+                    label: languageLabels[l],
+                    badge: localeCode(l),
+                  }))}
+                />
+              </div>
+              <div className="space-y-1.5 text-sm">
+                <span className="block text-[var(--muted)]">{t("theme")}</span>
+                <QtSelect
+                  value={theme ?? "dark"}
+                  onChange={(v) => setTheme(v)}
+                  options={[
+                    { value: "light", label: t("themeLight") },
+                    { value: "dark", label: t("themeDark") },
+                    { value: "system", label: t("themeSystem") },
+                  ]}
+                />
+              </div>
+            </div>
+
+            <fieldset className="space-y-1.5">
+              <legend className="text-sm text-[var(--muted)]">
+                {t("changeColor")}
+              </legend>
+              <p className="text-[11px] leading-relaxed text-[var(--muted)]">
+                {t("changeColorHint")}
+              </p>
+              <div className="grid gap-2 sm:grid-cols-2">
+                {(
+                  [
+                    { id: "cn" as const, label: t("changeCn") },
+                    { id: "us" as const, label: t("changeUs") },
+                  ] as const
+                ).map((opt) => {
+                  const selected = changeColorScheme === opt.id;
+                  return (
+                    <button
+                      key={opt.id}
+                      type="button"
+                      onClick={() => setChangeColorScheme(opt.id)}
+                      className={`rounded-lg border px-3 py-2 text-left transition ${
+                        selected
+                          ? "border-[var(--brand)] bg-[var(--brand-soft)]"
+                          : "border-[var(--border)] hover:bg-[var(--sidebar-hover)]"
+                      }`}
+                    >
+                      <div className="text-[14px] font-medium">{opt.label}</div>
+                      <SchemePreview scheme={opt.id} />
+                    </button>
+                  );
+                })}
+              </div>
+            </fieldset>
+
+            <div className="mt-auto flex flex-wrap items-center gap-2.5 pt-1">
+              <SubmitButton
+                loading={saving}
+                loadingLabel={tCommon("loading")}
+                className="qt-btn qt-btn-primary h-9 px-4"
+              >
+                {t("save")}
+              </SubmitButton>
+              {message && (
+                <p
+                  role="status"
+                  className="animate-[qtFade_0.25s_ease] rounded-md px-2.5 py-1 text-xs"
+                  style={
+                    messageKind === "ok"
+                      ? {
+                          background:
+                            "color-mix(in srgb, var(--up) 12%, transparent)",
+                          color: "var(--up)",
+                        }
+                      : {
+                          background:
+                            "color-mix(in srgb, var(--down) 12%, transparent)",
+                          color: "var(--down)",
+                        }
+                  }
+                >
+                  {messageKind === "ok" ? "✓ " : ""}
+                  {message}
+                </p>
+              )}
+            </div>
+          </form>
+        </section>
+
+        {loggedIn ? <InvitePanel /> : null}
+      </div>
 
       {loggedIn ? (
         <>
-          <InvitePanel />
           <MarketVendorPrefs />
           <Suspense
             fallback={
@@ -275,7 +296,6 @@ export default function SettingsPage() {
           </Suspense>
           <MarketOkxCredentialsForm />
           <AiCredentialsForm />
-          {/* <EmailCredentialsForm /> */}
         </>
       ) : null}
     </div>

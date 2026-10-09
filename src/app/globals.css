@@ -164,6 +164,33 @@ select.qt-input::-ms-expand {
   cursor: pointer;
 }
 
+/* Settings page: force 14px on buttons, inputs, selects, and field labels */
+.settings-ui :is(
+  .qt-btn,
+  button.qt-btn-primary,
+  a.qt-btn-primary,
+  button.qt-btn-ghost,
+  a.qt-btn-ghost,
+  button,
+  .qt-input,
+  input.qt-input,
+  textarea.qt-input,
+  select.qt-input,
+  button.qt-input,
+  label,
+  label span,
+  legend
+) {
+  font-size: 14px !important;
+  line-height: 1.25;
+}
+
+/* Field captions not wrapped in <label> (e.g. next to QtSelect) */
+.settings-ui :is(.space-y-1, .space-y-1\.5) > span:first-child {
+  font-size: 14px !important;
+  line-height: 1.25;
+}
+
 button.qt-btn-primary,
 a.qt-btn-primary,
 .qt-btn.qt-btn-primary {

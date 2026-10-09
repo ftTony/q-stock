@@ -358,6 +358,8 @@
     "disable": "ปิดใช้งาน",
     "reactivate": "Re-arm now",
     "empty": "ยังไม่มีการแจ้งเตือน",
+    "listTitle": "การแจ้งเตือนของฉัน",
+    "emptyHint": "กรอกแบบฟอร์มทางซ้ายเพื่อเริ่มต้น",
     "loginRequired": "เข้าสู่ระบบเพื่อจัดการการแจ้งเตือน",
     "symbol": "Symbol",
     "assetType": "Market",

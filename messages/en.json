@@ -358,6 +358,8 @@
     "disable": "Disable",
     "reactivate": "Re-arm now",
     "empty": "No alerts yet",
+    "listTitle": "My alerts",
+    "emptyHint": "Use the form on the left to add a symbol and trigger price.",
     "loginRequired": "Sign in to manage alerts",
     "symbol": "Symbol",
     "assetType": "Market",

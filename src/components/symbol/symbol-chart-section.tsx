@@ -41,7 +41,7 @@ export function SymbolChartSection({
 }: Props) {
   return (
     <div className="space-y-3 min-w-0">
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap items-center gap-1">
         {(
           [
             ["D", resolutionLabels.D],
@@ -53,10 +53,10 @@ export function SymbolChartSection({
             key={key}
             type="button"
             onClick={() => onResolutionChange(key)}
-            className={`rounded-lg px-2.5 py-1 text-[11px] sm:text-xs ${
+            className={`h-6 rounded-md px-1.5 text-[10px] leading-none font-medium ${
               resolution === key
-                ? "bg-[var(--brand)] text-[#0b1220] font-medium"
-                : "qt-btn-ghost border border-[var(--border)] bg-[var(--panel)]"
+                ? "bg-[var(--brand)] text-[#0b1220]"
+                : "border border-[var(--border)] bg-[var(--panel)] text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
             }`}
           >
             {label}

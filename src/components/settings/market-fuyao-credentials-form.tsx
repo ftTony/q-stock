@@ -111,19 +111,19 @@ export function MarketFuyaoCredentialsForm() {
   }
 
   return (
-    <div className="qt-panel w-full space-y-4 p-5 sm:p-6 lg:p-8">
+    <div className="qt-panel w-full space-y-4 p-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-base font-semibold">{t("credsFuyao")}</h3>
-        <span className="text-xs text-[var(--muted)]">
+        <h3 className="text-sm font-semibold">{t("credsFuyao")}</h3>
+        <span className="text-[11px] text-[var(--muted)]">
           {status?.fuyao?.configured
             ? t("credsConfigured")
             : t("credsNotConfigured")}
         </span>
       </div>
-      <p className="text-sm text-[var(--muted)]">{t("credsFuyaoHint")}</p>
+      <p className="text-xs text-[var(--muted)]">{t("credsFuyaoHint")}</p>
       {message ? (
         <p
-          className="text-sm"
+          className="text-xs"
           style={{
             color: messageKind === "ok" ? "var(--up)" : "var(--down)",
           }}
@@ -132,14 +132,16 @@ export function MarketFuyaoCredentialsForm() {
         </p>
       ) : null}
       <form onSubmit={onSave} className="space-y-3">
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("credsFuyaoApiKey")}</span>
+        <label className="block max-w-md space-y-1.5">
+          <span className="block text-xs text-[var(--muted)]">
+            {t("credsFuyaoApiKey")}
+          </span>
           <input
             type="password"
             value={apiKey}
             onChange={(e) => setApiKey(e.target.value)}
             autoComplete="off"
-            className="qt-input w-full px-3 py-2.5 font-mono text-xs"
+            className="qt-input h-9 w-full px-3 font-mono text-[14px] leading-none"
             placeholder={
               status?.fuyao?.configured ? t("credsKeepPlaceholder") : ""
             }
@@ -149,7 +151,7 @@ export function MarketFuyaoCredentialsForm() {
           <SubmitButton
             loading={saving}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary h-[42px] px-4 text-sm"
+            className="qt-btn-primary h-9 px-3 font-medium"
             disabled={!apiKey.trim()}
           >
             {t("credsSaveFuyao")}
@@ -158,7 +160,7 @@ export function MarketFuyaoCredentialsForm() {
             <button
               type="button"
               onClick={() => void onClear()}
-              className="qt-btn h-[42px] px-4 text-sm"
+              className="qt-btn qt-btn-ghost h-9 px-3 font-medium"
             >
               {t("credsClear")}
             </button>

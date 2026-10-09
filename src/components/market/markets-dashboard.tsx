@@ -330,9 +330,8 @@ export default function MarketsDashboard() {
       {tab !== "cn" && (
         <section className="grid items-stretch gap-4 lg:grid-cols-2">
           <div className="qt-panel flex h-full flex-col p-4">
-            <div className="mb-3 flex items-center justify-between">
+            <div className="mb-3">
               <h2 className="font-semibold">{t("narrative")}</h2>
-              <span className="text-xs text-[var(--brand-text)]">{t("viewAll")}</span>
             </div>
             <ul className="space-y-3">
               {news.length === 0 && (

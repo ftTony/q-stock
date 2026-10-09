@@ -70,94 +70,90 @@ export function InvitePanel() {
   }
 
   return (
-    <section className="qt-panel w-full space-y-3 p-5 sm:p-6">
-      <h2 className="text-sm font-semibold tracking-tight">{t("inviteTitle")}</h2>
-
-      <div
-        className="flex gap-2 rounded-lg px-3 py-2.5 text-xs leading-relaxed"
-        style={{
-          background: "color-mix(in srgb, #3b82f6 10%, transparent)",
-          color: "color-mix(in srgb, #1d4ed8 85%, var(--foreground))",
-        }}
-        role="note"
-      >
-        <span className="mt-px shrink-0 text-sm leading-none" aria-hidden>
-          ⓘ
-        </span>
-        <p>{t("inviteHint")}</p>
+    <section className="qt-panel flex h-full flex-col overflow-hidden">
+      <div className="border-b border-[var(--border)] px-4 py-2.5">
+        <h2 className="text-sm font-semibold tracking-tight">{t("inviteTitle")}</h2>
       </div>
 
-      {error && <p className="text-xs text-[var(--down)]">{error}</p>}
+      <div className="flex flex-1 flex-col space-y-3 p-4">
+        <p className="rounded-lg bg-[color-mix(in_srgb,#3b82f6_10%,transparent)] px-3 py-2 text-[11px] leading-relaxed text-[color-mix(in_srgb,#1d4ed8_85%,var(--foreground))]">
+          {t("inviteHint")}
+        </p>
 
-      {!invites && !error && (
-        <p className="text-xs text-[var(--muted)]">{tCommon("loading")}</p>
-      )}
+        {error && <p className="text-xs text-[var(--down)]">{error}</p>}
 
-      {invites && invites.length === 0 && (
-        <p className="text-xs text-[var(--muted)]">{t("inviteEmpty")}</p>
-      )}
+        {!invites && !error && (
+          <p className="text-xs text-[var(--muted)]">{tCommon("loading")}</p>
+        )}
 
-      {invites && invites.length > 0 && (
-        <ul className="space-y-2">
-          {invites.map((row) => {
-            const used = row.used;
-            return (
-              <li
-                key={row.code}
-                className={`flex items-center gap-3 rounded-lg border border-[var(--border)] px-3 py-2 ${
-                  used ? "opacity-50" : ""
-                }`}
-              >
-                <code
-                  className={`min-w-0 flex-1 truncate font-mono text-xs tracking-wide ${
-                    used
-                      ? "text-[var(--muted)] line-through"
-                      : "text-[var(--foreground)]"
+        {invites && invites.length === 0 && (
+          <p className="py-8 text-center text-sm text-[var(--muted)]">
+            {t("inviteEmpty")}
+          </p>
+        )}
+
+        {invites && invites.length > 0 && (
+          <ul className="flex-1 divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
+            {invites.map((row) => {
+              const used = row.used;
+              return (
+                <li
+                  key={row.code}
+                  className={`flex flex-wrap items-center gap-2 px-3 py-2 ${
+                    used ? "opacity-50" : ""
                   }`}
-                  title={row.code}
                 >
-                  {row.code}
-                </code>
-                <div className="flex shrink-0 items-center gap-2">
-                  {used ? (
-                    <span className="text-[11px] text-[var(--muted)]">
-                      {t("inviteUsed")}
-                    </span>
-                  ) : (
-                    <>
-                      <button
-                        type="button"
-                        className="qt-btn qt-btn-ghost h-8 rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 text-xs font-medium leading-none"
-                        onClick={() =>
-                          copyText(`${row.code}-code`, shareCodeText(row.code))
-                        }
-                      >
-                        {copiedKey === `${row.code}-code`
-                          ? t("inviteCopied")
-                          : t("inviteCopyCode")}
-                      </button>
-                      <button
-                        type="button"
-                        className="qt-btn qt-btn-primary h-8 rounded-lg px-3 text-xs font-medium leading-none"
-                        onClick={() =>
-                          copyText(
-                            `${row.code}-link`,
-                            shareLinkText(linkFor(row)),
-                          )
-                        }
-                      >
-                        {copiedKey === `${row.code}-link`
-                          ? t("inviteCopied")
-                          : t("inviteCopyLink")}
-                      </button>
-                    </>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-        </ul>
-      )}
+                  <code
+                    className={`min-w-0 flex-1 truncate font-mono text-[11px] tracking-wide ${
+                      used
+                        ? "text-[var(--muted)] line-through"
+                        : "text-[var(--foreground)]"
+                    }`}
+                    title={row.code}
+                  >
+                    {row.code}
+                  </code>
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    {used ? (
+                      <span className="text-[11px] text-[var(--muted)]">
+                        {t("inviteUsed")}
+                      </span>
+                    ) : (
+                      <>
+                        <button
+                          type="button"
+                          className="qt-btn qt-btn-ghost h-9 px-3 font-medium"
+                          onClick={() =>
+                            copyText(`${row.code}-code`, shareCodeText(row.code))
+                          }
+                        >
+                          {copiedKey === `${row.code}-code`
+                            ? t("inviteCopied")
+                            : t("inviteCopyCode")}
+                        </button>
+                        <button
+                          type="button"
+                          className="qt-btn qt-btn-primary h-9 px-3 font-medium"
+                          onClick={() =>
+                            copyText(
+                              `${row.code}-link`,
+                              shareLinkText(linkFor(row)),
+                            )
+                          }
+                        >
+                          {copiedKey === `${row.code}-link`
+                            ? t("inviteCopied")
+                            : t("inviteCopyLink")}
+                        </button>
+                      </>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }
