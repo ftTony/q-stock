@@ -18,6 +18,11 @@ import {
   type SymbolTab,
 } from "@/components/symbol/symbol-tabs-panel";
 import { useSymbolCandles } from "@/components/symbol/use-symbol-candles";
+import {
+  quotePollIntervalMs,
+  useQuoteChannels,
+} from "@/hooks/use-quote-socket";
+import type { ServerMessage } from "@/lib/market/stream/protocol";
 import type { AssetType, CandleResolution, Quote } from "@/lib/types";
 
 const TAB_LOADING: ReadonlySet<SymbolTab> = new Set([
@@ -99,19 +104,50 @@ export function useSymbolPage(
     quoteTimestamp(initialQuote),
   );
 
+  const applyQuote = useCallback((q: Quote | null | undefined) => {
+    if (!q || !(q.price > 0)) return;
+    setQuote(q);
+    setUpdatedAt(quoteTimestamp(q) ?? new Date());
+    setAlertPrice((prev) => {
+      if (prev) return prev;
+      return String(Number(q.price.toFixed(4)));
+    });
+  }, []);
+
   const loadQuote = useCallback(async () => {
     const res = await fetch(`/api/quotes?symbol=${symbol}&assetType=${assetType}`);
     const data = await res.json();
-    if (res.ok) {
-      setQuote(data.quote);
-      setUpdatedAt(new Date());
-      setAlertPrice((prev) => {
-        if (prev) return prev;
-        const p = data.quote?.price;
-        return p ? String(Number(p.toFixed(4))) : prev;
-      });
-    }
-  }, [symbol, assetType]);
+    if (res.ok) applyQuote(data.quote);
+  }, [symbol, assetType, applyQuote]);
+
+  const onWsMessage = useCallback(
+    (msg: ServerMessage) => {
+      if (msg.op === "quote") {
+        if (
+          msg.quote.symbol.toUpperCase() === symbol.toUpperCase() &&
+          msg.quote.assetType === assetType
+        ) {
+          applyQuote(msg.quote);
+        }
+        return;
+      }
+      if (msg.op === "snapshot" && msg.quotes?.length) {
+        const hit = msg.quotes.find(
+          (q) =>
+            q.symbol.toUpperCase() === symbol.toUpperCase() &&
+            q.assetType === assetType,
+        );
+        applyQuote(hit);
+      }
+    },
+    [symbol, assetType, applyQuote],
+  );
+
+  const {
+    enabled: wsEnabled,
+    connected: wsConnected,
+    degraded: wsDegraded,
+  } = useQuoteChannels([{ type: "symbol", assetType, symbol }], onWsMessage);
 
   const loadEarningsMetrics = useCallback(async () => {
     if (isIndex || (assetType !== "stock" && assetType !== "hk")) {
@@ -250,9 +286,14 @@ export function useSymbolPage(
 
   useEffect(() => {
     void loadQuote();
-    const timer = setInterval(() => void loadQuote(), 20000);
+    const ms = quotePollIntervalMs({
+      enabled: wsEnabled,
+      connected: wsConnected,
+      degraded: wsDegraded,
+    });
+    const timer = setInterval(() => void loadQuote(), ms);
     return () => clearInterval(timer);
-  }, [loadQuote]);
+  }, [loadQuote, wsEnabled, wsConnected, wsDegraded]);
 
   useEffect(() => {
     void loadEarningsMetrics();

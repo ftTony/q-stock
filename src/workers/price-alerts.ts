@@ -18,6 +18,7 @@ import {
   shouldTriggerPending,
   TradingError,
 } from "../lib/trading/execute";
+import { startQuoteWsServer } from "./quote-ws";
 
 const prisma = new PrismaClient();
 
@@ -227,6 +228,11 @@ async function tick() {
 
 async function main() {
   console.info(`[worker] started, interval=${intervalMs}ms`);
+  try {
+    await startQuoteWsServer();
+  } catch (err) {
+    console.error("[worker] quote-ws failed to start", err);
+  }
   for (; ;) {
     try {
       await tick();

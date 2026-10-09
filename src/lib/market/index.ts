@@ -5,6 +5,7 @@ import {
 } from "@/lib/market/router";
 import type { QuoteWithSource } from "@/lib/market/types";
 import type { AssetType, OhlcvBar, SearchResult } from "@/lib/types";
+import { normalizeSymbol } from "@/lib/types";
 
 export {
   getActiveProviders,
@@ -52,20 +53,24 @@ export async function getQuotes(
       if (!remaining.length) break;
       try {
         const quotes = await p.getQuotes(remaining);
-        const got = new Set(quotes.map((q) => q.symbol));
         out.push(...quotes);
-        for (let i = remaining.length - 1; i >= 0; i--) {
-          if (got.has(remaining[i].symbol.toUpperCase()) ||
-              got.has(remaining[i].symbol)) {
-            remaining.splice(i, 1);
+        const gotKeys = new Set<string>();
+        for (const q of quotes) {
+          if (!(q.price > 0)) continue;
+          gotKeys.add(q.symbol.toUpperCase());
+          try {
+            gotKeys.add(normalizeSymbol(q.symbol, q.assetType).toUpperCase());
+          } catch {
+            /* ignore */
           }
         }
-        // Also remove by normalized match
-        const gotUpper = new Set([...got].map((s) => s.toUpperCase()));
         for (let i = remaining.length - 1; i >= 0; i--) {
-          if (gotUpper.has(remaining[i].symbol.toUpperCase())) {
-            remaining.splice(i, 1);
-          }
+          const item = remaining[i]!;
+          const keys = [
+            item.symbol.toUpperCase(),
+            normalizeSymbol(item.symbol, item.assetType).toUpperCase(),
+          ];
+          if (keys.some((k) => gotKeys.has(k))) remaining.splice(i, 1);
         }
       } catch (err) {
         console.warn(

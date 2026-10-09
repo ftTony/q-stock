@@ -136,8 +136,12 @@ export const futuProvider: MarketDataProvider = {
   },
 
   async getQuotes(items) {
+    // Include CN — A-share indices (上证/深成/创业板) go through this path.
     const equityItems = items.filter(
-      (i) => i.assetType === "stock" || i.assetType === "hk",
+      (i) =>
+        i.assetType === "stock" ||
+        i.assetType === "hk" ||
+        i.assetType === "cn",
     );
     if (!equityItems.length) return [];
 

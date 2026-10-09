@@ -36,6 +36,23 @@ function formatPct(pct: number): string {
   return `${sign}${pct.toFixed(2)}%`;
 }
 
+function StocksSkeleton({ label }: { label: string }) {
+  return (
+    <div className="mt-2.5 border-t border-[var(--border)] pt-2.5">
+      <div className="mb-2 text-[11px] text-[var(--muted)]">{label}</div>
+      <ul className="max-h-56 space-y-2" aria-busy="true" aria-live="polite">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <li key={i} className="flex items-center gap-2">
+            <span className="h-3 flex-1 animate-pulse rounded bg-[var(--surface-2)]" />
+            <span className="h-3 w-12 shrink-0 animate-pulse rounded bg-[var(--surface-2)]" />
+            <span className="h-3 w-14 shrink-0 animate-pulse rounded bg-[var(--surface-2)]" />
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 export function IndustryHeatmapTooltip({
   cell,
   assetType,
@@ -43,6 +60,7 @@ export function IndustryHeatmapTooltip({
   y,
   labels,
   locale,
+  stocksLoading = false,
   onEnter,
   onLeave,
 }: {
@@ -50,8 +68,10 @@ export function IndustryHeatmapTooltip({
   assetType: Exclude<AssetType, "crypto">;
   x: number;
   y: number;
-  labels: { change: string; volume: string };
+  labels: { change: string; volume: string; loading: string };
   locale: string;
+  /** True while member stocks are still being fetched. */
+  stocksLoading?: boolean;
   onEnter?: () => void;
   onLeave?: () => void;
 }) {
@@ -92,7 +112,10 @@ export function IndustryHeatmapTooltip({
           </span>
         )}
       </div>
-      {cell.stocks.length > 0 && (
+
+      {stocksLoading ? (
+        <StocksSkeleton label={labels.loading} />
+      ) : cell.stocks.length > 0 ? (
         <ul className="mt-2.5 max-h-56 space-y-1.5 overflow-y-auto border-t border-[var(--border)] pt-2.5">
           {cell.stocks.map((s) => (
             <li
@@ -116,7 +139,7 @@ export function IndustryHeatmapTooltip({
             </li>
           ))}
         </ul>
-      )}
+      ) : null}
     </div>
   );
 }

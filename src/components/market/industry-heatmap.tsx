@@ -46,8 +46,56 @@ export function IndustryHeatmap({
     x: number;
     y: number;
   } | null>(null);
+  /** Plate id → member stocks while / after on-demand enrich. */
+  const [stockCache, setStockCache] = useState<
+    Record<string, IndustryHeatCell["stocks"] | "loading">
+  >({});
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const enrichGen = useRef(0);
   const { ref, w, h } = useContainerSize();
+
+  function resolveCell(cell: IndustryHeatCell): {
+    cell: IndustryHeatCell;
+    stocksLoading: boolean;
+  } {
+    if (cell.stocks.length > 0) {
+      return { cell, stocksLoading: false };
+    }
+    const cached = stockCache[cell.id];
+    if (Array.isArray(cached)) {
+      return { cell: { ...cell, stocks: cached }, stocksLoading: false };
+    }
+    // "loading" or not yet requested → show skeleton until enrich finishes
+    return { cell, stocksLoading: true };
+  }
+
+  function ensureStocks(cell: IndustryHeatCell) {
+    if (cell.stocks.length > 0) return;
+    const cached = stockCache[cell.id];
+    if (cached === "loading" || Array.isArray(cached)) return;
+
+    setStockCache((prev) => ({ ...prev, [cell.id]: "loading" }));
+    const gen = ++enrichGen.current;
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/industry-ranks?assetType=${assetType}&limit=40`,
+        );
+        const data = (await res.json()) as {
+          industries?: IndustryHeatCell[];
+        };
+        if (gen !== enrichGen.current) return;
+        const hit = (data.industries ?? []).find((c) => c.id === cell.id);
+        setStockCache((prev) => ({
+          ...prev,
+          [cell.id]: hit?.stocks ?? [],
+        }));
+      } catch {
+        if (gen !== enrichGen.current) return;
+        setStockCache((prev) => ({ ...prev, [cell.id]: [] }));
+      }
+    })();
+  }
 
   function clearHideTimer() {
     if (hideTimer.current) {
@@ -67,6 +115,8 @@ export function IndustryHeatmap({
     let cancelled = false;
     setLoading(true);
     setHover(null);
+    setStockCache({});
+    enrichGen.current += 1;
     (async () => {
       try {
         const res = await fetch(
@@ -175,6 +225,7 @@ export function IndustryHeatmap({
                   }}
                   onMouseEnter={(e) => {
                     clearHideTimer();
+                    ensureStocks(cell);
                     setHover({ cell, x: e.clientX, y: e.clientY });
                   }}
                   onMouseMove={(e) => {
@@ -199,21 +250,27 @@ export function IndustryHeatmap({
         </div>
       </div>
 
-      {hover && (
-        <IndustryHeatmapTooltip
-          cell={hover.cell}
-          assetType={assetType}
-          x={hover.x}
-          y={hover.y}
-          locale={locale}
-          labels={{
-            change: t("industryChange"),
-            volume: t("industryVolume"),
-          }}
-          onEnter={clearHideTimer}
-          onLeave={scheduleHide}
-        />
-      )}
+      {hover &&
+        (() => {
+          const resolved = resolveCell(hover.cell);
+          return (
+            <IndustryHeatmapTooltip
+              cell={resolved.cell}
+              assetType={assetType}
+              x={hover.x}
+              y={hover.y}
+              locale={locale}
+              stocksLoading={resolved.stocksLoading}
+              labels={{
+                change: t("industryChange"),
+                volume: t("industryVolume"),
+                loading: tCommon("loading"),
+              }}
+              onEnter={clearHideTimer}
+              onLeave={scheduleHide}
+            />
+          );
+        })()}
     </section>
   );
 }

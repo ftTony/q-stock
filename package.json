@@ -12,6 +12,7 @@
     "db:migrate:dev": "prisma migrate dev",
     "db:push": "prisma db push",
     "worker": "tsx src/workers/price-alerts.ts",
+    "quote-ws": "tsx src/workers/quote-ws.ts",
     "seo:sitemap": "tsx scripts/generate-sitemap.ts",
     "postinstall": "prisma generate"
   },
@@ -22,7 +23,6 @@
     "@ai-sdk/openai": "^3.0.119",
     "@auth/prisma-adapter": "^2.11.3",
     "@prisma/client": "^6.19.3",
-    "@swc/helpers": "^0.5.23",
     "ai": "^7.0.111",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.4.0",
@@ -37,6 +37,7 @@
     "react-dom": "19.1.0",
     "resend": "^6.28.0",
     "tsx": "^4.23.13",
+    "ws": "^8.22.0",
     "zod": "^4.6.5"
   },
   "optionalDependencies": {
@@ -51,6 +52,7 @@
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/ws": "^8.18.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.25",
     "prisma": "^6.19.3",

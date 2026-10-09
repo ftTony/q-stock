@@ -1,16 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { formatNumber } from "@/lib/format-number";
 import type { IndexQuote } from "@/components/market/markets-types";
+import {
+  mergeIndexQuotes,
+  seedIndexQuotes,
+} from "@/lib/market/index-quotes";
+import {
+  quotePollIntervalMs,
+  useQuoteChannels,
+} from "@/hooks/use-quote-socket";
+import type { ServerMessage } from "@/lib/market/stream/protocol";
 import type { AssetType } from "@/lib/types";
 
 const MARKETS: Array<Exclude<AssetType, "crypto">> = ["stock", "hk", "cn"];
 
 const ROTATE_MS = 5_000;
-const REFRESH_MS = 60_000;
 
 type MarketBundle = {
   assetType: Exclude<AssetType, "crypto">;
@@ -61,39 +69,83 @@ function IndexChip({ item }: { item: IndexQuote }) {
   );
 }
 
-/** Header ticker: auto-rotate US / HK / CN index triples (no market tabs). */
+/** Header ticker: auto-rotate US / HK / CN index triples (WS push + HTTP fallback). */
 export function TopbarIndexTicker() {
-  const [bundles, setBundles] = useState<MarketBundle[]>(
-    MARKETS.map((assetType) => ({ assetType, indices: [] })),
+  const [bundles, setBundles] = useState<MarketBundle[]>(() =>
+    MARKETS.map((assetType) => ({
+      assetType,
+      indices: seedIndexQuotes(assetType),
+    })),
   );
   const [page, setPage] = useState(0);
 
-  useEffect(() => {
-    let cancelled = false;
-
-    async function load() {
-      const results = await Promise.all(
-        MARKETS.map(async (assetType) => {
-          try {
-            const res = await fetch(`/api/indices?assetType=${assetType}`);
-            if (!res.ok) return { assetType, indices: [] as IndexQuote[] };
-            const data = (await res.json()) as { indices?: IndexQuote[] };
-            return { assetType, indices: data.indices ?? [] };
-          } catch {
-            return { assetType, indices: [] as IndexQuote[] };
-          }
-        }),
+  const mergeMarket = useCallback(
+    (assetType: Exclude<AssetType, "crypto">, indices: IndexQuote[]) => {
+      setBundles((prev) =>
+        prev.map((b) =>
+          b.assetType === assetType
+            ? { ...b, indices: mergeIndexQuotes(b.indices, indices) }
+            : b,
+        ),
       );
-      if (!cancelled) setBundles(results);
-    }
+    },
+    [],
+  );
 
-    void load();
-    const refresh = window.setInterval(() => void load(), REFRESH_MS);
-    return () => {
-      cancelled = true;
-      window.clearInterval(refresh);
-    };
+  const loadHttp = useCallback(async () => {
+    const results = await Promise.all(
+      MARKETS.map(async (assetType) => {
+        try {
+          const res = await fetch(`/api/indices?assetType=${assetType}`);
+          if (!res.ok) return { assetType, indices: null as IndexQuote[] | null };
+          const data = (await res.json()) as { indices?: IndexQuote[] };
+          return { assetType, indices: data.indices ?? null };
+        } catch {
+          return { assetType, indices: null as IndexQuote[] | null };
+        }
+      }),
+    );
+    setBundles((prev) =>
+      prev.map((b) => {
+        const hit = results.find((r) => r.assetType === b.assetType);
+        if (!hit?.indices?.length) return b;
+        return { ...b, indices: mergeIndexQuotes(b.indices, hit.indices) };
+      }),
+    );
   }, []);
+
+  const onWsMessage = useCallback(
+    (msg: ServerMessage) => {
+      if (msg.op === "indices") {
+        mergeMarket(msg.assetType, msg.indices);
+        return;
+      }
+      if (msg.op === "snapshot" && msg.indicesByMarket) {
+        for (const market of MARKETS) {
+          const indices = msg.indicesByMarket[market];
+          if (indices) mergeMarket(market, indices);
+        }
+      }
+    },
+    [mergeMarket],
+  );
+
+  const {
+    enabled: wsEnabled,
+    connected: wsConnected,
+    degraded: wsDegraded,
+  } = useQuoteChannels([{ type: "indices" }], onWsMessage);
+
+  useEffect(() => {
+    void loadHttp();
+    const ms = quotePollIntervalMs({
+      enabled: wsEnabled,
+      connected: wsConnected,
+      degraded: wsDegraded,
+    });
+    const refresh = window.setInterval(() => void loadHttp(), ms);
+    return () => window.clearInterval(refresh);
+  }, [loadHttp, wsEnabled, wsConnected, wsDegraded]);
 
   useEffect(() => {
     const id = window.setInterval(() => {
@@ -103,37 +155,19 @@ export function TopbarIndexTicker() {
   }, []);
 
   const current = bundles[page] ?? bundles[0];
-  const slots =
-    current?.indices.length > 0
-      ? current.indices.slice(0, 3)
-      : Array.from({ length: 3 }).map((_, i) => ({
-          id: `sk-${i}`,
-          symbol: "",
-          nameKey: "",
-          assetType: current?.assetType ?? ("stock" as const),
-          price: null,
-          change: null,
-          percentChange: null,
-        }));
+  const slots = (current?.indices.length
+    ? current.indices
+    : seedIndexQuotes(current?.assetType ?? "stock")
+  ).slice(0, 3);
 
   return (
     <div
       key={page}
       className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] animate-[qtFade_0.35s_ease] [&::-webkit-scrollbar]:hidden"
     >
-      {slots.map((item) =>
-        item.symbol ? (
-          <IndexChip key={item.id} item={item} />
-        ) : (
-          <div
-            key={item.id}
-            className="flex items-center gap-1.5 px-1.5 py-0.5"
-          >
-            <span className="h-3 w-10 animate-pulse rounded bg-[var(--surface-2)]" />
-            <span className="h-3 w-12 animate-pulse rounded bg-[var(--surface-2)]" />
-          </div>
-        ),
-      )}
+      {slots.map((item) => (
+        <IndexChip key={item.id} item={item} />
+      ))}
     </div>
   );
 }

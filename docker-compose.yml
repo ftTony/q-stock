@@ -29,6 +29,8 @@ services:
     environment:
       DATABASE_URL: postgresql://qstock:qstock@db:5432/qstock?schema=public
       APP_URL: http://localhost:3000
+      # Browser connects to host-mapped worker WS (override for real deploy / TLS)
+      NEXT_PUBLIC_QUOTE_WS_URL: ws://localhost:3001/ws/quotes
     volumes:
       - sitemaps:/app/public/sitemaps
     depends_on:
@@ -42,11 +44,15 @@ services:
       dockerfile: Dockerfile
       target: worker
     restart: unless-stopped
+    ports:
+      - "3001:3001"
     env_file:
       - .env
     environment:
       DATABASE_URL: postgresql://qstock:qstock@db:5432/qstock?schema=public
       SITEMAP_OUT_DIR: /app/public/sitemaps
+      QUOTE_WS_PORT: "3001"
+      QUOTE_WS_ENABLED: "true"
     volumes:
       - sitemaps:/app/public/sitemaps
     depends_on:
