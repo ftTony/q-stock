@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/routing";
+import NextLink from "next/link";
 
 type Props = {
   code?: string;
@@ -8,7 +9,7 @@ type Props = {
   marketsLabel: string;
   ctaEnter: string;
   brandName: string;
-  /** Use plain <a> when outside next-intl (root not-found). */
+  /** Use Next.js links when outside next-intl (root not-found). */
   plainLinks?: boolean;
 };
 
@@ -68,18 +69,18 @@ export function NotFoundView({
       >
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
           {plainLinks ? (
-            <a href="/" className="flex shrink-0 items-center">
+            <NextLink href="/" className="flex shrink-0 items-center">
               {logo}
-            </a>
+            </NextLink>
           ) : (
             <Link href="/" className="flex shrink-0 items-center">
               {logo}
             </Link>
           )}
           {plainLinks ? (
-            <a href="/markets" className="qt-btn qt-btn-primary h-9 px-3 text-xs">
+            <NextLink href="/markets" className="qt-btn qt-btn-primary h-9 px-3 text-xs">
               {ctaEnter}
-            </a>
+            </NextLink>
           ) : (
             <Link
               href="/markets"
@@ -116,12 +117,12 @@ export function NotFoundView({
           <div className="flex flex-wrap items-center gap-3 pt-4">
             {plainLinks ? (
               <>
-                <a href="/markets" className={marketsClass}>
+                <NextLink href="/markets" className={marketsClass}>
                   {marketsLabel}
-                </a>
-                <a href="/" className={homeClass}>
+                </NextLink>
+                <NextLink href="/" className={homeClass}>
                   {homeLabel}
-                </a>
+                </NextLink>
               </>
             ) : (
               <>
