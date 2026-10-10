@@ -118,7 +118,8 @@ function rowHtml(row: DigestRow, locale: DigestLocale): string {
 function buildHtml(payload: WatchlistDigestPayload): string {
   const t = copy(payload.locale);
   const base = appBaseUrl();
-  const logo = `${base}/logo.png`;
+  /** Dark header → logo-dark (light artwork on navy). */
+  const logo = `${base}/logo-dark.png`;
   const watchlistHref = watchlistUrl(payload.locale);
   const bodyRows =
     payload.rows.length > 0
