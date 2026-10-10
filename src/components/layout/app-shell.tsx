@@ -161,8 +161,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <MarketCredentialsPrompt />
 
-        <main className="flex-1 px-4 py-5 pb-24 sm:px-6 sm:py-6 lg:pb-6">
-          {children}
+        <main className="flex-1 py-5 pb-24 sm:py-6 lg:pb-6">
+          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">{children}</div>
         </main>
 
         <DataSourceBadge />

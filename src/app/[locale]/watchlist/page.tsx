@@ -174,7 +174,7 @@ function WatchlistContent() {
   }
 
   return (
-    <div className="page-shell page-shell--fluid space-y-4 animate-[qtFade_0.45s_ease]">
+    <div className="space-y-4 animate-[qtFade_0.45s_ease]">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <div className="flex flex-wrap items-baseline gap-2">
@@ -391,7 +391,7 @@ export default function WatchlistPage() {
   return (
     <Suspense
       fallback={
-        <div className="page-shell page-shell--fluid qt-panel p-6 text-sm text-[var(--muted)]">
+        <div className="qt-panel p-6 text-sm text-[var(--muted)]">
           …
         </div>
       }

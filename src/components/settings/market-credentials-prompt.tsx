@@ -72,9 +72,9 @@ export function MarketCredentialsPrompt() {
   return (
     <div
       role="status"
-      className="border-b border-[var(--border)] bg-[var(--brand-soft)] px-4 py-2.5 sm:px-6"
+      className="border-b border-[var(--border)] bg-[var(--brand-soft)] py-2.5"
     >
-      <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2 text-sm">
+      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-4 text-sm sm:px-6">
         <p className="text-[var(--foreground)]">
           <span className="font-medium">{t("credsPromptTitle")}</span>
           <span className="ml-1.5 text-[var(--muted)]">

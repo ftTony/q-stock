@@ -105,34 +105,6 @@ button {
   font: inherit;
 }
 
-/* Page content width tiers — dense tables go fluid; forms stay capped */
-:root {
-  --page-max-form: 60rem;   /* ~960px  pure form */
-  --page-max-tool: 80rem;   /* ~1280px settings / alerts */
-  --page-max-table: 100rem; /* ~1600px watchlist-like tables */
-}
-
-.page-shell {
-  width: 100%;
-  margin-inline: auto;
-}
-
-.page-shell--form {
-  max-width: var(--page-max-form);
-}
-
-.page-shell--tool {
-  max-width: var(--page-max-tool);
-}
-
-.page-shell--table {
-  max-width: var(--page-max-table);
-}
-
-.page-shell--fluid {
-  max-width: none;
-}
-
 .qt-panel {
   background: var(--panel);
   border: 1px solid var(--border);
