@@ -13,8 +13,9 @@ import {
 /**
  * Top banner for logged-in users who have not saved Longbridge/Futu keys.
  * Hidden on settings (they can fill the form there) and auth pages.
+ * `fluid` matches full-bleed pages (markets / analysis / symbol).
  */
-export function MarketCredentialsPrompt() {
+export function MarketCredentialsPrompt({ fluid = false }: { fluid?: boolean }) {
   const t = useTranslations("settings");
   const { status: sessionStatus } = useSession();
   const pathname = usePathname();
@@ -74,7 +75,13 @@ export function MarketCredentialsPrompt() {
       role="status"
       className="border-b border-[var(--border)] bg-[var(--brand-soft)] py-2.5"
     >
-      <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-4 text-sm sm:px-6">
+      <div
+        className={
+          fluid
+            ? "flex w-full flex-wrap items-center justify-between gap-2 px-4 text-sm sm:px-6"
+            : "mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-4 text-sm sm:px-6"
+        }
+      >
         <p className="text-[var(--foreground)]">
           <span className="font-medium">{t("credsPromptTitle")}</span>
           <span className="ml-1.5 text-[var(--muted)]">

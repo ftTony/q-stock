@@ -219,17 +219,17 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             collapsed={collapsed}
           />
           <NavItem
-            href="/watchlist"
-            active={isWatchlist}
-            icon={<IconStar />}
-            label={t("watchlist")}
-            collapsed={collapsed}
-          />
-          <NavItem
             href="/portfolio"
             active={isPortfolio}
             icon={<IconBag />}
             label={t("portfolio")}
+            collapsed={collapsed}
+          />
+          <NavItem
+            href="/watchlist"
+            active={isWatchlist}
+            icon={<IconStar />}
+            label={t("watchlist")}
             collapsed={collapsed}
           />
           <NavItem

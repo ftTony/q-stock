@@ -1,5 +1,6 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import {
@@ -65,12 +66,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("nav");
   const tM = useTranslations("marketing");
   const pathname = usePathname();
+  const { status: sessionStatus } = useSession();
   const [collapsed, setCollapsed] = useSidebarCollapsed();
 
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isWatchlist = pathname.startsWith("/watchlist");
   const isPortfolio = pathname.startsWith("/portfolio");
   const isAlerts = pathname.startsWith("/alerts");
+  const isReview = pathname.startsWith("/review");
+  /** Login-gate pages: full-bleed when logged out; max-w-6xl when logged in. */
+  const isAccountGatePage = isWatchlist || isAlerts || isReview;
+  const isFluidMain =
+    isMarkets ||
+    isPortfolio ||
+    pathname.startsWith("/analysis") ||
+    pathname.startsWith("/symbol") ||
+    (isAccountGatePage && sessionStatus !== "authenticated");
   const isAuth =
     pathname.startsWith("/login") ||
     pathname.startsWith("/register") ||
@@ -78,6 +89,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/auth/");
   const isMarketing = isMarketingPath(pathname);
+  const mainRailClass = isFluidMain
+    ? "w-full px-4 sm:px-6"
+    : "mx-auto w-full max-w-6xl px-4 sm:px-6";
 
   const sidebarWidth = collapsed
     ? SIDEBAR_WIDTH_COLLAPSED
@@ -159,10 +173,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </div>
         </header>
 
-        <MarketCredentialsPrompt />
+        <MarketCredentialsPrompt fluid={isFluidMain} />
 
         <main className="flex-1 py-5 pb-24 sm:py-6 lg:pb-6">
-          <div className="mx-auto w-full max-w-6xl px-4 sm:px-6">{children}</div>
+          <div className={mainRailClass}>{children}</div>
         </main>
 
         <DataSourceBadge />
