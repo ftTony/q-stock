@@ -10,6 +10,7 @@ import {
   type ChangeColorScheme,
 } from "@/components/providers/preference-provider";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import { QtSelect } from "@/components/ui/qt-select";
 import { MarketCredentialsForm } from "@/components/settings/market-credentials-form";
 import { MarketOkxCredentialsForm } from "@/components/settings/market-okx-credentials-form";
@@ -81,7 +82,16 @@ export default function SettingsPage() {
   }, [message]);
 
   if (status === "loading") {
-    return <p className="text-sm text-[var(--muted)]">…</p>;
+    return (
+      <div className="mx-auto max-w-6xl space-y-5">
+        <div className="h-7 w-28 animate-pulse rounded bg-[var(--surface-2)]" />
+        <div className="grid gap-4 lg:grid-cols-2">
+          <PanelSkeleton rows={4} label={tCommon("loading")} />
+          <PanelSkeleton rows={3} label={tCommon("loading")} />
+        </div>
+        <PanelSkeleton rows={3} label={tCommon("loading")} />
+      </div>
+    );
   }
 
   async function onSave(e: FormEvent) {
@@ -147,7 +157,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="settings-ui mx-auto max-w-5xl space-y-5 animate-[qtFade_0.45s_ease]">
+    <div className="settings-ui mx-auto max-w-6xl space-y-5 animate-[qtFade_0.45s_ease]">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
           {t("title")}
@@ -288,9 +298,7 @@ export default function SettingsPage() {
         <>
           <MarketVendorPrefs />
           <Suspense
-            fallback={
-              <p className="text-sm text-[var(--muted)]">{tCommon("loading")}</p>
-            }
+            fallback={<PanelSkeleton rows={4} label={tCommon("loading")} />}
           >
             <MarketCredentialsForm />
           </Suspense>

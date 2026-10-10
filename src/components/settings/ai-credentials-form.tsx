@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import { QtSelect } from "@/components/ui/qt-select";
 import {
   presetModelsForVendor,
@@ -158,11 +159,7 @@ export function AiCredentialsForm() {
   }
 
   if (loading) {
-    return (
-      <div className="qt-panel space-y-3 p-4">
-        <p className="text-sm text-[var(--muted)]">{tCommon("loading")}</p>
-      </div>
-    );
+    return <PanelSkeleton rows={3} label={tCommon("loading")} />;
   }
 
   return (

@@ -742,7 +742,7 @@
       "capabilities": {
         "eyebrow": "01 · Capabilities",
         "title": "What you can do",
-        "subtitle": "From watching to reviewing—tools stay restrained and checkable."
+        "subtitle": "Ask AI first; quotes, watchlist, and compare stay as supporting tools—restrained and checkable."
       }
     },
     "featureOpen": "Open",
@@ -755,7 +755,18 @@
     "dotFeatures": "Capabilities",
     "dotTrust": "Trust",
     "dotStory": "Origin",
-    "footerTools": "Tools"
+    "footerTools": "Tools",
+    "aiHighlight": {
+      "title": "Ask AI: chart · chat · scenarios",
+      "body": "Open AI on any symbol page with quotes, news, and filings context—clear basis and invalidation, never order tickets. Sign in to try; invites add more uses.",
+      "points": {
+        "chart": "Chart read: structure, levels, invalidation",
+        "chat": "Q&A: follow-ups on the symbol",
+        "scenario": "Scenarios: what if price moves"
+      },
+      "cta": "Sign in to try AI",
+      "ctaSecondary": "Browse markets"
+    }
   },
   "disclaimer": {
     "title": "Disclaimer",

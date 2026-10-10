@@ -5,31 +5,26 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useSectionReveal } from "@/components/marketing/use-section-reveal";
 
-type FeatureKey =
-  | "markets"
-  | "watchlist"
-  | "analysis"
-  | "ai"
-  | "paper"
-  | "alerts";
+type FeatureKey = "markets" | "watchlist" | "analysis" | "paper" | "alerts";
 
-const ALL_FEATURES: FeatureKey[] = [
+/** Supporting tools around the AI hero. */
+const SUPPORTING: FeatureKey[] = [
   "markets",
   "watchlist",
   "analysis",
-  "ai",
-  "alerts",
   "paper",
 ];
 
-const HREF: Record<FeatureKey, string> = {
+const HREF: Record<FeatureKey | "ai", string> = {
   markets: "/markets",
   watchlist: "/watchlist",
   analysis: "/analysis",
-  ai: "/markets",
   paper: "/portfolio",
   alerts: "/alerts",
+  ai: "/login",
 };
+
+const AI_POINTS = ["chart", "chat", "scenario"] as const;
 
 const SCREEN =
   "relative flex min-h-[calc(100dvh-3.5rem)] snap-start snap-always flex-col justify-center pb-20 pt-12";
@@ -78,7 +73,7 @@ function ScrollHint({ href, label }: { href: string; label: string }) {
   );
 }
 
-function FeatureIcon({ name }: { name: FeatureKey }) {
+function FeatureIcon({ name }: { name: FeatureKey | "ai" }) {
   const common = {
     className: "h-5 w-5",
     viewBox: "0 0 24 24",
@@ -113,7 +108,7 @@ function FeatureIcon({ name }: { name: FeatureKey }) {
       );
     case "ai":
       return (
-        <svg {...common}>
+        <svg {...common} className="h-6 w-6">
           <circle cx="12" cy="12" r="3" />
           <path d="M12 3v2M12 19v2M4.2 4.2l1.4 1.4M18.4 18.4l1.4 1.4M3 12h2M19 12h2M4.2 19.8l1.4-1.4M18.4 5.6l1.4-1.4" />
         </svg>
@@ -135,6 +130,60 @@ function FeatureIcon({ name }: { name: FeatureKey }) {
   }
 }
 
+function AiHeroCard({ inView }: { inView: boolean }) {
+  const t = useTranslations("marketing");
+
+  return (
+    <Reveal inView={inView} delay={180}>
+      <div
+        className="relative overflow-hidden rounded-2xl border border-[var(--brand)]/25 p-6 sm:p-8"
+        style={{
+          background:
+            "linear-gradient(135deg, color-mix(in srgb, var(--brand) 12%, var(--panel)), var(--panel))",
+        }}
+      >
+        <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+          <div className="min-w-0 max-w-2xl">
+            <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand-soft)] text-[var(--brand-text)]">
+              <FeatureIcon name="ai" />
+            </span>
+            <h3 className="mt-4 text-xl font-semibold tracking-tight sm:text-2xl">
+              {t("aiHighlight.title")}
+            </h3>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--muted)] sm:text-[15px]">
+              {t("aiHighlight.body")}
+            </p>
+            <ul className="mt-5 grid gap-2 sm:grid-cols-3">
+              {AI_POINTS.map((key) => (
+                <li
+                  key={key}
+                  className="rounded-xl border border-[var(--border)]/80 bg-[var(--panel)]/70 px-3 py-2.5 text-sm leading-snug text-[var(--foreground)]"
+                >
+                  {t(`aiHighlight.points.${key}`)}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
+            <Link
+              href={HREF.ai}
+              className="qt-btn qt-btn-primary inline-flex h-11 items-center justify-center px-5 text-sm"
+            >
+              {t("aiHighlight.cta")}
+            </Link>
+            <Link
+              href={HREF.markets}
+              className="qt-btn qt-btn-ghost inline-flex h-11 items-center justify-center px-5 text-sm"
+            >
+              {t("aiHighlight.ctaSecondary")}
+            </Link>
+          </div>
+        </div>
+      </div>
+    </Reveal>
+  );
+}
+
 function FeatureCard({
   featureKey,
   inView,
@@ -149,21 +198,21 @@ function FeatureCard({
     <Reveal inView={inView} delay={delay}>
       <Link
         href={HREF[featureKey]}
-        className="group flex h-full flex-col rounded-2xl border border-[var(--border)] p-5 transition hover:border-[var(--brand-text)] sm:p-6"
+        className="group flex h-full flex-col rounded-2xl border border-[var(--border)] p-4 transition hover:border-[var(--brand-text)] sm:p-5"
         style={{
           background: "color-mix(in srgb, var(--panel) 82%, transparent)",
         }}
       >
-        <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-[var(--brand-soft)] text-[var(--brand-text)]">
+        <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[var(--brand-soft)] text-[var(--brand-text)]">
           <FeatureIcon name={featureKey} />
         </span>
-        <h3 className="mt-4 text-base font-semibold tracking-tight group-hover:text-[var(--brand-text)] sm:text-lg">
+        <h3 className="mt-3 text-[15px] font-semibold tracking-tight group-hover:text-[var(--brand-text)]">
           {t(`features.${featureKey}.title`)}
         </h3>
-        <p className="mt-2 flex-1 text-sm leading-relaxed text-[var(--muted)]">
+        <p className="mt-1.5 flex-1 text-[13px] leading-relaxed text-[var(--muted)]">
           {t(`features.${featureKey}.body`)}
         </p>
-        <span className="mt-4 text-xs font-medium text-[var(--brand-text)] opacity-0 transition group-hover:opacity-100">
+        <span className="mt-3 text-xs font-medium text-[var(--brand-text)] opacity-0 transition group-hover:opacity-100">
           {t("featureOpen")} →
         </span>
       </Link>
@@ -171,7 +220,7 @@ function FeatureCard({
   );
 }
 
-/** Single full-screen capabilities board (merged from former 01–03). */
+/** Capabilities board: AI hero + supporting tools. */
 export function MarketingFeatureScreens() {
   const t = useTranslations("marketing");
   const { ref, visible } = useSectionReveal(0.2);
@@ -197,19 +246,23 @@ export function MarketingFeatureScreens() {
           </h2>
         </Reveal>
         <Reveal inView={visible} delay={140}>
-          <p className="mt-3 max-w-xl text-sm text-[var(--muted)] sm:text-base">
+          <p className="mt-3 max-w-2xl text-sm text-[var(--muted)] sm:text-base">
             {t("featureZones.capabilities.subtitle")}
           </p>
         </Reveal>
-        <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
-          {ALL_FEATURES.map((key, i) => (
-            <FeatureCard
-              key={key}
-              featureKey={key}
-              inView={visible}
-              delay={200 + i * 60}
-            />
-          ))}
+
+        <div className="mt-8 space-y-4">
+          <AiHeroCard inView={visible} />
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 sm:gap-3">
+            {SUPPORTING.map((key, i) => (
+              <FeatureCard
+                key={key}
+                featureKey={key}
+                inView={visible}
+                delay={260 + i * 50}
+              />
+            ))}
+          </div>
         </div>
       </div>
       <ScrollHint href="#trust" label={t("scrollNext")} />

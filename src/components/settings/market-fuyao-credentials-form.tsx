@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import {
   MARKET_VENDORS_CHANGED,
   type MarketCredsStatus,
@@ -107,7 +108,7 @@ export function MarketFuyaoCredentialsForm() {
   }
 
   if (loading) {
-    return <p className="text-sm text-[var(--muted)]">{tCommon("loading")}</p>;
+    return <PanelSkeleton rows={2} label={tCommon("loading")} />;
   }
 
   return (

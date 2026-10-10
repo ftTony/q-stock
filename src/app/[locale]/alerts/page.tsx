@@ -150,7 +150,7 @@ function AlertsContent() {
   const activeCount = alerts.filter((a) => a.status === "active").length;
 
   return (
-    <div className="mx-auto max-w-5xl space-y-5 animate-[qtFade_0.45s_ease]">
+    <div className="mx-auto max-w-6xl space-y-5 animate-[qtFade_0.45s_ease]">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1">
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
@@ -354,7 +354,7 @@ export default function AlertsPage() {
   return (
     <Suspense
       fallback={
-        <div className="mx-auto max-w-5xl qt-panel p-6 text-sm text-[var(--muted)]">
+        <div className="mx-auto max-w-6xl qt-panel p-6 text-sm text-[var(--muted)]">
           …
         </div>
       }

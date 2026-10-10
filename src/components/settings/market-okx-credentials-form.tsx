@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import {
   MARKET_VENDORS_CHANGED,
   type MarketCredsStatus,
@@ -117,7 +118,7 @@ export function MarketOkxCredentialsForm() {
   }
 
   if (loading) {
-    return <p className="text-sm text-[var(--muted)]">{tCommon("loading")}</p>;
+    return <PanelSkeleton rows={3} label={tCommon("loading")} />;
   }
 
   if ((status?.cryptoVendor ?? "binance") !== "okx") {

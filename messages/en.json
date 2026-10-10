@@ -700,7 +700,7 @@
         "body": "Pick 2–4 names in an industry and line up valuation and fundamentals."
       },
       "ai": {
-        "title": "AI assist",
+        "title": "Ask AI",
         "body": "Chart reads, Q&A, and scenarios—with basis and invalidation, not order tickets."
       },
       "paper": {
@@ -711,6 +711,17 @@
         "title": "Price alerts",
         "body": "Set levels that matter—less refresh, less impulse."
       }
+    },
+    "aiHighlight": {
+      "title": "Ask AI: chart · chat · scenarios",
+      "body": "Open AI on any symbol page with quotes, news, and filings context—clear basis and invalidation, never order tickets. Sign in to try; invites add more uses.",
+      "points": {
+        "chart": "Chart read: structure, levels, invalidation",
+        "chat": "Q&A: follow-ups on the symbol",
+        "scenario": "Scenarios: what if price moves"
+      },
+      "cta": "Sign in to try AI",
+      "ctaSecondary": "Browse markets"
     },
     "trustTitle": "Why trust it",
     "trust": {
@@ -747,7 +758,7 @@
       "capabilities": {
         "eyebrow": "01 · Capabilities",
         "title": "What you can do",
-        "subtitle": "From watching to reviewing—tools stay restrained and checkable."
+        "subtitle": "Ask AI first; quotes, watchlist, and compare stay as supporting tools—restrained and checkable."
       }
     },
     "featureOpen": "Open",

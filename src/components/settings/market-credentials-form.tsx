@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import { QtSelect } from "@/components/ui/qt-select";
 import {
   CREDS_DISMISS_KEY,
@@ -259,7 +260,7 @@ export function MarketCredentialsForm() {
   }
 
   if (loading) {
-    return <p className="text-sm text-[var(--muted)]">{tCommon("loading")}</p>;
+    return <PanelSkeleton rows={4} label={tCommon("loading")} />;
   }
 
   const highlight =

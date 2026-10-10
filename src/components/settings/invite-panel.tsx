@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { InlineLoading } from "@/components/ui/panel-skeleton";
 import { localizedPath } from "@/i18n/config";
 
 type InviteRow = {
@@ -101,7 +102,7 @@ export function InvitePanel() {
         {error && <p className="text-xs text-[var(--down)]">{error}</p>}
 
         {!invites && !error && (
-          <p className="text-xs text-[var(--muted)]">{tCommon("loading")}</p>
+          <InlineLoading label={tCommon("loading")} className="text-xs" />
         )}
 
         {invites && invites.length === 0 && (

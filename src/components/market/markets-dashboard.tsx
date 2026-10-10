@@ -249,8 +249,6 @@ export default function MarketsDashboard() {
         <KpiCard
           label={t("kpiTickers")}
           value={String(kpiQuotes.length || 0)}
-          hint={`${kpiQuotes.length ? `+${Math.min(3, kpiQuotes.length)}` : "0"} ${t("today")}`}
-          hintClass="text-[var(--up)]"
         />
         <KpiCard
           label={t("kpiAvgChange")}
