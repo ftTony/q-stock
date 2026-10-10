@@ -18,6 +18,8 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_QUOTE_WS_URL
+ENV NEXT_PUBLIC_QUOTE_WS_URL=${NEXT_PUBLIC_QUOTE_WS_URL}
 RUN npm run build
 
 # ---- web runner ----

@@ -21,6 +21,8 @@ services:
       context: .
       dockerfile: Dockerfile
       target: runner
+      args:
+        NEXT_PUBLIC_QUOTE_WS_URL: ${NEXT_PUBLIC_QUOTE_WS_URL:-ws://localhost:3001/ws/quotes}
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -29,8 +31,7 @@ services:
     environment:
       DATABASE_URL: postgresql://qstock:qstock@db:5432/qstock?schema=public
       APP_URL: http://localhost:3000
-      # Browser connects to host-mapped worker WS (override for real deploy / TLS)
-      NEXT_PUBLIC_QUOTE_WS_URL: ws://localhost:3001/ws/quotes
+      NEXT_PUBLIC_QUOTE_WS_URL: ${NEXT_PUBLIC_QUOTE_WS_URL:-ws://localhost:3001/ws/quotes}
     volumes:
       - sitemaps:/app/public/sitemaps
     depends_on:

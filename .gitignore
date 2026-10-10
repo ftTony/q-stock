@@ -45,4 +45,5 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+*.key
 docker-compose.prod.yml

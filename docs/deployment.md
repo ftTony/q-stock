@@ -36,8 +36,8 @@
 ### 2.3 进程
 
 - [ ] `web` 与 `worker` 同时运行（缺 worker 则提醒不触发；worker 同时开行情 WS `:3001/ws/quotes`）
-- [ ] 前端 `NEXT_PUBLIC_QUOTE_WS_URL`（本地 `ws://localhost:3001/ws/quotes`；生产 `wss://域名/ws/quotes`）
-- [ ] Nginx 将 `/ws/quotes` 反代到 worker:3001（需 `Upgrade` / `Connection`）
+- [ ] 前端 `NEXT_PUBLIC_QUOTE_WS_URL`（本地 `ws://localhost:3001/ws/quotes`；生产 `wss://域名/ws/quotes`）。这是浏览器可访问的地址，会在 Docker 构建时写入前端；改动后需重新构建镜像。
+- [ ] Cloudflare Tunnel 将 `/ws/quotes` 路由到 worker:3001，将其它请求路由到 web:3000；Tunnel 支持 WebSocket，无需 Nginx
 - [ ] `ALERT_POLL_INTERVAL_MS` 按 Finnhub 限额调整（默认 45000）
 - [ ] SEO：公网 `APP_URL` 正确；`/sitemap.xml`、`/robots.txt` 可访问；向 Google Search Console 提交 sitemap（仅含公开页；账号页 noindex）
 - [ ] 统计：配置 `NEXT_PUBLIC_GA_MEASUREMENT_ID`（GA4）；可选 `GOOGLE_SITE_VERIFICATION` 完成站长验证
@@ -46,8 +46,8 @@
 
 ### 2.4 网络与 TLS
 
-- [ ] 前置 Nginx / Caddy / 云 LB 终结 HTTPS
-- [ ] 反代转发到 `web:3000`
+- [ ] 使用 Cloudflare Tunnel 时，将公网 HTTPS/WSS 流量转发到本机服务；无需开放源站入站端口
+- [ ] 不要将 `:3001` 直接设为浏览器 WebSocket 地址；生产统一使用 `wss://域名/ws/quotes`
 - [ ] 健康检查：`GET /api/health`
 
 ## 3. Compose 生产示例步骤
@@ -55,10 +55,12 @@
 ```bash
 git clone <repo> q-stock && cd q-stock
 cp .env.example .env
-# 编辑 .env：AUTH_SECRET、FINNHUB_API_KEY、邮件、APP_URL 等
+# 在 .env 设置 AUTH_SECRET、FINNHUB_API_KEY、POSTGRES_USER、
+# POSTGRES_PASSWORD（建议 openssl rand -hex 32）、POSTGRES_DB、
+# APP_URL、AUTH_URL 和 NEXT_PUBLIC_QUOTE_WS_URL。
 
-docker compose up --build -d
-docker compose ps
+docker compose -f docker-compose.prod.yml up --build -d
+docker compose -f docker-compose.prod.yml ps
 curl -s https://your-domain.example/api/health
 ```
 
@@ -66,37 +68,40 @@ curl -s https://your-domain.example/api/health
 
 ```bash
 git pull
-docker compose up --build -d
+docker compose -f docker-compose.prod.yml up --build -d
 ```
 
 查看日志：
 
 ```bash
-docker compose logs -f web
-docker compose logs -f worker
+docker compose -f docker-compose.prod.yml logs -f web
+docker compose -f docker-compose.prod.yml logs -f worker
 ```
 
-## 4. 反向代理示例（Nginx）
+## 4. Cloudflare Tunnel
 
-```nginx
-server {
-  listen 443 ssl http2;
-  server_name your-domain.example;
+Cloudflare 橙云支持 WebSocket，但不能直接代理 `:3001` 这个端口。使用 Cloudflare Tunnel 可按路径将行情 WebSocket 与 Web 应用分别转发，不必安装 Nginx。以下示例假设 `cloudflared` 安装并运行在 Docker 主机上，Compose 已将 web 和 worker 端口映射到主机。
 
-  # ssl_certificate     ...;
-  # ssl_certificate_key ...;
+在 Cloudflare DNS 中为域名配置 Tunnel 路由，然后配置 `cloudflared`（例如 `/etc/cloudflared/config.yml`）：
 
-  location / {
-    proxy_pass http://127.0.0.1:3000;
-    proxy_http_version 1.1;
-    proxy_set_header Host $host;
-    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-    proxy_set_header X-Forwarded-Proto $scheme;
-  }
-}
+```yaml
+tunnel: <TUNNEL_UUID>
+credentials-file: /etc/cloudflared/<TUNNEL_UUID>.json
+
+ingress:
+  - hostname: your-domain.example
+    path: ^/ws/quotes$
+    service: http://localhost:3001
+  - hostname: your-domain.example
+    service: http://localhost:3000
+  - service: http_status:404
 ```
 
-确保 `APP_URL=https://your-domain.example`。
+先匹配 `/ws/quotes`，其余请求再交给 web。将 `your-domain.example` 替换为真实域名；启动 Tunnel 后，Cloudflare 对外提供 HTTPS/WSS，Tunnel 在源站内部连接本机 HTTP 服务。确认 Cloudflare Dashboard 的 **Network → WebSockets** 已启用。
+
+如果 `cloudflared` 也运行在 Docker 中，不要使用 `localhost`：在同一个 Compose 网络中将上面的源站地址分别改为 `http://worker:3001` 和 `http://web:3000`。
+
+确保 `APP_URL` 和 `AUTH_URL` 都是 `https://your-domain.example`。修改 `NEXT_PUBLIC_QUOTE_WS_URL` 后需重新构建 web 镜像：`docker compose up --build -d`。
 
 ## 5. 资源与容量建议（起步）
 
