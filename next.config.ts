@@ -6,6 +6,10 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["longbridge"],
+  // Next `generateSitemaps()` leaves `/sitemap.xml` broken; serve our index instead.
+  async rewrites() {
+    return [{ source: "/sitemap.xml", destination: "/sitemap-index.xml" }];
+  },
   images: {
     remotePatterns: [
       { protocol: "https", hostname: "**.finnhub.io" },

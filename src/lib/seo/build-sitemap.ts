@@ -154,6 +154,26 @@ export async function buildSitemapEntries(opts?: {
   return parts.flat();
 }
 
+/** Chunk ids for Next `/sitemap/{id}.xml` and the root sitemap index. */
+export async function listSitemapChunkIds(opts?: {
+  prisma?: PrismaClient;
+}): Promise<string[]> {
+  const max = sitemapMaxUrlsPerFile();
+  const out: string[] = [];
+  for (const segment of SITEMAP_SEGMENTS) {
+    const entries = await buildSegmentEntries(segment, opts);
+    const chunks = chunkSitemapEntries(entries, max);
+    if (chunks.length <= 1) {
+      out.push(segment);
+      continue;
+    }
+    for (let i = 1; i <= chunks.length; i++) {
+      out.push(`${segment}-${i}`);
+    }
+  }
+  return out;
+}
+
 function escapeXml(s: string): string {
   return s
     .replace(/&/g, "&amp;")

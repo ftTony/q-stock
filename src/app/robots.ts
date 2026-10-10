@@ -1,6 +1,9 @@
 import type { MetadataRoute } from "next";
 import { siteOrigin } from "@/lib/seo/site-url";
 
+/** Runtime env (APP_URL); avoid baking localhost at `next build`. */
+export const dynamic = "force-dynamic";
+
 const PRIVATE = [
   "/api/",
   "/settings",
@@ -33,6 +36,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: PRIVATE,
       },
     ],
-    sitemap: [`${origin}/sitemap.xml`, `${origin}/sitemaps/sitemap.xml`],
+    sitemap: `${origin}/sitemap.xml`,
   };
 }
