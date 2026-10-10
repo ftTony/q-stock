@@ -2,34 +2,20 @@ import type { MetadataRoute } from "next";
 import {
   buildSegmentEntries,
   chunkSitemapEntries,
+  listSitemapChunkIds,
   parseSitemapId,
   SITEMAP_SEGMENTS,
-  sitemapMaxUrlsPerFile,
   type SitemapSegmentId,
 } from "@/lib/seo/build-sitemap";
 import { prisma } from "@/lib/db";
 
-/** ISR: refresh each child sitemap at most once per day. */
-export const revalidate = 86400;
+/** Runtime APP_URL — do not bake localhost from `next build`. */
+export const dynamic = "force-dynamic";
 
-/** `/sitemap.xml` index → chunked `/sitemap/{segment}` or `/sitemap/{segment}-{n}`. */
+/** Children at `/sitemap/{id}.xml`. Root index: rewrite → `/sitemap-index.xml`. */
 export async function generateSitemaps() {
-  const max = sitemapMaxUrlsPerFile();
-  const out: { id: string }[] = [];
-
-  for (const segment of SITEMAP_SEGMENTS) {
-    const entries = await buildSegmentEntries(segment, { prisma });
-    const chunks = chunkSitemapEntries(entries, max);
-    if (chunks.length <= 1) {
-      out.push({ id: segment });
-      continue;
-    }
-    for (let i = 1; i <= chunks.length; i++) {
-      out.push({ id: `${segment}-${i}` });
-    }
-  }
-
-  return out;
+  const ids = await listSitemapChunkIds({ prisma });
+  return ids.map((id) => ({ id }));
 }
 
 export default async function sitemap(props: {
