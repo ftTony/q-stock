@@ -4,11 +4,12 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
-/** Light theme → logo-light; otherwise logo-dark */
+/** Light (default) → logo-light; dark theme → logo-dark. */
 export function brandMarkSrc(
   theme: string | undefined,
 ): "/logo-light.png" | "/logo-dark.png" {
-  return theme === "light" ? "/logo-light.png" : "/logo-dark.png";
+  // undefined before theme resolves → light (site default), not dark.
+  return theme === "dark" ? "/logo-dark.png" : "/logo-light.png";
 }
 
 type SiteLogoProps = {
@@ -39,9 +40,9 @@ export function SiteLogo({
     setImgFailed(false);
   }, [resolvedTheme]);
 
-  // Avoid hydration mismatch: default to dark mark until mounted.
-  const themed = brandMarkSrc(mounted ? resolvedTheme : "dark");
-  const src = imgFailed ? "/logo.png" : themed;
+  // Match site default (light) before mount to avoid preloading logo-dark on light pages.
+  const themed = brandMarkSrc(mounted ? resolvedTheme : "light");
+  const src = imgFailed ? "/logo-light.png" : themed;
 
   return (
     <span
