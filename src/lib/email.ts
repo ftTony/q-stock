@@ -187,7 +187,8 @@ function formatPrice(n: number): string {
 }
 
 function emailBrandLogoHtml(): string {
-  const src = `${appBaseUrl()}/logo.png`;
+  /** Dark navy header → logo-dark (light mark readable on dark). */
+  const src = `${appBaseUrl()}/logo-dark.png`;
   return `<img src="${src}" alt="钱力股 Q-Stock" width="120" height="106" style="display:block;height:40px;width:auto;max-width:160px;margin:0 0 14px;border:0;outline:none" />`;
 }
 
