@@ -195,7 +195,10 @@
     "openAlerts": "Buka amaran",
     "openAnalysis": "Buka analisis",
     "openSettings": "Buka tetapan",
-    "openReview": "Review notes"
+    "openReview": "Review notes",
+    "loginTitle": "Sign in to view your portfolio",
+    "loginBody": "See your watchlist, price alerts, and paper positions in one place after you sign in.",
+    "loginHint": "Your data stays private to your account."
   },
   "auth": {
     "email": "E-mel",
@@ -348,7 +351,8 @@
     "credsFuyao": "Tonghuashun Fuyao (saham A)",
     "credsFuyaoHint": "Masukkan X-api-key Fuyao untuk sebut harga, indeks dan sektor A. Disimpan disulitkan.",
     "credsFuyaoApiKey": "API Key (X-api-key)",
-    "credsSaveFuyao": "Simpan Fuyao"
+    "credsSaveFuyao": "Simpan Fuyao",
+    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)"
   },
   "alerts": {
     "title": "Amaran harga",
@@ -373,7 +377,10 @@
     "symbolRequired": "Please enter or pick a symbol",
     "triggerPricePlaceholder": "e.g. 200",
     "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached.",
-    "delete": "Padam"
+    "delete": "Padam",
+    "loginTitle": "Sign in to manage price alerts",
+    "loginBody": "Set trigger prices and get an email when they hit. Alerts re-arm after the price moves back, so they will not spam while a breach persists.",
+    "loginHint": "Alerts are sent to your account email."
   },
   "comments": {
     "placeholder": "Kongsi pandangan anda…",
@@ -489,7 +496,15 @@
     "cached": "Cache (~30 min)",
     "sources": "Sumber: {news} berita · {earnings} pendapatan · {metrics} petunjuk",
     "withQuote": "termasuk petikan",
-    "disclaimer": "Dijana AI daripada berita dan pendapatan awam. Untuk rujukan sahaja; bukan nasihat pelaburan."
+    "disclaimer": "Dijana AI daripada berita dan pendapatan awam. Untuk rujukan sahaja; bukan nasihat pelaburan.",
+    "loginRequired": "Sign in to use AI features.",
+    "loginLink": "Sign in",
+    "quotaExceeded": "AI uses exhausted. Invite a friend who registers to get 5 more.",
+    "quotaRemaining": "AI uses left: {remaining} / {limit}",
+    "inviteForMore": "Invite friends",
+    "loginTitle": "Sign in to unlock AI",
+    "loginBody": "Chart reads, Q&A, compare, and review need an account. New users get 5 uses; invite a friend who registers and you get 5 more.",
+    "loginHint": "AI output is for reference only and is not investment advice."
   },
   "common": {
     "loading": "Memuat…",
@@ -570,7 +585,10 @@
     "checklist": "Next checklist",
     "notesTitle": "Saved notes",
     "notesHint": "Latest 10, saved automatically.",
-    "notesEmpty": "No notes yet"
+    "notesEmpty": "No notes yet",
+    "loginTitle": "Sign in to start a review",
+    "loginBody": "Reviews use your paper trades, positions, and emotion flags to look at process, not just P&L. Sign in to use AI — new accounts get 5 uses; invite a friend who registers and you get 5 more.",
+    "loginHint": "For learning only; not investment advice."
   },
   "seo": {
     "titleDefault": "Qianli Gu Q-Stock",
@@ -780,5 +798,10 @@
     "body": "This page does not exist or has been moved. Head home, or open the markets dashboard.",
     "home": "Back home",
     "markets": "Open markets"
+  },
+  "watchlist": {
+    "loginTitle": "Sign in to manage your watchlist",
+    "loginBody": "Save US, HK, A-share, or crypto symbols you follow and sync them across devices once signed in.",
+    "loginHint": "Your watchlist is visible only to you."
   }
 }

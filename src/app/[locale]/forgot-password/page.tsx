@@ -8,6 +8,7 @@ import { SiteLogo } from "@/components/brand/site-logo";
 
 export default function ForgotPasswordPage() {
   const t = useTranslations("auth");
+  const tApp = useTranslations("app");
   const tCommon = useTranslations("common");
   const [email, setEmail] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -37,15 +38,26 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="qt-panel w-full space-y-5 p-6 sm:p-8">
+    <div className="qt-panel w-full space-y-4 p-6 sm:p-8">
+      <Link
+        href="/"
+        className="flex flex-col items-center gap-2 rounded-lg outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40"
+      >
+        <SiteLogo height={44} priority variant="compact" />
+        <p className="text-sm text-[var(--muted)]">{tApp("slogan")}</p>
+      </Link>
+
       <div>
-        <SiteLogo height={28} priority variant="compact" />
-        <h1 className="mt-3 text-2xl font-semibold">{t("forgotTitle")}</h1>
-        <p className="mt-2 text-sm text-[var(--muted)]">{t("forgotHint")}</p>
+        <h1 className="text-xl font-semibold tracking-tight">
+          {t("forgotTitle")}
+        </h1>
+        <p className="mt-1.5 text-sm leading-relaxed text-[var(--muted)]">
+          {t("forgotHint")}
+        </p>
       </div>
 
       {done ? (
-        <div className="space-y-4">
+        <div className="space-y-3">
           <p className="text-sm text-[var(--up)]">{t("forgotSent")}</p>
           <Link href="/login" className="text-sm text-[var(--brand-text)]">
             {t("backToLogin")}
@@ -53,7 +65,7 @@ export default function ForgotPasswordPage() {
         </div>
       ) : (
         <form onSubmit={onSubmit} className="space-y-3">
-          <label className="block space-y-1 text-sm">
+          <label className="block space-y-1.5 text-sm">
             <span className="text-[var(--muted)]">{t("email")}</span>
             <input
               type="email"

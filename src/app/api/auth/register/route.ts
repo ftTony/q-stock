@@ -4,6 +4,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendWelcomeEmail } from "@/lib/email";
 import { toDbLocale } from "@/i18n/config";
+import { grantInviteAiBonus } from "@/lib/ai/usage";
 import { generateInviteCode } from "@/lib/user/invites";
 
 const schema = z.object({
@@ -77,7 +78,8 @@ export async function POST(req: Request) {
           throw new Error("INVITE_RACE");
         }
 
-        // Reward inviter with one new code (“缘法流转”).
+        // Reward inviter: +5 AI uses + one new invite code.
+        await grantInviteAiBonus(inviteRow.ownerId, tx);
         for (let attempt = 0; attempt < 8; attempt++) {
           try {
             await tx.inviteCode.create({

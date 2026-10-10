@@ -2,7 +2,10 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { AiLoginButton } from "@/components/ai/ai-login-button";
+import { useAiAccess } from "@/components/ai/use-ai-access";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { TopToast } from "@/components/ui/top-toast";
 import type { AssetType } from "@/lib/types";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
@@ -16,6 +19,7 @@ export function AiChatPanel(props: {
   const t = useTranslations("aiChat");
   const tAi = useTranslations("ai");
   const locale = useLocale();
+  const access = useAiAccess();
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
@@ -34,8 +38,11 @@ export function AiChatPanel(props: {
 
   async function onSend(e: FormEvent) {
     e.preventDefault();
+    if (!access.loggedIn) return;
     const text = input.trim();
     if (!text || busy) return;
+
+    if (!(await access.ensureQuota())) return;
 
     const next: ChatMsg[] = [...messages, { role: "user", content: text }];
     setMessages(next);
@@ -59,6 +66,10 @@ export function AiChatPanel(props: {
       });
 
       if (!res.ok) {
+        if (access.handleAiHttpError(res.status)) {
+          setMessages(messages);
+          return;
+        }
         const data = (await res.json().catch(() => ({}))) as {
           error?: string;
         };
@@ -78,6 +89,7 @@ export function AiChatPanel(props: {
         assistant += decoder.decode(value, { stream: true });
         setMessages([...next, { role: "assistant", content: assistant }]);
       }
+      void access.refreshQuota();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error"));
     } finally {
@@ -93,6 +105,13 @@ export function AiChatPanel(props: {
           : "mt-6 space-y-3 border-t border-[var(--border)] pt-4"
       }
     >
+      <TopToast
+        key={access.toastKey}
+        message={access.toastMsg}
+        tone={access.toastTone}
+        onDismiss={access.dismissToast}
+      />
+
       <div>
         <h3 className="text-sm font-semibold">{t("title")}</h3>
         <p className="text-xs text-[var(--muted)]">
@@ -103,7 +122,7 @@ export function AiChatPanel(props: {
       <div
         className={
           page
-            ? "max-h-[min(28rem,55dvh)] min-h-[16rem] space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 p-3 text-sm qt-scroll"
+            ? "max-h-[min(22rem,42dvh)] min-h-[12rem] space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 p-3 text-sm qt-scroll"
             : "max-h-64 space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 p-3 text-sm qt-scroll"
         }
       >
@@ -132,17 +151,21 @@ export function AiChatPanel(props: {
           value={input}
           onChange={(e) => setInput(e.target.value)}
           placeholder={t("placeholder")}
-          disabled={busy}
+          disabled={busy || !access.loggedIn}
           className="qt-input min-w-0 flex-1 px-3 py-2 text-sm"
           maxLength={2000}
         />
-        <SubmitButton
-          loading={busy}
-          loadingLabel={tAi("loading")}
-          className="qt-btn-primary shrink-0 px-3 py-2 text-sm"
-        >
-          {t("send")}
-        </SubmitButton>
+        {access.loggedIn ? (
+          <SubmitButton
+            loading={busy}
+            loadingLabel={tAi("loading")}
+            className="qt-btn-primary shrink-0 px-3 py-2 text-sm"
+          >
+            {t("send")}
+          </SubmitButton>
+        ) : (
+          <AiLoginButton className="qt-btn-primary inline-flex shrink-0 items-center justify-center px-3 py-2 text-sm font-medium" />
+        )}
       </form>
       <p className="text-[11px] text-[var(--muted)]">{tAi("disclaimer")}</p>
     </div>

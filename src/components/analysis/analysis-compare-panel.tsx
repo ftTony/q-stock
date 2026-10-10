@@ -3,7 +3,11 @@
 import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { AiLoginGate } from "@/components/ai/ai-login-gate";
+import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
+import { useAiAccess } from "@/components/ai/use-ai-access";
 import { ChangePct, PriceText } from "@/components/market/price";
+import { TopToast } from "@/components/ui/top-toast";
 import { Sparkline } from "@/components/market/sparkline";
 import { AnalysisCompareMetrics } from "@/components/analysis/analysis-compare-metrics";
 import {
@@ -50,11 +54,13 @@ export function AnalysisComparePanel({
   const tCommon = useTranslations("common");
   const tSymbol = useTranslations("symbol");
   const locale = useLocale();
+  const access = useAiAccess();
   const [ai, setAi] = useState<CompareResult | null>(null);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiError, setAiError] = useState<string | null>(null);
   const [funds, setFunds] = useState<Record<string, FundMetrics>>({});
   const [fundsLoading, setFundsLoading] = useState(false);
+  const [quotaTick, setQuotaTick] = useState(0);
 
   const canRun = basket.length >= ANALYSIS_BASKET_MIN;
   const canAddMore = basket.length < ANALYSIS_BASKET_MAX;
@@ -83,7 +89,8 @@ export function AnalysisComparePanel({
   }, [basket]);
 
   async function runAiCompare() {
-    if (!canRun) return;
+    if (!canRun || !access.loggedIn) return;
+    if (!(await access.ensureQuota())) return;
     setAiLoading(true);
     setAiError(null);
     try {
@@ -100,11 +107,17 @@ export function AnalysisComparePanel({
       });
       const data = (await res.json()) as CompareResult;
       if (!res.ok) {
+        if (access.handleAiHttpError(res.status)) {
+          setAi(null);
+          setQuotaTick((n) => n + 1);
+          return;
+        }
         setAiError(data.error || tAi("unavailable"));
         setAi(null);
         return;
       }
       setAi(data);
+      setQuotaTick((n) => n + 1);
     } catch {
       setAiError(tCommon("error"));
       setAi(null);
@@ -299,9 +312,18 @@ export function AnalysisComparePanel({
       />
 
       <section className="qt-panel p-4">
+        <TopToast
+          key={access.toastKey}
+          message={access.toastMsg}
+          tone={access.toastTone}
+          onDismiss={access.dismissToast}
+        />
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h3 className="text-[14px] font-semibold">{t("aiCompare")}</h3>
-          {ai && (
+          <div className="space-y-1">
+            <h3 className="text-[14px] font-semibold">{t("aiCompare")}</h3>
+            <AiQuotaBadge refreshKey={quotaTick} />
+          </div>
+          {ai && access.loggedIn && (
             <button
               type="button"
               className="qt-btn qt-btn-ghost h-9 px-3 text-[14px] disabled:opacity-40"
@@ -320,7 +342,11 @@ export function AnalysisComparePanel({
           <p className="text-[14px] text-[var(--down)]">{aiError}</p>
         )}
 
-        {!ai && !aiError && canRun && (
+        {!ai && !aiError && canRun && !access.loggedIn && (
+          <AiLoginGate className="min-h-[14rem] py-6" />
+        )}
+
+        {!ai && !aiError && canRun && access.loggedIn && (
           <div className="rounded-lg border border-dashed border-[var(--border)] bg-[var(--surface-2)]/50 px-4 py-6 text-center">
             <p className="text-[14px] text-[var(--muted)]">
               {t("aiCompareHint")}

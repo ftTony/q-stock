@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { SymbolSearchField } from "@/components/ui/symbol-search-field";
@@ -32,7 +33,6 @@ function statusTone(status: AlertRow["status"]) {
 
 function AlertsContent() {
   const t = useTranslations("alerts");
-  const tNav = useTranslations("nav");
   const tMarket = useTranslations("market");
   const tCommon = useTranslations("common");
   const { data: session, status } = useSession();
@@ -84,15 +84,11 @@ function AlertsContent() {
 
   if (!session?.user) {
     return (
-      <div className="mx-auto max-w-md qt-panel p-6 text-sm">
-        <p>{t("loginRequired")}</p>
-        <Link
-          href="/login"
-          className="qt-btn qt-btn-primary mt-3 inline-flex h-9 px-3 text-sm"
-        >
-          {tNav("login")}
-        </Link>
-      </div>
+      <AuthLoginGate
+        title={t("loginTitle")}
+        body={t("loginBody")}
+        hint={t("loginHint")}
+      />
     );
   }
 

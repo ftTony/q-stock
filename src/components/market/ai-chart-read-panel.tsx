@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { AiLoginButton } from "@/components/ai/ai-login-button";
+import { useAiAccess } from "@/components/ai/use-ai-access";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { TopToast } from "@/components/ui/top-toast";
 import type { AssetType } from "@/lib/types";
 
 type ChartReadPayload = {
@@ -27,12 +30,16 @@ export function AiChartReadPanel(props: {
   const tAi = useTranslations("ai");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+  const access = useAiAccess();
   const [data, setData] = useState<ChartReadPayload | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const page = props.layout === "page";
 
   async function run() {
+    if (!access.loggedIn) return;
+    if (!(await access.ensureQuota())) return;
+
     setBusy(true);
     setError(null);
     try {
@@ -46,8 +53,12 @@ export function AiChartReadPanel(props: {
         }),
       });
       const json = (await res.json()) as ChartReadPayload;
-      if (!res.ok) throw new Error(json.error || t("error"));
+      if (!res.ok) {
+        if (access.handleAiHttpError(res.status)) return;
+        throw new Error(json.error || t("error"));
+      }
       setData(json);
+      void access.refreshQuota();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error"));
     } finally {
@@ -63,20 +74,31 @@ export function AiChartReadPanel(props: {
           : "mt-6 space-y-3 border-t border-[var(--border)] pt-4"
       }
     >
+      <TopToast
+        key={access.toastKey}
+        message={access.toastMsg}
+        tone={access.toastTone}
+        onDismiss={access.dismissToast}
+      />
+
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold">{t("title")}</h3>
           <p className="text-xs text-[var(--muted)]">{t("subtitle")}</p>
         </div>
-        <SubmitButton
-          type="button"
-          loading={busy}
-          loadingLabel={tAi("loading")}
-          onClick={() => void run()}
-          className="qt-btn-ghost border border-[var(--border)] px-3 py-1.5 text-sm"
-        >
-          {t("run")}
-        </SubmitButton>
+        {access.loggedIn ? (
+          <SubmitButton
+            type="button"
+            loading={busy}
+            loadingLabel={tAi("loading")}
+            onClick={() => void run()}
+            className="qt-btn-ghost border border-[var(--border)] px-3 py-1.5 text-sm"
+          >
+            {t("run")}
+          </SubmitButton>
+        ) : (
+          <AiLoginButton className="qt-btn-primary inline-flex h-9 items-center justify-center px-3 text-sm font-medium" />
+        )}
       </div>
 
       {error && <p className="text-xs text-[var(--down)]">{error}</p>}

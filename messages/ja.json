@@ -195,7 +195,10 @@
     "openAlerts": "アラートを開く",
     "openAnalysis": "分析を開く",
     "openSettings": "設定を開く",
-    "openReview": "Review notes"
+    "openReview": "Review notes",
+    "loginTitle": "Sign in to view your portfolio",
+    "loginBody": "See your watchlist, price alerts, and paper positions in one place after you sign in.",
+    "loginHint": "Your data stays private to your account."
   },
   "auth": {
     "email": "メールアドレス",
@@ -348,7 +351,8 @@
     "credsFuyao": "同花順扶揺 Fuyao（A株）",
     "credsFuyaoHint": "Fuyao の X-api-key を登録すると A 株の気配・指数・業種が利用可能。暗号化保存。",
     "credsFuyaoApiKey": "API Key（X-api-key）",
-    "credsSaveFuyao": "Fuyao を保存"
+    "credsSaveFuyao": "Fuyao を保存",
+    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)"
   },
   "alerts": {
     "title": "価格アラート",
@@ -373,7 +377,10 @@
     "symbolRequired": "Please enter or pick a symbol",
     "triggerPricePlaceholder": "e.g. 200",
     "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached.",
-    "delete": "削除"
+    "delete": "削除",
+    "loginTitle": "Sign in to manage price alerts",
+    "loginBody": "Set trigger prices and get an email when they hit. Alerts re-arm after the price moves back, so they will not spam while a breach persists.",
+    "loginHint": "Alerts are sent to your account email."
   },
   "comments": {
     "placeholder": "あなたの見解を共有…",
@@ -489,7 +496,15 @@
     "cached": "キャッシュ済み（約30分）",
     "sources": "データ: ニュース{news}件・決算関連{earnings}・指標{metrics}",
     "withQuote": "リアルタイム相場を含む",
-    "disclaimer": "本分析はAIが公開ニュースと決算に基づき自動生成したもので、参考のみであり、投資助言ではありません。"
+    "disclaimer": "本分析はAIが公開ニュースと決算に基づき自動生成したもので、参考のみであり、投資助言ではありません。",
+    "loginRequired": "Sign in to use AI features.",
+    "loginLink": "Sign in",
+    "quotaExceeded": "AI uses exhausted. Invite a friend who registers to get 5 more.",
+    "quotaRemaining": "AI uses left: {remaining} / {limit}",
+    "inviteForMore": "Invite friends",
+    "loginTitle": "Sign in to unlock AI",
+    "loginBody": "Chart reads, Q&A, compare, and review need an account. New users get 5 uses; invite a friend who registers and you get 5 more.",
+    "loginHint": "AI output is for reference only and is not investment advice."
   },
   "common": {
     "loading": "読み込み中…",
@@ -570,7 +585,10 @@
     "checklist": "Next checklist",
     "notesTitle": "Saved notes",
     "notesHint": "Latest 10, saved automatically.",
-    "notesEmpty": "No notes yet"
+    "notesEmpty": "No notes yet",
+    "loginTitle": "Sign in to start a review",
+    "loginBody": "Reviews use your paper trades, positions, and emotion flags to look at process, not just P&L. Sign in to use AI — new accounts get 5 uses; invite a friend who registers and you get 5 more.",
+    "loginHint": "For learning only; not investment advice."
   },
   "seo": {
     "titleDefault": "銭力股 Q-Stock",
@@ -780,5 +798,10 @@
     "body": "This page does not exist or has been moved. Head home, or open the markets dashboard.",
     "home": "Back home",
     "markets": "Open markets"
+  },
+  "watchlist": {
+    "loginTitle": "Sign in to manage your watchlist",
+    "loginBody": "Save US, HK, A-share, or crypto symbols you follow and sync them across devices once signed in.",
+    "loginHint": "Your watchlist is visible only to you."
   }
 }

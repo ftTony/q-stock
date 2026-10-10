@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent } from "react";
+import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
 import {
   AiAnalysisPanel,
   type AiTrendAnalysis,
@@ -17,6 +18,7 @@ import {
 } from "@/components/market/company-panel";
 import { PaginatedList } from "@/components/ui/paginated-list";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { TopToast } from "@/components/ui/top-toast";
 import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
 import { formatDate, formatDateTime } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
@@ -102,6 +104,9 @@ type Props = {
   aiDisclaimer: string | null;
   aiCached: boolean;
   aiLoading: boolean;
+  aiToast?: string | null;
+  aiToastKey?: number;
+  onClearAiToast?: () => void;
 };
 
 export function SymbolTabsPanel({
@@ -146,6 +151,9 @@ export function SymbolTabsPanel({
   aiDisclaimer,
   aiCached,
   aiLoading,
+  aiToast,
+  aiToastKey,
+  onClearAiToast,
 }: Props) {
   return (
     <div className="space-y-4 min-w-0">
@@ -393,15 +401,24 @@ export function SymbolTabsPanel({
             )}
 
             {tab === "ai" && (
-              <AiAnalysisPanel
-                available={aiAvailable}
-                message={aiMessage}
-                analysis={aiAnalysis}
-                disclaimer={aiDisclaimer}
-                cached={aiCached}
-                degraded={degraded}
-                loading={aiLoading}
-              />
+              <div className="space-y-3">
+                <TopToast
+                  key={aiToastKey ?? 0}
+                  message={aiToast ?? null}
+                  tone="error"
+                  onDismiss={onClearAiToast}
+                />
+                <AiQuotaBadge />
+                <AiAnalysisPanel
+                  available={aiAvailable}
+                  message={aiMessage}
+                  analysis={aiAnalysis}
+                  disclaimer={aiDisclaimer}
+                  cached={aiCached}
+                  degraded={degraded}
+                  loading={aiLoading}
+                />
+              </div>
             )}
           </>
         )}

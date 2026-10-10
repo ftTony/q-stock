@@ -2,8 +2,12 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { AiLoginGate } from "@/components/ai/ai-login-gate";
+import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
+import { useAiAccess } from "@/components/ai/use-ai-access";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
+import { TopToast } from "@/components/ui/top-toast";
 import { formatDateTime } from "@/lib/format-number";
 
 type ReviewContent = {
@@ -84,6 +88,7 @@ export function ReviewDesk() {
   const tAi = useTranslations("ai");
   const tCommon = useTranslations("common");
   const locale = useLocale();
+  const access = useAiAccess();
   const [period, setPeriod] = useState<"day" | "week">("day");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -109,6 +114,8 @@ export function ReviewDesk() {
   }, [loadNotes]);
 
   async function runReview() {
+    if (!access.loggedIn) return;
+    if (!(await access.ensureQuota())) return;
     setBusy(true);
     setError(null);
     setSelectedId(null);
@@ -119,10 +126,14 @@ export function ReviewDesk() {
         body: JSON.stringify({ period, locale, save: true }),
       });
       const data = (await res.json()) as ReviewResult;
-      if (!res.ok) throw new Error(data.error || t("error"));
+      if (!res.ok) {
+        if (access.handleAiHttpError(res.status)) return;
+        throw new Error(data.error || t("error"));
+      }
       setLatest(data);
       if (data.noteId) setSelectedId(data.noteId);
       await loadNotes();
+      void access.refreshQuota();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error"));
     } finally {
@@ -149,13 +160,28 @@ export function ReviewDesk() {
     checklist: t("checklist"),
   };
 
+  if (!access.loggedIn && !access.sessionLoading) {
+    return (
+      <section className="qt-panel">
+        <AiLoginGate className="min-h-[22rem]" />
+      </section>
+    );
+  }
+
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
       <section className="qt-panel space-y-4 p-4 sm:p-5">
+        <TopToast
+          key={access.toastKey}
+          message={access.toastMsg}
+          tone={access.toastTone}
+          onDismiss={access.dismissToast}
+        />
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold">{t("generateTitle")}</h2>
             <p className="text-sm text-[var(--muted)]">{t("generateHint")}</p>
+            <AiQuotaBadge className="mt-1" />
           </div>
           <div className="flex flex-wrap items-center gap-2">
             <QtSelect

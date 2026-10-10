@@ -2,7 +2,10 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { AiLoginGate } from "@/components/ai/ai-login-gate";
+import { useAiAccess } from "@/components/ai/use-ai-access";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { TopToast } from "@/components/ui/top-toast";
 import type { AssetType } from "@/lib/types";
 
 type PaperDraft = {
@@ -40,11 +43,14 @@ export function AiScenarioPanel(props: {
   const t = useTranslations("aiScenario");
   const tAi = useTranslations("ai");
   const locale = useLocale();
+  const access = useAiAccess();
   const [data, setData] = useState<ScenarioPayload | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   async function run() {
+    if (!access.loggedIn) return;
+    if (!(await access.ensureQuota())) return;
     setBusy(true);
     setError(null);
     try {
@@ -58,8 +64,12 @@ export function AiScenarioPanel(props: {
         }),
       });
       const json = (await res.json()) as ScenarioPayload;
-      if (!res.ok) throw new Error(json.error || t("error"));
+      if (!res.ok) {
+        if (access.handleAiHttpError(res.status)) return;
+        throw new Error(json.error || t("error"));
+      }
       setData(json);
+      void access.refreshQuota();
     } catch (err) {
       setError(err instanceof Error ? err.message : t("error"));
     } finally {
@@ -83,8 +93,22 @@ export function AiScenarioPanel(props: {
     });
   }
 
+  if (!access.loggedIn && !access.sessionLoading) {
+    return (
+      <div className="qt-panel">
+        <AiLoginGate className="min-h-[14rem] py-8" />
+      </div>
+    );
+  }
+
   return (
     <div className="qt-panel space-y-3 p-3 sm:p-4">
+      <TopToast
+        key={access.toastKey}
+        message={access.toastMsg}
+        tone={access.toastTone}
+        onDismiss={access.dismissToast}
+      />
       <div className="flex items-start justify-between gap-2">
         <div>
           <h3 className="text-sm font-semibold">{t("title")}</h3>

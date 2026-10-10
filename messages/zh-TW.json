@@ -162,8 +162,8 @@
     "fullscreen": "全螢幕",
     "exitFullscreen": "退出全螢幕",
     "back": "返回",
-    "openAi": "AI",
-    "aiDeskTitle": "{symbol} · AI 對話",
+    "openAi": "AI 問股",
+    "aiDeskTitle": "{symbol} · AI 問股",
     "aiDeskSubtitle": "讀圖與問答；結合行情、新聞與財報上下文。",
     "backToSymbol": "返回個股"
   },
@@ -195,7 +195,10 @@
     "openAlerts": "打開提醒",
     "openAnalysis": "打開分析",
     "openSettings": "打開設定",
-    "openReview": "複盤筆記"
+    "openReview": "複盤筆記",
+    "loginTitle": "登入後查看資產概覽",
+    "loginBody": "登入後可彙總自選、價格提醒與模擬持倉，方便一眼掌握當前關注與倉位。",
+    "loginHint": "資料僅保存在你的帳戶中，不會公開。"
   },
   "auth": {
     "email": "郵箱",
@@ -348,7 +351,8 @@
     "credsFuyao": "同花順扶搖 Fuyao（A股）",
     "credsFuyaoHint": "填寫扶搖 X-api-key 後可拉取 A 股行情、指數與板塊；密鑰加密存於本站。",
     "credsFuyaoApiKey": "API Key（X-api-key）",
-    "credsSaveFuyao": "儲存扶搖"
+    "credsSaveFuyao": "儲存扶搖",
+    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)"
   },
   "alerts": {
     "title": "價格提醒",
@@ -373,7 +377,10 @@
     "symbolRequired": "請先選擇或輸入標的代碼",
     "triggerPricePlaceholder": "例如 200",
     "hint": "觸發後寄一封信；價格回到閾值另一側後會自動再次監視，下次穿越會再提醒。持續停在突破一側不會重複寄信。",
-    "delete": "刪除"
+    "delete": "刪除",
+    "loginTitle": "登入後管理價格提醒",
+    "loginBody": "設定漲跌觸發價，觸及時郵件通知；價格回到另一側後會自動再監視，避免重複騷擾。",
+    "loginHint": "提醒綁定你的帳戶郵箱。"
   },
   "comments": {
     "placeholder": "分享你的看法…",
@@ -489,7 +496,15 @@
     "cached": "快取結果（約 30 分鐘）",
     "sources": "資料：新聞 {news} 條 · 財報相關 {earnings} · 指標 {metrics}",
     "withQuote": "含即時報價",
-    "disclaimer": "本分析由 AI 根據公開新聞與財報自動生成，僅供參考，不構成投資建議。"
+    "disclaimer": "本分析由 AI 根據公開新聞與財報自動生成，僅供參考，不構成投資建議。",
+    "loginRequired": "Sign in to use AI features.",
+    "loginLink": "Sign in",
+    "quotaExceeded": "AI uses exhausted. Invite a friend who registers to get 5 more.",
+    "quotaRemaining": "AI uses left: {remaining} / {limit}",
+    "inviteForMore": "Invite friends",
+    "loginTitle": "登入後解鎖 AI 看盤",
+    "loginBody": "讀圖、問答、對比與復盤需登入。新帳戶贈送 5 次；邀請一位好友成功註冊，你再獲得 5 次。",
+    "loginHint": "內容由 AI 根據公開資料生成，僅供參考，不構成投資建議。"
   },
   "common": {
     "loading": "載入中…",
@@ -570,7 +585,10 @@
     "checklist": "下次清單",
     "notesTitle": "歷史筆記",
     "notesHint": "最近 10 條，自動儲存。",
-    "notesEmpty": "暫無筆記"
+    "notesEmpty": "暫無筆記",
+    "loginTitle": "登入後開始復盤",
+    "loginBody": "復盤會結合你的模擬成交、持倉與情緒標記，幫你看清過程而不只是盈虧。登入即可使用；新帳戶贈送 5 次 AI，邀請好友成功註冊再 +5。",
+    "loginHint": "內容僅供學習參考，不構成投資建議。"
   },
   "seo": {
     "titleDefault": "錢力股 Q-Stock",
@@ -780,5 +798,10 @@
     "body": "連結可能已失效，或地址寫錯了。回官網看看，或直接進入行情。",
     "home": "返回官網",
     "markets": "進入行情"
+  },
+  "watchlist": {
+    "loginTitle": "登入後管理自選",
+    "loginBody": "把關注的美股、港股、A股或數字貨幣收進列表，登入後即可跨裝置同步查看。",
+    "loginHint": "自選僅對你可見。"
   }
 }

@@ -1,9 +1,8 @@
 import { z } from "zod";
-import { auth } from "@/lib/auth";
 import { AiError, isAiConfigured } from "@/lib/ai/client";
 import { aiDisclaimer } from "@/lib/ai/guardrails";
+import { requireAiQuota, requireAiUser } from "@/lib/ai/http";
 import { buildTradeReview } from "@/lib/ai/review";
-import { consumeAiQuota } from "@/lib/ai/usage";
 import { prisma } from "@/lib/db";
 
 const bodySchema = z.object({
@@ -13,13 +12,11 @@ const bodySchema = z.object({
 });
 
 export async function GET() {
-  const session = await auth();
-  if (!session?.user?.id) {
-    return Response.json({ error: "Unauthorized" }, { status: 401 });
-  }
+  const gate = await requireAiUser();
+  if (!gate.ok) return gate.response;
 
   const notes = await prisma.reviewNote.findMany({
-    where: { userId: session.user.id },
+    where: { userId: gate.userId },
     orderBy: { createdAt: "desc" },
     take: 10,
   });
@@ -37,11 +34,9 @@ export async function GET() {
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    if (!session?.user?.id) {
-      return Response.json({ error: "Unauthorized" }, { status: 401 });
-    }
-    const userId = session.user.id;
+    const access = await requireAiQuota(1);
+    if (!access.ok) return access.response;
+    const { userId } = access;
 
     if (!(await isAiConfigured(userId))) {
       return Response.json(
@@ -53,14 +48,6 @@ export async function POST(req: Request) {
     const parsed = bodySchema.safeParse(await req.json().catch(() => ({})));
     if (!parsed.success) {
       return Response.json({ error: "Invalid input" }, { status: 400 });
-    }
-
-    const quota = await consumeAiQuota(userId, 1);
-    if (!quota.ok) {
-      return Response.json(
-        { error: "AI daily quota exceeded", used: quota.used, limit: quota.limit },
-        { status: 429 },
-      );
     }
 
     const result = await buildTradeReview({

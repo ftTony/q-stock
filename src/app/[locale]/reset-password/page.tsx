@@ -9,6 +9,7 @@ import { SiteLogo } from "@/components/brand/site-logo";
 
 function ResetPasswordForm() {
   const t = useTranslations("auth");
+  const tApp = useTranslations("app");
   const tCommon = useTranslations("common");
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -41,9 +42,11 @@ function ResetPasswordForm() {
         const data = (await res.json().catch(() => null)) as {
           error?: string;
         } | null;
-        setError(data?.error === "Invalid or expired token"
-          ? t("resetInvalid")
-          : t("resetError"));
+        setError(
+          data?.error === "Invalid or expired token"
+            ? t("resetInvalid")
+            : t("resetError"),
+        );
         return;
       }
       router.push("/login?reset=1");
@@ -56,14 +59,25 @@ function ResetPasswordForm() {
   }
 
   return (
-    <div className="qt-panel w-full space-y-5 p-6 sm:p-8">
+    <div className="qt-panel w-full space-y-4 p-6 sm:p-8">
+      <Link
+        href="/"
+        className="flex flex-col items-center gap-2 rounded-lg outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40"
+      >
+        <SiteLogo height={44} priority variant="compact" />
+        <p className="text-sm text-[var(--muted)]">{tApp("slogan")}</p>
+      </Link>
+
       <div>
-        <SiteLogo height={28} priority variant="compact" />
-        <h1 className="mt-3 text-2xl font-semibold">{t("resetTitle")}</h1>
-        <p className="mt-2 text-sm text-[var(--muted)]">{t("resetHint")}</p>
+        <h1 className="text-xl font-semibold tracking-tight">
+          {t("resetTitle")}
+        </h1>
+        <p className="mt-1.5 text-sm leading-relaxed text-[var(--muted)]">
+          {t("resetHint")}
+        </p>
       </div>
       <form onSubmit={onSubmit} className="space-y-3">
-        <label className="block space-y-1 text-sm">
+        <label className="block space-y-1.5 text-sm">
           <span className="text-[var(--muted)]">{t("newPassword")}</span>
           <input
             type="password"
@@ -75,7 +89,7 @@ function ResetPasswordForm() {
             disabled={loading}
           />
         </label>
-        <label className="block space-y-1 text-sm">
+        <label className="block space-y-1.5 text-sm">
           <span className="text-[var(--muted)]">{t("confirmPassword")}</span>
           <input
             type="password"

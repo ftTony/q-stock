@@ -54,6 +54,7 @@ export function useSymbolPage(
   const tComments = useTranslations("comments");
   const tAlerts = useTranslations("alerts");
   const tEarnings = useTranslations("earnings");
+  const tAi = useTranslations("ai");
   const { data: session } = useSession();
 
   const [quote, setQuote] = useState<Quote | null>(initialQuote);
@@ -91,6 +92,8 @@ export function useSymbolPage(
   const [aiDisclaimer, setAiDisclaimer] = useState<string | null>(null);
   const [aiCached, setAiCached] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
+  const [aiToast, setAiToast] = useState<string | null>(null);
+  const [aiToastKey, setAiToastKey] = useState(0);
   const earningsLoadedRef = useRef(false);
   const [alertPrice, setAlertPrice] = useState("");
   const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
@@ -247,10 +250,29 @@ export function useSymbolPage(
         setAiAvailable(null);
         setAiMessage(null);
         try {
+          if (!session?.user) {
+            setAiAvailable(null);
+            setAiAnalysis(null);
+            setAiMessage(null);
+            return;
+          }
           const res = await fetch(
             `/api/ai/analyze?symbol=${symbol}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
           );
           const data = await res.json();
+          if (res.status === 401) {
+            setAiAvailable(null);
+            setAiAnalysis(null);
+            setAiMessage(null);
+            return;
+          }
+          if (res.status === 429) {
+            setAiToast(tAi("quotaExceeded"));
+            setAiToastKey((k) => k + 1);
+            setAiAvailable(null);
+            setAiMessage(null);
+            return;
+          }
           setAiAvailable(data.available !== false);
           setAiAnalysis(data.analysis ?? null);
           setAiMessage(data.message ?? data.error ?? null);
@@ -265,7 +287,7 @@ export function useSymbolPage(
     } finally {
       setTabLoading(false);
     }
-  }, [tab, symbol, assetType, locale, isIndex]);
+  }, [tab, symbol, assetType, locale, isIndex, session?.user, tAi]);
 
   useEffect(() => {
     setQuote(initialQuote);
@@ -497,6 +519,9 @@ export function useSymbolPage(
     aiDisclaimer,
     aiCached,
     aiLoading,
+    aiToast,
+    aiToastKey,
+    clearAiToast: () => setAiToast(null),
     loadingChart: candles.loadingChart,
     loadingMoreCandles: candles.loadingMoreCandles,
     hasMoreCandles: candles.hasMoreCandles,

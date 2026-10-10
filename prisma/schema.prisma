@@ -85,6 +85,10 @@ model User {
   cryptoVendor      CryptoMarketVendor @default(binance)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  /** Lifetime AI calls used (chat / analyze / compare / …). */
+  aiUsageCount      Int                @default(0)
+  /** Lifetime AI call allowance (starts at 5; +5 per successful invite). */
+  aiUsageLimit      Int                @default(5)
 
   watchlist          WatchlistItem[]
   priceAlerts        PriceAlert[]

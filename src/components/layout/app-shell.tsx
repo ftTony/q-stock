@@ -86,7 +86,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (isAuth) {
     return (
       <div className="min-h-dvh">
-        <div className="mx-auto flex min-h-dvh max-w-lg items-center px-4 py-8">
+        <div className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center px-4 py-8">
           {children}
         </div>
       </div>

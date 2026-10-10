@@ -144,13 +144,11 @@ export async function buildSymbolSnapshot(opts: {
     .slice(0, 3);
 
   const metric = basic?.metric ?? {};
-  const metrics = BASIC_METRIC_KEYS.map((key) => ({
-    key,
-    value: typeof metric[key] === "number" ? (metric[key] as number) : null,
-  })).filter(
-    (m): m is { key: string; value: number } =>
-      m.value !== null && m.value !== undefined,
-  );
+  const metrics: Array<{ key: string; value: number }> = [];
+  for (const key of BASIC_METRIC_KEYS) {
+    const value = metric[key];
+    if (typeof value === "number") metrics.push({ key, value });
+  }
 
   return {
     symbol,

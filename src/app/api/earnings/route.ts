@@ -63,7 +63,7 @@ async function finnhubBasicMetrics(sym: string): Promise<MetricRow[]> {
       getCompanyProfile2(sym),
     ]);
     const metric = basic?.metric ?? {};
-    const rows = BASIC_METRIC_KEYS.map((key) => ({
+    const rows: MetricRow[] = BASIC_METRIC_KEYS.map((key) => ({
       key,
       value: typeof metric[key] === "number" ? metric[key]! : null,
     })).filter((m) => m.value != null);

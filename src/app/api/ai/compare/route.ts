@@ -1,8 +1,11 @@
 import { z } from "zod";
-import { auth } from "@/lib/auth";
 import { AiError, isAiConfigured } from "@/lib/ai/client";
 import { compareSymbols } from "@/lib/ai/compare";
 import { aiDisclaimer } from "@/lib/ai/guardrails";
+import {
+  aiQuotaExceededResponse,
+  requireAiUser,
+} from "@/lib/ai/http";
 import { consumeAiQuota } from "@/lib/ai/usage";
 import { cachedFetch, getCached } from "@/lib/cache";
 import { withUserMarket } from "@/lib/market/with-user-market";
@@ -25,8 +28,9 @@ const bodySchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    const userId = session?.user?.id ?? null;
+    const gate = await requireAiUser();
+    if (!gate.ok) return gate.response;
+    const { userId } = gate;
 
     if (!(await isAiConfigured(userId))) {
       return Response.json(
@@ -49,23 +53,19 @@ export async function POST(req: Request) {
       .map((i) => `${i.assetType}:${i.symbol}`)
       .sort()
       .join("|");
-    const scope = userId || "env";
-    const cacheKey = `ai:compare:${scope}:${locale}:${sortedKey}`;
+    const cacheKey = `ai:compare:${userId}:${locale}:${sortedKey}`;
 
     const hit = await getCached<Awaited<ReturnType<typeof compareSymbols>>>(
       cacheKey,
     );
     if (hit) return Response.json({ ...hit, cached: true });
 
-    const quota = await consumeAiQuota(userId, items.length);
+    const quota = await consumeAiQuota(userId, 1);
     if (!quota.ok) {
-      return Response.json(
-        { error: "AI daily quota exceeded", used: quota.used, limit: quota.limit },
-        { status: 429 },
-      );
+      return aiQuotaExceededResponse(quota);
     }
 
-    return withUserMarket(userId ?? undefined, async () => {
+    return withUserMarket(userId, async () => {
       const result = await cachedFetch(cacheKey, TTL, () =>
         compareSymbols({ items, locale, userId }),
       );

@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { ChangePct, PriceText } from "@/components/market/price";
 import { Sparkline } from "@/components/market/sparkline";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -23,7 +24,7 @@ type Row = {
 function WatchlistContent() {
   const t = useTranslations("market");
   const tNav = useTranslations("nav");
-  const tAlerts = useTranslations("alerts");
+  const tWatch = useTranslations("watchlist");
   const tCommon = useTranslations("common");
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
@@ -164,15 +165,11 @@ function WatchlistContent() {
 
   if (!session?.user) {
     return (
-      <div className="mx-auto max-w-md qt-panel p-6 text-sm">
-        <p>{tAlerts("loginRequired")}</p>
-        <Link
-          href="/login"
-          className="qt-btn qt-btn-primary mt-3 inline-flex h-9 px-3 text-sm"
-        >
-          {tNav("login")}
-        </Link>
-      </div>
+      <AuthLoginGate
+        title={tWatch("loginTitle")}
+        body={tWatch("loginBody")}
+        hint={tWatch("loginHint")}
+      />
     );
   }
 

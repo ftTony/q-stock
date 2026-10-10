@@ -1,9 +1,8 @@
 import { z } from "zod";
-import { auth } from "@/lib/auth";
 import { AiError, isAiConfigured } from "@/lib/ai/client";
 import { aiDisclaimer } from "@/lib/ai/guardrails";
+import { requireAiQuota } from "@/lib/ai/http";
 import { buildScenario } from "@/lib/ai/scenario";
-import { consumeAiQuota } from "@/lib/ai/usage";
 import { prisma } from "@/lib/db";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import { parseAssetType } from "@/lib/types";
@@ -16,8 +15,9 @@ const bodySchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const session = await auth();
-    const userId = session?.user?.id ?? null;
+    const access = await requireAiQuota(1);
+    if (!access.ok) return access.response;
+    const { userId } = access;
 
     if (!(await isAiConfigured(userId))) {
       return Response.json(
@@ -31,42 +31,24 @@ export async function POST(req: Request) {
       return Response.json({ error: "Invalid input" }, { status: 400 });
     }
 
-    const quota = await consumeAiQuota(userId, 1);
-    if (!quota.ok) {
-      return Response.json(
-        { error: "AI daily quota exceeded", used: quota.used, limit: quota.limit },
-        { status: 429 },
-      );
-    }
-
     const symbol = parsed.data.symbol.toUpperCase();
     const assetType = parseAssetType(parsed.data.assetType);
     const locale = parsed.data.locale || "en";
 
-    return withUserMarket(userId ?? undefined, async () => {
-      let paper:
-        | {
-            cashBalance?: number;
-            positionQty?: number;
-            avgCost?: number;
-          }
-        | undefined;
-
-      if (userId) {
-        const [account, position] = await Promise.all([
-          prisma.paperAccount.findUnique({ where: { userId } }),
-          prisma.paperPosition.findUnique({
-            where: {
-              userId_symbol_assetType: { userId, symbol, assetType },
-            },
-          }),
-        ]);
-        paper = {
-          cashBalance: account ? Number(account.cashBalance) : undefined,
-          positionQty: position ? Number(position.qty) : undefined,
-          avgCost: position ? Number(position.avgCost) : undefined,
-        };
-      }
+    return withUserMarket(userId, async () => {
+      const [account, position] = await Promise.all([
+        prisma.paperAccount.findUnique({ where: { userId } }),
+        prisma.paperPosition.findUnique({
+          where: {
+            userId_symbol_assetType: { userId, symbol, assetType },
+          },
+        }),
+      ]);
+      const paper = {
+        cashBalance: account ? Number(account.cashBalance) : undefined,
+        positionQty: position ? Number(position.qty) : undefined,
+        avgCost: position ? Number(position.avgCost) : undefined,
+      };
 
       const result = await buildScenario({
         symbol,

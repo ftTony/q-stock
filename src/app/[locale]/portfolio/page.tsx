@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import type { Quote } from "@/lib/types";
 import { PortfolioPaperSection } from "@/components/portfolio/portfolio-paper-section";
 import { PortfolioHoldingsTable } from "@/components/portfolio/portfolio-holdings-table";
@@ -19,10 +20,8 @@ import type {
 export default function PortfolioPage() {
   const t = useTranslations("portfolio");
   const tMarket = useTranslations("market");
-  const tAlerts = useTranslations("alerts");
   const tCommon = useTranslations("common");
   const tTrade = useTranslations("trading");
-  const tNav = useTranslations("nav");
   const { data: session, status } = useSession();
 
   const [rows, setRows] = useState<PortfolioRow[]>([]);
@@ -179,12 +178,11 @@ export default function PortfolioPage() {
 
   if (!session?.user) {
     return (
-      <div className="qt-panel p-6 text-sm">
-        <p>{tAlerts("loginRequired")}</p>
-        <Link href="/login" className="qt-btn qt-btn-primary mt-3 inline-flex px-3 py-1.5 text-sm">
-          {tNav("login")}
-        </Link>
-      </div>
+      <AuthLoginGate
+        title={t("loginTitle")}
+        body={t("loginBody")}
+        hint={t("loginHint")}
+      />
     );
   }
 

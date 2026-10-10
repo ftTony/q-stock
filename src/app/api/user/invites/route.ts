@@ -17,7 +17,11 @@ export async function GET() {
   const userId = session.user.id;
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    select: { locale: true },
+    select: {
+      locale: true,
+      aiUsageCount: true,
+      aiUsageLimit: true,
+    },
   });
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -35,6 +39,11 @@ export async function GET() {
   const base = appBaseUrl();
 
   return NextResponse.json({
+    aiQuota: {
+      used: user.aiUsageCount,
+      limit: user.aiUsageLimit,
+      remaining: Math.max(0, user.aiUsageLimit - user.aiUsageCount),
+    },
     invites: rows.map((r) => ({
       code: r.code,
       used: Boolean(r.usedById && r.usedAt),

@@ -195,7 +195,10 @@
     "openAlerts": "알림 열기",
     "openAnalysis": "분석 열기",
     "openSettings": "설정 열기",
-    "openReview": "Review notes"
+    "openReview": "Review notes",
+    "loginTitle": "Sign in to view your portfolio",
+    "loginBody": "See your watchlist, price alerts, and paper positions in one place after you sign in.",
+    "loginHint": "Your data stays private to your account."
   },
   "auth": {
     "email": "이메일",
@@ -348,7 +351,8 @@
     "credsFuyao": "동화순 Fuyao (A주)",
     "credsFuyaoHint": "Fuyao X-api-key를 입력하면 A주 시세·지수·업종을 사용할 수 있습니다. 암호화 저장.",
     "credsFuyaoApiKey": "API Key (X-api-key)",
-    "credsSaveFuyao": "Fuyao 저장"
+    "credsSaveFuyao": "Fuyao 저장",
+    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)"
   },
   "alerts": {
     "title": "가격 알림",
@@ -373,7 +377,10 @@
     "symbolRequired": "Please enter or pick a symbol",
     "triggerPricePlaceholder": "e.g. 200",
     "hint": "One email per threshold cross; re-arms after price recovers. No spam while still breached.",
-    "delete": "삭제"
+    "delete": "삭제",
+    "loginTitle": "Sign in to manage price alerts",
+    "loginBody": "Set trigger prices and get an email when they hit. Alerts re-arm after the price moves back, so they will not spam while a breach persists.",
+    "loginHint": "Alerts are sent to your account email."
   },
   "comments": {
     "placeholder": "의견을 공유하세요…",
@@ -489,7 +496,15 @@
     "cached": "캐시됨 (~30분)",
     "sources": "출처: 뉴스 {news}건 · 실적 {earnings}건 · 지표 {metrics}",
     "withQuote": "시세 포함",
-    "disclaimer": "공개 뉴스와 실적을 바탕으로 AI가 생성한 내용입니다. 참고용이며 투자 조언이 아닙니다."
+    "disclaimer": "공개 뉴스와 실적을 바탕으로 AI가 생성한 내용입니다. 참고용이며 투자 조언이 아닙니다.",
+    "loginRequired": "Sign in to use AI features.",
+    "loginLink": "Sign in",
+    "quotaExceeded": "AI uses exhausted. Invite a friend who registers to get 5 more.",
+    "quotaRemaining": "AI uses left: {remaining} / {limit}",
+    "inviteForMore": "Invite friends",
+    "loginTitle": "Sign in to unlock AI",
+    "loginBody": "Chart reads, Q&A, compare, and review need an account. New users get 5 uses; invite a friend who registers and you get 5 more.",
+    "loginHint": "AI output is for reference only and is not investment advice."
   },
   "common": {
     "loading": "불러오는 중…",
@@ -570,7 +585,10 @@
     "checklist": "Next checklist",
     "notesTitle": "Saved notes",
     "notesHint": "Latest 10, saved automatically.",
-    "notesEmpty": "No notes yet"
+    "notesEmpty": "No notes yet",
+    "loginTitle": "Sign in to start a review",
+    "loginBody": "Reviews use your paper trades, positions, and emotion flags to look at process, not just P&L. Sign in to use AI — new accounts get 5 uses; invite a friend who registers and you get 5 more.",
+    "loginHint": "For learning only; not investment advice."
   },
   "seo": {
     "titleDefault": "전리구 Q-Stock",
@@ -780,5 +798,10 @@
     "body": "This page does not exist or has been moved. Head home, or open the markets dashboard.",
     "home": "Back home",
     "markets": "Open markets"
+  },
+  "watchlist": {
+    "loginTitle": "Sign in to manage your watchlist",
+    "loginBody": "Save US, HK, A-share, or crypto symbols you follow and sync them across devices once signed in.",
+    "loginHint": "Your watchlist is visible only to you."
   }
 }

@@ -162,8 +162,8 @@
     "fullscreen": "全屏",
     "exitFullscreen": "退出全屏",
     "back": "返回",
-    "openAi": "AI",
-    "aiDeskTitle": "{symbol} · AI 对话",
+    "openAi": "AI 问股",
+    "aiDeskTitle": "{symbol} · AI 问股",
     "aiDeskSubtitle": "读图与问答；结合行情、新闻与财报上下文。",
     "backToSymbol": "返回个股"
   },
@@ -195,7 +195,15 @@
     "openAlerts": "打开提醒",
     "openAnalysis": "打开分析",
     "openSettings": "打开设置",
-    "openReview": "复盘笔记"
+    "openReview": "复盘笔记",
+    "loginTitle": "登录后查看资产概览",
+    "loginBody": "登录后可汇总自选、价格提醒与模拟持仓，方便一眼掌握当前关注与仓位。",
+    "loginHint": "数据仅保存在你的账户中，不会公开。"
+  },
+  "watchlist": {
+    "loginTitle": "登录后管理自选",
+    "loginBody": "把关注的美股、港股、A股或数字货币收进列表，登录后即可跨设备同步查看。",
+    "loginHint": "自选仅对你可见。"
   },
   "auth": {
     "email": "邮箱",
@@ -336,7 +344,8 @@
     "emailSaveError": "保存邮件设置失败",
     "credsTrustNote": "系统不会明文保存您的 Key，仅加密存储且只用于你本人账户，请放心添加。",
     "inviteTitle": "邀请",
-    "inviteHint": "好盘不轻传，邀码有数。此码只赠予你认定有缘之人。若他亦能在 Q-Stock 看盘受益，缘法流转，你自会再获一枚。",
+    "inviteHint": "好盘不轻传，邀码有数。此码只赠予你认定有缘之人。好友用你的邀请码成功注册后，你的 AI 可用次数 +5，并再获一枚邀请码。",
+    "inviteAiBonus": "当前 AI：剩余 {remaining} / {limit} 次（每成功邀请一人 +5）",
     "inviteCopyCode": "复制邀请码",
     "inviteCopyLink": "复制链接",
     "inviteCopied": "已复制",
@@ -367,6 +376,9 @@
     "listTitle": "我的提醒",
     "emptyHint": "在左侧填写标的与价格后创建即可。",
     "loginRequired": "登录后可管理提醒",
+    "loginTitle": "登录后管理价格提醒",
+    "loginBody": "设置涨跌触发价，触及后邮件通知；价格回到另一侧后会自动再监视，避免重复骚扰。",
+    "loginHint": "提醒绑定你的账户邮箱。",
     "symbol": "标的代码",
     "assetType": "市场类型",
     "symbolPlaceholder": "搜索代码或名称，如 NVDA / 腾讯 / 00700",
@@ -474,6 +486,14 @@
   },
   "ai": {
     "loading": "正在结合新闻与财报生成分析…",
+    "loginRequired": "使用 AI 功能请先登录。",
+    "loginTitle": "登录后解锁 AI 看盘",
+    "loginBody": "读图、问答、对比与复盘需登录。新账户赠送 5 次；邀请一位好友成功注册，你再获得 5 次。",
+    "loginHint": "内容由 AI 根据公开数据生成，仅供参考，不构成投资建议。",
+    "loginLink": "去登录",
+    "quotaExceeded": "AI 次数已用完。邀请好友成功注册可再获得 5 次。",
+    "quotaRemaining": "AI 剩余 {remaining} / {limit} 次",
+    "inviteForMore": "去邀请好友",
     "unavailable": "AI 分析不可用。请在设置中填写 API Key，或由管理员配置服务器 DEEPSEEK_API_KEY。",
     "bias": "趋势判断",
     "biasBullish": "看多",
@@ -570,7 +590,10 @@
     "checklist": "下次清单",
     "notesTitle": "历史笔记",
     "notesHint": "最近 10 条，自动保存。",
-    "notesEmpty": "暂无笔记"
+    "notesEmpty": "暂无笔记",
+    "loginTitle": "登录后开始复盘",
+    "loginBody": "复盘会结合你的模拟成交、持仓与情绪标记，帮你看清过程而不是只看盈亏。登录即可使用；新账户赠送 5 次 AI，邀请好友成功注册再 +5。",
+    "loginHint": "内容仅供学习参考，不构成投资建议。"
   },
   "seo": {
     "titleDefault": "钱力股 Q-Stock",

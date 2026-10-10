@@ -162,8 +162,8 @@
     "fullscreen": "Fullscreen",
     "exitFullscreen": "Exit fullscreen",
     "back": "Back",
-    "openAi": "AI",
-    "aiDeskTitle": "{symbol} · AI desk",
+    "openAi": "Ask AI",
+    "aiDeskTitle": "{symbol} · Ask AI",
     "aiDeskSubtitle": "Chart read and chat with quotes, news, and earnings context.",
     "backToSymbol": "Back to symbol"
   },
@@ -195,7 +195,15 @@
     "openAlerts": "Open alerts",
     "openAnalysis": "Open analysis",
     "openSettings": "Open settings",
-    "openReview": "Review notes"
+    "openReview": "Review notes",
+    "loginTitle": "Sign in to view your portfolio",
+    "loginBody": "See your watchlist, price alerts, and paper positions in one place after you sign in.",
+    "loginHint": "Your data stays private to your account."
+  },
+  "watchlist": {
+    "loginTitle": "Sign in to manage your watchlist",
+    "loginBody": "Save US, HK, A-share, or crypto symbols you follow and sync them across devices once signed in.",
+    "loginHint": "Your watchlist is visible only to you."
   },
   "auth": {
     "email": "Email",
@@ -336,7 +344,8 @@
     "emailSaveError": "Failed to save email settings",
     "credsTrustNote": "We never store your keys in plain text. They are encrypted for your account only — feel free to add them.",
     "inviteTitle": "Invite",
-    "inviteHint": "Invite codes are limited—share them only with people you trust. When someone joins Q-Stock with your code, the circle continues and you receive another.",
+    "inviteHint": "Invite codes are limited—share them with people you trust. When someone registers with your code, you get +5 AI uses and a new invite code.",
+    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)",
     "inviteCopyCode": "Copy code",
     "inviteCopyLink": "Copy link",
     "inviteCopied": "Copied",
@@ -367,6 +376,9 @@
     "listTitle": "My alerts",
     "emptyHint": "Use the form on the left to add a symbol and trigger price.",
     "loginRequired": "Sign in to manage alerts",
+    "loginTitle": "Sign in to manage price alerts",
+    "loginBody": "Set trigger prices and get an email when they hit. Alerts re-arm after the price moves back, so they will not spam while a breach persists.",
+    "loginHint": "Alerts are sent to your account email.",
     "symbol": "Symbol",
     "assetType": "Market",
     "symbolPlaceholder": "Search ticker or name, e.g. NVDA / 00700",
@@ -474,6 +486,14 @@
   },
   "ai": {
     "loading": "Generating analysis from news and earnings…",
+    "loginRequired": "Sign in to use AI features.",
+    "loginTitle": "Sign in to unlock AI",
+    "loginBody": "Chart reads, Q&A, compare, and review need an account. New users get 5 uses; invite a friend who registers and you get 5 more.",
+    "loginHint": "AI output is for reference only and is not investment advice.",
+    "loginLink": "Sign in",
+    "quotaExceeded": "AI uses exhausted. Invite a friend who registers to get 5 more.",
+    "quotaRemaining": "AI uses left: {remaining} / {limit}",
+    "inviteForMore": "Invite friends",
     "unavailable": "AI analysis unavailable. Add an API key in Settings, or configure DEEPSEEK_API_KEY on the server.",
     "bias": "Bias",
     "biasBullish": "Bullish",
@@ -570,7 +590,10 @@
     "checklist": "Next checklist",
     "notesTitle": "Saved notes",
     "notesHint": "Latest 10, saved automatically.",
-    "notesEmpty": "No notes yet"
+    "notesEmpty": "No notes yet",
+    "loginTitle": "Sign in to start a review",
+    "loginBody": "Reviews use your paper trades, positions, and emotion flags to look at process, not just P&L. Sign in to use AI — new accounts get 5 uses; invite a friend who registers and you get 5 more.",
+    "loginHint": "For learning only; not investment advice."
   },
   "seo": {
     "titleDefault": "Qianli Gu Q-Stock",

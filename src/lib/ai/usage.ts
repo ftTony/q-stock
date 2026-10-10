@@ -1,41 +1,93 @@
-import { getCached, setCached } from "@/lib/cache";
+import type { Prisma } from "@prisma/client";
+import { prisma } from "@/lib/db";
 
-const DEFAULT_DAILY_LIMIT = Number(process.env.AI_DAILY_REQUEST_LIMIT || 80);
+/** New accounts start with this many AI uses. */
+export const AI_USAGE_INITIAL = 5;
+/** Inviter gains this many uses when an invitee successfully registers. */
+export const AI_USAGE_INVITE_BONUS = 5;
 
-type UsageBucket = { count: number; day: string };
+type Db = Prisma.TransactionClient | typeof prisma;
 
-function utcDay(now = new Date()): string {
-  return now.toISOString().slice(0, 10);
-}
-
-function key(userId: string | null | undefined): string {
-  return `ai:usage:${userId || "anon"}:${utcDay()}`;
-}
-
-/** Soft daily counter (best-effort via ApiCache). Returns remaining after increment. */
-export async function consumeAiQuota(
-  userId?: string | null,
-  cost = 1,
-): Promise<{ ok: boolean; used: number; limit: number }> {
-  const limit = DEFAULT_DAILY_LIMIT;
-  const k = key(userId);
-  const hit = (await getCached<UsageBucket>(k)) ?? {
-    count: 0,
-    day: utcDay(),
-  };
-  const next = hit.count + cost;
-  if (next > limit) {
-    return { ok: false, used: hit.count, limit };
-  }
-  await setCached(k, { count: next, day: utcDay() }, 36 * 60 * 60_000);
-  return { ok: true, used: next, limit };
-}
-
-export async function peekAiQuota(userId?: string | null): Promise<{
+export type AiQuotaSnapshot = {
+  ok: boolean;
   used: number;
   limit: number;
-}> {
-  const limit = DEFAULT_DAILY_LIMIT;
-  const hit = await getCached<UsageBucket>(key(userId));
-  return { used: hit?.count ?? 0, limit };
+  remaining: number;
+};
+
+function snapshot(
+  used: number,
+  limit: number,
+  ok: boolean,
+): AiQuotaSnapshot {
+  return {
+    ok,
+    used,
+    limit,
+    remaining: Math.max(0, limit - used),
+  };
+}
+
+/** Read current lifetime AI quota (authenticated users only). */
+export async function peekAiQuota(userId: string): Promise<AiQuotaSnapshot> {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { aiUsageCount: true, aiUsageLimit: true },
+  });
+  if (!user) return snapshot(0, 0, false);
+  return snapshot(
+    user.aiUsageCount,
+    user.aiUsageLimit,
+    user.aiUsageCount < user.aiUsageLimit,
+  );
+}
+
+/**
+ * Atomically consume AI uses. Optimistic lock on `aiUsageCount`.
+ * Returns `ok: false` when insufficient remaining quota.
+ */
+export async function consumeAiQuota(
+  userId: string,
+  cost = 1,
+): Promise<AiQuotaSnapshot> {
+  if (cost < 1) return peekAiQuota(userId);
+
+  for (let attempt = 0; attempt < 4; attempt++) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { aiUsageCount: true, aiUsageLimit: true },
+    });
+    if (!user) return snapshot(0, 0, false);
+
+    if (user.aiUsageCount + cost > user.aiUsageLimit) {
+      return snapshot(user.aiUsageCount, user.aiUsageLimit, false);
+    }
+
+    const updated = await prisma.user.updateMany({
+      where: { id: userId, aiUsageCount: user.aiUsageCount },
+      data: { aiUsageCount: { increment: cost } },
+    });
+    if (updated.count === 1) {
+      return snapshot(
+        user.aiUsageCount + cost,
+        user.aiUsageLimit,
+        true,
+      );
+    }
+  }
+
+  return peekAiQuota(userId).then((q) => ({ ...q, ok: false }));
+}
+
+/** Grant inviter +N lifetime AI uses after a successful invite redeem. */
+export async function grantInviteAiBonus(
+  ownerId: string,
+  tx: Db = prisma,
+  bonus = AI_USAGE_INVITE_BONUS,
+): Promise<void> {
+  if (bonus < 1) return;
+  await tx.user.update({
+    where: { id: ownerId },
+    data: { aiUsageLimit: { increment: bonus } },
+  });
 }

@@ -1,6 +1,8 @@
 "use client";
 
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { AiLoginGate } from "@/components/ai/ai-login-gate";
 
 export type AiTrendAnalysis = {
   bias: "bullish" | "neutral" | "bearish";
@@ -28,11 +30,16 @@ export function AiAnalysisPanel(props: {
 }) {
   const t = useTranslations("ai");
   const tCommon = useTranslations("common");
+  const { status } = useSession();
   const { available, message, analysis, disclaimer, cached, degraded, loading } =
     props;
 
   if (loading) {
     return <p className="text-sm text-[var(--muted)]">{t("loading")}</p>;
+  }
+
+  if (status === "unauthenticated") {
+    return <AiLoginGate />;
   }
 
   if (available === false) {
@@ -47,6 +54,7 @@ export function AiAnalysisPanel(props: {
   }
 
   if (!analysis) {
+    if (!message) return null;
     return (
       <p className="text-sm text-[var(--muted)]">
         {message || tCommon("degraded")}

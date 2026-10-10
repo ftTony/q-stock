@@ -11,11 +11,14 @@ type InviteRow = {
   inviteLink: string;
 };
 
+type AiQuota = { used: number; limit: number; remaining: number };
+
 export function InvitePanel() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
   const locale = useLocale();
   const [invites, setInvites] = useState<InviteRow[] | null>(null);
+  const [aiQuota, setAiQuota] = useState<AiQuota | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
@@ -28,8 +31,14 @@ export function InvitePanel() {
           if (!cancelled) setError(t("inviteLoadError"));
           return;
         }
-        const data = (await res.json()) as { invites: InviteRow[] };
-        if (!cancelled) setInvites(data.invites);
+        const data = (await res.json()) as {
+          invites: InviteRow[];
+          aiQuota?: AiQuota;
+        };
+        if (!cancelled) {
+          setInvites(data.invites);
+          setAiQuota(data.aiQuota ?? null);
+        }
       } catch {
         if (!cancelled) setError(t("inviteLoadError"));
       }
@@ -79,6 +88,15 @@ export function InvitePanel() {
         <p className="rounded-lg bg-[color-mix(in_srgb,#3b82f6_10%,transparent)] px-3 py-2 text-[11px] leading-relaxed text-[color-mix(in_srgb,#1d4ed8_85%,var(--foreground))]">
           {t("inviteHint")}
         </p>
+
+        {aiQuota && (
+          <p className="text-[11px] text-[var(--muted)]">
+            {t("inviteAiBonus", {
+              remaining: aiQuota.remaining,
+              limit: aiQuota.limit,
+            })}
+          </p>
+        )}
 
         {error && <p className="text-xs text-[var(--down)]">{error}</p>}
 
