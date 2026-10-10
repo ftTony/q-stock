@@ -44,6 +44,15 @@ export async function setCached<T>(
   }
 }
 
+export async function deleteCached(key: string): Promise<void> {
+  memory.delete(key);
+  try {
+    await prisma.apiCache.delete({ where: { key } }).catch(() => undefined);
+  } catch {
+    /* ignore */
+  }
+}
+
 export async function cachedFetch<T>(
   key: string,
   ttlMs: number,

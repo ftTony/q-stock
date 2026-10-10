@@ -83,7 +83,7 @@ export default function SettingsPage() {
 
   if (status === "loading") {
     return (
-      <div className="mx-auto max-w-6xl space-y-5">
+      <div className="page-shell page-shell--tool space-y-5">
         <div className="h-7 w-28 animate-pulse rounded bg-[var(--surface-2)]" />
         <div className="grid gap-4 lg:grid-cols-2">
           <PanelSkeleton rows={4} label={tCommon("loading")} />
@@ -157,7 +157,7 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="settings-ui mx-auto max-w-6xl space-y-5 animate-[qtFade_0.45s_ease]">
+    <div className="settings-ui page-shell page-shell--tool space-y-5 animate-[qtFade_0.45s_ease]">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
           {t("title")}

@@ -165,7 +165,10 @@
     "openAi": "AI",
     "aiDeskTitle": "{symbol} · AI 대화",
     "aiDeskSubtitle": "차트 읽기와 시세·뉴스·실적 맥락의 대화.",
-    "backToSymbol": "종목으로 돌아가기"
+    "backToSymbol": "종목으로 돌아가기",
+    "aiRegenerate": "Regenerate",
+    "aiHistoryTitle": "{symbol} · Ask-AI history",
+    "aiHistorySubtitle": "Pick a thread to review or continue."
   },
   "company": {
     "na": "이 자산에 대한 기업 정보가 없습니다",
@@ -504,7 +507,8 @@
     "inviteForMore": "Invite friends",
     "loginTitle": "Sign in to unlock AI",
     "loginBody": "Chart reads, Q&A, compare, and review need an account. New users get 5 uses; invite a friend who registers and you get 5 more.",
-    "loginHint": "AI output is for reference only and is not investment advice."
+    "loginHint": "AI output is for reference only and is not investment advice.",
+    "elapsed": "{seconds}s"
   },
   "common": {
     "loading": "불러오는 중…",
@@ -547,7 +551,10 @@
     "structure": "Structure",
     "keyLevels": "Key levels",
     "invalidation": "What would change my mind",
-    "bars": "{count} bars used"
+    "bars": "{count} bars used",
+    "clearHistory": "Clear result",
+    "historyHint": "Showing last chart read",
+    "rerun": "Read again"
   },
   "aiChat": {
     "title": "Ask AI",
@@ -555,7 +562,18 @@
     "empty": "Ask a question about this symbol…",
     "placeholder": "e.g. What are the near-term risks?",
     "send": "Send",
-    "error": "Chat failed"
+    "error": "Chat failed",
+    "clearHistory": "Clear chat",
+    "historyHint": "Restored last chat",
+    "history": "History",
+    "newChat": "New chat",
+    "historyTitle": "Ask-AI history",
+    "historySubtitle": "Past chats for {symbol} (saved to your account)",
+    "historyEmpty": "No history yet. Send a message and it will show up here.",
+    "historyBack": "Back",
+    "historyDelete": "Delete",
+    "historyLoadError": "Failed to load history",
+    "historyMeta": "{count} msgs · {time}"
   },
   "aiScenario": {
     "title": "Scenario map",

@@ -7,6 +7,7 @@ import { AiLoginGate } from "@/components/ai/ai-login-gate";
 import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
 import { useAiAccess } from "@/components/ai/use-ai-access";
 import { ChangePct, PriceText } from "@/components/market/price";
+import { SubmitButton } from "@/components/ui/submit-button";
 import { TopToast } from "@/components/ui/top-toast";
 import { Sparkline } from "@/components/market/sparkline";
 import { AnalysisCompareMetrics } from "@/components/analysis/analysis-compare-metrics";
@@ -324,14 +325,16 @@ export function AnalysisComparePanel({
             <AiQuotaBadge refreshKey={quotaTick} />
           </div>
           {ai && access.loggedIn && (
-            <button
+            <SubmitButton
               type="button"
-              className="qt-btn qt-btn-ghost h-9 px-3 text-[14px] disabled:opacity-40"
-              disabled={!canRun || aiLoading}
+              className="qt-btn-ghost h-9 px-3"
+              disabled={!canRun}
+              loading={aiLoading}
+              showElapsed={(s) => tAi("elapsed", { seconds: s })}
               onClick={() => void runAiCompare()}
             >
-              {aiLoading ? tCommon("loading") : t("aiCompareAgain")}
-            </button>
+              {t("aiCompareAgain")}
+            </SubmitButton>
           )}
         </div>
 
@@ -351,14 +354,15 @@ export function AnalysisComparePanel({
             <p className="text-[14px] text-[var(--muted)]">
               {t("aiCompareHint")}
             </p>
-            <button
+            <SubmitButton
               type="button"
-              className="qt-btn qt-btn-primary mt-3 h-9 px-4 text-[14px] disabled:opacity-40"
-              disabled={aiLoading}
+              className="qt-btn-primary mt-3 h-9 px-4"
+              loading={aiLoading}
+              showElapsed={(s) => tAi("elapsed", { seconds: s })}
               onClick={() => void runAiCompare()}
             >
-              {aiLoading ? tCommon("loading") : t("aiCompareRun")}
-            </button>
+              {t("aiCompareRun")}
+            </SubmitButton>
           </div>
         )}
 

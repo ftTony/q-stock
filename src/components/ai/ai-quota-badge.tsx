@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { AI_QUOTA_CHANGED } from "@/lib/ai/quota-events";
 
 type Quota = { used: number; limit: number; remaining: number };
 
@@ -37,12 +38,20 @@ export function AiQuotaBadge(props: {
     void load();
   }, [load, props.refreshKey]);
 
+  useEffect(() => {
+    const onChange = () => {
+      void load();
+    };
+    window.addEventListener(AI_QUOTA_CHANGED, onChange);
+    return () => window.removeEventListener(AI_QUOTA_CHANGED, onChange);
+  }, [load]);
+
   if (status !== "authenticated") return null;
 
   if (!quota) return null;
 
   return (
-    <p className={`text-xs text-[var(--muted)] ${props.className ?? ""}`}>
+    <p className={`text-sm text-[var(--muted)] ${props.className ?? ""}`}>
       {t("quotaRemaining", {
         remaining: quota.remaining,
         limit: quota.limit,

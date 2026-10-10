@@ -165,7 +165,10 @@
     "openAi": "AI 问股",
     "aiDeskTitle": "{symbol} · AI 问股",
     "aiDeskSubtitle": "读图与问答；结合行情、新闻与财报上下文。",
-    "backToSymbol": "返回个股"
+    "backToSymbol": "返回个股",
+    "aiRegenerate": "重新生成",
+    "aiHistoryTitle": "{symbol} · 问股历史",
+    "aiHistorySubtitle": "点选一条记录继续查看或接着问。"
   },
   "company": {
     "na": "该资产暂无公司概况",
@@ -509,7 +512,8 @@
     "cached": "缓存结果（约 30 分钟）",
     "sources": "数据：新闻 {news} 条 · 财报相关 {earnings} · 指标 {metrics}",
     "withQuote": "含实时报价",
-    "disclaimer": "本分析由 AI 根据公开新闻与财报自动生成，仅供参考，不构成投资建议。"
+    "disclaimer": "本分析由 AI 根据公开新闻与财报自动生成，仅供参考，不构成投资建议。",
+    "elapsed": "{seconds}秒"
   },
   "common": {
     "loading": "加载中…",
@@ -552,7 +556,10 @@
     "structure": "结构",
     "keyLevels": "关键价位",
     "invalidation": "什么会改变判断",
-    "bars": "使用 {count} 根 K 线"
+    "bars": "使用 {count} 根 K 线",
+    "clearHistory": "清除结果",
+    "historyHint": "已显示上次读图",
+    "rerun": "重新读图"
   },
   "aiChat": {
     "title": "问 AI",
@@ -560,7 +567,18 @@
     "empty": "就这只标的提问…",
     "placeholder": "例如：近期主要风险是什么？",
     "send": "发送",
-    "error": "对话失败"
+    "error": "对话失败",
+    "clearHistory": "清空对话",
+    "historyHint": "已恢复上次对话",
+    "history": "历史",
+    "newChat": "新对话",
+    "historyTitle": "问股历史",
+    "historySubtitle": "{symbol} 的过往对话（已保存到账户）",
+    "historyEmpty": "暂无历史记录，发送一条消息后会出现在这里。",
+    "historyBack": "返回",
+    "historyDelete": "删除",
+    "historyLoadError": "加载历史失败",
+    "historyMeta": "{count} 条 · {time}"
   },
   "aiScenario": {
     "title": "情景推演",

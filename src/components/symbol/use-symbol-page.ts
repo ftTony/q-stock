@@ -4,7 +4,6 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "re
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { type IndicatorFlags } from "@/components/charts/candle-chart";
-import { type AiTrendAnalysis } from "@/components/market/ai-analysis-panel";
 import {
   type EarningsCalendarRow,
   type EarningsMetric,
@@ -17,6 +16,7 @@ import {
   type PressRow,
   type SymbolTab,
 } from "@/components/symbol/symbol-tabs-panel";
+import { useSymbolAiAnalysis } from "@/components/symbol/use-symbol-ai-analysis";
 import { useSymbolCandles } from "@/components/symbol/use-symbol-candles";
 import {
   quotePollIntervalMs,
@@ -33,7 +33,6 @@ const TAB_LOADING: ReadonlySet<SymbolTab> = new Set([
   "officers",
 ]);
 
-/** Stable clock from quote payload (avoids SSR `new Date()` hydration skew). */
 function quoteTimestamp(quote: Quote | null): Date | null {
   if (!quote?.timestamp) return null;
   const ms =
@@ -54,7 +53,6 @@ export function useSymbolPage(
   const tComments = useTranslations("comments");
   const tAlerts = useTranslations("alerts");
   const tEarnings = useTranslations("earnings");
-  const tAi = useTranslations("ai");
   const { data: session } = useSession();
 
   const [quote, setQuote] = useState<Quote | null>(initialQuote);
@@ -70,6 +68,7 @@ export function useSymbolPage(
   const [tab, setTab] = useState<SymbolTab>(
     assetType === "cn" ? "ai" : "news",
   );
+  const ai = useSymbolAiAnalysis(symbol, assetType, tab === "ai");
   const [news, setNews] = useState<NewsRow[]>([]);
   const [earnings, setEarnings] = useState<EarningsSurprise[]>([]);
   const [earningsUpcoming, setEarningsUpcoming] = useState<EarningsCalendarRow[]>([]);
@@ -86,14 +85,6 @@ export function useSymbolPage(
     news?: Record<string, unknown>;
     reddit?: Record<string, unknown>;
   } | null>(null);
-  const [aiAnalysis, setAiAnalysis] = useState<AiTrendAnalysis | null>(null);
-  const [aiAvailable, setAiAvailable] = useState<boolean | null>(null);
-  const [aiMessage, setAiMessage] = useState<string | null>(null);
-  const [aiDisclaimer, setAiDisclaimer] = useState<string | null>(null);
-  const [aiCached, setAiCached] = useState(false);
-  const [aiLoading, setAiLoading] = useState(false);
-  const [aiToast, setAiToast] = useState<string | null>(null);
-  const [aiToastKey, setAiToastKey] = useState(0);
   const earningsLoadedRef = useRef(false);
   const [alertPrice, setAlertPrice] = useState("");
   const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
@@ -244,50 +235,11 @@ export function useSymbolPage(
         const res = await fetch(`/api/sentiment?symbol=${symbol}&assetType=${assetType}`);
         const data = await res.json();
         setSentiment(data.sentiment ?? null);
-      } else if (tab === "ai") {
-        setAiLoading(true);
-        setAiAnalysis(null);
-        setAiAvailable(null);
-        setAiMessage(null);
-        try {
-          if (!session?.user) {
-            setAiAvailable(null);
-            setAiAnalysis(null);
-            setAiMessage(null);
-            return;
-          }
-          const res = await fetch(
-            `/api/ai/analyze?symbol=${symbol}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
-          );
-          const data = await res.json();
-          if (res.status === 401) {
-            setAiAvailable(null);
-            setAiAnalysis(null);
-            setAiMessage(null);
-            return;
-          }
-          if (res.status === 429) {
-            setAiToast(tAi("quotaExceeded"));
-            setAiToastKey((k) => k + 1);
-            setAiAvailable(null);
-            setAiMessage(null);
-            return;
-          }
-          setAiAvailable(data.available !== false);
-          setAiAnalysis(data.analysis ?? null);
-          setAiMessage(data.message ?? data.error ?? null);
-          setAiDisclaimer(data.disclaimer ?? null);
-          setAiCached(Boolean(data.cached));
-          if (data.degraded) setDegraded(true);
-          if (!res.ok && data.available !== false) setDegraded(true);
-        } finally {
-          setAiLoading(false);
-        }
       }
     } finally {
       setTabLoading(false);
     }
-  }, [tab, symbol, assetType, locale, isIndex, session?.user, tAi]);
+  }, [tab, symbol, assetType, locale, isIndex]);
 
   useEffect(() => {
     setQuote(initialQuote);
@@ -324,6 +276,10 @@ export function useSymbolPage(
   useEffect(() => {
     void loadTab();
   }, [loadTab]);
+
+  useEffect(() => {
+    if (ai.aiDegraded) setDegraded(true);
+  }, [ai.aiDegraded]);
 
   useEffect(() => {
     if (!session?.user) {
@@ -513,15 +469,7 @@ export function useSymbolPage(
     officers,
     tabLoading,
     sentiment,
-    aiAnalysis,
-    aiAvailable,
-    aiMessage,
-    aiDisclaimer,
-    aiCached,
-    aiLoading,
-    aiToast,
-    aiToastKey,
-    clearAiToast: () => setAiToast(null),
+    ...ai,
     loadingChart: candles.loadingChart,
     loadingMoreCandles: candles.loadingMoreCandles,
     hasMoreCandles: candles.hasMoreCandles,

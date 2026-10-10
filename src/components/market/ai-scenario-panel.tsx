@@ -117,9 +117,9 @@ export function AiScenarioPanel(props: {
         <SubmitButton
           type="button"
           loading={busy}
-          loadingLabel={tAi("loading")}
+          showElapsed={(s) => tAi("elapsed", { seconds: s })}
           onClick={() => void run()}
-          className="qt-btn-ghost shrink-0 border border-[var(--border)] px-2.5 py-1 text-xs"
+          className="qt-btn-ghost shrink-0 border border-[var(--border)] px-3 py-1.5"
         >
           {t("run")}
         </SubmitButton>

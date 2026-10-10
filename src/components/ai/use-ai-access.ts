@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import type { ToastTone } from "@/components/ui/top-toast";
+import { emitAiQuotaChanged } from "@/lib/ai/quota-events";
 
 type Quota = { used: number; limit: number; remaining: number };
 
@@ -32,6 +33,7 @@ export function useAiAccess() {
       }
       const data = (await res.json()) as Quota;
       setQuota(data);
+      emitAiQuotaChanged();
       return data;
     } catch {
       setQuota(null);

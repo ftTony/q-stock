@@ -197,9 +197,9 @@ export function ReviewDesk() {
             <SubmitButton
               type="button"
               loading={busy}
-              loadingLabel={tAi("loading")}
+              showElapsed={(s) => tAi("elapsed", { seconds: s })}
               onClick={() => void runReview()}
-              className="qt-btn-primary h-9 px-3 text-sm"
+              className="qt-btn-primary h-9 px-3"
             >
               {t("run")}
             </SubmitButton>

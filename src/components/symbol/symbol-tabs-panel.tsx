@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent } from "react";
+import { useTranslations } from "next-intl";
 import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
 import {
   AiAnalysisPanel,
@@ -104,9 +105,13 @@ type Props = {
   aiDisclaimer: string | null;
   aiCached: boolean;
   aiLoading: boolean;
+  /** True only while user clicked regenerate (not initial load). */
+  aiRefreshing?: boolean;
   aiToast?: string | null;
   aiToastKey?: number;
   onClearAiToast?: () => void;
+  onRegenerateAi?: () => void;
+  aiRegenerateLabel?: string;
 };
 
 export function SymbolTabsPanel({
@@ -151,10 +156,15 @@ export function SymbolTabsPanel({
   aiDisclaimer,
   aiCached,
   aiLoading,
+  aiRefreshing = false,
   aiToast,
   aiToastKey,
   onClearAiToast,
+  onRegenerateAi,
+  aiRegenerateLabel,
 }: Props) {
+  const tAi = useTranslations("ai");
+
   return (
     <div className="space-y-4 min-w-0">
       <div className="overflow-x-auto">
@@ -408,7 +418,22 @@ export function SymbolTabsPanel({
                   tone="error"
                   onDismiss={onClearAiToast}
                 />
-                <AiQuotaBadge />
+                <div className="flex flex-wrap items-center justify-between gap-2">
+                  <AiQuotaBadge />
+                  {onRegenerateAi &&
+                  aiRegenerateLabel &&
+                  (aiAnalysis || !aiLoading) ? (
+                    <SubmitButton
+                      type="button"
+                      loading={aiRefreshing}
+                      showElapsed={(s) => tAi("elapsed", { seconds: s })}
+                      onClick={() => onRegenerateAi()}
+                      className="qt-btn-ghost border border-[var(--border)] px-3 py-1.5"
+                    >
+                      {aiRegenerateLabel}
+                    </SubmitButton>
+                  ) : null}
+                </div>
                 <AiAnalysisPanel
                   available={aiAvailable}
                   message={aiMessage}
@@ -416,7 +441,7 @@ export function SymbolTabsPanel({
                   disclaimer={aiDisclaimer}
                   cached={aiCached}
                   degraded={degraded}
-                  loading={aiLoading}
+                  loading={aiLoading && !aiAnalysis && !aiRefreshing}
                 />
               </div>
             )}

@@ -165,7 +165,10 @@
     "openAi": "AI 問股",
     "aiDeskTitle": "{symbol} · AI 問股",
     "aiDeskSubtitle": "讀圖與問答；結合行情、新聞與財報上下文。",
-    "backToSymbol": "返回個股"
+    "backToSymbol": "返回個股",
+    "aiRegenerate": "重新生成",
+    "aiHistoryTitle": "{symbol} · 問股歷史",
+    "aiHistorySubtitle": "點選一筆記錄繼續查看或接著問。"
   },
   "company": {
     "na": "該資產暫無公司概況",
@@ -504,7 +507,8 @@
     "inviteForMore": "Invite friends",
     "loginTitle": "登入後解鎖 AI 看盤",
     "loginBody": "讀圖、問答、對比與復盤需登入。新帳戶贈送 5 次；邀請一位好友成功註冊，你再獲得 5 次。",
-    "loginHint": "內容由 AI 根據公開資料生成，僅供參考，不構成投資建議。"
+    "loginHint": "內容由 AI 根據公開資料生成，僅供參考，不構成投資建議。",
+    "elapsed": "{seconds}秒"
   },
   "common": {
     "loading": "載入中…",
@@ -547,7 +551,10 @@
     "structure": "結構",
     "keyLevels": "關鍵價位",
     "invalidation": "什麼會改變判斷",
-    "bars": "使用 {count} 根 K 線"
+    "bars": "使用 {count} 根 K 線",
+    "clearHistory": "清除結果",
+    "historyHint": "已顯示上次讀圖",
+    "rerun": "重新讀圖"
   },
   "aiChat": {
     "title": "問 AI",
@@ -555,7 +562,18 @@
     "empty": "就這檔標的提問…",
     "placeholder": "例如：近期主要風險是什麼？",
     "send": "傳送",
-    "error": "對話失敗"
+    "error": "對話失敗",
+    "clearHistory": "清空對話",
+    "historyHint": "已恢復上次對話",
+    "history": "歷史",
+    "newChat": "新對話",
+    "historyTitle": "問股歷史",
+    "historySubtitle": "{symbol} 的過往對話（已儲存到帳戶）",
+    "historyEmpty": "暫無歷史記錄，傳送一則訊息後會出現在這裡。",
+    "historyBack": "返回",
+    "historyDelete": "刪除",
+    "historyLoadError": "載入歷史失敗",
+    "historyMeta": "{count} 則 · {time}"
   },
   "aiScenario": {
     "title": "情景推演",

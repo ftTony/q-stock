@@ -150,7 +150,7 @@ function AlertsContent() {
   const activeCount = alerts.filter((a) => a.status === "active").length;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-5 animate-[qtFade_0.45s_ease]">
+    <div className="page-shell page-shell--tool space-y-5 animate-[qtFade_0.45s_ease]">
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div className="space-y-1">
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
@@ -253,7 +253,7 @@ function AlertsContent() {
           </div>
 
           {alerts.length === 0 ? (
-            <div className="flex flex-col items-center justify-center gap-2 px-6 py-16 text-center">
+            <div className="flex flex-col items-center justify-center gap-2 px-6 py-10 text-center sm:py-12">
               <div className="flex h-10 w-10 items-center justify-center rounded-full bg-[var(--surface-2)] text-[var(--muted)]">
                 <svg
                   viewBox="0 0 24 24"
@@ -270,10 +270,10 @@ function AlertsContent() {
                   />
                 </svg>
               </div>
-              <p className="text-sm font-medium text-[var(--foreground)]">
+              <p className="text-[15px] font-medium text-[var(--foreground)]">
                 {t("empty")}
               </p>
-              <p className="max-w-xs text-xs leading-relaxed text-[var(--muted)]">
+              <p className="max-w-sm text-sm leading-relaxed text-[var(--muted)]">
                 {t("emptyHint")}
               </p>
             </div>
@@ -354,7 +354,7 @@ export default function AlertsPage() {
   return (
     <Suspense
       fallback={
-        <div className="mx-auto max-w-6xl qt-panel p-6 text-sm text-[var(--muted)]">
+        <div className="page-shell page-shell--tool qt-panel p-6 text-sm text-[var(--muted)]">
           …
         </div>
       }

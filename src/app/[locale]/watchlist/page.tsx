@@ -174,7 +174,7 @@ function WatchlistContent() {
   }
 
   return (
-    <div className="mx-auto max-w-6xl space-y-4 animate-[qtFade_0.45s_ease]">
+    <div className="page-shell page-shell--fluid space-y-4 animate-[qtFade_0.45s_ease]">
       <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div className="space-y-1">
           <div className="flex flex-wrap items-baseline gap-2">
@@ -204,7 +204,7 @@ function WatchlistContent() {
       </header>
 
       <section className="qt-panel relative p-3">
-        <div className="flex max-w-xl items-center gap-2">
+        <div className="flex w-full max-w-2xl items-center gap-2 xl:max-w-3xl">
           <QtSelect
             value={addType}
             onChange={(v) => setAddType(v as AssetType)}
@@ -362,8 +362,8 @@ function WatchlistContent() {
                 })}
                 {visible.length === 0 && (
                   <tr>
-                    <td colSpan={5} className="px-4 py-12 text-center">
-                      <p className="mb-3 text-sm text-[var(--muted)]">
+                    <td colSpan={5} className="px-4 py-8 text-center sm:py-10">
+                      <p className="mb-3 text-sm text-[var(--muted)] sm:text-[15px]">
                         {t("watchlistEmpty")}
                       </p>
                       <SubmitButton
@@ -371,7 +371,7 @@ function WatchlistContent() {
                         loading={adding}
                         loadingLabel={tCommon("loading")}
                         onClick={() => void seedPopular()}
-                        className="qt-btn-primary h-9 px-3 text-xs font-medium"
+                        className="qt-btn-primary h-10 px-4 text-sm font-medium"
                       >
                         {t("seedPopular")}
                       </SubmitButton>
@@ -391,7 +391,7 @@ export default function WatchlistPage() {
   return (
     <Suspense
       fallback={
-        <div className="mx-auto max-w-6xl qt-panel p-6 text-sm text-[var(--muted)]">
+        <div className="page-shell page-shell--fluid qt-panel p-6 text-sm text-[var(--muted)]">
           …
         </div>
       }

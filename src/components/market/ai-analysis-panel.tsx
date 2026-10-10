@@ -2,6 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { AiBusyLabel } from "@/components/ai/ai-busy-label";
 import { AiLoginGate } from "@/components/ai/ai-login-gate";
 
 export type AiTrendAnalysis = {
@@ -35,7 +36,7 @@ export function AiAnalysisPanel(props: {
     props;
 
   if (loading) {
-    return <p className="text-sm text-[var(--muted)]">{t("loading")}</p>;
+    return <AiBusyLabel />;
   }
 
   if (status === "unauthenticated") {

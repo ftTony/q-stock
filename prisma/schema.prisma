@@ -104,6 +104,37 @@ model User {
   passwordResetTokens PasswordResetToken[]
   inviteCodesOwned    InviteCode[]         @relation("InviteOwned")
   inviteCodeUsed      InviteCode?          @relation("InviteUsed")
+  aiChatSessions      AiChatSession[]
+}
+
+/** AI 问股 conversation for a symbol (durable history). */
+model AiChatSession {
+  id        String    @id @default(cuid())
+  userId    String
+  symbol    String
+  assetType AssetType
+  /** First user message preview. */
+  title     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user     User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages AiChatMessage[]
+
+  @@index([userId, updatedAt])
+  @@index([userId, assetType, symbol, updatedAt])
+}
+
+model AiChatMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  role      String
+  content   String
+  createdAt DateTime @default(now())
+
+  session AiChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
 }
 
 /** One-time invite code owned by a user; optionally redeemed at registration. */

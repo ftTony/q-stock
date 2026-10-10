@@ -165,7 +165,10 @@
     "openAi": "Ask AI",
     "aiDeskTitle": "{symbol} · Ask AI",
     "aiDeskSubtitle": "Chart read and chat with quotes, news, and earnings context.",
-    "backToSymbol": "Back to symbol"
+    "backToSymbol": "Back to symbol",
+    "aiRegenerate": "Regenerate",
+    "aiHistoryTitle": "{symbol} · Ask-AI history",
+    "aiHistorySubtitle": "Pick a thread to review or continue."
   },
   "company": {
     "na": "No company profile available for this asset",
@@ -509,7 +512,8 @@
     "cached": "Cached (~30 min)",
     "sources": "Sources: {news} news · {earnings} earnings · {metrics} metrics",
     "withQuote": "includes quote",
-    "disclaimer": "AI-generated from public news and earnings. For reference only; not investment advice."
+    "disclaimer": "AI-generated from public news and earnings. For reference only; not investment advice.",
+    "elapsed": "{seconds}s"
   },
   "common": {
     "loading": "Loading…",
@@ -552,7 +556,10 @@
     "structure": "Structure",
     "keyLevels": "Key levels",
     "invalidation": "What would change my mind",
-    "bars": "{count} bars used"
+    "bars": "{count} bars used",
+    "clearHistory": "Clear result",
+    "historyHint": "Showing last chart read",
+    "rerun": "Read again"
   },
   "aiChat": {
     "title": "Ask AI",
@@ -560,7 +567,18 @@
     "empty": "Ask a question about this symbol…",
     "placeholder": "e.g. What are the near-term risks?",
     "send": "Send",
-    "error": "Chat failed"
+    "error": "Chat failed",
+    "clearHistory": "Clear chat",
+    "historyHint": "Restored last chat",
+    "history": "History",
+    "newChat": "New chat",
+    "historyTitle": "Ask-AI history",
+    "historySubtitle": "Past chats for {symbol} (saved to your account)",
+    "historyEmpty": "No history yet. Send a message and it will show up here.",
+    "historyBack": "Back",
+    "historyDelete": "Delete",
+    "historyLoadError": "Failed to load history",
+    "historyMeta": "{count} msgs · {time}"
   },
   "aiScenario": {
     "title": "Scenario map",

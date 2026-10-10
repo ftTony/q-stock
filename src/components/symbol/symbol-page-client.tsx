@@ -160,9 +160,14 @@ export function SymbolPageClient({
             aiDisclaimer={s.aiDisclaimer}
             aiCached={s.aiCached}
             aiLoading={s.aiLoading}
+            aiRefreshing={s.aiRefreshing}
             aiToast={s.aiToast}
             aiToastKey={s.aiToastKey}
             onClearAiToast={s.clearAiToast}
+            onRegenerateAi={
+              s.session?.user ? () => void s.regenerateAi() : undefined
+            }
+            aiRegenerateLabel={s.t("aiRegenerate")}
           />
         </div>
       </div>

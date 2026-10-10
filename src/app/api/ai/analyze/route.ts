@@ -6,11 +6,12 @@ import {
   requireAiUser,
 } from "@/lib/ai/http";
 import { consumeAiQuota } from "@/lib/ai/usage";
-import { cachedFetch, getCached } from "@/lib/cache";
+import { cachedFetch, deleteCached, getCached, setCached } from "@/lib/cache";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import { parseAssetType } from "@/lib/types";
 
-const TTL_MS = 30 * 60_000;
+/** One generation per symbol/locale/user per day unless refresh=1. */
+const TTL_MS = 24 * 60 * 60_000;
 
 export async function GET(req: Request) {
   try {
@@ -27,6 +28,7 @@ export async function GET(req: Request) {
 
       const assetType = parseAssetType(searchParams.get("assetType"));
       const locale = searchParams.get("locale") || "en";
+      const refresh = searchParams.get("refresh") === "1";
       const sym = symbol.toUpperCase();
       const cacheKey = `ai:trend:${userId}:${assetType}:${sym}:${locale}`;
 
@@ -45,16 +47,20 @@ export async function GET(req: Request) {
         });
       }
 
-      const hit = await getCached<Awaited<ReturnType<typeof analyzeTrend>>>(
-        cacheKey,
-      );
-      if (hit) {
-        return NextResponse.json({
-          ...hit,
-          cached: true,
-          symbol: sym,
-          assetType,
-        });
+      if (!refresh) {
+        const hit = await getCached<Awaited<ReturnType<typeof analyzeTrend>>>(
+          cacheKey,
+        );
+        if (hit) {
+          return NextResponse.json({
+            ...hit,
+            cached: true,
+            symbol: sym,
+            assetType,
+          });
+        }
+      } else {
+        await deleteCached(cacheKey);
       }
 
       const quota = await consumeAiQuota(userId, 1);
@@ -62,9 +68,20 @@ export async function GET(req: Request) {
         return aiQuotaExceededResponse(quota);
       }
 
-      const result = await cachedFetch(cacheKey, TTL_MS, () =>
-        analyzeTrend({ symbol: sym, assetType, locale, userId }),
-      );
+      const result = refresh
+        ? await (async () => {
+            const value = await analyzeTrend({
+              symbol: sym,
+              assetType,
+              locale,
+              userId,
+            });
+            await setCached(cacheKey, value, TTL_MS);
+            return value;
+          })()
+        : await cachedFetch(cacheKey, TTL_MS, () =>
+            analyzeTrend({ symbol: sym, assetType, locale, userId }),
+          );
 
       return NextResponse.json({
         ...result,
