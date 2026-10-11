@@ -64,7 +64,29 @@ function useEquitySessionLabel(t: (key: string) => string) {
   return { open: false, label: t("marketClosed") };
 }
 
-export function TopBarActions() {
+function MarketStatus({ t }: { t: (key: string) => string }) {
+  const market = useEquitySessionLabel(t);
+  return (
+    <span className="qt-chip hidden sm:inline-flex" title={market.label}>
+      <span
+        className={`h-1.5 w-1.5 rounded-full ${
+          market.open
+            ? "bg-[var(--up)] shadow-[0_0_8px_var(--up)]"
+            : "bg-[var(--muted)]"
+        }`}
+      />
+      {market.label}
+    </span>
+  );
+}
+
+export function TopBarActions({
+  showMarketStatus = true,
+  showNotifications = true,
+}: {
+  showMarketStatus?: boolean;
+  showNotifications?: boolean;
+}) {
   const t = useTranslations("nav");
   const tAlerts = useTranslations("alerts");
   const { data: session } = useSession();
@@ -83,7 +105,7 @@ export function TopBarActions() {
   const langRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!session?.user) {
+    if (!showNotifications || !session?.user) {
       setAlertCount(0);
       setRecent([]);
       return;
@@ -104,7 +126,7 @@ export function TopBarActions() {
     return () => {
       cancelled = true;
     };
-  }, [session, pathname]);
+  }, [session, pathname, showNotifications]);
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {
@@ -117,26 +139,13 @@ export function TopBarActions() {
   }, []);
 
   const dark = mounted && (resolvedTheme || theme) === "dark";
-  const market = useEquitySessionLabel((key) => t(key as "marketOpen"));
 
   const loggedIn = Boolean(session?.user);
 
   return (
     <div className="flex items-center gap-2 sm:gap-3">
-      {loggedIn && (
-        <span
-          className="qt-chip hidden sm:inline-flex"
-          title={market.label}
-        >
-          <span
-            className={`h-1.5 w-1.5 rounded-full ${
-              market.open
-                ? "bg-[var(--up)] shadow-[0_0_8px_var(--up)]"
-                : "bg-[var(--muted)]"
-            }`}
-          />
-          {market.label}
-        </span>
+      {loggedIn && showMarketStatus && (
+        <MarketStatus t={(key) => t(key as "marketOpen")} />
       )}
 
       <button
@@ -159,7 +168,7 @@ export function TopBarActions() {
         )}
       </button>
 
-      {loggedIn && (
+      {loggedIn && showNotifications && (
         <div className="relative" ref={notifRef}>
           <button
             type="button"

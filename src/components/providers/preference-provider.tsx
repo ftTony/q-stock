@@ -7,6 +7,7 @@ import {
   useLayoutEffect,
   useState,
 } from "react";
+import { useSession } from "next-auth/react";
 
 export type ChangeColorScheme = "cn" | "us";
 
@@ -46,25 +47,25 @@ function persistScheme(s: ChangeColorScheme) {
 
 export function PreferenceProvider({
   children,
-  initialScheme,
 }: {
   children: React.ReactNode;
-  /** From session when logged in; omit for guests (uses localStorage / cn) */
-  initialScheme?: ChangeColorScheme | null;
 }) {
+  const { data: session } = useSession();
+  const sessionScheme =
+    session?.user?.changeColorScheme === "cn" ||
+    session?.user?.changeColorScheme === "us"
+      ? session.user.changeColorScheme
+      : null;
   const [changeColorScheme, setScheme] = useState<ChangeColorScheme>(
-    () => initialScheme || "cn",
+    () => "cn",
   );
 
   useLayoutEffect(() => {
-    const next =
-      initialScheme === "cn" || initialScheme === "us"
-        ? initialScheme
-        : readStoredScheme() || "cn";
+    const next = sessionScheme || readStoredScheme() || "cn";
     setScheme(next);
     applyScheme(next);
     persistScheme(next);
-  }, [initialScheme]);
+  }, [sessionScheme]);
 
   const setChangeColorScheme = useCallback((s: ChangeColorScheme) => {
     setScheme(s);

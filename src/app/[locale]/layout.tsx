@@ -5,7 +5,6 @@ import { notFound } from "next/navigation";
 import { locales, type AppLocale } from "@/i18n/config";
 import { AppProviders } from "@/components/providers/app-providers";
 import { AppShell } from "@/components/layout/app-shell";
-import { auth } from "@/lib/auth";
 import { buildLocaleMetadata } from "@/lib/seo/locale-metadata";
 
 export function generateStaticParams() {
@@ -33,13 +32,10 @@ export default async function LocaleLayout({
   setRequestLocale(locale);
 
   const messages = await getMessages();
-  const session = await auth();
-  const scheme =
-    (session?.user?.changeColorScheme as "cn" | "us" | undefined) ?? null;
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <AppProviders changeColorScheme={scheme}>
+      <AppProviders>
         <AppShell>{children}</AppShell>
       </AppProviders>
     </NextIntlClientProvider>

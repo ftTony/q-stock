@@ -103,7 +103,19 @@ ingress:
 
 确保 `APP_URL` 和 `AUTH_URL` 都是 `https://your-domain.example`。修改 `NEXT_PUBLIC_QUOTE_WS_URL` 后需重新构建 web 镜像：`docker compose up --build -d`。
 
-## 5. 资源与容量建议（起步）
+## 5. 首页 ISR 与 Cloudflare HTML 缓存
+
+首页按 60 秒重新验证一次。Next.js 会先返回已生成的页面；过期后由首次访问触发后台再生成。用户 session 不再在共享 locale 布局中读取，个性化状态由客户端加载，避免登录用户的 HTML 被共享缓存。
+
+要让访问命中 Cloudflare 边缘缓存，在 **Caching → Cache Rules** 添加只匹配首页文档的规则：
+
+- 匹配主机名及首页路径：`/` 和各支持语言的首页路径（例如 `/zh-CN`、`/ja`）。
+- 仅缓存 HTML 文档；排除带 `_rsc` 查询参数、`RSC: 1` 或 `Next-Router-Prefetch` 请求头的请求，避免缓存 Next.js 客户端导航数据。
+- 设为 **Eligible for cache**，Edge TTL 采用源站 `Cache-Control`；不要对整个站点启用 Cache Everything。
+
+发布后检查首页响应的 `Cache-Control` 和 `CF-Cache-Status`：首次请求可能为 `MISS`，后续缓存命中应为 `HIT`。源站重新生成和边缘缓存都受各自缓存状态影响，内容更新可能在重新验证期间短暂返回旧页面。
+
+## 6. 资源与容量建议（起步）
 
 | 组件 | 起步配置 |
 |---|---|
@@ -113,7 +125,7 @@ ingress:
 
 瓶颈通常在 **Finnhub / Adanos 外部配额**，而非本机 CPU。热门页轮询、详情报价刷新会叠加请求，注意 429。
 
-## 6. 运维观察点
+## 7. 运维观察点
 
 | 信号 | 含义 |
 |---|---|
@@ -125,7 +137,7 @@ ingress:
 
 Worker 日志关键字：`[alerts] triggered`、`[alerts] re-armed`、`[email]`、`quote failed`。
 
-## 7. 安全建议
+## 8. 安全建议
 
 1. 生产库密码与示例 `qstock/qstock` 脱钩  
 2. 限制 Postgres 端口仅内网  
@@ -133,7 +145,7 @@ Worker 日志关键字：`[alerts] triggered`、`[alerts] re-armed`、`[email]`�
 4. 不要在前端暴露任何第三方 Key  
 5. 如对公网开放注册，考虑后续加验证码 / 邮件验证（一期未做）
 
-## 8. 回滚思路
+## 9. 回滚思路
 
 1. `git checkout` 上一稳定版本  
 2. `docker compose up --build -d`  
@@ -141,7 +153,7 @@ Worker 日志关键字：`[alerts] triggered`、`[alerts] re-armed`、`[email]`�
 
 一期迁移以 `init` 为主，结构变更前请先备份。
 
-## 9. 相关文档
+## 10. 相关文档
 
 - [启动与环境](./getting-started.md)
 - [数据库说明](./database.md)

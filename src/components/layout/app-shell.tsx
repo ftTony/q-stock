@@ -64,7 +64,6 @@ function isMarketingPath(pathname: string) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("nav");
-  const tM = useTranslations("marketing");
   const pathname = usePathname();
   const { status: sessionStatus } = useSession();
   const [collapsed, setCollapsed] = useSidebarCollapsed();
@@ -123,13 +122,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               <SiteLogo height={28} variant="compact" />
             </Link>
             <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-              <Link
-                href="/markets"
-                className="qt-btn qt-btn-primary h-9 px-3 text-xs"
-              >
-                {tM("ctaEnter")}
-              </Link>
-              <TopBarActions />
+              <TopBarActions
+                showMarketStatus={!isLandingHome}
+                showNotifications={!isLandingHome}
+              />
             </div>
           </div>
         </header>
