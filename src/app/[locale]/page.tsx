@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { MarketingLanding } from "@/components/marketing/marketing-landing";
+import { ScopedMessages } from "@/components/providers/scoped-messages";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 import { marketingHomeJsonLd } from "@/lib/seo/marketing-json-ld";
 
@@ -34,7 +35,9 @@ export default async function MarketingHomePage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <MarketingLanding />
+      <ScopedMessages namespaces={["marketing"]}>
+        <MarketingLanding />
+      </ScopedMessages>
     </>
   );
 }

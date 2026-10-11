@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { SymbolPageClient } from "@/components/symbol/symbol-page-client";
 import { SymbolRelatedLinks } from "@/components/symbol/symbol-related-links";
 import { SymbolSeoHeading } from "@/components/symbol/symbol-seo-heading";
+import { ScopedMessages } from "@/components/providers/scoped-messages";
 import {
   buildSymbolMetadata,
   buildSymbolSeoCopy,
@@ -43,14 +44,26 @@ export default async function SymbolPage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <SymbolSeoHeading symbol={symbol} copy={copy} />
-      <SymbolPageClient
-        symbol={symbol}
-        assetType={assetType}
-        initialQuote={quote}
-      />
-      <div className="mt-4">
-        <SymbolRelatedLinks symbol={symbol} assetType={assetType} />
-      </div>
+      <ScopedMessages
+        namespaces={[
+          "ai",
+          "aiChart",
+          "aiChat",
+          "comments",
+          "earnings",
+          "symbol",
+          "trading",
+        ]}
+      >
+        <SymbolPageClient
+          symbol={symbol}
+          assetType={assetType}
+          initialQuote={quote}
+        />
+        <div className="mt-4">
+          <SymbolRelatedLinks symbol={symbol} assetType={assetType} />
+        </div>
+      </ScopedMessages>
     </>
   );
 }

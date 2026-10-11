@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 
@@ -14,7 +14,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function ToolsIndexPage() {
+export default async function ToolsIndexPage({ params }: Props) {
+  // 必须显式声明 locale，否则 `getTranslations()` 会回落到读请求头，
+  // 整个路由被判为动态渲染（响应头变成 no-store，CDN 无法缓存）。
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const t = await getTranslations("tools");
 
   return (

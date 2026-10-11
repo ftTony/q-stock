@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { buildNoIndexMetadata } from "@/lib/seo/page-metadata";
+import { ScopedMessages } from "@/components/providers/scoped-messages";
 
 type Props = {
   children: React.ReactNode;
@@ -15,6 +16,10 @@ export async function generateMetadata({
   return buildNoIndexMetadata(locale, "/settings");
 }
 
-export default function PrivateLayout({ children }: Props) {
-  return <div className="settings-ui">{children}</div>;
+export default async function PrivateLayout({ children }: Props) {
+  return (
+    <ScopedMessages namespaces={["settings"]}>
+      <div className="settings-ui">{children}</div>
+    </ScopedMessages>
+  );
 }

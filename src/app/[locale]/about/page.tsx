@@ -1,6 +1,6 @@
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 
 const CONTACT_EMAIL = "172993974@qq.com";
@@ -16,7 +16,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   });
 }
 
-export default async function AboutPage() {
+export default async function AboutPage({ params }: Props) {
+  // 必须显式声明 locale，否则 `getTranslations()` 会回落到读请求头，
+  // 整个路由被判为动态渲染（响应头变成 no-store，CDN 无法缓存）。
+  const { locale } = await params;
+  setRequestLocale(locale);
+
   const t = await getTranslations("about");
 
   return (

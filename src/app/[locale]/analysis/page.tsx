@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { AnalysisPageClient } from "@/components/analysis/analysis-page-client";
+import { ScopedMessages } from "@/components/providers/scoped-messages";
 import type { IndustryHeatCell } from "@/components/analysis/types";
 import { auth } from "@/lib/auth";
 import { getIndustryHeatmap } from "@/lib/market/industry";
@@ -34,8 +35,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AnalysisPage() {
   const initialIndustries = await loadInitialIndustries();
   return (
-    <div className="animate-[qtFade_0.45s_ease]">
-      <AnalysisPageClient initialIndustries={initialIndustries} />
-    </div>
+    <ScopedMessages namespaces={["ai", "analysis", "symbol"]}>
+      <div className="animate-[qtFade_0.45s_ease]">
+        <AnalysisPageClient initialIndustries={initialIndustries} />
+      </div>
+    </ScopedMessages>
   );
 }
