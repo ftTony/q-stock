@@ -1,7 +1,13 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+
+const ADVANCED_QUOTES_FALLBACK: Record<string, string> = {
+  "zh-CN": "高级行情",
+  "zh-TW": "高級行情",
+  en: "Advanced quotes",
+};
 
 /** Shared bottom CTA + site links (landing story, learn, tools, disclaimer). */
 export function MarketingCtaBand({
@@ -11,6 +17,11 @@ export function MarketingCtaBand({
   compact?: boolean;
 }) {
   const t = useTranslations("marketing");
+  const locale = useLocale();
+  const advancedQuotesLabel = t.has("footerAdvancedQuotes")
+    ? t("footerAdvancedQuotes")
+    : (ADVANCED_QUOTES_FALLBACK[locale] ??
+      ADVANCED_QUOTES_FALLBACK.en);
 
   return (
     <div
@@ -52,7 +63,7 @@ export function MarketingCtaBand({
               href="/advanced-quotes"
               className="hover:text-[var(--foreground)]"
             >
-              {t("footerAdvancedQuotes")}
+              {advancedQuotesLabel}
             </Link>
             <Link href="/disclaimer" className="hover:text-[var(--foreground)]">
               {t("footerDisclaimer")}

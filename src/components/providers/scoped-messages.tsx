@@ -1,5 +1,5 @@
 import { NextIntlClientProvider } from "next-intl";
-import { getMessages } from "next-intl/server";
+import { getLocale, getMessages } from "next-intl/server";
 import { clientMessages } from "@/i18n/client-messages";
 
 /**
@@ -18,9 +18,12 @@ export async function ScopedMessages({
   namespaces?: readonly string[];
   children: React.ReactNode;
 }) {
-  const all = await getMessages();
+  const [all, locale] = await Promise.all([getMessages(), getLocale()]);
   return (
-    <NextIntlClientProvider messages={clientMessages(all, namespaces)}>
+    <NextIntlClientProvider
+      locale={locale}
+      messages={clientMessages(all, namespaces)}
+    >
       {children}
     </NextIntlClientProvider>
   );
