@@ -809,16 +809,24 @@
   },
   "learn": {
     "title": "投资知识",
-    "subtitle": "看盘、工具与心态——短文，仅供学习。",
+    "subtitle": "看盘、工具、心态与书单——短文，仅供学习。",
     "back": "知识列表",
-    "tryInApp": "想动手试试？去行情里打开对应功能。",
+    "tryInApp": "想动手试试？打开对应功能继续练习。",
     "ctaMarkets": "进入行情",
+    "ctaOpen": "打开相关功能",
+    "ctaReadingList": "冷静投书单",
+    "relatedTitle": "相关阅读",
+    "practiceTitle": "动手练习",
+    "readingNote": "短文 · 仅供学习",
+    "filterAll": "全部",
+    "emptyFilter": "该分类暂无文章。",
     "disclaimer": "内容仅供学习参考，不构成投资建议。",
     "disclaimerLink": "免责声明",
     "categories": {
       "basics": "基础",
       "tools": "工具",
-      "mindset": "心态"
+      "mindset": "心态",
+      "reading": "书单"
     },
     "comingSoon": "敬请期待",
     "comingSoonBody": "投资知识专栏筹备中，稍后上线短文与工具说明。",
@@ -827,7 +835,7 @@
   "tools": {
     "title": "理财工具",
     "comingSoon": "敬请期待",
-    "comingSoonBody": "仓位、定投与复利等小工具筹备中，稍后上线。",
+    "comingSoonBody": "仓位、定投、复利与期权估算等小工具筹备中，稍后上线。",
     "ctaMarkets": "进入行情",
     "backHome": "返回官网",
     "disclaimer": "工具结果仅为假设估算，不构成投资建议。",

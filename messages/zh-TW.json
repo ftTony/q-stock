@@ -804,16 +804,24 @@
   },
   "learn": {
     "title": "投資知識",
-    "subtitle": "看盤、工具與心態——短文，僅供學習。",
+    "subtitle": "看盤、工具、心態與書單——短文，僅供學習。",
     "back": "知識列表",
-    "tryInApp": "想動手試試？去行情裡打開對應功能。",
+    "tryInApp": "想動手試試？打開對應功能繼續練習。",
     "ctaMarkets": "進入行情",
+    "ctaOpen": "打開相關功能",
+    "ctaReadingList": "冷靜投書單",
+    "relatedTitle": "相關閱讀",
+    "practiceTitle": "動手練習",
+    "readingNote": "短文 · 僅供學習",
+    "filterAll": "全部",
+    "emptyFilter": "該分類暫無文章。",
     "disclaimer": "內容僅供學習參考，不構成投資建議。",
     "disclaimerLink": "免責聲明",
     "categories": {
       "basics": "基礎",
       "tools": "工具",
-      "mindset": "心態"
+      "mindset": "心態",
+      "reading": "書單"
     },
     "comingSoon": "敬請期待",
     "comingSoonBody": "投資知識專欄籌備中，稍後上線短文與工具說明。",
@@ -822,7 +830,7 @@
   "tools": {
     "title": "理財工具",
     "comingSoon": "敬請期待",
-    "comingSoonBody": "倉位、定投與複利等小工具籌備中，稍後上線。",
+    "comingSoonBody": "倉位、定投、複利與期權估算等小工具籌備中，稍後上線。",
     "ctaMarkets": "進入行情",
     "backHome": "返回官網",
     "disclaimer": "工具結果僅為假設估算，不構成投資建議。",

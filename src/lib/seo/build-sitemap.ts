@@ -6,6 +6,7 @@ import {
   type AppLocale,
 } from "@/i18n/config";
 import { siteOrigin } from "@/lib/seo/site-url";
+import { listLearnArticles } from "@/lib/learn/articles";
 import {
   resolveSymbolsForMarket,
   seedSymbolsForMarket,
@@ -105,6 +106,19 @@ export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
         lastModified: now,
         changeFrequency: p.changeFrequency,
         priority: p.priority,
+        languages,
+      });
+    }
+  }
+  for (const article of listLearnArticles()) {
+    const path = `/learn/${article.slug}`;
+    const languages = languageMapForPath(origin, path);
+    for (const locale of SITEMAP_LOCALES) {
+      pushUnique(entries, seen, {
+        url: languages[locale]!,
+        lastModified: now,
+        changeFrequency: "monthly",
+        priority: 0.55,
         languages,
       });
     }

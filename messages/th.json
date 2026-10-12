@@ -804,25 +804,33 @@
   },
   "learn": {
     "title": "Learn",
-    "subtitle": "Short notes on watching, tools, and mindset—for study only.",
+    "subtitle": "Short notes on watching, tools, and mindset, and reading—for study only.",
     "back": "All notes",
-    "tryInApp": "Want to try it? Open the matching tools in markets.",
+    "tryInApp": "Want to try it? Open the matching feature to practice.",
     "ctaMarkets": "Open markets",
     "disclaimer": "For learning only; not investment advice.",
     "disclaimerLink": "Disclaimer",
     "categories": {
       "basics": "Basics",
       "tools": "Tools",
-      "mindset": "Mindset"
+      "mindset": "Mindset",
+      "reading": "Reading"
     },
     "comingSoon": "Coming soon",
     "comingSoonBody": "The learn section is being prepared. Short notes will land here soon.",
-    "backHome": "Back to home"
+    "backHome": "Back to home",
+    "ctaOpen": "Open related feature",
+    "ctaReadingList": "Reading list",
+    "filterAll": "All",
+    "emptyFilter": "No articles in this category yet.",
+    "relatedTitle": "Related reading",
+    "practiceTitle": "Practice",
+    "readingNote": "Short note · study only"
   },
   "tools": {
     "title": "Tools",
     "comingSoon": "Coming soon",
-    "comingSoonBody": "Position, DCA, and compounding calculators are on the way.",
+    "comingSoonBody": "Position, DCA, compounding, and options calculators are on the way.",
     "ctaMarkets": "Open markets",
     "backHome": "Back to home",
     "disclaimer": "Results are hypothetical estimates only—not investment advice.",

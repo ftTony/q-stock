@@ -90,21 +90,21 @@ function PlanCard({
   );
 }
 
-/** One-screen pricing: compact cards, generous page margins. */
+/** Pricing: same content width as marketing header / CTA band (`max-w-5xl`). */
 export function MarketingPricing({ title, subtitle, plans, footnote }: Props) {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden animate-[qtFade_0.45s_ease]">
-      <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col justify-center overflow-y-auto overscroll-y-contain px-6 py-8 sm:px-8 sm:py-10 lg:px-10 lg:py-12">
-        <header className="max-w-2xl shrink-0">
+      <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col justify-center overflow-y-auto overscroll-y-contain px-4 py-8 sm:px-6 sm:py-10">
+        <header className="shrink-0">
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {title}
           </h1>
-          <p className="mt-2 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
+          <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--muted)] sm:text-base">
             {subtitle}
           </p>
         </header>
 
-        <div className="mt-6 grid gap-5 sm:mt-8 sm:gap-6 lg:grid-cols-3 lg:items-start lg:gap-6">
+        <div className="mt-6 grid gap-4 sm:mt-8 sm:gap-5 lg:grid-cols-3 lg:items-start">
           {plans.map((plan) => (
             <PlanCard
               key={plan.name}

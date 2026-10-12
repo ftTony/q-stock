@@ -68,6 +68,11 @@ html.dark[data-change="us"] {
   box-sizing: border-box;
 }
 
+html {
+  /* Keep header/content width stable when a page gains/loses a vertical scrollbar. */
+  scrollbar-gutter: stable;
+}
+
 body {
   background:
     radial-gradient(900px 420px at 12% -8%, color-mix(in srgb, var(--brand) 10%, transparent), transparent),

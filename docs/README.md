@@ -7,6 +7,9 @@
 | [产品现状盘点](./product-status.md) | 已上线能力、数据源、占位项与差异化（规划用） |
 | [产品机会头脑风暴](./product-opportunity-brainstorm.md) | 可做什么：漏斗、形态切法、组合拳与商业选项 |
 | [可落地路线图](./product-roadmap.md) | 短期切片、中期尖 fort、验收表与里程碑 |
+| [理财工具 PRD](./prd/README.md) | 仓位 / 定投 / 复利 / 期权各工具需求与验收 |
+| [投资知识内容规划](./learn-content-plan.md) | Learn 专栏定位、选题目录、首发包与写作模板 |
+| [推荐书单与学习路线](./learn-reading-list.md) | 理财书讲了什么、启发、三条路线与导读 slug |
 | [需求文档](./requirements.md) | 功能范围、页面、验收要点（与现网代码对齐） |
 | [启动与环境](./getting-started.md) | 本地开发、环境变量、Docker、常见问题 |
 | [架构说明](./architecture.md) | 系统结构、目录、行情/凭证数据流、安全边界 |

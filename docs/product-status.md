@@ -106,8 +106,8 @@ Next.js 15（App Router）· React 19 · TypeScript · Tailwind 4 · next-intl �
 
 | 项 | 现状 |
 |---|---|
-| `/learn` | Coming soon；`src/lib/learn/articles.ts` 有文稿，slug 路由重定向到 coming-soon |
-| `/tools` | Coming soon（仓位 / 定投 / 复利等计算器文案已承诺） |
+| `/learn` | 已开放列表与文章页；首发约 12 篇（含书单/路线/2 篇导读）；规划见 [learn-content-plan.md](./learn-content-plan.md) |
+| `/tools` | Coming soon（规划：仓位 / 定投 / 复利 / 期权；PRD 见 `docs/prd/`） |
 | 实盘交易 | 仅模拟；多头、起始约 $100k |
 | 扶摇 A 股源 | 代码保留，路由关闭 |
 | 高级 / L2 行情 | 未启用 |

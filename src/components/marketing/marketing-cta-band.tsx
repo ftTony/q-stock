@@ -31,10 +31,8 @@ export function MarketingCtaBand({
       }}
     >
       <div
-        className={`mx-auto flex max-w-5xl flex-col sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:px-6 ${
-          compact
-            ? "gap-4 px-4 py-5 sm:py-6"
-            : "gap-6 px-4 py-8 sm:py-10"
+        className={`mx-auto flex w-full max-w-5xl flex-col px-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:px-6 ${
+          compact ? "gap-4 py-5 sm:py-6" : "gap-6 py-8 sm:py-10"
         }`}
       >
         <div className="min-w-0">
