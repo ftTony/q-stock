@@ -11,8 +11,8 @@ import {
 } from "@/lib/market/creds-status-client";
 
 /**
- * Top banner for logged-in users who have not saved Longbridge/Futu keys.
- * Hidden on settings (they can fill the form there) and auth pages.
+ * Single markets/data-source notice (marquee + actions).
+ * Shown when broker keys are missing; hidden on settings / auth / about.
  * `fluid` matches full-bleed pages (markets / analysis / symbol).
  */
 export function MarketCredentialsPrompt({ fluid = false }: { fluid?: boolean }) {
@@ -22,10 +22,8 @@ export function MarketCredentialsPrompt({ fluid = false }: { fluid?: boolean }) 
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    if (sessionStatus !== "authenticated") {
-      setShow(false);
-      return;
-    }
+    if (sessionStatus === "loading") return;
+
     if (
       pathname.startsWith("/settings") ||
       pathname.startsWith("/login") ||
@@ -49,9 +47,14 @@ export function MarketCredentialsPrompt({ fluid = false }: { fluid?: boolean }) 
       } catch {
         /* ignore */
       }
+
+      if (sessionStatus !== "authenticated") {
+        if (!cancelled) setShow(true);
+        return;
+      }
+
       const status = await fetchMarketCredsStatus();
-      if (cancelled) return;
-      setShow(!hasAnyBrokerCreds(status));
+      if (!cancelled) setShow(!hasAnyBrokerCreds(status));
     })();
 
     return () => {
@@ -70,27 +73,46 @@ export function MarketCredentialsPrompt({ fluid = false }: { fluid?: boolean }) 
     setShow(false);
   }
 
+  const settingsHref =
+    sessionStatus === "authenticated"
+      ? "/settings?setupKeys=1"
+      : "/login?next=/settings%3FsetupKeys%3D1";
+
+  const segment = (
+    <span className="inline-flex items-center gap-3 px-4 text-[12px] sm:px-6 sm:text-[13px]">
+      <span className="font-medium text-[var(--foreground)]">
+        {t("credsPromptTitle")}
+      </span>
+      <span className="text-[var(--muted)]">{t("credsPromptBody")}</span>
+      <span aria-hidden className="text-[var(--border)]">
+        {" | "}
+      </span>
+    </span>
+  );
+
   return (
     <div
       role="status"
-      className="border-b border-[var(--border)] bg-[var(--brand-soft)] py-2.5"
+      className="border-b border-[var(--border)] bg-[var(--brand-soft)] py-2"
     >
       <div
         className={
           fluid
-            ? "flex w-full flex-wrap items-center justify-between gap-2 px-4 text-sm sm:px-6"
-            : "mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-4 text-sm sm:px-6"
+            ? "flex w-full items-center gap-2 px-2 sm:px-4"
+            : "mx-auto flex w-full max-w-6xl items-center gap-2 px-2 sm:px-4"
         }
       >
-        <p className="text-[var(--foreground)]">
-          <span className="font-medium">{t("credsPromptTitle")}</span>
-          <span className="ml-1.5 text-[var(--muted)]">
-            {t("credsPromptBody")}
-          </span>
-        </p>
-        <div className="flex items-center gap-2">
+        <div className="qt-marquee min-w-0 flex-1">
+          <div className="qt-marquee-track">
+            {segment}
+            {segment}
+            {segment}
+            {segment}
+          </div>
+        </div>
+        <div className="flex shrink-0 items-center gap-1.5 pr-1 sm:gap-2">
           <Link
-            href="/settings?setupKeys=1"
+            href={settingsHref}
             className="qt-btn qt-btn-primary h-8 px-3 text-xs"
           >
             {t("credsPromptAction")}

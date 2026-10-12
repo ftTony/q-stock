@@ -35,11 +35,14 @@ export function readQuoteWsUrl(): string | null {
   return u || null;
 }
 
+export type PushListener = (push: boolean) => void;
+
 export class QuoteSocketClient {
   private ws: WebSocket | null = null;
   private readonly url: string;
   private readonly channels = new Map<string, ChannelEntry>();
   private readonly statusListeners = new Set<StatusListener>();
+  private readonly pushListeners = new Set<PushListener>();
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private pingTimer: ReturnType<typeof setInterval> | null = null;
   private backoffMs = BACKOFF_MIN;
@@ -48,6 +51,8 @@ export class QuoteSocketClient {
   private online = true;
   private lastRxAt = 0;
   private status: QuoteSocketStatus = "connecting";
+  /** From hub `hello.push` — Longbridge live push; false → rely on REST. */
+  private pushLive = false;
   private lifecycleBound = false;
   /** Last fan-out message per channel — replay for late subscribers (same symbol). */
   private lastMsg = new Map<string, ServerMessage>();
@@ -60,10 +65,21 @@ export class QuoteSocketClient {
     return this.status;
   }
 
+  /** Whether the hub reported Longbridge push as available. */
+  getPushAvailable(): boolean {
+    return this.pushLive;
+  }
+
   onStatus(fn: StatusListener): () => void {
     this.statusListeners.add(fn);
     queueMicrotask(() => fn(this.status));
     return () => this.statusListeners.delete(fn);
+  }
+
+  onPush(fn: PushListener): () => void {
+    this.pushListeners.add(fn);
+    queueMicrotask(() => fn(this.pushLive));
+    return () => this.pushListeners.delete(fn);
   }
 
   /** Subscribe channels for one consumer; wire subscribe only on 0→1. */
@@ -127,6 +143,18 @@ export class QuoteSocketClient {
     if (this.status === next) return;
     this.status = next;
     for (const h of this.statusListeners) {
+      try {
+        h(next);
+      } catch {
+        /* ignore */
+      }
+    }
+  }
+
+  private setPush(next: boolean) {
+    if (this.pushLive === next) return;
+    this.pushLive = next;
+    for (const h of this.pushListeners) {
       try {
         h(next);
       } catch {
@@ -207,6 +235,7 @@ export class QuoteSocketClient {
       ws.onclose = () => {
         this.stopPing();
         this.ws = null;
+        this.setPush(false);
         if (this.intentionalClose) return;
         if (this.channels.size > 0) {
           this.setStatus("degraded");
@@ -234,8 +263,9 @@ export class QuoteSocketClient {
     }
 
     if (msg.op === "pong" || msg.op === "hello") {
-      if (msg.op === "hello" && this.status !== "connected") {
-        this.setStatus("connected");
+      if (msg.op === "hello") {
+        this.setPush(Boolean(msg.push));
+        if (this.status !== "connected") this.setStatus("connected");
       }
       return;
     }

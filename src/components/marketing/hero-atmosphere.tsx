@@ -28,12 +28,26 @@ export function HeroAtmosphere({ inView }: { inView: boolean }) {
           preserveAspectRatio="xMaxYMid slice"
           fill="none"
         >
-          {/* Grid */}
+          <defs>
+            <linearGradient
+              id="mkt-hero-area"
+              x1="740"
+              y1="190"
+              x2="800"
+              y2="190"
+              gradientUnits="userSpaceOnUse"
+            >
+              <stop offset="0%" stopColor="var(--brand-text)" stopOpacity="0.07" />
+              <stop offset="100%" stopColor="var(--brand-text)" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
+          {/* Grid — 铺满到右缘，与填充区对齐 */}
           {Array.from({ length: 8 }, (_, i) => (
             <line
               key={`h-${i}`}
               x1="40"
-              x2="780"
+              x2="800"
               y1={60 + i * 60}
               y2={60 + i * 60}
               stroke="currentColor"
@@ -41,7 +55,7 @@ export function HeroAtmosphere({ inView }: { inView: boolean }) {
               strokeWidth="1"
             />
           ))}
-          {Array.from({ length: 10 }, (_, i) => (
+          {Array.from({ length: 11 }, (_, i) => (
             <line
               key={`v-${i}`}
               y1="40"
@@ -54,11 +68,10 @@ export function HeroAtmosphere({ inView }: { inView: boolean }) {
             />
           ))}
 
-          {/* Soft area under the line */}
+          {/* Soft area under the line — 延伸到网格右缘，避免终点下方竖向色带 */}
           <path
-            d="M60 380 C 140 360, 180 420, 240 340 S 340 220, 400 260 S 500 320, 560 240 S 660 160, 740 190 L 740 520 L 60 520 Z"
-            fill="currentColor"
-            fillOpacity="0.06"
+            d="M60 380 C 140 360, 180 420, 240 340 S 340 220, 400 260 S 500 320, 560 240 S 660 160, 740 190 L 780 190 L 780 520 L 60 520 Z"
+            fill="url(#mkt-hero-area)"
           />
 
           {/* Index-style path — draws once, then stays still */}

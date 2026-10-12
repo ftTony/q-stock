@@ -260,6 +260,36 @@ a.qt-btn-ghost:hover,
   }
 }
 
+@keyframes qtMarquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.qt-marquee {
+  overflow: hidden;
+  mask-image: linear-gradient(
+    90deg,
+    transparent,
+    #000 4%,
+    #000 96%,
+    transparent
+  );
+}
+
+.qt-marquee-track {
+  display: flex;
+  width: max-content;
+  animation: qtMarquee 36s linear infinite;
+}
+
+.qt-marquee:hover .qt-marquee-track {
+  animation-play-state: paused;
+}
+
 /* Marketing landing: section enter */
 .mkt-reveal {
   opacity: 0;
@@ -361,6 +391,17 @@ html.mkt-lock body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .qt-marquee-track {
+    animation: none;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .qt-marquee-track > span:nth-child(n + 2) {
+    display: none;
+  }
+
   .mkt-reveal {
     opacity: 1;
     transform: none;

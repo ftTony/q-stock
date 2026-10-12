@@ -1,22 +1,43 @@
 "use client";
 
-import {
-  useEffect,
-  useTransition,
-  type CSSProperties,
-  type ReactNode,
-  type Ref,
-} from "react";
+import dynamic from "next/dynamic";
+import { useEffect, useTransition, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
-import { MarketingFeatureScreens } from "@/components/marketing/marketing-feature-screens";
-import {
-  MarketingStoryScreen,
-  MarketingTrustScreen,
-} from "@/components/marketing/marketing-trust-story";
-import { MarketingSectionDots } from "@/components/marketing/marketing-section-dots";
 import { HeroAtmosphere } from "@/components/marketing/hero-atmosphere";
 import { useSectionReveal } from "@/components/marketing/use-section-reveal";
+
+const MarketingFeatureScreens = dynamic(
+  () =>
+    import("@/components/marketing/marketing-feature-screens").then((m) => ({
+      default: m.MarketingFeatureScreens,
+    })),
+  { ssr: true },
+);
+
+/** Trust + story share one chunk (same module). */
+const MarketingTrustAndStory = dynamic(
+  () =>
+    import("@/components/marketing/marketing-trust-story").then((m) => ({
+      default: function MarketingTrustAndStory() {
+        return (
+          <>
+            <m.MarketingTrustScreen />
+            <m.MarketingStoryScreen />
+          </>
+        );
+      },
+    })),
+  { ssr: true },
+);
+
+const MarketingSectionDots = dynamic(
+  () =>
+    import("@/components/marketing/marketing-section-dots").then((m) => ({
+      default: m.MarketingSectionDots,
+    })),
+  { ssr: true },
+);
 
 const SCREEN =
   "relative flex min-h-[calc(100dvh-3.5rem)] snap-start snap-always flex-col justify-center pb-20 pt-12";
@@ -66,34 +87,6 @@ function ScrollHint({ href }: { href: string }) {
   );
 }
 
-function ScreenSection({
-  id,
-  sectionRef,
-  nextHref,
-  children,
-  className = "",
-  style,
-}: {
-  id?: string;
-  sectionRef?: Ref<HTMLElement>;
-  nextHref?: string;
-  children: ReactNode;
-  className?: string;
-  style?: CSSProperties;
-}) {
-  return (
-    <section
-      id={id}
-      ref={sectionRef}
-      className={`${SCREEN} ${className}`}
-      style={style}
-    >
-      <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">{children}</div>
-      {nextHref ? <ScrollHint href={nextHref} /> : null}
-    </section>
-  );
-}
-
 function HeroScreen() {
   const t = useTranslations("marketing");
   const tApp = useTranslations("app");
@@ -102,16 +95,8 @@ function HeroScreen() {
   const [pending, startTransition] = useTransition();
   const { ref, visible } = useSectionReveal(0.35, { once: false });
 
-  useEffect(() => {
-    router.prefetch("/markets");
-  }, [router]);
-
   return (
-    <section
-      id="hero"
-      ref={ref}
-      className={`${SCREEN} overflow-hidden`}
-    >
+    <section id="hero" ref={ref} className={`${SCREEN} overflow-hidden`}>
       <HeroAtmosphere inView={visible} />
       <div className="relative z-[1] mx-auto w-full max-w-5xl px-4 sm:px-6">
         <Reveal inView={visible} delay={0}>
@@ -129,6 +114,8 @@ function HeroScreen() {
             <button
               type="button"
               disabled={pending}
+              onMouseEnter={() => router.prefetch("/markets")}
+              onFocus={() => router.prefetch("/markets")}
               onClick={() => startTransition(() => router.push("/markets"))}
               className="qt-btn qt-btn-primary h-11 px-5 text-sm disabled:opacity-70"
             >
@@ -170,8 +157,7 @@ export function MarketingLanding() {
       <MarketingSectionDots />
       <HeroScreen />
       <MarketingFeatureScreens />
-      <MarketingTrustScreen />
-      <MarketingStoryScreen />
+      <MarketingTrustAndStory />
     </div>
   );
 }

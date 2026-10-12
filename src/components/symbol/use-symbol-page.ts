@@ -141,6 +141,7 @@ export function useSymbolPage(
     enabled: wsEnabled,
     connected: wsConnected,
     degraded: wsDegraded,
+    push: wsPush,
   } = useQuoteChannels([{ type: "symbol", assetType, symbol }], onWsMessage);
 
   const loadEarningsMetrics = useCallback(async () => {
@@ -258,16 +259,29 @@ export function useSymbolPage(
     setTab("news");
   }, [symbol, assetType, initialQuote]);
 
+  const hasQuotePrice = quote != null && quote.price > 0;
+
   useEffect(() => {
     void loadQuote();
-    const ms = quotePollIntervalMs({
-      enabled: wsEnabled,
-      connected: wsConnected,
-      degraded: wsDegraded,
-    });
+    const ms =
+      !hasQuotePrice || !wsPush || wsDegraded
+        ? 3_000
+        : quotePollIntervalMs({
+            enabled: wsEnabled,
+            connected: wsConnected,
+            degraded: wsDegraded,
+            push: wsPush,
+          });
     const timer = setInterval(() => void loadQuote(), ms);
     return () => clearInterval(timer);
-  }, [loadQuote, wsEnabled, wsConnected, wsDegraded]);
+  }, [
+    loadQuote,
+    hasQuotePrice,
+    wsEnabled,
+    wsConnected,
+    wsDegraded,
+    wsPush,
+  ]);
 
   useEffect(() => {
     void loadEarningsMetrics();

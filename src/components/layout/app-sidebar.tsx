@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
+import { localizedPath } from "@/i18n/config";
 import { SiteLogo } from "@/components/brand/site-logo";
 
 export const SIDEBAR_WIDTH_EXPANDED = 270;
@@ -151,7 +152,9 @@ type Props = {
 
 export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
   const t = useTranslations("nav");
+  const locale = useLocale();
   const pathname = usePathname();
+  const homeHref = localizedPath(locale, "/");
 
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isAnalysis = pathname.startsWith("/analysis");
@@ -171,13 +174,17 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
         }`}
         style={collapsed ? undefined : { paddingTop: 7, paddingLeft: 12, paddingBottom: 2 }}
       >
-        <Link href="/" className={`min-w-0 ${collapsed ? "" : "flex-1"}`}>
+        {/* Full navigation: soft Link is cancelled when AppShell swaps Main→Marketing. */}
+        <a
+          href={homeHref}
+          className={`relative z-10 min-w-0 ${collapsed ? "" : "flex-1"}`}
+        >
           <SiteLogo
             height={collapsed ? 32 : 40}
             priority
             variant={collapsed ? "mark" : "full"}
           />
-        </Link>
+        </a>
         <button
           type="button"
           onClick={() => onCollapsedChange(!collapsed)}

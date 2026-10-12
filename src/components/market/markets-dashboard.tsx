@@ -137,7 +137,7 @@ export default function MarketsDashboard() {
   }
 
   const loadBoards = useCallback(
-    async (assetType: Tab, silent = false) => {
+    async (assetType: Tab, silent = false): Promise<boolean> => {
       if (!silent) {
         setLoading(true);
         setError(null);
@@ -152,15 +152,22 @@ export default function MarketsDashboard() {
         const qr = await fetch(quoteUrl);
         const qj = await qr.json();
         if (!qr.ok) throw new Error(qj.error || "quotes failed");
+        let gotData = false;
         if (assetType === "crypto") {
           const quotes = (qj.quotes ?? []) as RankQuote[];
           setBoards({ hot: quotes, gainers: [], losers: [] });
+          gotData = quotes.length > 0;
         } else {
-          setBoards({
-            hot: qj.boards?.hot ?? [],
-            gainers: qj.boards?.gainers ?? [],
-            losers: qj.boards?.losers ?? [],
-          });
+          const next = {
+            hot: (qj.boards?.hot ?? []) as RankQuote[],
+            gainers: (qj.boards?.gainers ?? []) as RankQuote[],
+            losers: (qj.boards?.losers ?? []) as RankQuote[],
+          };
+          setBoards(next);
+          gotData =
+            next.hot.length > 0 ||
+            next.gainers.length > 0 ||
+            next.losers.length > 0;
         }
         setUpdatedAt(new Date());
         if (!silent) setLoading(false);
@@ -194,11 +201,13 @@ export default function MarketsDashboard() {
             ).length,
           );
         }
+        return gotData;
       } catch (err) {
         if (!silent) {
           setError(err instanceof Error ? err.message : tCommon("error"));
           setBoards(EMPTY_BOARDS);
         }
+        return false;
       } finally {
         if (!silent) setLoading(false);
       }
@@ -206,10 +215,33 @@ export default function MarketsDashboard() {
     [tCommon],
   );
 
+  // Fetch on tab change; retry only while empty — stop polling once data arrives.
   useEffect(() => {
-    void loadBoards(tab);
-    const timer = setInterval(() => void loadBoards(tab, true), 45000);
-    return () => clearInterval(timer);
+    let cancelled = false;
+    let timer: ReturnType<typeof setInterval> | null = null;
+
+    const stopPoll = () => {
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+
+    void (async () => {
+      const ok = await loadBoards(tab);
+      if (cancelled || ok) return;
+      timer = setInterval(() => {
+        void (async () => {
+          const got = await loadBoards(tab, true);
+          if (got) stopPoll();
+        })();
+      }, 45_000);
+    })();
+
+    return () => {
+      cancelled = true;
+      stopPoll();
+    };
   }, [tab, loadBoards]);
 
   const kpiQuotes = boards.hot;

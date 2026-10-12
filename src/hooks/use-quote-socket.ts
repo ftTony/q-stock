@@ -21,14 +21,19 @@ export type UseQuoteChannelsResult = {
   enabled: boolean;
   /** Live socket open */
   connected: boolean;
-  /** Use HTTP poll: offline, reconnecting, or WS disabled */
+  /** Hub reported Longbridge push available */
+  push: boolean;
+  /**
+   * Prefer HTTP poll: WS offline / reconnecting / disabled,
+   * or connected but push unavailable (REST-only hub).
+   */
   degraded: boolean;
   status: QuoteSocketStatus;
 };
 
 /**
  * Subscribe to quote-ws channels with shared ref-count (same symbol, many components).
- * On disconnect → `degraded=true` so callers can fall back to HTTP polling.
+ * On disconnect or missing push → `degraded=true` so callers fall back to HTTP.
  */
 export function useQuoteChannels(
   channels: StreamChannel[] | null | undefined,
@@ -38,6 +43,7 @@ export function useQuoteChannels(
   const [status, setStatus] = useState<QuoteSocketStatus>(
     enabled ? "connecting" : "disabled",
   );
+  const [push, setPush] = useState(false);
   const onMessageRef = useRef(onMessage);
   onMessageRef.current = onMessage;
 
@@ -61,14 +67,21 @@ export function useQuoteChannels(
   useEffect(() => {
     if (!enabled) {
       setStatus("disabled");
+      setPush(false);
       return;
     }
     const client = getQuoteSocketClient();
     if (!client) {
       setStatus("disabled");
+      setPush(false);
       return;
     }
-    return client.onStatus(setStatus);
+    const offStatus = client.onStatus(setStatus);
+    const offPush = client.onPush(setPush);
+    return () => {
+      offStatus();
+      offPush();
+    };
   }, [enabled]);
 
   useEffect(() => {
@@ -82,20 +95,23 @@ export function useQuoteChannels(
   }, [enabled, stableChannels]);
 
   const connected = status === "connected";
-  // Poll backup whenever not fully live (disabled / connecting / reconnecting).
-  const degraded = status !== "connected";
+  // No live push → HTTP (and hub REST) must carry prices.
+  const degraded = status !== "connected" || !push;
 
-  return { enabled, connected, degraded, status };
+  return { enabled, connected, degraded, push, status };
 }
 
-/** Suggested HTTP poll interval while live vs degraded. */
+/** Suggested HTTP poll interval while live vs degraded / no-push. */
 export function quotePollIntervalMs(opts: {
   enabled: boolean;
   connected: boolean;
   degraded: boolean;
+  /** When false, poll REST more often even if the socket is open. */
+  push?: boolean;
 }): number {
-  if (!opts.enabled) return 20_000;
-  if (opts.connected && !opts.degraded) return 60_000;
-  // reconnecting / offline — tighter backup
-  return 12_000;
+  if (!opts.enabled) return 8_000;
+  const pushOk = opts.push !== false && !opts.degraded && opts.connected;
+  if (pushOk) return 60_000;
+  // reconnecting / offline / push unavailable — tighter REST backup
+  return 5_000;
 }

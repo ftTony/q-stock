@@ -134,18 +134,37 @@ export function TopbarIndexTicker() {
     enabled: wsEnabled,
     connected: wsConnected,
     degraded: wsDegraded,
+    push: wsPush,
   } = useQuoteChannels([{ type: "indices" }], onWsMessage);
+
+  const hasAnyPrice = bundles.some((b) =>
+    b.indices.some(
+      (i) => i.price != null && Number.isFinite(i.price) && i.price > 0,
+    ),
+  );
 
   useEffect(() => {
     void loadHttp();
-    const ms = quotePollIntervalMs({
-      enabled: wsEnabled,
-      connected: wsConnected,
-      degraded: wsDegraded,
-    });
+    // No push / no prices yet → hit REST until quotes appear.
+    const ms =
+      !hasAnyPrice || !wsPush || wsDegraded
+        ? 3_000
+        : quotePollIntervalMs({
+            enabled: wsEnabled,
+            connected: wsConnected,
+            degraded: wsDegraded,
+            push: wsPush,
+          });
     const refresh = window.setInterval(() => void loadHttp(), ms);
     return () => window.clearInterval(refresh);
-  }, [loadHttp, wsEnabled, wsConnected, wsDegraded]);
+  }, [
+    loadHttp,
+    hasAnyPrice,
+    wsEnabled,
+    wsConnected,
+    wsDegraded,
+    wsPush,
+  ]);
 
   useEffect(() => {
     const id = window.setInterval(() => {
