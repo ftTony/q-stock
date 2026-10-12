@@ -33,9 +33,28 @@ function isAuthPath(pathname: string) {
   );
 }
 
+/** Product chrome routes (sidebar + quote ticker). */
+function isAppPath(pathname: string) {
+  const prefixes = [
+    "/markets",
+    "/watchlist",
+    "/portfolio",
+    "/alerts",
+    "/review",
+    "/analysis",
+    "/symbol",
+    "/settings",
+    "/about",
+  ];
+  return prefixes.some(
+    (p) => pathname === p || pathname.startsWith(`${p}/`),
+  );
+}
+
 /**
  * Route shell by path so marketing/auth never pull sidebar + quote socket
- * into the initial JS graph.
+ * into the initial JS graph. Unknown paths (404) use the same marketing
+ * header as the homepage.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -50,7 +69,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (isMarketingPath(pathname)) {
+  if (isMarketingPath(pathname) || !isAppPath(pathname)) {
     return <MarketingAppShell>{children}</MarketingAppShell>;
   }
 

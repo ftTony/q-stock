@@ -1,5 +1,6 @@
 import { Link } from "@/i18n/routing";
 import NextLink from "next/link";
+import { MarketingCtaBand } from "@/components/marketing/marketing-cta-band";
 
 type Props = {
   code?: string;
@@ -9,9 +10,14 @@ type Props = {
   marketsLabel: string;
   ctaEnter: string;
   brandName: string;
-  /** Use Next.js links when outside next-intl (root not-found). */
+  /**
+   * Root not-found (no next-intl / marketing shell): own header + no CTA band.
+   * Locale 404 uses MarketingAppShell header + MarketingCtaBand footer.
+   */
   plainLinks?: boolean;
 };
+
+const LOGO_SRC = "/logo-light.png?v=2";
 
 function BrandMark({ name }: { name: string }) {
   return (
@@ -21,7 +27,7 @@ function BrandMark({ name }: { name: string }) {
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
-        src="/logo.png"
+        src={LOGO_SRC}
         alt=""
         width={28}
         height={28}
@@ -35,6 +41,7 @@ function BrandMark({ name }: { name: string }) {
   );
 }
 
+/** 404 body; locale pages rely on MarketingAppShell + CTA footer. */
 export function NotFoundView({
   code = "404",
   title,
@@ -52,47 +59,25 @@ export function NotFoundView({
 
   const logo = <BrandMark name={brandName} />;
 
-  const pageBg =
-    "radial-gradient(900px 420px at 12% -8%, color-mix(in srgb, var(--brand) 10%, transparent), transparent), radial-gradient(700px 360px at 100% 0%, rgba(52, 211, 153, 0.05), transparent), var(--background)";
-
   return (
-    <div
-      className="fixed inset-0 z-[100] flex min-h-dvh flex-col overflow-y-auto"
-      style={{ background: pageBg }}
-    >
-      <header
-        className="sticky top-0 z-10 shrink-0 border-b border-[var(--border)] backdrop-blur-xl"
-        style={{
-          backgroundColor:
-            "color-mix(in srgb, var(--background) 85%, transparent)",
-        }}
-      >
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
-          {plainLinks ? (
+    <div className="flex min-h-0 flex-1 flex-col">
+      {plainLinks ? (
+        <header className="sticky top-0 z-10 shrink-0 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
+          <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
             <NextLink href="/" className="flex shrink-0 items-center">
               {logo}
             </NextLink>
-          ) : (
-            <Link href="/" className="flex shrink-0 items-center">
-              {logo}
-            </Link>
-          )}
-          {plainLinks ? (
-            <NextLink href="/markets" className="qt-btn qt-btn-primary h-9 px-3 text-xs">
-              {ctaEnter}
-            </NextLink>
-          ) : (
-            <Link
+            <NextLink
               href="/markets"
               className="qt-btn qt-btn-primary h-9 px-3 text-xs"
             >
               {ctaEnter}
-            </Link>
-          )}
-        </div>
-      </header>
+            </NextLink>
+          </div>
+        </header>
+      ) : null}
 
-      <div className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center overflow-hidden px-4 py-16 sm:px-6">
+      <div className="relative mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-4 py-16 sm:px-6">
         <p
           className="select-none text-[clamp(5.5rem,18vw,9rem)] font-semibold leading-none tracking-tight"
           style={{
@@ -137,6 +122,8 @@ export function NotFoundView({
           </div>
         </div>
       </div>
+
+      {plainLinks ? null : <MarketingCtaBand />}
     </div>
   );
 }

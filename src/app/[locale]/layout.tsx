@@ -15,9 +15,8 @@ import { buildLocaleMetadata } from "@/lib/seo/locale-metadata";
 import "../globals.css";
 
 /**
- * 这是应用的最外层布局（`src/app/layout.tsx` 已移除，见 docs/deployment.md）。
- * `<html>` / `<body>`、全局 CSS、字体、GA、主题前置脚本都必须在这里挂载 ——
- * 放在更深的布局里会导致整棵路由树被判为动态渲染。
+ * 真正的根文档布局：`<html>` / `<body>`、全局 CSS、字体、GA、主题脚本都在这里。
+ * 上层 `src/app/layout.tsx` 仅为 pass-through（满足 Next 对 `_not-found` 的要求）。
  *
  * 注意：`lang` 取自 `params.locale`（构建期可推导），**不要**改成 `getLocale()`，
  * 那会读请求头并把 ISR 打回动态渲染。

@@ -15,13 +15,6 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/tools") ||
     pathname.startsWith("/disclaimer") ||
     pathname.startsWith("/pricing");
-  const hideMarketChrome =
-    isLandingHome ||
-    pathname.startsWith("/learn") ||
-    pathname.startsWith("/tools") ||
-    pathname.startsWith("/disclaimer") ||
-    pathname.startsWith("/pricing") ||
-    pathname.startsWith("/advanced-quotes");
 
   return (
     <div
@@ -48,8 +41,8 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <TopBarActions
-              showMarketStatus={!hideMarketChrome}
-              showNotifications={!hideMarketChrome}
+              showMarketStatus={false}
+              showNotifications={false}
             />
           </div>
         </div>
