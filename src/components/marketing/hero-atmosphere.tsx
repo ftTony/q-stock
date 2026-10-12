@@ -64,6 +64,7 @@ export function HeroAtmosphere({ inView }: { inView: boolean }) {
           {/* Index-style path — draws once, then stays still */}
           <path
             className="mkt-hero-stroke"
+            pathLength="1"
             d="M60 380 C 140 360, 180 420, 240 340 S 340 220, 400 260 S 500 320, 560 240 S 660 160, 740 190"
             stroke="currentColor"
             strokeOpacity="0.45"
@@ -72,13 +73,40 @@ export function HeroAtmosphere({ inView }: { inView: boolean }) {
             strokeLinejoin="round"
           />
 
-          <circle
-            className="mkt-hero-tip"
-            cx="740"
-            cy="190"
-            r="4.5"
-            fill="currentColor"
-          />
+          <g className="mkt-hero-tip">
+            <circle cx="740" cy="190" r="10" fill="currentColor" opacity="0.2">
+              <animate
+                attributeName="opacity"
+                values="0.1;0.28;0.1"
+                dur="2.2s"
+                begin="1.7s"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="r"
+                values="8;13;8"
+                dur="2.2s"
+                begin="1.7s"
+                repeatCount="indefinite"
+              />
+            </circle>
+            <circle cx="740" cy="190" r="4.5" fill="currentColor" opacity="0.85">
+              <animate
+                attributeName="opacity"
+                values="0.5;1;0.5"
+                dur="2.2s"
+                begin="1.7s"
+                repeatCount="indefinite"
+              />
+              <animate
+                attributeName="r"
+                values="4;6;4"
+                dur="2.2s"
+                begin="1.7s"
+                repeatCount="indefinite"
+              />
+            </circle>
+          </g>
 
           {/* Candle stubs */}
           {[
