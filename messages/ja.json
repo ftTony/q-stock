@@ -9,8 +9,8 @@
   },
   "nav": {
     "main": "ナビゲーション",
-    "markets": "市場ダッシュボード",
-    "analysis": "銘柄分析",
+    "markets": "市場",
+    "analysis": "分析",
     "watchlist": "ウォッチリスト",
     "portfolio": "ポートフォリオ",
     "alerts": "アラート",

@@ -9,8 +9,8 @@
   },
   "nav": {
     "main": "导航",
-    "markets": "市场总览",
-    "analysis": "标的分析",
+    "markets": "行情",
+    "analysis": "分析",
     "watchlist": "自选列表",
     "portfolio": "资产概览",
     "alerts": "价格提醒",

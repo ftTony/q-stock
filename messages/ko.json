@@ -9,8 +9,8 @@
   },
   "nav": {
     "main": "탐색",
-    "markets": "시장 대시보드",
-    "analysis": "종목 분석",
+    "markets": "시장",
+    "analysis": "분석",
     "watchlist": "관심 목록",
     "portfolio": "포트폴리오",
     "alerts": "알림",

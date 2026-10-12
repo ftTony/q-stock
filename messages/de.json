@@ -9,8 +9,8 @@
   },
   "nav": {
     "main": "Navigieren",
-    "markets": "Markt-Dashboard",
-    "analysis": "Aktienanalyse",
+    "markets": "Markt",
+    "analysis": "Analyse",
     "watchlist": "Beobachtungsliste",
     "portfolio": "Portfolio",
     "alerts": "Alarme",
