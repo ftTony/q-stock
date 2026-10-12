@@ -20,7 +20,8 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/learn") ||
     pathname.startsWith("/tools") ||
     pathname.startsWith("/disclaimer") ||
-    pathname.startsWith("/pricing");
+    pathname.startsWith("/pricing") ||
+    pathname.startsWith("/advanced-quotes");
 
   return (
     <div

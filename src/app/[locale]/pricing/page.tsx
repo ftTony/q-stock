@@ -29,6 +29,7 @@ export default async function PricingPage({ params }: Props) {
   const plans: [PricingPlanCopy, PricingPlanCopy, PricingPlanCopy] = [
     {
       name: t("plans.source.name"),
+      originalPrice: t("plans.source.originalPrice"),
       price: t("plans.source.price"),
       priceNote: t("plans.source.priceNote"),
       description: t("plans.source.description"),
@@ -42,6 +43,7 @@ export default async function PricingPage({ params }: Props) {
     },
     {
       name: t("plans.deploy.name"),
+      originalPrice: t("plans.deploy.originalPrice"),
       price: t("plans.deploy.price"),
       priceNote: t("plans.deploy.priceNote"),
       description: t("plans.deploy.description"),

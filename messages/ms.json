@@ -787,7 +787,8 @@
       "bodyLoggedIn": "Open AI on any symbol page with quotes, news, and filings context—clear basis and invalidation, never order tickets. Invites add more uses.",
       "ctaLoggedIn": "Try AI in markets"
     },
-    "footerPricing": "Pricing"
+    "footerPricing": "Pricing",
+    "footerAdvancedQuotes": "Advanced quotes"
   },
   "disclaimer": {
     "title": "Disclaimer",
@@ -852,7 +853,8 @@
         "f2": "Local run and basic setup notes",
         "f3": "Free to extend on your own",
         "f4": "No managed deploy or ops",
-        "cta": "Email to purchase"
+        "cta": "Email to purchase",
+        "originalPrice": "¥398"
       },
       "deploy": {
         "name": "Source + deploy",
@@ -863,7 +865,8 @@
         "f2": "One production deploy assist",
         "f3": "Basic domain / HTTPS guidance",
         "f4": "Handover notes after go-live",
-        "cta": "Email to start"
+        "cta": "Email to start",
+        "originalPrice": "¥998"
       },
       "custom": {
         "name": "Custom features",
@@ -878,5 +881,34 @@
         "cta": "Email your requirements"
       }
     }
+  },
+  "advancedQuotes": {
+    "title": "Advanced quotes",
+    "subtitle": "What Level-2 / depth quotes are, what this site offers today, and how to enable them.",
+    "statusTitle": "Not advanced quotes today",
+    "statusBody": "q-stock currently runs on basic quotes (typically Level-1: last, change, volume) for learning and demo watching. Depth books, tick detail, and lower-latency feeds require a separate enablement and are off by default.",
+    "whatTitle": "What are advanced quotes?",
+    "what1": "Beyond a single last price, they usually include multi-level bid/ask depth, broker queues, or trade-by-trade detail.",
+    "what2": "Update rates and latency are closer to exchange or broker pro terminals—useful for reading short-term supply and demand.",
+    "what3": "Access is licensed by exchanges/brokers and often billed by market, product, and concurrent devices.",
+    "what4": "US, HK, and A-share advanced products differ in name and fields; confirm coverage per market.",
+    "whyTitle": "Why they matter",
+    "why1": "See multi-level liquidity and how orders are taken—not just one last print.",
+    "why2": "Watch large prints and whether support/resistance is absorbed or swept.",
+    "why3": "Depth-aware strategies, backtests, or teaching demos need finer microstructure than Level-1.",
+    "why4": "In pro trading and risk workflows, latency and depth affect timing judgment (still subject to local law; not investment advice).",
+    "compareTitle": "Basic vs advanced",
+    "basicLabel": "Now · Basic quotes",
+    "basic1": "Last, change %, volume and similar overview fields",
+    "basic2": "Fits learning, watchlists, and everyday scanning",
+    "basic3": "Limited or no depth / tick detail",
+    "advancedLabel": "After enable · Advanced",
+    "advanced1": "Multi-level book and richer trade detail",
+    "advanced2": "Push experience closer to pro terminals",
+    "advanced3": "Market-licensed capabilities on demand",
+    "buyTitle": "How to purchase / enable",
+    "buyBody": "Advanced quotes need exchange/broker licensing; fees and coverage vary. Email your target markets (US/HK/CN), use case (study vs deploy demo), and device count—we will assess options and a quote.",
+    "buyCta": "Email about advanced quotes",
+    "footnote": "This site does not open brokerage accounts, take deposits, or match orders. Quotes and tools are for learning only—follow local law and the disclaimer."
   }
 }

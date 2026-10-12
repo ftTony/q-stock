@@ -5,6 +5,8 @@ const CONTACT_EMAIL = "172993974@qq.com";
 export type PricingPlanCopy = {
   name: string;
   price: string;
+  /** Struck-through list price; omit for custom / no discount. */
+  originalPrice?: string;
   priceNote: string;
   description: string;
   features: string[];
@@ -50,7 +52,12 @@ function PlanCard({
         </p>
       </div>
 
-      <div className="mt-4 flex items-baseline gap-1.5">
+      <div className="mt-4 flex flex-wrap items-baseline gap-x-2.5 gap-y-1">
+        {plan.originalPrice ? (
+          <span className="text-base tabular-nums text-[var(--muted)] line-through decoration-[var(--muted)]">
+            {plan.originalPrice}
+          </span>
+        ) : null}
         <span className="text-3xl font-semibold tracking-tight tabular-nums">
           {plan.price}
         </span>
