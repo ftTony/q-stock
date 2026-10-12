@@ -240,10 +240,10 @@ export function TopBarActions({
         </div>
       )}
 
-      <div className="relative hidden md:block" ref={langRef}>
+      <div className="relative" ref={langRef}>
         <button
           type="button"
-          className="qt-btn qt-btn-ghost flex h-9 items-center gap-1.5 px-2 text-xs"
+          className="qt-btn qt-btn-ghost flex h-9 items-center gap-1 px-1.5 text-xs sm:gap-1.5 sm:px-2"
           aria-label="Language"
           aria-haspopup="listbox"
           aria-expanded={langOpen}
@@ -257,7 +257,7 @@ export function TopBarActions({
             {localeCode(locale)}
           </span>
           <svg
-            className={`h-3 w-3 text-[var(--muted)] transition-transform ${langOpen ? "rotate-180" : ""}`}
+            className={`hidden h-3 w-3 text-[var(--muted)] transition-transform sm:block ${langOpen ? "rotate-180" : ""}`}
             viewBox="0 0 24 24"
             fill="none"
             stroke="currentColor"
@@ -325,6 +325,7 @@ export function TopBarActions({
             onClick={() => {
               setMenuOpen((v) => !v);
               setNotifOpen(false);
+              setLangOpen(false);
             }}
             aria-label={
               session.user.name ||

@@ -278,6 +278,52 @@ a.qt-btn-ghost:hover,
   filter: blur(0);
 }
 
+/* Landing hero atmosphere enter */
+.mkt-hero-atmos {
+  opacity: 0;
+  transform: translateX(1.25rem);
+  transition:
+    opacity 1s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 1s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.mkt-hero-atmos.is-in {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.mkt-hero-stroke {
+  stroke-dasharray: 1200;
+  stroke-dashoffset: 1200;
+}
+
+.mkt-hero-tip {
+  opacity: 0;
+}
+
+.mkt-hero-atmos.is-in .mkt-hero-stroke {
+  animation: mktHeroStroke 3.2s cubic-bezier(0.33, 1, 0.45, 1) 0.35s forwards;
+}
+
+.mkt-hero-atmos.is-in .mkt-hero-tip {
+  animation: mktHeroTipIn 0.6s ease 3.4s forwards;
+}
+
+@keyframes mktHeroStroke {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes mktHeroTipIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 0.55;
+  }
+}
+
 @keyframes mktChevron {
   0%,
   100% {
@@ -319,6 +365,22 @@ html.mkt-lock body {
     transform: none;
     filter: none;
     transition: none;
+  }
+
+  .mkt-hero-atmos {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+
+  .mkt-hero-atmos.is-in .mkt-hero-stroke {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+
+  .mkt-hero-atmos.is-in .mkt-hero-tip {
+    animation: none;
+    opacity: 0.55;
   }
 
   .mkt-chevron {

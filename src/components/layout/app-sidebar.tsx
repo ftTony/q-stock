@@ -171,11 +171,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
         }`}
         style={collapsed ? undefined : { paddingTop: 7, paddingLeft: 12, paddingBottom: 2 }}
       >
-        <Link
-          href="/markets"
-          className={`min-w-0 ${collapsed ? "" : "flex-1"}`}
-          aria-label={t("markets")}
-        >
+        <Link href="/" className={`min-w-0 ${collapsed ? "" : "flex-1"}`}>
           <SiteLogo
             height={collapsed ? 32 : 40}
             priority

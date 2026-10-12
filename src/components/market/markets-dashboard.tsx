@@ -141,26 +141,16 @@ export default function MarketsDashboard() {
       if (!silent) {
         setLoading(true);
         setError(null);
-        setBoards(EMPTY_BOARDS);
+        // Keep prior boards so tab switches / reloads don't flash empty.
       }
       try {
         const quoteUrl =
           assetType === "crypto"
             ? `/api/quotes?popular=1&assetType=crypto`
             : `/api/ranks?assetType=${assetType}&board=all&limit=7`;
-        const [qr, sr, nr, ar] = await Promise.all([
-          fetch(quoteUrl),
-          assetType === "hk" || assetType === "cn"
-            ? Promise.resolve(null)
-            : fetch(`/api/sentiment?assetType=${assetType}`),
-          assetType === "cn"
-            ? Promise.resolve(null)
-            : fetch(`/api/news?assetType=${assetType}`),
-          fetch("/api/alerts").catch(() => null),
-        ]);
+        // Ranks first — don't block the board UI on news/sentiment/alerts.
+        const qr = await fetch(quoteUrl);
         const qj = await qr.json();
-        const sj = sr ? await sr.json() : null;
-        const nj = nr ? await nr.json() : { news: [] };
         if (!qr.ok) throw new Error(qj.error || "quotes failed");
         if (assetType === "crypto") {
           const quotes = (qj.quotes ?? []) as RankQuote[];
@@ -172,12 +162,31 @@ export default function MarketsDashboard() {
             losers: qj.boards?.losers ?? [],
           });
         }
-        setSentiment(
-          assetType === "hk" || assetType === "cn" ? null : (sj?.market ?? null),
-        );
-        setNews((nj.news ?? []).slice(0, 4));
         setUpdatedAt(new Date());
-        if (ar && ar.ok) {
+        if (!silent) setLoading(false);
+
+        const [sr, nr, ar] = await Promise.all([
+          assetType === "hk" || assetType === "cn"
+            ? Promise.resolve(null)
+            : fetch(`/api/sentiment?assetType=${assetType}`).catch(() => null),
+          assetType === "cn"
+            ? Promise.resolve(null)
+            : fetch(`/api/news?assetType=${assetType}`).catch(() => null),
+          fetch("/api/alerts").catch(() => null),
+        ]);
+        if (sr?.ok) {
+          const sj = await sr.json();
+          setSentiment(sj?.market ?? null);
+        } else if (assetType === "hk" || assetType === "cn") {
+          setSentiment(null);
+        }
+        if (nr?.ok) {
+          const nj = await nr.json();
+          setNews((nj.news ?? []).slice(0, 4));
+        } else if (assetType === "cn") {
+          setNews([]);
+        }
+        if (ar?.ok) {
           const aj = await ar.json();
           setAlertCount(
             (aj.alerts ?? []).filter(

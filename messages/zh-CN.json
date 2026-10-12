@@ -739,7 +739,9 @@
         "scenario": "情景：假设涨跌怎么看"
       },
       "cta": "登录体验 AI",
-      "ctaSecondary": "先看行情"
+      "ctaSecondary": "先看行情",
+      "bodyLoggedIn": "在个股页打开 AI，结合行情、新闻与财报上下文；说清依据与失效条件，不替你下单。邀请好友可增加次数。",
+      "ctaLoggedIn": "去行情体验 AI"
     },
     "trustTitle": "为何可信",
     "trust": {

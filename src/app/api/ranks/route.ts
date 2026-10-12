@@ -40,6 +40,25 @@ function sortBoards(quotes: Quote[], limit: number) {
   return { hot, gainers, losers };
 }
 
+/** Broker rank APIs can hang; fail fast so popular quotes can serve. */
+const RANK_PROVIDER_TIMEOUT_MS = 4_000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => reject(new Error(`${label} timeout`)), ms);
+    promise.then(
+      (v) => {
+        clearTimeout(timer);
+        resolve(v);
+      },
+      (err) => {
+        clearTimeout(timer);
+        reject(err);
+      },
+    );
+  });
+}
+
 export async function GET(req: Request) {
   try {
     const session = await auth();
@@ -71,13 +90,21 @@ export async function GET(req: Request) {
       if (isLongbridgeRankConfigured()) {
         try {
           if (board === "all") {
-            const boards = await getLongbridgeRankBoards(assetType, limit);
+            const boards = await withTimeout(
+              getLongbridgeRankBoards(assetType, limit),
+              RANK_PROVIDER_TIMEOUT_MS,
+              "longbridge ranks",
+            );
             return NextResponse.json({
               boards,
               source: "longbridge",
             });
           }
-          const quotes = await getLongbridgeRankList(assetType, board, limit);
+          const quotes = await withTimeout(
+            getLongbridgeRankList(assetType, board, limit),
+            RANK_PROVIDER_TIMEOUT_MS,
+            "longbridge ranks",
+          );
           return NextResponse.json({
             quotes,
             board,
@@ -94,10 +121,18 @@ export async function GET(req: Request) {
       if (assetType !== "cn" && isFutuConfigured()) {
         try {
           if (board === "all") {
-            const boards = await getFutuRankBoards(assetType, limit);
+            const boards = await withTimeout(
+              getFutuRankBoards(assetType, limit),
+              RANK_PROVIDER_TIMEOUT_MS,
+              "futu ranks",
+            );
             return NextResponse.json({ boards, source: "futu" });
           }
-          const quotes = await getFutuRankList(assetType, board, limit);
+          const quotes = await withTimeout(
+            getFutuRankList(assetType, board, limit),
+            RANK_PROVIDER_TIMEOUT_MS,
+            "futu ranks",
+          );
           return NextResponse.json({ quotes, board, source: "futu" });
         } catch (err) {
           console.warn(

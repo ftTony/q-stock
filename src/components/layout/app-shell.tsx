@@ -64,6 +64,7 @@ function isMarketingPath(pathname: string) {
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("nav");
+  const tApp = useTranslations("app");
   const pathname = usePathname();
   const { status: sessionStatus } = useSession();
   const [collapsed, setCollapsed] = useSidebarCollapsed();
@@ -118,8 +119,21 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       >
         <header className="sticky top-0 z-40 shrink-0 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
           <div className="mx-auto flex h-14 max-w-5xl items-center justify-between gap-3 px-4 sm:px-6">
-            <Link href="/" className="flex shrink-0 items-center">
+            <Link
+              href="/"
+              className="flex min-w-0 items-center gap-2.5 sm:gap-3"
+            >
               <SiteLogo height={28} variant="compact" />
+              <span
+                className="hidden h-3.5 w-px shrink-0 bg-[var(--border)] sm:block"
+                aria-hidden
+              />
+              <span
+                className="hidden min-w-0 truncate text-[13px] text-[var(--muted)] sm:inline"
+                aria-hidden
+              >
+                {tApp("tagline")}
+              </span>
             </Link>
             <div className="flex shrink-0 items-center gap-2 sm:gap-3">
               <TopBarActions
@@ -158,7 +172,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
           <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-3">
-              <Link href="/markets" className="flex shrink-0 items-center lg:hidden">
+              <Link href="/" className="flex shrink-0 items-center lg:hidden">
                 <SiteLogo height={28} variant="compact" />
               </Link>
               <TopbarIndexTicker />

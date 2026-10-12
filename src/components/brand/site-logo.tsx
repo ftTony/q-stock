@@ -4,12 +4,14 @@ import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 
+/** Bump when replacing logo assets so browsers skip stale cached PNGs. */
+const LOGO_ASSET_VER = "2";
+
 /** Light (default) → logo-light; dark theme → logo-dark. */
-export function brandMarkSrc(
-  theme: string | undefined,
-): "/logo-light.png" | "/logo-dark.png" {
+export function brandMarkSrc(theme: string | undefined): string {
   // undefined before theme resolves → light (site default), not dark.
-  return theme === "dark" ? "/logo-dark.png" : "/logo-light.png";
+  const file = theme === "dark" ? "/logo-dark.png" : "/logo-light.png";
+  return `${file}?v=${LOGO_ASSET_VER}`;
 }
 
 type SiteLogoProps = {
@@ -42,7 +44,7 @@ export function SiteLogo({
 
   // Match site default (light) before mount to avoid preloading logo-dark on light pages.
   const themed = brandMarkSrc(mounted ? resolvedTheme : "light");
-  const src = imgFailed ? "/logo-light.png" : themed;
+  const src = imgFailed ? `/logo-light.png?v=${LOGO_ASSET_VER}` : themed;
 
   return (
     <span
@@ -58,7 +60,7 @@ export function SiteLogo({
         height={height}
         decoding="async"
         {...(priority ? { fetchPriority: "high" as const } : {})}
-        className="shrink-0 object-contain"
+        className="shrink-0 bg-transparent object-contain"
         style={{ height, width: height }}
         onError={() => setImgFailed(true)}
       />

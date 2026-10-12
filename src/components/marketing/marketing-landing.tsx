@@ -1,14 +1,21 @@
 "use client";
 
-import { useEffect, type CSSProperties, type ReactNode, type Ref } from "react";
+import {
+  useEffect,
+  useTransition,
+  type CSSProperties,
+  type ReactNode,
+  type Ref,
+} from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { Link, useRouter } from "@/i18n/routing";
 import { MarketingFeatureScreens } from "@/components/marketing/marketing-feature-screens";
 import {
   MarketingStoryScreen,
   MarketingTrustScreen,
 } from "@/components/marketing/marketing-trust-story";
 import { MarketingSectionDots } from "@/components/marketing/marketing-section-dots";
+import { HeroAtmosphere } from "@/components/marketing/hero-atmosphere";
 import { useSectionReveal } from "@/components/marketing/use-section-reveal";
 
 const SCREEN =
@@ -90,59 +97,65 @@ function ScreenSection({
 function HeroScreen() {
   const t = useTranslations("marketing");
   const tApp = useTranslations("app");
-  const { ref, visible } = useSectionReveal(0.15);
+  const tCommon = useTranslations("common");
+  const router = useRouter();
+  const [pending, startTransition] = useTransition();
+  const { ref, visible } = useSectionReveal(0.35, { once: false });
+
+  useEffect(() => {
+    router.prefetch("/markets");
+  }, [router]);
 
   return (
-    <ScreenSection
+    <section
       id="hero"
-      sectionRef={ref}
-      nextHref="#features"
-      className="overflow-hidden"
-      style={{
-        background:
-          "radial-gradient(720px 360px at 18% -10%, color-mix(in srgb, var(--brand) 16%, transparent), transparent), radial-gradient(520px 280px at 88% 12%, color-mix(in srgb, var(--brand) 8%, transparent), transparent)",
-      }}
+      ref={ref}
+      className={`${SCREEN} overflow-hidden`}
     >
-      <Reveal inView={visible} delay={0}>
-        <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
-          {tApp("name")}
-        </h1>
-      </Reveal>
-      <Reveal inView={visible} delay={90}>
-        <p className="mt-5 max-w-xl text-base leading-relaxed sm:text-lg">
-          {t("heroLine")}
-        </p>
-      </Reveal>
-      <Reveal inView={visible} delay={180}>
-        <p className="mt-3 max-w-xl text-sm leading-relaxed text-[var(--muted)] sm:text-[15px]">
-          {t("heroSupport")}
-        </p>
-      </Reveal>
-      <Reveal inView={visible} delay={260}>
-        <div className="mt-8 flex flex-wrap items-center gap-3">
-          <Link
-            href="/markets"
-            className="qt-btn qt-btn-primary h-11 px-5 text-sm"
-          >
-            {t("ctaEnter")}
-          </Link>
-          <a href="#features" className="qt-btn qt-btn-ghost h-11 px-5 text-sm">
-            {t("ctaStory")}
-          </a>
-        </div>
-      </Reveal>
-      <Reveal inView={visible} delay={340}>
-        <p className="mt-6 max-w-2xl text-xs leading-relaxed text-[var(--muted)]">
-          {t("disclaimerShort")}{" "}
-          <Link
-            href="/disclaimer"
-            className="underline-offset-2 hover:text-[var(--foreground)] hover:underline"
-          >
-            {t("footerDisclaimer")}
-          </Link>
-        </p>
-      </Reveal>
-    </ScreenSection>
+      <HeroAtmosphere inView={visible} />
+      <div className="relative z-[1] mx-auto w-full max-w-5xl px-4 sm:px-6">
+        <Reveal inView={visible} delay={0}>
+          <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
+            {tApp("name")}
+          </h1>
+        </Reveal>
+        <Reveal inView={visible} delay={90}>
+          <p className="mt-5 max-w-xl text-sm leading-relaxed text-[var(--muted)] sm:text-[15px]">
+            {t("heroSupport")}
+          </p>
+        </Reveal>
+        <Reveal inView={visible} delay={180}>
+          <div className="mt-8 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              disabled={pending}
+              onClick={() => startTransition(() => router.push("/markets"))}
+              className="qt-btn qt-btn-primary h-11 px-5 text-sm disabled:opacity-70"
+            >
+              {pending ? tCommon("loading") : t("ctaEnter")}
+            </button>
+            <a
+              href="#features"
+              className="qt-btn qt-btn-ghost h-11 px-5 text-sm"
+            >
+              {t("ctaStory")}
+            </a>
+          </div>
+        </Reveal>
+        <Reveal inView={visible} delay={260}>
+          <p className="mt-6 max-w-2xl text-xs leading-relaxed text-[var(--muted)]">
+            {t("disclaimerShort")}{" "}
+            <Link
+              href="/disclaimer"
+              className="underline-offset-2 hover:text-[var(--foreground)] hover:underline"
+            >
+              {t("footerDisclaimer")}
+            </Link>
+          </p>
+        </Reveal>
+      </div>
+      <ScrollHint href="#features" />
+    </section>
   );
 }
 

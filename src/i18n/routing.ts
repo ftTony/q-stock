@@ -7,9 +7,9 @@ export const routing = defineRouting({
   defaultLocale,
   // English (default) → `/`, `/login`; other locales keep `/zh-CN/...`
   localePrefix: "as-needed",
-  // URL-only locale; ignore Accept-Language and stale NEXT_LOCALE cookies.
-  localeDetection: false,
-  localeCookie: false,
+  // First visit: negotiate from Accept-Language; remember via NEXT_LOCALE.
+  localeDetection: true,
+  localeCookie: true,
 });
 
 export const { Link, redirect, usePathname, useRouter, getPathname } =

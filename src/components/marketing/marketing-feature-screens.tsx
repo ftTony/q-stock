@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode, Ref } from "react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useSectionReveal } from "@/components/marketing/use-section-reveal";
@@ -132,6 +133,9 @@ function FeatureIcon({ name }: { name: FeatureKey | "ai" }) {
 
 function AiHeroCard({ inView }: { inView: boolean }) {
   const t = useTranslations("marketing");
+  const { status } = useSession();
+  const loggedIn = status === "authenticated";
+  const sessionReady = status !== "loading";
 
   return (
     <Reveal inView={inView} delay={180}>
@@ -151,7 +155,9 @@ function AiHeroCard({ inView }: { inView: boolean }) {
               {t("aiHighlight.title")}
             </h3>
             <p className="mt-2 text-sm leading-relaxed text-[var(--muted)] sm:text-[15px]">
-              {t("aiHighlight.body")}
+              {loggedIn
+                ? t("aiHighlight.bodyLoggedIn")
+                : t("aiHighlight.body")}
             </p>
             <ul className="mt-5 grid gap-2 sm:grid-cols-3">
               {AI_POINTS.map((key) => (
@@ -164,20 +170,33 @@ function AiHeroCard({ inView }: { inView: boolean }) {
               ))}
             </ul>
           </div>
-          <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
-            <Link
-              href={HREF.ai}
-              className="qt-btn qt-btn-primary inline-flex h-11 items-center justify-center px-5 text-sm"
-            >
-              {t("aiHighlight.cta")}
-            </Link>
-            <Link
-              href={HREF.markets}
-              className="qt-btn qt-btn-ghost inline-flex h-11 items-center justify-center px-5 text-sm"
-            >
-              {t("aiHighlight.ctaSecondary")}
-            </Link>
-          </div>
+          {sessionReady ? (
+            <div className="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
+              {loggedIn ? (
+                <Link
+                  href={HREF.markets}
+                  className="qt-btn qt-btn-primary inline-flex h-11 items-center justify-center px-5 text-sm"
+                >
+                  {t("aiHighlight.ctaLoggedIn")}
+                </Link>
+              ) : (
+                <>
+                  <Link
+                    href={HREF.ai}
+                    className="qt-btn qt-btn-primary inline-flex h-11 items-center justify-center px-5 text-sm"
+                  >
+                    {t("aiHighlight.cta")}
+                  </Link>
+                  <Link
+                    href={HREF.markets}
+                    className="qt-btn qt-btn-ghost inline-flex h-11 items-center justify-center px-5 text-sm"
+                  >
+                    {t("aiHighlight.ctaSecondary")}
+                  </Link>
+                </>
+              )}
+            </div>
+          ) : null}
         </div>
       </div>
     </Reveal>
