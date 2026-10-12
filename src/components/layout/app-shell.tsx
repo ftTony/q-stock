@@ -58,7 +58,8 @@ function isMarketingPath(pathname: string) {
     pathname === "/" ||
     pathname.startsWith("/disclaimer") ||
     pathname.startsWith("/learn") ||
-    pathname.startsWith("/tools")
+    pathname.startsWith("/tools") ||
+    pathname.startsWith("/pricing")
   );
 }
 
@@ -109,12 +110,25 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   if (isMarketing) {
     const isLandingHome = pathname === "/";
+    /** Marketing rails locked to one viewport (no page scroll). */
+    const isOneScreen =
+      pathname.startsWith("/learn") ||
+      pathname.startsWith("/tools") ||
+      pathname.startsWith("/disclaimer") ||
+      pathname.startsWith("/pricing");
+    /** Content pages: no market status / alerts chrome. */
+    const hideMarketChrome =
+      isLandingHome ||
+      pathname.startsWith("/learn") ||
+      pathname.startsWith("/tools") ||
+      pathname.startsWith("/disclaimer") ||
+      pathname.startsWith("/pricing");
     return (
       <div
         className={
-          isLandingHome
+          isLandingHome || isOneScreen
             ? "flex h-dvh flex-col overflow-hidden"
-            : "min-h-dvh"
+            : "flex min-h-dvh flex-col"
         }
       >
         <header className="sticky top-0 z-40 shrink-0 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
@@ -137,8 +151,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </Link>
             <div className="flex shrink-0 items-center gap-2 sm:gap-3">
               <TopBarActions
-                showMarketStatus={!isLandingHome}
-                showNotifications={!isLandingHome}
+                showMarketStatus={!hideMarketChrome}
+                showNotifications={!hideMarketChrome}
               />
             </div>
           </div>
@@ -147,7 +161,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           className={
             isLandingHome
               ? "mkt-scroll min-h-0 flex-1 snap-y snap-mandatory overflow-y-auto overscroll-y-contain"
-              : "flex-1"
+              : isOneScreen
+                ? "flex min-h-0 flex-1 flex-col overflow-hidden"
+                : "flex min-h-0 flex-1 flex-col"
           }
         >
           {children}

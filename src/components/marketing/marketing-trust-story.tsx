@@ -2,7 +2,7 @@
 
 import type { CSSProperties, ReactNode, Ref } from "react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { MarketingCtaBand } from "@/components/marketing/marketing-cta-band";
 import { useSectionReveal } from "@/components/marketing/use-section-reveal";
 
 const TRUST_KEYS = ["learnOnly", "dataBound", "calm", "privacy"] as const;
@@ -188,43 +188,8 @@ export function MarketingStoryScreen() {
         </div>
       </div>
 
-      <div
-        className="mt-10 shrink-0 border-t border-[var(--border)]"
-        style={{
-          background: "color-mix(in srgb, var(--panel) 70%, transparent)",
-        }}
-      >
-        <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8 sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:px-6 sm:py-10">
-          <div className="min-w-0">
-            <p className="text-lg font-semibold tracking-tight sm:text-xl">
-              {t("ctaBandTitle")}
-            </p>
-            <p className="mt-1.5 text-sm text-[var(--muted)]">{t("ctaBandBody")}</p>
-            <nav className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[var(--muted)]">
-              <Link href="/about" className="hover:text-[var(--foreground)]">
-                {t("footerAbout")}
-              </Link>
-              <Link href="/learn" className="hover:text-[var(--foreground)]">
-                {t("footerLearn")}
-              </Link>
-              <Link href="/tools" className="hover:text-[var(--foreground)]">
-                {t("footerTools")}
-              </Link>
-              <Link href="/disclaimer" className="hover:text-[var(--foreground)]">
-                {t("footerDisclaimer")}
-              </Link>
-              <Link href="/markets" className="hover:text-[var(--foreground)]">
-                {t("footerMarkets")}
-              </Link>
-            </nav>
-          </div>
-          <Link
-            href="/markets"
-            className="qt-btn qt-btn-primary h-11 shrink-0 self-start px-5 text-sm sm:self-center"
-          >
-            {t("ctaEnter")}
-          </Link>
-        </div>
+      <div className="mt-10 shrink-0">
+        <MarketingCtaBand />
       </div>
     </section>
   );

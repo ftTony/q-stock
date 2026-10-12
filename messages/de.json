@@ -786,16 +786,19 @@
       "ctaSecondary": "Browse markets",
       "bodyLoggedIn": "Open AI on any symbol page with quotes, news, and filings context—clear basis and invalidation, never order tickets. Invites add more uses.",
       "ctaLoggedIn": "Try AI in markets"
-    }
+    },
+    "footerPricing": "Pricing"
   },
   "disclaimer": {
     "title": "Disclaimer",
-    "subtitle": "Please read before using this site",
-    "p1": "Quotes, charts, boards, watchlists, alerts, peer compare, AI chart reads and chat, scenarios, paper trading, and review notes on this site are for learning and technical exchange only. They are not investment advice, an offer, or a promise.",
-    "p2": "Financial markets involve risk. Past performance does not guarantee future results. You must decide independently and bear the consequences; consult licensed professionals when needed.",
-    "p3": "Data may come from third parties (e.g. broker OpenAPI or public feeds). We aim for availability but do not warrant timeliness, accuracy, or completeness. AI output may be wrong or outdated—verify before relying on it.",
-    "p4": "Comply with laws where you live. If local rules restrict overseas securities, crypto, or related information services, do not use this site for any unlawful purpose.",
-    "mainlandNotice": "Note for users in mainland China: overseas investment in stocks, BTC, and similar may be restricted or unlawful. This site is for learning only—please follow local regulations.",
+    "subtitle": "Please read carefully before using this site; continued use means you understand and agree",
+    "p1": "q-stock (this site) is an information and tools product for personal learning and technical practice. Quotes, candlestick and indicator charts, rank boards and sector overviews, watchlists and price alerts, peer compare, AI chart reads and chat, scenario tools, paper trading, and review notes are provided for study, demos, and technical exchange only. Nothing on this site is investment advice, a recommendation, an offer, a solicitation, or a promise regarding securities, funds, futures, crypto, or any other financial product, nor a guarantee of strategy performance.",
+    "p2": "Financial markets are highly uncertain. Prices can move sharply and you may lose capital. Historical quotes, backtests, paper-trading results, and past performance do not predict future outcomes. You must decide independently based on your finances, risk tolerance, and goals, and you bear all consequences. Before trading with real money, consult licensed professionals where you live. The operators of this site are not liable for your investment losses.",
+    "p3": "Market, financial, and news data may come from third parties (for example broker OpenAPIs, public feeds, news, or filings). Network issues, rate limits, session hours, time zones, FX conversion, delays, or outages may cause prices, changes, volume, or fundamentals on this site to be delayed, incomplete, wrong, or inconsistent with other terminals. We aim to keep the service available but make no express or implied warranty of timeliness, accuracy, completeness, or continuity. Rely on your broker or official exchange data for decisions.",
+    "p4": "AI chart reads, chat, compare, and scenario outputs are generated automatically from limited public information by models or rules. They may hallucinate, be outdated, one-sided, or factually wrong. AI output is not a substitute for your own research and must not be used as an order ticket. Cross-check key facts before acting; any loss from relying on AI output is yours alone.",
+    "p5": "Paper trading and any calculators on this site are hypothetical or educational only. They do not reflect live balances, commissions, slippage, taxes, or market impact, and they are not a promise of returns. Account, watchlist, and alert data are handled as described in the product; keep your credentials safe. To the extent permitted by law, we are not liable for interruptions, data loss, or feature changes caused by force majeure, maintenance, third-party failures, or abuse. We may update features, copy, or this disclaimer without prior notice.",
+    "p6": "Comply with the laws and regulations where you live. If local rules prohibit or restrict overseas securities, derivatives, crypto trading, or related information services, do not use this site for any unlawful purpose or to bypass compliance for real trades. You are responsible for confirming that you may lawfully use this site; liability for violating local law is yours.",
+    "mainlandNotice": "Note for users in mainland China: under current rules, mainland residents participating in overseas securities or virtual-asset (e.g. BTC) investment or trading through unapproved channels may face legal risk or penalties. This site is for learning and technical reference only and does not offer account opening, funding, order matching, or custody. Follow national laws; do not use this site for overseas investment or crypto trading decisions.",
     "backHome": "Back to home"
   },
   "learn": {
@@ -834,5 +837,46 @@
     "loginTitle": "Sign in to manage your watchlist",
     "loginBody": "Save US, HK, A-share, or crypto symbols you follow and sync them across devices once signed in.",
     "loginHint": "Your watchlist is visible only to you."
+  },
+  "pricing": {
+    "title": "Pricing",
+    "subtitle": "Source delivery, deploy assistance, or custom strategies and risk controls. Reach out by email to get started.",
+    "footnote": "Prices are one-time and in CNY. Source delivery does not include ongoing ops; custom scope and quote are confirmed after discussion. Quotes and AI features remain subject to the disclaimer and local law.",
+    "plans": {
+      "source": {
+        "name": "Source code",
+        "price": "¥198",
+        "priceNote": "one-time",
+        "description": "Full project source for self-hosting and further development.",
+        "f1": "Complete current site source",
+        "f2": "Local run and basic setup notes",
+        "f3": "Free to extend on your own",
+        "f4": "No managed deploy or ops",
+        "cta": "Email to purchase"
+      },
+      "deploy": {
+        "name": "Source + deploy",
+        "price": "¥500",
+        "priceNote": "one-time",
+        "description": "Source delivery plus help deploying to your server or cloud.",
+        "f1": "Everything in Source code",
+        "f2": "One production deploy assist",
+        "f3": "Basic domain / HTTPS guidance",
+        "f4": "Handover notes after go-live",
+        "cta": "Email to start"
+      },
+      "custom": {
+        "name": "Custom features",
+        "price": "Custom",
+        "priceNote": "",
+        "description": "Tailor strategies, indicators, risk controls, and backtests to your needs.",
+        "f1": "Common trading strategy hooks",
+        "f2": "Rich multi-indicator stacks",
+        "f3": "Risk rules and position limits",
+        "f4": "Strategy backtests and review",
+        "f5": "Scoped quote after discovery",
+        "cta": "Email your requirements"
+      }
+    }
   }
 }
