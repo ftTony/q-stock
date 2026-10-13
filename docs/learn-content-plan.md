@@ -13,7 +13,7 @@
 |---|---|
 | 一句话 | 短文教会「怎么看、怎么用站内工具、怎么管情绪」，不是荐股号 |
 | 读者 | 个人投资者 / 学员；美股·港股·A 股·加密多市场入门到进阶 |
-| 体裁 | 800–1500 字短文（段落数组即可）；可配「站内试一试」CTA |
+| 体裁 | 约 1200–2200 字（简中可稍长）；误区开篇 → 框架/作用 → 编号步骤 → 站内练习 → 边界；可配 CTA |
 | 语气 | 克制、可核对、强调失效条件与流程；禁止喊单与收益承诺 |
 | 与 Tools 分工 | Learn 讲「为什么 / 怎么想」；Tools 给「算出来」；二者互相深链 |
 | 与书单分工 | 短文管「站内怎么做」；[推荐书单与路线](./learn-reading-list.md) 管「课外怎么读」 |
@@ -80,9 +80,9 @@
 | slug | 标题（草案） | 要点 | CTA | 优先级 | 状态 |
 |---|---|---|---|---|---|
 | `paper-review` | 模拟交易与复盘笔记 | 流程 > 虚荣收益；每周复盘三问 | 模拟 / 复盘 | P0 | drafted |
-| `kline-basics` | K 线怎么读：影线、实体与别过度解读 | OHLC、常见误读；指标不预测未来 | 个股 K 线页 | P0 | planned |
+| `kline-basics` | K 线怎么读：影线、实体与别过度解读 | OHLC、常见误读；指标不预测未来 | 个股 K 线页 | P0 | drafted |
 | `indicators-lite` | MA / MACD / RSI：辅助而非圣杯 | 各一句话用途 + 失效时看什么 | 个股指标 | P0 | planned |
-| `multi-market-101` | 一个终端里的美股、港股、A 股与加密 | 时段、代码习惯、合规「先问能不能」 | `/markets` | P0 | planned |
+| `multi-market-101` | 一个终端里的美股、港股、A 股与加密 | 时段、代码习惯、合规「先问能不能」 | `/markets` | P0 | drafted |
 | `risk-before-size` | 风险预算：先定亏得起，再谈仓位 | 与仓位工具同一套语言 | `/tools/position` | P1 | planned |
 | `orders-and-slippage` | 限价、市价与滑点（学习向） | 模拟盘里如何体会；真盘以券商为准 | 模拟下单 | P1 | planned |
 | `earnings-season` | 财报季看什么、不看什么 | 日历/摘要是线索；警惕预期差情绪 | 个股 earnings Tab | P1 | planned |
@@ -93,8 +93,8 @@
 | slug | 标题（草案） | 要点 | CTA | 优先级 | 状态 |
 |---|---|---|---|---|---|
 | `peer-compare` | 同业对比怎么用 | 同赛道 2–4 只；估算值口径 | `/analysis` | P0 | drafted |
-| `watchlist-alerts` | 自选与价格提醒：少而准 | 提醒写失效位，不是许愿位 | `/watchlist` · `/alerts` | P0 | planned |
-| `ai-chart-read` | AI 读图与对话：怎么提问更有用 | 要结构/价位/失效；交叉验证 | 个股 AI Tab | P0 | planned |
+| `watchlist-alerts` | 自选与价格提醒：少而准 | 提醒写失效位，不是许愿位 | `/watchlist` · `/alerts` | P0 | drafted |
+| `ai-chart-read` | AI 读图与对话：怎么提问更有用 | 要结构/价位/失效；交叉验证 | 个股 AI Tab | P0 | drafted |
 | `scenario-map` | 情景地图：涨、跌、震荡各准备什么 | 与纸面条件单草案衔接 | 情景 / 模拟 | P1 | planned |
 | `position-tool-guide` | 仓位计算器怎么用 | 对应 [仓位 PRD](./prd/tool-position-sizing.md) | `/tools/position` | P1 | planned |
 | `dca-tool-guide` | 定投计算器：假设不是承诺 | 对应 [定投 PRD](./prd/tool-dca.md) | `/tools/dca` | P1 | planned |
@@ -107,7 +107,7 @@
 | slug | 标题（草案） | 要点 | CTA | 优先级 | 状态 |
 |---|---|---|---|---|---|
 | `calm-watching` | 冷静看盘：先看结构，再谈感觉 | 结构 → 价位 → 失效 | AI / 提醒 | P0 | drafted |
-| `checklist-three` | 下单前三问清单 | 结构？风险预算？失效写了没？ | 模拟 / 仓位工具 | P0 | planned |
+| `checklist-three` | 下单前三问清单 | 结构？风险预算？失效写了没？ | 模拟 / 仓位工具 | P0 | drafted |
 | `fomo-and-news` | 热点与 FOMO：新闻怎么用 | 新闻是上下文，不是扳机 | 个股新闻 Tab | P1 | planned |
 | `review-emotions` | 复盘里的情绪标签 | 冲动、报复单、计划外；改流程不改「报复市场」 | `/review` | P1 | planned |
 | `less-is-more` | 少交易、多等待 | 与模拟「少而认真」呼应 | 复盘 | P2 | planned |
@@ -164,14 +164,18 @@ Tools 计算器专文（`*-tool-guide`）可与 [切片 B](./product-roadmap.md)
 
 ```text
 标题
-摘要（1 句，列表卡用）
-正文 3–6 段：
-  1. 问题或误区
-  2. 正确做法 / 框架
-  3. 在钱力股如何练习（点名功能）
-  4. 边界、数据局限或合规一句
+摘要（1 句，列表卡用；点出误区或边界）
+正文（简中宜充实，勿只剩提纲）：
+  1. 开篇：读者误区 / 为何这篇值得读
+  2. 核心观点（一句钉死）
+  3. 编号步骤或作用（一、二、三… 便于步骤卡）
+  4. 常见踩坑 / 失效条件
+  5. 在钱力股如何练习（点名功能，少堆外链）
+  6. 收束：概率、非圣杯、与冷静投框架对齐
 文末 CTA（产品组件，不必写入 paragraphs）
 免责：仅供学习，不构成投资建议
+语种：zh-CN 完整；zh-TW / en 可 condensed，但要点不丢
+拆分：按类目文件（articles-basics / tools / mindset），单文件 <500 行
 ```
 
 入库字段保持 `LearnArticle`：`slug` / `category` / `title` / `summary` / `paragraphs`。  
