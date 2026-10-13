@@ -33,6 +33,8 @@
     "about": "About",
     "collapseSidebar": "사이드바 접기",
     "expandSidebar": "사이드바 펼치기",
+    "openMenu": "메뉴 열기",
+    "closeMenu": "메뉴 닫기",
     "review": "Review"
   },
   "market": {

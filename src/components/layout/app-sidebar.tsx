@@ -116,18 +116,21 @@ function NavItem({
   icon,
   label,
   collapsed,
+  onNavigate,
 }: {
   href: string;
   active?: boolean;
   icon: React.ReactNode;
   label: string;
   collapsed: boolean;
+  onNavigate?: () => void;
 }) {
   return (
     <Link
       href={href}
       title={collapsed ? label : undefined}
       aria-label={label}
+      onClick={onNavigate}
       className={`relative flex items-center rounded-xl text-sm transition ${
         collapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5"
       } ${
@@ -148,9 +151,16 @@ function NavItem({
 type Props = {
   collapsed: boolean;
   onCollapsedChange: (collapsed: boolean) => void;
+  onNavigate?: () => void;
+  showCollapse?: boolean;
 };
 
-export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
+export function AppSidebar({
+  collapsed,
+  onCollapsedChange,
+  onNavigate,
+  showCollapse = true,
+}: Props) {
   const t = useTranslations("nav");
   const locale = useLocale();
   const pathname = usePathname();
@@ -185,15 +195,17 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             variant={collapsed ? "mark" : "full"}
           />
         </a>
-        <button
-          type="button"
-          onClick={() => onCollapsedChange(!collapsed)}
-          aria-label={toggleLabel}
-          title={toggleLabel}
-          className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--muted)] transition hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-        >
-          <IconChevron collapsed={collapsed} />
-        </button>
+        {showCollapse ? (
+          <button
+            type="button"
+            onClick={() => onCollapsedChange(!collapsed)}
+            aria-label={toggleLabel}
+            title={toggleLabel}
+            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--muted)] transition hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+          >
+            <IconChevron collapsed={collapsed} />
+          </button>
+        ) : null}
       </div>
 
       <div
@@ -213,6 +225,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             icon={<IconGrid />}
             label={t("markets")}
             collapsed={collapsed}
+            onNavigate={onNavigate}
           />
           <NavItem
             href="/analysis"
@@ -220,6 +233,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             icon={<IconChart />}
             label={t("analysis")}
             collapsed={collapsed}
+            onNavigate={onNavigate}
           />
           <NavItem
             href="/portfolio"
@@ -227,6 +241,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             icon={<IconBag />}
             label={t("portfolio")}
             collapsed={collapsed}
+            onNavigate={onNavigate}
           />
           <NavItem
             href="/watchlist"
@@ -234,6 +249,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             icon={<IconStar />}
             label={t("watchlist")}
             collapsed={collapsed}
+            onNavigate={onNavigate}
           />
           <NavItem
             href="/review"
@@ -241,6 +257,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             icon={<IconNotebook />}
             label={t("review")}
             collapsed={collapsed}
+            onNavigate={onNavigate}
           />
           <NavItem
             href="/alerts"
@@ -248,6 +265,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             icon={<IconBell />}
             label={t("alerts")}
             collapsed={collapsed}
+            onNavigate={onNavigate}
           />
         </div>
       </div>
@@ -258,6 +276,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             href="/alerts"
             aria-label={t("quickTrade")}
             title={t("quickTrade")}
+            onClick={onNavigate}
             className="qt-btn qt-btn-primary flex h-9 items-center justify-center rounded-lg"
           >
             <IconBolt className="h-4 w-4" />
@@ -266,6 +285,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             href="/settings"
             aria-label={t("settings")}
             title={t("settings")}
+            onClick={onNavigate}
             className="qt-btn qt-btn-ghost flex h-9 items-center justify-center rounded-lg border border-[var(--border)]"
           >
             <IconGear className="h-4 w-4" />
@@ -274,6 +294,7 @@ export function AppSidebar({ collapsed, onCollapsedChange }: Props) {
             href="/about"
             aria-label={t("about")}
             title={t("about")}
+            onClick={onNavigate}
             className="qt-btn qt-btn-ghost flex h-9 items-center justify-center rounded-lg border border-[var(--border)]"
           >
             <IconUser className="h-4 w-4" />

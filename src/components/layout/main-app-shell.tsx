@@ -55,7 +55,10 @@ function IconBag({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-/** App chrome with sidebar, quote ticker, credentials. Loaded only off marketing. */
+/**
+ * Mobile: logo + index + account chrome on top; main tabs on bottom.
+ * Desktop: left sidebar nav; top bar keeps index + account chrome.
+ */
 export function MainAppShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("nav");
   const locale = useLocale();
@@ -67,9 +70,9 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
 
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isWatchlist = pathname.startsWith("/watchlist");
-  const isPortfolio = pathname.startsWith("/portfolio");
   const isAlerts = pathname.startsWith("/alerts");
   const isReview = pathname.startsWith("/review");
+  const isPortfolio = pathname.startsWith("/portfolio");
   const isAccountGatePage = isWatchlist || isAlerts || isReview;
   // Session status often differs SSR ("loading") vs client ("authenticated").
   // Keep the pre-mount layout identical to SSR, then tighten after mount.
@@ -101,8 +104,8 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
-          <div className="flex h-14 items-center justify-between gap-3 px-4 sm:px-6">
-            <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="flex h-14 items-center justify-between gap-2 px-3 sm:gap-3 sm:px-4 lg:px-6">
+            <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
               <a
                 href={homeHref}
                 className="relative z-10 flex shrink-0 items-center lg:hidden"
@@ -111,8 +114,8 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
               </a>
               <TopbarIndexTicker />
             </div>
-            <div className="flex shrink-0 items-center gap-2 sm:gap-3">
-              <TopBarActions />
+            <div className="flex shrink-0 items-center">
+              <TopBarActions showMarketStatus={false} />
             </div>
           </div>
         </header>

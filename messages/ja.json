@@ -33,6 +33,8 @@
     "about": "About",
     "collapseSidebar": "サイドバーを折りたたむ",
     "expandSidebar": "サイドバーを展開",
+    "openMenu": "メニューを開く",
+    "closeMenu": "メニューを閉じる",
     "review": "Review"
   },
   "market": {

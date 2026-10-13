@@ -33,6 +33,8 @@
     "about": "About",
     "collapseSidebar": "Collapse sidebar",
     "expandSidebar": "Expand sidebar",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
     "review": "Review"
   },
   "market": {

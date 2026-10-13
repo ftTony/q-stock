@@ -67,15 +67,15 @@ function useEquitySessionLabel(t: (key: string) => string) {
 function MarketStatus({ t }: { t: (key: string) => string }) {
   const market = useEquitySessionLabel(t);
   return (
-    <span className="qt-chip hidden sm:inline-flex" title={market.label}>
+    <span className="qt-chip max-w-full" title={market.label}>
       <span
-        className={`h-1.5 w-1.5 rounded-full ${
+        className={`h-1.5 w-1.5 shrink-0 rounded-full ${
           market.open
             ? "bg-[var(--up)] shadow-[0_0_8px_var(--up)]"
             : "bg-[var(--muted)]"
         }`}
       />
-      {market.label}
+      <span className="truncate">{market.label}</span>
     </span>
   );
 }
@@ -83,9 +83,13 @@ function MarketStatus({ t }: { t: (key: string) => string }) {
 export function TopBarActions({
   showMarketStatus = true,
   showNotifications = true,
+  placement = "header",
+  compact = false,
 }: {
   showMarketStatus?: boolean;
   showNotifications?: boolean;
+  placement?: "header" | "sidebar";
+  compact?: boolean;
 }) {
   const t = useTranslations("nav");
   const tAlerts = useTranslations("alerts");
@@ -143,10 +147,22 @@ export function TopBarActions({
   // Session chrome only after mount — SessionProvider often has null on SSR and
   // a user on the first client pass, which breaks hydration of this header tree.
   const loggedIn = mounted && Boolean(session?.user);
+  const inSidebar = placement === "sidebar";
+  const pop = compact
+    ? "absolute left-full top-0 z-50 ml-1.5"
+    : inSidebar
+      ? "absolute left-0 bottom-full z-50 mb-1.5"
+      : "absolute right-0 z-50 mt-2";
 
   return (
     <div
-      className="flex items-center gap-2 sm:gap-3"
+      className={
+        compact
+          ? "flex flex-col items-center gap-1.5"
+          : inSidebar
+            ? "flex flex-wrap items-center gap-1.5"
+            : "flex items-center gap-2 sm:gap-3"
+      }
       suppressHydrationWarning
     >
       {loggedIn && showMarketStatus && (
@@ -196,7 +212,7 @@ export function TopBarActions({
             )}
           </button>
           {notifOpen && (
-            <div className="absolute right-0 z-50 mt-2 w-72 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl">
+            <div className={`${pop} w-72 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl`}>
               <div className="flex items-center justify-between border-b border-[var(--border)] px-3 py-2">
                 <span className="text-sm font-semibold">{t("alerts")}</span>
                 <Link
@@ -274,7 +290,7 @@ export function TopBarActions({
         {langOpen && (
           <div
             role="listbox"
-            className="absolute right-0 z-50 mt-2 w-52 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1 shadow-[0_8px_30px_rgba(15,23,42,0.12)]"
+            className={`${pop} w-52 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1 shadow-[0_8px_30px_rgba(15,23,42,0.12)]`}
           >
             {locales.map((l) => {
               const active = l === locale;
@@ -347,7 +363,7 @@ export function TopBarActions({
             ).toUpperCase()}
           </button>
           {menuOpen && (
-            <div className="absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl">
+            <div className={`${pop} w-48 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl`}>
               <div className="border-b border-[var(--border)] px-3 py-2.5">
                 <div className="truncate text-sm font-medium text-[var(--foreground)]">
                   {session.user.name?.trim() ||
