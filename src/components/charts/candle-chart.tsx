@@ -1,22 +1,15 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
 import type { OhlcvBar } from "@/lib/types";
 import { usePreference } from "@/components/providers/preference-provider";
+import type { DrawingTool } from "@/components/charts/chart-drawing-icons";
 import {
-  DrawingToolIcon,
-  type DrawingTool,
-} from "@/components/charts/chart-drawing-icons";
+  CandleChartOverlays,
+  type IndicatorFlags,
+} from "@/components/charts/candle-chart-overlays";
 
-export type { DrawingTool };
-export type IndicatorFlags = {
-  ma: boolean;
-  ema: boolean;
-  boll: boolean;
-  rsi: boolean;
-  macd: boolean;
-};
+export type { DrawingTool, IndicatorFlags };
 
 type KLineChartsModule = typeof import("klinecharts");
 type ChartInstance = NonNullable<ReturnType<KLineChartsModule["init"]>>;
@@ -115,18 +108,6 @@ function periodFromResolution(resolution: string) {
   return { type: "day" as const, span: 1 };
 }
 
-const DRAWING_TOOLS: { id: DrawingTool; labelKey: string }[] = [
-  { id: "segment", labelKey: "drawSegment" },
-  { id: "rayLine", labelKey: "drawRay" },
-  { id: "straightLine", labelKey: "drawLine" },
-  { id: "horizontalStraightLine", labelKey: "drawHLine" },
-  { id: "verticalStraightLine", labelKey: "drawVLine" },
-  { id: "parallelStraightLine", labelKey: "drawParallel" },
-  { id: "fibonacciLine", labelKey: "drawFib" },
-  { id: "priceLine", labelKey: "drawPrice" },
-  { id: "brush", labelKey: "drawBrush" },
-];
-
 export function CandleChart({
   bars,
   flags,
@@ -152,7 +133,6 @@ export function CandleChart({
   loadingMore?: boolean;
   hasMore?: boolean;
 }) {
-  const t = useTranslations("symbol");
   const shellRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ChartInstance | null>(null);
@@ -381,117 +361,26 @@ export function CandleChart({
         fullscreen ? "flex h-screen flex-col rounded-none border-0" : ""
       }`}
     >
-      {/* Drawing tools — vertical icon strip on left */}
-      <div className="pointer-events-none absolute bottom-10 left-0 top-[45px] z-10 flex items-start p-1.5 sm:p-2">
-        <div className="pointer-events-auto flex max-h-full w-10 flex-col items-center gap-0.5 overflow-y-auto rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 py-1 shadow-sm backdrop-blur-sm qt-scroll sm:w-11">
-          <button
-            type="button"
-            title={t("drawPan")}
-            aria-label={t("drawPan")}
-            onClick={() => startDrawing("none")}
-            className={`flex h-8 w-8 items-center justify-center rounded-md border ${
-              drawingTool === "none"
-                ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                : "border-transparent text-[var(--muted)] hover:border-[var(--border)] hover:text-[var(--foreground)]"
-            }`}
-          >
-            <DrawingToolIcon tool="none" />
-          </button>
-          {DRAWING_TOOLS.map((tool) => (
-            <button
-              key={tool.id}
-              type="button"
-              title={t(tool.labelKey)}
-              aria-label={t(tool.labelKey)}
-              onClick={() => startDrawing(tool.id)}
-              className={`flex h-8 w-8 items-center justify-center rounded-md border ${
-                drawingTool === tool.id
-                  ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                  : "border-transparent text-[var(--muted)] hover:border-[var(--border)] hover:text-[var(--foreground)]"
-              }`}
-            >
-              <DrawingToolIcon tool={tool.id} />
-            </button>
-          ))}
-          <button
-            type="button"
-            title={t("drawClear")}
-            aria-label={t("drawClear")}
-            onClick={clearDrawings}
-            className="flex h-8 w-8 items-center justify-center rounded-md border border-transparent text-[var(--muted)] hover:border-[var(--border)] hover:text-[var(--foreground)]"
-          >
-            <DrawingToolIcon tool="clear" />
-          </button>
-        </div>
-      </div>
-
-      {/* Fullscreen — top right, inset from Y-axis scale */}
-      <div className="pointer-events-none absolute right-12 top-0 z-10 p-2 sm:right-14 sm:p-2.5 lg:right-16">
-        <button
-          type="button"
-          onClick={() => void toggleFullscreen()}
-          aria-label={fullscreen ? t("exitFullscreen") : t("fullscreen")}
-          title={fullscreen ? t("exitFullscreen") : t("fullscreen")}
-          className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 text-[var(--muted)] shadow-sm backdrop-blur-sm hover:text-[var(--foreground)]"
-        >
-          {fullscreen ? (
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
-            </svg>
-          ) : (
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-            </svg>
-          )}
-        </button>
-      </div>
-
-      {/* Indicators — in the gap above volume legend (candle/volume separator) */}
-      {onFlagToggle && (
-        <div className="pointer-events-none absolute bottom-28 left-12 z-10 sm:bottom-32 sm:left-14 lg:bottom-36">
-          <div className="pointer-events-auto flex max-w-full flex-wrap items-center gap-1 rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 px-1.5 py-1 text-[11px] shadow-sm backdrop-blur-sm sm:text-xs">
-            {indicatorsLabel ? (
-              <span className="hidden px-1 text-[var(--muted)] sm:inline">
-                {indicatorsLabel}
-              </span>
-            ) : null}
-            {(
-              [
-                ["ma", "MA"],
-                ["ema", "EMA"],
-                ["boll", "BOLL"],
-                ["rsi", "RSI"],
-                ["macd", "MACD"],
-              ] as const
-            ).map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => onFlagToggle(key)}
-                className={`rounded-md border px-2 py-0.5 ${
-                  flags[key]
-                    ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                    : "border-transparent text-[var(--muted)] hover:border-[var(--border)] hover:text-[var(--foreground)]"
-                }`}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+      <CandleChartOverlays
+        drawingTool={drawingTool}
+        onStartDrawing={startDrawing}
+        onClearDrawings={clearDrawings}
+        fullscreen={fullscreen}
+        onToggleFullscreen={() => void toggleFullscreen()}
+        flags={flags}
+        onFlagToggle={onFlagToggle}
+        indicatorsLabel={indicatorsLabel}
+        loadingMore={loadingMore}
+      />
 
       <div
         ref={containerRef}
         className={
-          fullscreen ? "min-h-0 w-full flex-1" : "h-[480px] w-full sm:h-[560px] lg:h-[620px]"
+          fullscreen
+            ? "min-h-0 w-full flex-1"
+            : "h-[360px] w-full sm:h-[520px] lg:h-[620px]"
         }
       />
-      {loadingMore && (
-        <div className="pointer-events-none absolute bottom-3 left-14 z-10 rounded-md bg-[var(--panel)]/90 px-2 py-1 text-xs text-[var(--muted)] shadow sm:left-16">
-          …
-        </div>
-      )}
     </div>
   );
 }

@@ -95,23 +95,27 @@ export function PaginatedList<T>({
         {slice.map((item, i) => renderItem(item, (page - 1) * pageSize + i))}
       </ul>
       {totalPages > 1 && (
-        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-[var(--border)] pt-3">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1.5 border-t border-[var(--border)] pt-3 sm:gap-2">
           <button
             type="button"
-            className="qt-btn qt-btn-ghost h-8 shrink-0 px-3 text-xs disabled:opacity-40"
+            className="qt-btn qt-btn-ghost h-8 shrink-0 px-2.5 text-xs disabled:opacity-40 sm:px-3"
             disabled={page <= 1}
             onClick={() => goTo(page - 1)}
+            aria-label={labels.prev}
           >
-            {labels.prev}
+            <span className="sm:hidden" aria-hidden>
+              ‹
+            </span>
+            <span className="hidden sm:inline">{labels.prev}</span>
           </button>
-          <div className="flex flex-wrap items-center justify-center gap-1">
+          <div className="flex min-w-0 items-center justify-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-1 [&::-webkit-scrollbar]:hidden">
             {pages.map((p) => (
               <button
                 key={p}
                 type="button"
                 aria-label={`${p} / ${totalPages}`}
                 aria-current={p === page ? "page" : undefined}
-                className={`qt-btn h-8 min-w-8 px-2 text-xs tabular-nums ${
+                className={`qt-btn h-8 min-w-7 shrink-0 px-1.5 text-xs tabular-nums sm:min-w-8 sm:px-2 ${
                   p === page
                     ? "qt-btn-primary"
                     : "qt-btn-ghost text-[var(--muted)]"
@@ -121,17 +125,21 @@ export function PaginatedList<T>({
                 {p}
               </button>
             ))}
-            <span className="ml-1 text-xs tabular-nums text-[var(--muted)]">
+            <span className="ml-0.5 hidden shrink-0 text-xs tabular-nums text-[var(--muted)] sm:ml-1 sm:inline">
               {page} / {totalPages}
             </span>
           </div>
           <button
             type="button"
-            className="qt-btn qt-btn-ghost h-8 shrink-0 px-3 text-xs disabled:opacity-40"
+            className="qt-btn qt-btn-ghost h-8 shrink-0 px-2.5 text-xs disabled:opacity-40 sm:px-3"
             disabled={page >= totalPages}
             onClick={() => goTo(page + 1)}
+            aria-label={labels.next}
           >
-            {labels.next}
+            <span className="sm:hidden" aria-hidden>
+              ›
+            </span>
+            <span className="hidden sm:inline">{labels.next}</span>
           </button>
         </div>
       )}

@@ -246,7 +246,7 @@ export function TopBarActions({
           className="qt-btn qt-btn-ghost flex h-9 items-center gap-1 px-1.5 text-xs sm:gap-1.5 sm:px-2"
           aria-label="Language"
           aria-haspopup="listbox"
-          aria-expanded={langOpen}
+          aria-expanded={langOpen || undefined}
           onClick={() => {
             setLangOpen((v) => !v);
             setMenuOpen(false);

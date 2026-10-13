@@ -102,7 +102,7 @@ export function SymbolSearchField({
           autoComplete="off"
           aria-autocomplete="list"
           aria-controls={listId}
-          aria-expanded={open && results.length > 0}
+          aria-expanded={open && results.length > 0 ? true : undefined}
           className="qt-input mt-1 w-full px-3 py-2.5"
         />
       </label>

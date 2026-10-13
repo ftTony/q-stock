@@ -93,9 +93,9 @@ function PlanCard({
 /** Pricing: same content width as marketing header / CTA band (`max-w-5xl`). */
 export function MarketingPricing({ title, subtitle, plans, footnote }: Props) {
   return (
-    <div className="flex min-h-0 flex-1 flex-col overflow-hidden animate-[qtFade_0.45s_ease]">
-      <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col justify-center overflow-y-auto overscroll-y-contain px-4 py-8 sm:px-6 sm:py-10">
-        <header className="shrink-0">
+    <div className="flex flex-1 flex-col animate-[qtFade_0.45s_ease]">
+      <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+        <header>
           <h1 className="text-2xl font-semibold tracking-tight sm:text-3xl">
             {title}
           </h1>
@@ -114,7 +114,7 @@ export function MarketingPricing({ title, subtitle, plans, footnote }: Props) {
           ))}
         </div>
 
-        <p className="mt-6 shrink-0 text-xs leading-relaxed text-[var(--muted)] sm:mt-8">
+        <p className="mt-6 text-xs leading-relaxed text-[var(--muted)] sm:mt-8">
           {footnote}
         </p>
       </div>

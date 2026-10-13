@@ -38,7 +38,8 @@ export function SymbolAiFab(props: {
         type="button"
         aria-label={label}
         title={label}
-        aria-expanded={open}
+        aria-haspopup="dialog"
+        aria-expanded={open || undefined}
         onClick={() => {
           setView("desk");
           setOpen(true);

@@ -41,14 +41,14 @@ function IndexChip({ item }: { item: IndexQuote }) {
   return (
     <Link
       href={`/symbol/${item.assetType}/${item.symbol}`}
-      className="flex min-w-0 items-baseline gap-1.5 rounded-md px-1.5 py-0.5 transition hover:bg-[var(--sidebar-hover)]"
+      className="flex shrink-0 items-baseline gap-1 rounded-md px-1 py-0.5 transition hover:bg-[var(--sidebar-hover)] sm:gap-1.5 sm:px-1.5"
     >
-      <span className="max-w-[4.5rem] truncate text-[11px] text-[var(--muted)] sm:max-w-[6.5rem] sm:text-xs">
+      <span className="max-w-[3.25rem] truncate text-[11px] text-[var(--muted)] sm:max-w-[6.5rem] sm:text-xs">
         {name}
       </span>
       {item.price != null ? (
         <>
-          <span className="text-xs font-semibold tabular-nums sm:text-sm">
+          <span className="hidden text-xs font-semibold tabular-nums sm:inline sm:text-sm">
             {formatNumber(item.price, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
@@ -59,11 +59,11 @@ function IndexChip({ item }: { item: IndexQuote }) {
               up ? "text-[var(--up)]" : "text-[var(--down)]"
             }`}
           >
-            {pct != null ? `${up ? "+" : ""}${pct.toFixed(2)}%` : "—"}
+            {pct != null ? `${up ? "+" : ""}${pct.toFixed(1)}%` : "—"}
           </span>
         </>
       ) : (
-        <span className="h-3 w-14 animate-pulse rounded bg-[var(--surface-2)]" />
+        <span className="h-3 w-8 animate-pulse rounded bg-[var(--surface-2)] sm:w-14" />
       )}
     </Link>
   );
@@ -182,10 +182,15 @@ export function TopbarIndexTicker() {
   return (
     <div
       key={page}
-      className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] animate-[qtFade_0.35s_ease] [&::-webkit-scrollbar]:hidden"
+      className="flex min-w-0 flex-1 items-center gap-0.5 overflow-hidden animate-[qtFade_0.35s_ease]"
     >
-      {slots.map((item) => (
-        <IndexChip key={item.id} item={item} />
+      {slots.map((item, i) => (
+        <div
+          key={item.id}
+          className={i === 0 ? "min-w-0 shrink" : "hidden min-w-0 shrink md:block"}
+        >
+          <IndexChip item={item} />
+        </div>
       ))}
     </div>
   );

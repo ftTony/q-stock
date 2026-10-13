@@ -93,7 +93,7 @@ export function AnalysisSearch({
         autoComplete="off"
         aria-autocomplete="list"
         aria-controls={listId}
-        aria-expanded={open}
+        aria-expanded={open || undefined}
         className="qt-input w-full px-3 py-2 text-sm"
       />
       {open && (q.trim().length > 0 || recent.length > 0) && (

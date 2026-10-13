@@ -79,7 +79,7 @@ export function QtSelect({
         disabled={disabled}
         aria-label={ariaLabel}
         aria-haspopup="listbox"
-        aria-expanded={open}
+        aria-expanded={open || undefined}
         aria-controls={listId}
         onClick={() => !disabled && setOpen((v) => !v)}
         onKeyDown={onTriggerKey}

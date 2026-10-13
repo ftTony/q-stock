@@ -4,6 +4,7 @@ import {
   CandleChart,
   type IndicatorFlags,
 } from "@/components/charts/candle-chart";
+import { INDICATOR_KEYS } from "@/components/charts/candle-chart-overlays";
 import type { AssetType, CandleResolution, OhlcvBar } from "@/lib/types";
 
 type Props = {
@@ -41,7 +42,7 @@ export function SymbolChartSection({
 }: Props) {
   return (
     <div className="space-y-3 min-w-0">
-      <div className="flex flex-wrap items-center gap-1">
+      <div className="flex flex-wrap items-center gap-1.5">
         {(
           [
             ["D", resolutionLabels.D],
@@ -62,10 +63,31 @@ export function SymbolChartSection({
             {label}
           </button>
         ))}
+
+        {/* Mobile: indicators live here so they don’t cover the plot */}
+        <div
+          className="flex max-w-full flex-wrap items-center gap-1 md:hidden"
+          aria-label={indicatorsLabel}
+        >
+          {INDICATOR_KEYS.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onFlagToggle(key)}
+              className={`h-6 rounded-md border px-1.5 text-[10px] leading-none ${
+                flags[key]
+                  ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
+                  : "border-[var(--border)] bg-[var(--panel)] text-[var(--muted)]"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loadingChart ? (
-        <div className="qt-panel flex h-[480px] items-center justify-center text-sm text-[var(--muted)] sm:h-[560px] lg:h-[620px]">
+        <div className="qt-panel flex h-[360px] items-center justify-center text-sm text-[var(--muted)] sm:h-[520px] lg:h-[620px]">
           {loadingLabel}
         </div>
       ) : (
