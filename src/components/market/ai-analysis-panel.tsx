@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { AiBusyLabel } from "@/components/ai/ai-busy-label";
 import { AiLoginGate } from "@/components/ai/ai-login-gate";
+import { useMounted } from "@/hooks/use-mounted";
 
 export type AiTrendAnalysis = {
   bias: "bullish" | "neutral" | "bearish";
@@ -32,10 +33,11 @@ export function AiAnalysisPanel(props: {
   const t = useTranslations("ai");
   const tCommon = useTranslations("common");
   const { status } = useSession();
+  const mounted = useMounted();
   const { available, message, analysis, disclaimer, cached, degraded, loading } =
     props;
 
-  if (loading) {
+  if (loading || !mounted || status === "loading") {
     return <AiBusyLabel />;
   }
 

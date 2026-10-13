@@ -1,9 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useLocale, useTranslations } from "next-intl";
+import { useTranslations } from "next-intl";
 import { InlineLoading } from "@/components/ui/panel-skeleton";
-import { localizedPath } from "@/i18n/config";
 
 type InviteRow = {
   code: string;
@@ -17,7 +16,6 @@ type AiQuota = { used: number; limit: number; remaining: number };
 export function InvitePanel() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const locale = useLocale();
   const [invites, setInvites] = useState<InviteRow[] | null>(null);
   const [aiQuota, setAiQuota] = useState<AiQuota | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -65,9 +63,7 @@ export function InvitePanel() {
   }
 
   function linkFor(row: InviteRow): string {
-    if (typeof window !== "undefined") {
-      return `${window.location.origin}${localizedPath(locale, "/register")}?invite=${encodeURIComponent(row.code)}`;
-    }
+    // Always use server-provided absolute link during render (SSR == client).
     return row.inviteLink;
   }
 

@@ -8,6 +8,7 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { TopToast, type ToastTone } from "@/components/ui/top-toast";
+import { useMounted } from "@/hooks/use-mounted";
 import { formatNumber } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 
@@ -50,6 +51,7 @@ export function TradePanel({
   const t = useTranslations("trading");
   const tSymbol = useTranslations("symbol");
   const { data: session, status } = useSession();
+  const mounted = useMounted();
   const [side, setSide] = useState<Side>("buy");
   const [orderType, setOrderType] = useState<OrderType>("market");
   const [qty, setQty] = useState("1");
@@ -171,7 +173,8 @@ export function TradePanel({
     }
   }
 
-  if (status === "loading") {
+  // Match SSR (session status is "loading") on the first client paint.
+  if (!mounted || status === "loading") {
     return (
       <div className="qt-panel p-4 text-sm text-[var(--muted)]">{t("loading")}</div>
     );

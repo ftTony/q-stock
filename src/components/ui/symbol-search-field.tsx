@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import { useMounted } from "@/hooks/use-mounted";
 import type { AssetType, SearchResult } from "@/lib/types";
 
 type Props = {
@@ -24,7 +25,9 @@ export function SymbolSearchField({
   required,
   className = "",
 }: Props) {
-  const listId = useId();
+  const reactListId = useId();
+  const mounted = useMounted();
+  const listId = mounted ? reactListId : undefined;
   const wrapRef = useRef<HTMLDivElement>(null);
   const [q, setQ] = useState(value);
   const [results, setResults] = useState<SearchResult[]>([]);

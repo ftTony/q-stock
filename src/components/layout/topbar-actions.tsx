@@ -140,10 +140,15 @@ export function TopBarActions({
 
   const dark = mounted && (resolvedTheme || theme) === "dark";
 
-  const loggedIn = Boolean(session?.user);
+  // Session chrome only after mount — SessionProvider often has null on SSR and
+  // a user on the first client pass, which breaks hydration of this header tree.
+  const loggedIn = mounted && Boolean(session?.user);
 
   return (
-    <div className="flex items-center gap-2 sm:gap-3">
+    <div
+      className="flex items-center gap-2 sm:gap-3"
+      suppressHydrationWarning
+    >
       {loggedIn && showMarketStatus && (
         <MarketStatus t={(key) => t(key as "marketOpen")} />
       )}
@@ -152,6 +157,7 @@ export function TopBarActions({
         type="button"
         className="qt-btn qt-btn-ghost h-9 w-9"
         aria-label="Toggle theme"
+        suppressHydrationWarning
         onClick={() => setTheme(dark ? "light" : "dark")}
       >
         {!mounted ? (
@@ -246,7 +252,6 @@ export function TopBarActions({
           className="qt-btn qt-btn-ghost flex h-9 items-center gap-1 px-1.5 text-xs sm:gap-1.5 sm:px-2"
           aria-label="Language"
           aria-haspopup="listbox"
-          aria-expanded={langOpen || undefined}
           onClick={() => {
             setLangOpen((v) => !v);
             setMenuOpen(false);
@@ -317,7 +322,9 @@ export function TopBarActions({
         )}
       </div>
 
-      {session?.user ? (
+      {!mounted ? (
+        <span className="inline-block h-9 w-9 shrink-0" aria-hidden />
+      ) : session?.user ? (
         <div className="relative" ref={menuRef}>
           <button
             type="button"

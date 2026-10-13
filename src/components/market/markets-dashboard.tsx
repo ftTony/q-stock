@@ -31,6 +31,17 @@ type Boards = Record<Board, RankQuote[]>;
 
 const EMPTY_BOARDS: Boards = { hot: [], gainers: [], losers: [] };
 
+/** Client-only relative age — avoids Date.now() SSR/client hydration skew. */
+function NewsAgeMinutes({ datetime }: { datetime: number }) {
+  const [label, setLabel] = useState<string | null>(null);
+  useEffect(() => {
+    const mins = Math.max(1, Math.round((Date.now() / 1000 - datetime) / 60));
+    setLabel(`${mins}m`);
+  }, [datetime]);
+  if (!label) return null;
+  return <span suppressHydrationWarning>{label}</span>;
+}
+
 export default function MarketsDashboard() {
   const t = useTranslations("market");
   const tCommon = useTranslations("common");
@@ -395,13 +406,7 @@ export default function MarketsDashboard() {
                     <div className="mb-1 flex flex-wrap items-center gap-2 text-[10px] tracking-wide text-[var(--muted)] uppercase">
                       <span>{n.category || n.source || "MARKET"}</span>
                       {n.datetime ? (
-                        <span>
-                          {Math.max(
-                            1,
-                            Math.round((Date.now() / 1000 - n.datetime) / 60),
-                          )}
-                          m
-                        </span>
+                        <NewsAgeMinutes datetime={n.datetime} />
                       ) : null}
                     </div>
                     <a

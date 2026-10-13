@@ -15,6 +15,7 @@ import { TopbarIndexTicker } from "@/components/layout/topbar-index-ticker";
 import { DataSourceBadge } from "@/components/layout/data-source-badge";
 import { MarketCredentialsPrompt } from "@/components/settings/market-credentials-prompt";
 import { SiteLogo } from "@/components/brand/site-logo";
+import { useMounted } from "@/hooks/use-mounted";
 
 function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -61,6 +62,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const homeHref = localizedPath(locale, "/");
   const { status: sessionStatus } = useSession();
+  const mounted = useMounted();
   const [collapsed, setCollapsed] = useSidebarCollapsed();
 
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
@@ -69,18 +71,21 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
   const isAlerts = pathname.startsWith("/alerts");
   const isReview = pathname.startsWith("/review");
   const isAccountGatePage = isWatchlist || isAlerts || isReview;
+  // Session status often differs SSR ("loading") vs client ("authenticated").
+  // Keep the pre-mount layout identical to SSR, then tighten after mount.
+  const authed = mounted && sessionStatus === "authenticated";
   const isFluidMain =
     isMarkets ||
     isPortfolio ||
     pathname.startsWith("/analysis") ||
     pathname.startsWith("/symbol") ||
-    (isAccountGatePage && sessionStatus !== "authenticated");
+    (isAccountGatePage && !authed);
   const mainRailClass = isFluidMain
     ? "w-full px-4 sm:px-6"
     : "mx-auto w-full max-w-6xl px-4 sm:px-6";
-  const sidebarWidth = collapsed
-    ? SIDEBAR_WIDTH_COLLAPSED
-    : SIDEBAR_WIDTH_EXPANDED;
+  // Width must match SSR (collapsed=false) until localStorage is read.
+  const sidebarWidth =
+    mounted && collapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED;
 
   return (
     <div

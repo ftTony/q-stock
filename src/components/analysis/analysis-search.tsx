@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
+import { useMounted } from "@/hooks/use-mounted";
 import type { AssetType, SearchResult } from "@/lib/types";
 import type { AnalysisRecentItem } from "@/components/analysis/types";
 
@@ -24,7 +25,9 @@ export function AnalysisSearch({
 }: Props) {
   const t = useTranslations("analysis");
   const router = useRouter();
-  const listId = useId();
+  const reactListId = useId();
+  const mounted = useMounted();
+  const listId = mounted ? reactListId : undefined;
   const wrapRef = useRef<HTMLDivElement>(null);
   const [q, setQ] = useState("");
   const [results, setResults] = useState<SearchResult[]>([]);

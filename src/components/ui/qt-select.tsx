@@ -7,6 +7,7 @@ import {
   useState,
   type KeyboardEvent,
 } from "react";
+import { useMounted } from "@/hooks/use-mounted";
 
 export type QtSelectOption = {
   value: string;
@@ -39,7 +40,11 @@ export function QtSelect({
 }: QtSelectProps) {
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
-  const listId = useId();
+  const reactListId = useId();
+  // Defer aria-controls until after mount — useId can diverge SSR vs client
+  // when ancestors conditionally render other useId consumers (e.g. session UI).
+  const mounted = useMounted();
+  const listId = mounted ? reactListId : undefined;
   const selected = options.find((o) => o.value === value) ?? options[0];
 
   useEffect(() => {

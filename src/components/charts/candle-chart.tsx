@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useLocale, useTranslations } from "next-intl";
 import type { OhlcvBar } from "@/lib/types";
 import { usePreference } from "@/components/providers/preference-provider";
 import type { DrawingTool } from "@/components/charts/chart-drawing-icons";
@@ -8,105 +9,17 @@ import {
   CandleChartOverlays,
   type IndicatorFlags,
 } from "@/components/charts/candle-chart-overlays";
+import {
+  buildChartStyles,
+  periodFromResolution,
+  toKLineData,
+  type TipLabels,
+} from "@/components/charts/candle-chart-styles";
 
 export type { DrawingTool, IndicatorFlags };
 
 type KLineChartsModule = typeof import("klinecharts");
 type ChartInstance = NonNullable<ReturnType<KLineChartsModule["init"]>>;
-
-function toKLineData(bars: OhlcvBar[]) {
-  return bars.map((b) => ({
-    timestamp: b.time * 1000,
-    open: b.open,
-    high: b.high,
-    low: b.low,
-    close: b.close,
-    volume: b.volume,
-  }));
-}
-
-function readThemeColors() {
-  const styles = getComputedStyle(document.documentElement);
-  return {
-    up: styles.getPropertyValue("--up").trim() || "#e11d48",
-    down: styles.getPropertyValue("--down").trim() || "#16a34a",
-    fg: styles.getPropertyValue("--foreground").trim() || "#edf2ff",
-    muted: styles.getPropertyValue("--muted").trim() || "#8b97ad",
-    bg: styles.getPropertyValue("--panel").trim() || "#0f1520",
-    border: styles.getPropertyValue("--border").trim() || "#1c2433",
-    grid: "rgba(100,116,139,0.18)",
-  };
-}
-
-function buildChartStyles() {
-  const c = readThemeColors();
-  return {
-    grid: {
-      horizontal: { color: c.grid },
-      vertical: { color: c.grid },
-    },
-    candle: {
-      type: "candle_solid" as const,
-      bar: {
-        upColor: c.up,
-        downColor: c.down,
-        noChangeColor: c.muted,
-        upBorderColor: c.up,
-        downBorderColor: c.down,
-        noChangeBorderColor: c.muted,
-        upWickColor: c.up,
-        downWickColor: c.down,
-        noChangeWickColor: c.muted,
-      },
-      priceMark: {
-        high: { color: c.muted },
-        low: { color: c.muted },
-        last: {
-          upColor: c.up,
-          downColor: c.down,
-          noChangeColor: c.muted,
-        },
-      },
-      tooltip: {
-        text: { color: c.fg },
-      },
-    },
-    indicator: {
-      tooltip: {
-        text: { color: c.fg },
-      },
-    },
-    xAxis: {
-      axisLine: { color: c.border },
-      tickLine: { color: c.border },
-      tickText: { color: c.muted },
-    },
-    yAxis: {
-      axisLine: { color: c.border },
-      tickLine: { color: c.border },
-      tickText: { color: c.muted },
-    },
-    crosshair: {
-      horizontal: {
-        line: { color: c.muted },
-        text: { backgroundColor: c.border, color: c.fg },
-      },
-      vertical: {
-        line: { color: c.muted },
-        text: { backgroundColor: c.border, color: c.fg },
-      },
-    },
-    separator: {
-      color: c.border,
-    },
-  };
-}
-
-function periodFromResolution(resolution: string) {
-  if (resolution === "Y") return { type: "year" as const, span: 1 };
-  if (resolution === "Q") return { type: "month" as const, span: 3 };
-  return { type: "day" as const, span: 1 };
-}
 
 export function CandleChart({
   bars,
@@ -146,6 +59,24 @@ export function CandleChart({
   const [ready, setReady] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
   const { changeColorScheme } = usePreference();
+  const locale = useLocale();
+  const t = useTranslations("symbol");
+  const tipLabelsRef = useRef<TipLabels>({
+    time: t("time"),
+    open: t("open"),
+    high: t("high"),
+    low: t("low"),
+    close: t("close"),
+    volume: t("volume"),
+  });
+  tipLabelsRef.current = {
+    time: t("time"),
+    open: t("open"),
+    high: t("high"),
+    low: t("low"),
+    close: t("close"),
+    volume: t("volume"),
+  };
 
   barsRef.current = bars;
   hasMoreRef.current = hasMore;
@@ -217,7 +148,7 @@ export function CandleChart({
       kcRef.current = KC;
       const chart = KC.init(containerRef.current, {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        styles: buildChartStyles() as any,
+        styles: buildChartStyles(tipLabelsRef.current) as any,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       if (!chart) return;
@@ -304,8 +235,8 @@ export function CandleChart({
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart || !ready) return;
-    chart.setStyles(buildChartStyles() as never);
-  }, [changeColorScheme, ready]);
+    chart.setStyles(buildChartStyles(tipLabelsRef.current) as never);
+  }, [changeColorScheme, ready, locale]);
 
   useEffect(() => {
     function onFsChange() {

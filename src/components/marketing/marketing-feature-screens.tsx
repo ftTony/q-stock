@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useSectionReveal } from "@/components/marketing/use-section-reveal";
+import { useMounted } from "@/hooks/use-mounted";
 
 type FeatureKey = "markets" | "watchlist" | "analysis" | "paper" | "alerts";
 
@@ -134,8 +135,10 @@ function FeatureIcon({ name }: { name: FeatureKey | "ai" }) {
 function AiHeroCard({ inView }: { inView: boolean }) {
   const t = useTranslations("marketing");
   const { status } = useSession();
-  const loggedIn = status === "authenticated";
-  const sessionReady = status !== "loading";
+  const mounted = useMounted();
+  // Defer session-dependent copy/CTAs until after mount (SSR is always "loading").
+  const loggedIn = mounted && status === "authenticated";
+  const sessionReady = mounted && status !== "loading";
 
   return (
     <Reveal inView={inView} delay={180}>

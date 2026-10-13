@@ -38,8 +38,7 @@ export function SymbolAiFab(props: {
         type="button"
         aria-label={label}
         title={label}
-        aria-haspopup="dialog"
-        aria-expanded={open || undefined}
+        suppressHydrationWarning
         onClick={() => {
           setView("desk");
           setOpen(true);
