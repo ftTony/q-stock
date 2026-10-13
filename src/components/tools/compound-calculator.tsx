@@ -10,6 +10,8 @@ import {
   type CompoundFrequency,
   type CompoundInput,
 } from "@/lib/tools/compound";
+import { CompoundGrowthChart } from "@/components/tools/compound-growth-chart";
+import { QtSelect } from "@/components/ui/qt-select";
 
 function num(v: string, fallback = 0) {
   const n = Number(v);
@@ -28,7 +30,7 @@ export function CompoundCalculator() {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
       <form
-        className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-5 sm:p-6"
+        className="relative z-0 space-y-4 overflow-visible rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-5 sm:p-6"
         onSubmit={(e) => e.preventDefault()}
       >
         <Field label={t("compound.principal")}>
@@ -63,18 +65,20 @@ export function CompoundCalculator() {
         </div>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t("compound.frequency")}>
-            <select
-              className="qt-input h-10 w-full px-3"
+            <QtSelect
               value={form.compoundFrequency}
-              onChange={(e) =>
-                set("compoundFrequency", e.target.value as CompoundFrequency)
+              onChange={(v) =>
+                set("compoundFrequency", v as CompoundFrequency)
               }
-            >
-              <option value="annual">{t("compound.freqAnnual")}</option>
-              <option value="semiannual">{t("compound.freqSemiannual")}</option>
-              <option value="quarterly">{t("compound.freqQuarterly")}</option>
-              <option value="monthly">{t("compound.freqMonthly")}</option>
-            </select>
+              aria-label={t("compound.frequency")}
+              triggerClassName="h-10 px-3 text-[14px]"
+              options={[
+                { value: "annual", label: t("compound.freqAnnual") },
+                { value: "semiannual", label: t("compound.freqSemiannual") },
+                { value: "quarterly", label: t("compound.freqQuarterly") },
+                { value: "monthly", label: t("compound.freqMonthly") },
+              ]}
+            />
           </Field>
           <Field label={t("compound.contribution")}>
             <input
@@ -141,26 +145,45 @@ export function CompoundCalculator() {
                 value={formatToolNumber(result.simpleInterestApprox)}
               />
             </dl>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[240px] text-left text-xs">
-                <thead className="text-[var(--muted)]">
-                  <tr>
-                    <th className="py-1.5 font-medium">{t("compound.colYear")}</th>
-                    <th className="py-1.5 font-medium">{t("compound.colValue")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.years.map((row) => (
-                    <tr key={row.year} className="border-t border-[var(--border)]">
-                      <td className="py-1.5 tabular-nums">{row.year}</td>
-                      <td className="py-1.5 tabular-nums">
-                        {formatToolNumber(row.value)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div>
+              <p className="mb-2 text-xs font-medium text-[var(--muted)]">
+                {t("compound.chartTitle")}
+              </p>
+              <CompoundGrowthChart
+                years={result.years}
+                principal={form.principal}
+                valueLabel={t("compound.colValue")}
+                contributedLabel={t("compound.resultContributed")}
+                yearLabel={t("compound.colYear")}
+              />
             </div>
+            <details className="group">
+              <summary className="cursor-pointer list-none text-xs text-[var(--muted)] marker:content-none hover:text-[var(--foreground)]">
+                <span className="underline-offset-2 group-open:no-underline hover:underline">
+                  {t("compound.tableToggle")}
+                </span>
+              </summary>
+              <div className="mt-2 overflow-x-auto">
+                <table className="w-full min-w-[240px] text-left text-xs">
+                  <thead className="text-[var(--muted)]">
+                    <tr>
+                      <th className="py-1.5 font-medium">{t("compound.colYear")}</th>
+                      <th className="py-1.5 font-medium">{t("compound.colValue")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.years.map((row) => (
+                      <tr key={row.year} className="border-t border-[var(--border)]">
+                        <td className="py-1.5 tabular-nums">{row.year}</td>
+                        <td className="py-1.5 tabular-nums">
+                          {formatToolNumber(row.value)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
           </>
         ) : (
           <p className="text-sm text-[var(--muted)]">{t("compound.errors.invalid")}</p>
@@ -178,10 +201,10 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block space-y-1.5 text-sm">
+    <div className="block space-y-1.5 text-sm">
       <span className="text-[var(--muted)]">{label}</span>
       {children}
-    </label>
+    </div>
   );
 }
 

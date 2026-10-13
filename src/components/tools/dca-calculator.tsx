@@ -9,6 +9,8 @@ import {
   type DcaFrequency,
   type DcaInput,
 } from "@/lib/tools/dca";
+import { CompoundGrowthChart } from "@/components/tools/compound-growth-chart";
+import { QtSelect } from "@/components/ui/qt-select";
 
 function num(v: string, fallback = 0) {
   const n = Number(v);
@@ -27,7 +29,7 @@ export function DcaCalculator() {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
       <form
-        className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-5 sm:p-6"
+        className="relative z-0 space-y-4 overflow-visible rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-5 sm:p-6"
         onSubmit={(e) => e.preventDefault()}
       >
         <Field label={t("dca.contribution")}>
@@ -40,15 +42,17 @@ export function DcaCalculator() {
         </Field>
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t("dca.frequency")}>
-            <select
-              className="qt-input h-10 w-full px-3"
+            <QtSelect
               value={form.frequency}
-              onChange={(e) => set("frequency", e.target.value as DcaFrequency)}
-            >
-              <option value="monthly">{t("dca.freqMonthly")}</option>
-              <option value="biweekly">{t("dca.freqBiweekly")}</option>
-              <option value="weekly">{t("dca.freqWeekly")}</option>
-            </select>
+              onChange={(v) => set("frequency", v as DcaFrequency)}
+              aria-label={t("dca.frequency")}
+              triggerClassName="h-10 px-3 text-[14px]"
+              options={[
+                { value: "monthly", label: t("dca.freqMonthly") },
+                { value: "biweekly", label: t("dca.freqBiweekly") },
+                { value: "weekly", label: t("dca.freqWeekly") },
+              ]}
+            />
           </Field>
           <Field label={t("dca.periods")}>
             <input
@@ -127,30 +131,54 @@ export function DcaCalculator() {
                 value={`${formatToolNumber(result.profitPct)}%`}
               />
             </dl>
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-[280px] text-left text-xs">
-                <thead className="text-[var(--muted)]">
-                  <tr>
-                    <th className="py-1.5 font-medium">{t("dca.colYear")}</th>
-                    <th className="py-1.5 font-medium">{t("dca.colContributed")}</th>
-                    <th className="py-1.5 font-medium">{t("dca.colValue")}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {result.years.map((row) => (
-                    <tr key={row.year} className="border-t border-[var(--border)]">
-                      <td className="py-1.5 tabular-nums">{row.year}</td>
-                      <td className="py-1.5 tabular-nums">
-                        {formatToolNumber(row.contributed)}
-                      </td>
-                      <td className="py-1.5 tabular-nums">
-                        {formatToolNumber(row.value)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div>
+              <p className="mb-2 text-xs font-medium text-[var(--muted)]">
+                {t("dca.chartTitle")}
+              </p>
+              <CompoundGrowthChart
+                years={result.years}
+                principal={form.initialPrincipal}
+                valueLabel={t("dca.colValue")}
+                contributedLabel={t("dca.colContributed")}
+                yearLabel={t("dca.colYear")}
+              />
             </div>
+            <details className="group">
+              <summary className="cursor-pointer list-none text-xs text-[var(--muted)] marker:content-none hover:text-[var(--foreground)]">
+                <span className="underline-offset-2 group-open:no-underline hover:underline">
+                  {t("dca.tableToggle")}
+                </span>
+              </summary>
+              <div className="mt-2 overflow-x-auto">
+                <table className="w-full min-w-[280px] text-left text-xs">
+                  <thead className="text-[var(--muted)]">
+                    <tr>
+                      <th className="py-1.5 font-medium">{t("dca.colYear")}</th>
+                      <th className="py-1.5 font-medium">
+                        {t("dca.colContributed")}
+                      </th>
+                      <th className="py-1.5 font-medium">{t("dca.colValue")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.years.map((row) => (
+                      <tr
+                        key={row.year}
+                        className="border-t border-[var(--border)]"
+                      >
+                        <td className="py-1.5 tabular-nums">{row.year}</td>
+                        <td className="py-1.5 tabular-nums">
+                          {formatToolNumber(row.contributed)}
+                        </td>
+                        <td className="py-1.5 tabular-nums">
+                          {formatToolNumber(row.value)}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </details>
           </>
         ) : (
           <p className="text-sm text-[var(--muted)]">{t(`dca.errors.${result.error}`)}</p>
@@ -168,10 +196,10 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block space-y-1.5 text-sm">
+    <div className="block space-y-1.5 text-sm">
       <span className="text-[var(--muted)]">{label}</span>
       {children}
-    </label>
+    </div>
   );
 }
 

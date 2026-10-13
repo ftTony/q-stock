@@ -141,11 +141,84 @@ function OptionsVisual() {
   );
 }
 
+function MortgageVisual() {
+  return (
+    <Frame id="mtg">
+      <path d="M40 100 H280" stroke="currentColor" strokeOpacity="0.16" />
+      <path
+        d="M48 36 L96 24 L144 36 V88 H48 Z"
+        fill="var(--panel)"
+        stroke="currentColor"
+        strokeOpacity="0.35"
+        strokeLinejoin="round"
+      />
+      <rect
+        x="72"
+        y="58"
+        width="24"
+        height="30"
+        rx="4"
+        fill="var(--brand-soft)"
+        stroke="currentColor"
+        strokeOpacity="0.3"
+      />
+      <path
+        d="M168 92 C 196 88, 220 70, 248 52 S 276 36, 292 28"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M168 92 C 196 88, 220 70, 248 52 S 276 36, 292 28 L 292 100 H168 Z"
+        fill="url(#mtg-fill)"
+      />
+      <circle cx="220" cy="62" r="4" fill="currentColor" />
+    </Frame>
+  );
+}
+
+function RiskRewardVisual() {
+  return (
+    <Frame id="rr">
+      <path d="M40 88 H280" stroke="currentColor" strokeOpacity="0.16" />
+      <path d="M88 28 V112" stroke="currentColor" strokeOpacity="0.16" />
+      <path
+        d="M88 88 L148 88"
+        stroke="var(--down)"
+        strokeWidth="8"
+        strokeLinecap="round"
+        opacity="0.55"
+      />
+      <path
+        d="M148 88 L268 40"
+        stroke="currentColor"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+      />
+      <circle cx="148" cy="88" r="5" fill="currentColor" />
+      <circle cx="88" cy="88" r="4" fill="var(--down)" fillOpacity="0.7" />
+      <circle cx="268" cy="40" r="4.5" fill="currentColor" />
+      <rect
+        x="200"
+        y="92"
+        width="72"
+        height="22"
+        rx="8"
+        fill="var(--brand-soft)"
+        stroke="currentColor"
+        strokeOpacity="0.25"
+      />
+    </Frame>
+  );
+}
+
 const VISUALS: Record<ToolSlug, () => React.ReactNode> = {
   position: PositionVisual,
+  "risk-reward": RiskRewardVisual,
   dca: DcaVisual,
   compound: CompoundVisual,
   options: OptionsVisual,
+  mortgage: MortgageVisual,
 };
 
 export function ToolCardVisual({ slug }: { slug: ToolSlug }) {

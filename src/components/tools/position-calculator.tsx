@@ -10,6 +10,7 @@ import {
   type PositionRiskMode,
   type PositionSide,
 } from "@/lib/tools/position";
+import { QtSelect } from "@/components/ui/qt-select";
 
 function num(v: string, fallback = 0) {
   const n = Number(v);
@@ -29,7 +30,7 @@ export function PositionCalculator() {
   return (
     <div className="grid gap-5 lg:grid-cols-2">
       <form
-        className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-5 sm:p-6"
+        className="relative z-0 space-y-4 overflow-visible rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-5 sm:p-6"
         onSubmit={(e) => e.preventDefault()}
       >
         <Field label={t("position.equity")}>
@@ -43,14 +44,22 @@ export function PositionCalculator() {
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t("position.riskMode")}>
-            <select
-              className="qt-input h-10 w-full px-3"
+            <QtSelect
               value={form.riskMode}
-              onChange={(e) => set("riskMode", e.target.value as PositionRiskMode)}
-            >
-              <option value="percent">{t("position.riskModePercent")}</option>
-              <option value="amount">{t("position.riskModeAmount")}</option>
-            </select>
+              onChange={(v) => set("riskMode", v as PositionRiskMode)}
+              aria-label={t("position.riskMode")}
+              triggerClassName="h-10 px-3 text-[14px]"
+              options={[
+                {
+                  value: "percent",
+                  label: t("position.riskModePercent"),
+                },
+                {
+                  value: "amount",
+                  label: t("position.riskModeAmount"),
+                },
+              ]}
+            />
           </Field>
           {form.riskMode === "percent" ? (
             <Field label={t("position.riskPercent")}>
@@ -95,14 +104,16 @@ export function PositionCalculator() {
 
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t("position.side")}>
-            <select
-              className="qt-input h-10 w-full px-3"
+            <QtSelect
               value={form.side}
-              onChange={(e) => set("side", e.target.value as PositionSide)}
-            >
-              <option value="long">{t("position.sideLong")}</option>
-              <option value="short">{t("position.sideShort")}</option>
-            </select>
+              onChange={(v) => set("side", v as PositionSide)}
+              aria-label={t("position.side")}
+              triggerClassName="h-10 px-3 text-[14px]"
+              options={[
+                { value: "long", label: t("position.sideLong") },
+                { value: "short", label: t("position.sideShort") },
+              ]}
+            />
           </Field>
           <Field label={t("position.multiplier")}>
             <input
@@ -195,10 +206,10 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block space-y-1.5 text-sm">
+    <div className="block space-y-1.5 text-sm">
       <span className="text-[var(--muted)]">{label}</span>
       {children}
-    </label>
+    </div>
   );
 }
 

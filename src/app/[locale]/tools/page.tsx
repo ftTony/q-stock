@@ -4,7 +4,7 @@ import { MarketingCtaBand } from "@/components/marketing/marketing-cta-band";
 import { ScopedMessages } from "@/components/providers/scoped-messages";
 import { ToolCardVisual } from "@/components/tools/tool-card-visual";
 import { Link } from "@/i18n/routing";
-import { TOOL_CATALOG } from "@/lib/tools/catalog";
+import { TOOL_CATALOG, toolMessageKey } from "@/lib/tools/catalog";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -46,22 +46,25 @@ export default async function ToolsIndexPage({ params }: Props) {
           </div>
 
           <ul className="grid gap-3 sm:grid-cols-2">
-            {TOOL_CATALOG.map((tool) => (
-              <li key={tool.slug}>
-                <Link
-                  href={tool.href}
-                  className="qt-panel block h-full overflow-hidden p-5 transition-colors hover:border-[var(--brand)]/40"
-                >
-                  <ToolCardVisual slug={tool.slug} />
-                  <h2 className="text-sm font-semibold tracking-tight sm:text-base">
-                    {t(`cards.${tool.slug}.title`)}
-                  </h2>
-                  <p className="mt-2 text-xs leading-relaxed text-[var(--muted)] sm:text-sm">
-                    {t(`cards.${tool.slug}.body`)}
-                  </p>
-                </Link>
-              </li>
-            ))}
+            {TOOL_CATALOG.map((tool) => {
+              const key = toolMessageKey(tool);
+              return (
+                <li key={tool.slug}>
+                  <Link
+                    href={tool.href}
+                    className="qt-panel block h-full overflow-hidden p-5 transition-colors hover:border-[var(--brand)]/40"
+                  >
+                    <ToolCardVisual slug={tool.slug} />
+                    <h2 className="text-sm font-semibold tracking-tight sm:text-base">
+                      {t(`cards.${key}.title`)}
+                    </h2>
+                    <p className="mt-2 text-xs leading-relaxed text-[var(--muted)] sm:text-sm">
+                      {t(`cards.${key}.body`)}
+                    </p>
+                  </Link>
+                </li>
+              );
+            })}
           </ul>
         </div>
         <MarketingCtaBand />

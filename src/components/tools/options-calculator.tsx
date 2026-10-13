@@ -4,9 +4,13 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { formatToolNumber } from "@/lib/tools/catalog";
+import { QtSelect } from "@/components/ui/qt-select";
+import { OptionsPayoffChart } from "@/components/tools/options-payoff-chart";
 import {
   OPTIONS_EXAMPLE,
+  OPTIONS_STRATEGIES,
   calcOptionsPayoff,
+  isShortPremiumStrategy,
   type OptionsPayoffInput,
   type OptionsStrategy,
 } from "@/lib/tools/options-payoff";
@@ -15,6 +19,22 @@ function num(v: string, fallback = 0) {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 }
+
+const STRATEGY_LABEL: Record<OptionsStrategy, string> = {
+  long_call: "longCall",
+  long_put: "longPut",
+  short_call: "shortCall",
+  short_put: "shortPut",
+  covered_call: "coveredCall",
+};
+
+const STRATEGY_HINT: Record<OptionsStrategy, string> = {
+  long_call: "hintCall",
+  long_put: "hintPut",
+  short_call: "hintShortCall",
+  short_put: "hintShortPut",
+  covered_call: "hintCoveredCall",
+};
 
 export function OptionsCalculator() {
   const t = useTranslations("tools");
@@ -28,22 +48,43 @@ export function OptionsCalculator() {
     setForm((prev) => ({ ...prev, [key]: value }));
   }
 
+  const shortRisk = isShortPremiumStrategy(form.strategy);
+  const strategyOptions = useMemo(
+    () =>
+      OPTIONS_STRATEGIES.map((s) => ({
+        value: s,
+        label: t(`options.${STRATEGY_LABEL[s]}`),
+        group:
+          s === "covered_call"
+            ? t("options.groupCombo")
+            : t("options.groupSingle"),
+      })),
+    [t],
+  );
+
   return (
     <div className="grid gap-5 lg:grid-cols-2">
       <form
-        className="space-y-4 rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-5 sm:p-6"
+        className="relative z-0 space-y-4 overflow-visible rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-5 sm:p-6"
         onSubmit={(e) => e.preventDefault()}
       >
         <Field label={t("options.strategy")}>
-          <select
-            className="qt-input h-10 w-full px-3"
+          <QtSelect
             value={form.strategy}
-            onChange={(e) => set("strategy", e.target.value as OptionsStrategy)}
-          >
-            <option value="long_call">{t("options.longCall")}</option>
-            <option value="long_put">{t("options.longPut")}</option>
-          </select>
+            onChange={(v) => set("strategy", v as OptionsStrategy)}
+            options={strategyOptions}
+            aria-label={t("options.strategy")}
+            triggerClassName="h-10 px-3 text-[14px]"
+          />
         </Field>
+        {shortRisk ? (
+          <p className="rounded-lg border border-[var(--down)]/30 bg-[var(--down)]/8 px-3 py-2 text-xs text-[var(--down)]">
+            {t("options.shortRisk")}
+          </p>
+        ) : null}
+        {form.strategy === "covered_call" ? (
+          <p className="text-xs text-[var(--muted)]">{t("options.coveredNote")}</p>
+        ) : null}
         <div className="grid gap-3 sm:grid-cols-2">
           <Field label={t("options.spot")}>
             <input
@@ -126,16 +167,33 @@ export function OptionsCalculator() {
               />
               <Stat
                 label={t("options.maxLoss")}
-                value={formatToolNumber(result.maxLoss)}
+                value={
+                  result.maxLoss == null
+                    ? t("options.unlimited")
+                    : formatToolNumber(result.maxLoss)
+                }
+              />
+              <Stat
+                label={t("options.maxGain")}
+                value={
+                  result.maxGain == null
+                    ? t("options.unlimited")
+                    : formatToolNumber(result.maxGain)
+                }
               />
             </dl>
             <p className="text-xs text-[var(--muted)]">
-              {form.strategy === "long_call" ? t("options.hintCall") : t("options.hintPut")}
+              {t(`options.${STRATEGY_HINT[form.strategy]}`)}
             </p>
-            <PayoffChart
+            <OptionsPayoffChart
               points={result.points}
               spot={form.spot}
               breakeven={result.breakeven}
+              title={t("options.chartTitle")}
+              axisUnderlying={t("options.axisUnderlying")}
+              axisPnl={t("options.axisPnl")}
+              legendSpot={t("options.legendSpot")}
+              legendBreakeven={t("options.legendBreakeven")}
             />
           </>
         ) : (
@@ -143,71 +201,6 @@ export function OptionsCalculator() {
         )}
       </div>
     </div>
-  );
-}
-
-function PayoffChart({
-  points,
-  spot,
-  breakeven,
-}: {
-  points: { underlying: number; pnlContract: number }[];
-  spot: number;
-  breakeven: number;
-}) {
-  const width = 320;
-  const height = 140;
-  const pad = 8;
-  const xs = points.map((p) => p.underlying);
-  const ys = points.map((p) => p.pnlContract);
-  const minX = Math.min(...xs);
-  const maxX = Math.max(...xs);
-  const minY = Math.min(...ys, 0);
-  const maxY = Math.max(...ys, 0);
-  const sx = (x: number) =>
-    pad + ((x - minX) / (maxX - minX || 1)) * (width - pad * 2);
-  const sy = (y: number) =>
-    height - pad - ((y - minY) / (maxY - minY || 1)) * (height - pad * 2);
-  const d = points
-    .map((p, i) => `${i === 0 ? "M" : "L"}${sx(p.underlying)},${sy(p.pnlContract)}`)
-    .join(" ");
-  const zeroY = sy(0);
-
-  return (
-    <svg
-      viewBox={`0 0 ${width} ${height}`}
-      className="h-36 w-full rounded-xl border border-[var(--border)] bg-[var(--surface-2)]"
-      role="img"
-      aria-hidden
-    >
-      <line
-        x1={pad}
-        x2={width - pad}
-        y1={zeroY}
-        y2={zeroY}
-        stroke="var(--border)"
-        strokeWidth="1"
-      />
-      <path d={d} fill="none" stroke="var(--brand)" strokeWidth="2" />
-      <line
-        x1={sx(spot)}
-        x2={sx(spot)}
-        y1={pad}
-        y2={height - pad}
-        stroke="var(--muted)"
-        strokeDasharray="3 3"
-        strokeWidth="1"
-      />
-      <line
-        x1={sx(breakeven)}
-        x2={sx(breakeven)}
-        y1={pad}
-        y2={height - pad}
-        stroke="var(--brand-text)"
-        strokeDasharray="2 2"
-        strokeWidth="1"
-      />
-    </svg>
   );
 }
 
@@ -219,10 +212,10 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block space-y-1.5 text-sm">
+    <div className="block space-y-1.5 text-sm">
       <span className="text-[var(--muted)]">{label}</span>
       {children}
-    </label>
+    </div>
   );
 }
 
