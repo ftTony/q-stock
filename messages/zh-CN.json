@@ -834,12 +834,135 @@
   },
   "tools": {
     "title": "理财工具",
+    "indexSubtitle": "仓位、定投、复利与期权估算——假设测算，仅供学习。",
     "comingSoon": "敬请期待",
     "comingSoonBody": "仓位、定投、复利与期权估算等小工具筹备中，稍后上线。",
     "ctaMarkets": "进入行情",
+    "ctaPortfolio": "去模拟盘练习",
     "backHome": "返回官网",
-    "disclaimer": "工具结果仅为假设估算，不构成投资建议。",
-    "disclaimerLink": "免责声明"
+    "back": "工具列表",
+    "fillExample": "填入示例",
+    "reset": "清空",
+    "studyNote": "假设测算 · 仅供学习",
+    "disclaimer": "工具结果仅为假设估算，未计入滑点、佣金与真实成交差异，不构成投资建议。",
+    "disclaimerLink": "免责声明",
+    "cards": {
+      "position": {
+        "title": "仓位风险",
+        "body": "按止损与风险预算，反推可开仓数量。"
+      },
+      "dca": {
+        "title": "定投",
+        "body": "用固定年化假设，估算坚持投入的终值。"
+      },
+      "compound": {
+        "title": "复利",
+        "body": "看本金、时间与计息频率如何放大结果。"
+      },
+      "options": {
+        "title": "期权估算",
+        "body": "先看打和点与最大亏损，弄清到期盈亏结构。"
+      }
+    },
+    "position": {
+      "title": "仓位风险",
+      "subtitle": "先定能亏多少，再算能买多少。",
+      "equity": "账户权益",
+      "riskMode": "风险方式",
+      "riskModePercent": "占权益 %",
+      "riskModeAmount": "固定金额",
+      "riskPercent": "单笔风险 %",
+      "riskAmount": "风险金额",
+      "entry": "入场价",
+      "stop": "止损价",
+      "side": "方向",
+      "sideLong": "多",
+      "sideShort": "空",
+      "multiplier": "乘数",
+      "resultQty": "建议数量",
+      "resultRiskUsed": "风险金额",
+      "resultRiskPct": "风险占权益",
+      "resultNotional": "名义仓位",
+      "resultPosPct": "仓位占权益",
+      "resultPerUnit": "每单位风险",
+      "hintLong": "多单：价格下跌至止损时触及风险预算。",
+      "hintShort": "空单：价格上涨至止损时触及风险预算。",
+      "errors": {
+        "invalid": "请检查输入：权益、价格需为正，风险比例建议 0.1%–10%。",
+        "stop_side": "止损方向不正确：多单止损应低于入场价，空单应高于入场价。",
+        "zero_risk": "入场价与止损价不能相同。",
+        "zero_qty": "风险预算过小或止损过宽，算不出可开数量，请调整。"
+      }
+    },
+    "dca": {
+      "title": "定投计算器",
+      "subtitle": "用固定假设，感受时间与收益率的量级。",
+      "contribution": "每期投入",
+      "frequency": "定投频率",
+      "freqMonthly": "每月",
+      "freqBiweekly": "每两周",
+      "freqWeekly": "每周",
+      "periods": "总期数",
+      "annualRate": "假设年化 %",
+      "initial": "期初本金",
+      "note": "按每期末投入的年金公式估算；非历史回测，不代表任何产品收益。",
+      "resultFv": "估算终值",
+      "resultContributed": "总投入",
+      "resultProfit": "估算收益",
+      "resultProfitPct": "收益率",
+      "colYear": "年",
+      "colContributed": "累计投入",
+      "colValue": "估算市值",
+      "errors": {
+        "invalid": "请检查投入、期数（1–600）与年化（-50%～50%）。",
+        "rate": "年化过低，无法计算。"
+      }
+    },
+    "compound": {
+      "title": "复利计算器",
+      "subtitle": "看清时间与频率，而不是寻找稳赚数字。",
+      "principal": "期初本金",
+      "annualRate": "年化 %",
+      "years": "年数",
+      "frequency": "复利频率",
+      "freqAnnual": "每年",
+      "freqSemiannual": "每半年",
+      "freqQuarterly": "每季",
+      "freqMonthly": "每月",
+      "contribution": "每期追加",
+      "note": "采用名义年率按期分割的教学算法，与定投工具公式略有不同。",
+      "compareDca": "对比定投工具",
+      "resultFv": "估算终值",
+      "resultContributed": "总投入",
+      "resultProfit": "估算收益",
+      "resultMultiple": "相对投入倍数",
+      "resultSimple": "单利粗算对照",
+      "colYear": "年",
+      "colValue": "估算市值",
+      "errors": {
+        "invalid": "请检查本金、年数（≤50）与年化（-50%～50%）。"
+      }
+    },
+    "options": {
+      "title": "期权估算",
+      "subtitle": "先看懂亏在哪、打和在哪，再谈贵或便宜。",
+      "strategy": "策略",
+      "longCall": "买入认购",
+      "longPut": "买入认沽",
+      "spot": "标的现价（参考）",
+      "strike": "行权价",
+      "premium": "每股权利金",
+      "multiplier": "合约乘数",
+      "note": "到期盈亏示意，未含费用与提前行权；不是成交价或下单建议。",
+      "linkPosition": "去仓位工具",
+      "breakeven": "打和点",
+      "maxLoss": "最大亏损（买入）",
+      "hintCall": "买入认购：到期标的需高于打和点，整体才盈利。",
+      "hintPut": "买入认沽：到期标的需低于打和点，整体才盈利。",
+      "errors": {
+        "invalid": "请填写正的现价、行权价，以及非负权利金。"
+      }
+    }
   },
   "notFound": {
     "title": "页面走丢了",

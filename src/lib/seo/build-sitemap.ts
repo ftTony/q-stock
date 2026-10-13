@@ -7,6 +7,7 @@ import {
 } from "@/i18n/config";
 import { siteOrigin } from "@/lib/seo/site-url";
 import { listLearnArticles } from "@/lib/learn/articles";
+import { TOOL_CATALOG } from "@/lib/tools/catalog";
 import {
   resolveSymbolsForMarket,
   seedSymbolsForMarket,
@@ -113,6 +114,18 @@ export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
   for (const article of listLearnArticles()) {
     const path = `/learn/${article.slug}`;
     const languages = languageMapForPath(origin, path);
+    for (const locale of SITEMAP_LOCALES) {
+      pushUnique(entries, seen, {
+        url: languages[locale]!,
+        lastModified: now,
+        changeFrequency: "monthly",
+        priority: 0.55,
+        languages,
+      });
+    }
+  }
+  for (const tool of TOOL_CATALOG) {
+    const languages = languageMapForPath(origin, tool.href);
     for (const locale of SITEMAP_LOCALES) {
       pushUnique(entries, seen, {
         url: languages[locale]!,

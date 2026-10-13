@@ -10,11 +10,9 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
   const tApp = useTranslations("app");
   const pathname = usePathname();
   const isLandingHome = pathname === "/";
-  /** Full-viewport, non-scrolling chrome (coming-soon / short marketing). */
+  /** Full-viewport, non-scrolling chrome (short marketing pages). */
   const isOneScreen =
-    pathname === "/tools" ||
-    pathname.startsWith("/disclaimer") ||
-    pathname.startsWith("/pricing");
+    pathname.startsWith("/disclaimer") || pathname.startsWith("/pricing");
 
   return (
     <div

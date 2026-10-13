@@ -829,12 +829,135 @@
   },
   "tools": {
     "title": "Tools",
+    "indexSubtitle": "Position, DCA, compounding, and options payoff — hypothetical study aids.",
     "comingSoon": "Coming soon",
     "comingSoonBody": "Position, DCA, compounding, and options calculators are on the way.",
     "ctaMarkets": "Open markets",
+    "ctaPortfolio": "Practice on paper",
     "backHome": "Back to home",
-    "disclaimer": "Results are hypothetical estimates only—not investment advice.",
-    "disclaimerLink": "Disclaimer"
+    "back": "All tools",
+    "fillExample": "Load example",
+    "reset": "Reset",
+    "studyNote": "Hypothetical · study only",
+    "disclaimer": "Results are hypothetical estimates only — they omit slippage, fees, and live fills, and are not investment advice.",
+    "disclaimerLink": "Disclaimer",
+    "cards": {
+      "position": {
+        "title": "Position sizing",
+        "body": "Back out size from stop distance and risk budget."
+      },
+      "dca": {
+        "title": "DCA",
+        "body": "Estimate ending value under a fixed return assumption."
+      },
+      "compound": {
+        "title": "Compounding",
+        "body": "See how principal, time, and frequency interact."
+      },
+      "options": {
+        "title": "Options payoff",
+        "body": "Breakeven and max loss before talking cheap or rich."
+      }
+    },
+    "position": {
+      "title": "Position sizing",
+      "subtitle": "Decide what you can lose, then size the trade.",
+      "equity": "Account equity",
+      "riskMode": "Risk mode",
+      "riskModePercent": "% of equity",
+      "riskModeAmount": "Fixed amount",
+      "riskPercent": "Risk %",
+      "riskAmount": "Risk amount",
+      "entry": "Entry",
+      "stop": "Stop",
+      "side": "Side",
+      "sideLong": "Long",
+      "sideShort": "Short",
+      "multiplier": "Multiplier",
+      "resultQty": "Suggested quantity",
+      "resultRiskUsed": "Risk amount",
+      "resultRiskPct": "Risk / equity",
+      "resultNotional": "Notional",
+      "resultPosPct": "Position / equity",
+      "resultPerUnit": "Risk per unit",
+      "hintLong": "Long: stop below entry uses the risk budget if price falls to the stop.",
+      "hintShort": "Short: stop above entry uses the risk budget if price rises to the stop.",
+      "errors": {
+        "invalid": "Check inputs: equity and prices must be positive; risk % usually 0.1-10.",
+        "stop_side": "Stop side is wrong: long stops below entry, short stops above.",
+        "zero_risk": "Entry and stop cannot be equal.",
+        "zero_qty": "Risk budget is too small or the stop is too wide — adjust inputs."
+      }
+    },
+    "dca": {
+      "title": "DCA calculator",
+      "subtitle": "Feel the scale of time and assumed returns — not a promise.",
+      "contribution": "Contribution / period",
+      "frequency": "Frequency",
+      "freqMonthly": "Monthly",
+      "freqBiweekly": "Biweekly",
+      "freqWeekly": "Weekly",
+      "periods": "Periods",
+      "annualRate": "Assumed annual %",
+      "initial": "Starting principal",
+      "note": "Ordinary annuity (end-of-period). Not a historical backtest.",
+      "resultFv": "Estimated future value",
+      "resultContributed": "Total contributed",
+      "resultProfit": "Estimated gain",
+      "resultProfitPct": "Return on contributions",
+      "colYear": "Year",
+      "colContributed": "Contributed",
+      "colValue": "Value",
+      "errors": {
+        "invalid": "Check contribution, periods (1-600), and annual % (-50 to 50).",
+        "rate": "Annual rate is too low to compute."
+      }
+    },
+    "compound": {
+      "title": "Compound calculator",
+      "subtitle": "See time and frequency — not a guaranteed win.",
+      "principal": "Starting principal",
+      "annualRate": "Annual %",
+      "years": "Years",
+      "frequency": "Compound frequency",
+      "freqAnnual": "Annual",
+      "freqSemiannual": "Semiannual",
+      "freqQuarterly": "Quarterly",
+      "freqMonthly": "Monthly",
+      "contribution": "Contribution / period",
+      "note": "Uses nominal rate / periods (teaching split), slightly different from the DCA tool.",
+      "compareDca": "Compare DCA tool",
+      "resultFv": "Estimated future value",
+      "resultContributed": "Total contributed",
+      "resultProfit": "Estimated gain",
+      "resultMultiple": "Multiple of contributions",
+      "resultSimple": "Simple-interest rough compare",
+      "colYear": "Year",
+      "colValue": "Value",
+      "errors": {
+        "invalid": "Check principal, years (<=50), and annual % (-50 to 50)."
+      }
+    },
+    "options": {
+      "title": "Options payoff",
+      "subtitle": "Know max loss and breakeven before debating price.",
+      "strategy": "Strategy",
+      "longCall": "Long call",
+      "longPut": "Long put",
+      "spot": "Spot (reference)",
+      "strike": "Strike",
+      "premium": "Premium / share",
+      "multiplier": "Multiplier",
+      "note": "Expiry payoff sketch only — no fees or early exercise. Not a quote or order ticket.",
+      "linkPosition": "Position tool",
+      "breakeven": "Breakeven",
+      "maxLoss": "Max loss (long)",
+      "hintCall": "Long call: underlying must finish above breakeven for an overall profit.",
+      "hintPut": "Long put: underlying must finish below breakeven for an overall profit.",
+      "errors": {
+        "invalid": "Enter positive spot/strike and a non-negative premium."
+      }
+    }
   },
   "notFound": {
     "title": "Page not found",
