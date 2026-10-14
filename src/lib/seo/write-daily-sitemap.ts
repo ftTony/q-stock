@@ -13,13 +13,7 @@ import {
 } from "@/lib/seo/build-sitemap";
 import { usTradeDate } from "@/lib/market/session";
 import { siteOrigin } from "@/lib/seo/site-url";
-
-function outDir(): string {
-  return (
-    process.env.SITEMAP_OUT_DIR?.trim() ||
-    path.join(process.cwd(), "public", "sitemaps")
-  );
-}
+import { sitemapOutDir } from "@/lib/seo/sitemap-fs";
 
 async function removeStaleSegmentFiles(
   dir: string,
@@ -59,7 +53,7 @@ export async function writeDailySitemapFile(opts?: {
 }): Promise<{ wrote: boolean; day: string; files: string[] }> {
   const now = opts?.now ?? new Date();
   const day = usTradeDate(now);
-  const root = outDir();
+  const root = sitemapOutDir();
   const marker = path.join(root, ".seo-sitemap-day");
   const files: string[] = [];
 

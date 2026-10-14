@@ -6,9 +6,12 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["longbridge"],
-  // Next `generateSitemaps()` leaves `/sitemap.xml` broken; serve our index instead.
+  // Sitemap: index + children via lightweight routes (disk-first, not MetadataRoute).
   async rewrites() {
-    return [{ source: "/sitemap.xml", destination: "/sitemap-index.xml" }];
+    return [
+      { source: "/sitemap.xml", destination: "/sitemap-index.xml" },
+      { source: "/sitemap/:id.xml", destination: "/sitemap/:id" },
+    ];
   },
   images: {
     remotePatterns: [

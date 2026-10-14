@@ -1,21 +1,20 @@
-import { NextResponse } from "next/server";
 import {
-  buildSitemapIndexXml,
-  listSitemapChunkIds,
-} from "@/lib/seo/build-sitemap";
-import { prisma } from "@/lib/db";
+  buildSeedIndexXml,
+  readSitemapFile,
+  sitemapXmlResponse,
+} from "@/lib/seo/sitemap-fs";
 
 export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-/** Sitemap index (also exposed as `/sitemap.xml` via next.config rewrite). */
+/**
+ * Sitemap index (also exposed as `/sitemap.xml` via next.config rewrite).
+ * Prefer Worker-written `public/sitemaps/sitemap.xml`; seed-only fallback.
+ */
 export async function GET() {
-  const ids = await listSitemapChunkIds({ prisma });
-  const childPaths = ids.map((id) => `/sitemap/${id}.xml`);
-  const xml = buildSitemapIndexXml(childPaths);
-  return new NextResponse(xml, {
-    headers: {
-      "Content-Type": "application/xml; charset=utf-8",
-      "Cache-Control": "public, max-age=3600, must-revalidate",
-    },
-  });
+  const cached = await readSitemapFile("sitemap.xml");
+  if (cached) return sitemapXmlResponse(cached);
+
+  const xml = await buildSeedIndexXml();
+  return sitemapXmlResponse(xml);
 }
