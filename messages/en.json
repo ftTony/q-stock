@@ -643,6 +643,13 @@
   },
   "analysis": {
     "subtitle": "Pick an industry, then compare 2–4 peer stocks side by side",
+    "seoDescription": "Industry heatmap and peer compare for US, HK, and A-shares. Line up 2–4 names on valuation and fundamentals. For learning only; not investment advice.",
+    "seoIntro": "Scan the industry heatmap, then line up 2–4 peers on valuation and fundamentals.",
+    "seoHowTitle": "Three steps",
+    "seoHow1": "Pick US / HK / A-shares, then an industry",
+    "seoHow2": "Browse by change; add 2–4 to the basket",
+    "seoHow3": "Open compare for metrics; AI notes are for study",
+    "seoDisclaimer": "Figures can be delayed or incomplete. This is a learning tool, not investment advice.",
     "search": "Search",
     "searchPlaceholder": "Ticker (e.g. NVDA / 00700)…",
     "recent": "Recent",

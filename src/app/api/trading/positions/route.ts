@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { getQuote } from "@/lib/market";
+import { getQuotes } from "@/lib/market";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import { ensureAccount } from "@/lib/trading/account";
 
@@ -19,46 +19,47 @@ export async function GET(req: Request) {
   const positions = await prisma.paperPosition.findMany({
     where: { userId: session.user.id },
     orderBy: { updatedAt: "desc" },
+    take: 80,
   });
 
   return withUserMarket(session.user.id, async () => {
-    const items = await Promise.all(
-      positions.map(async (p) => {
-        const qty = Number(p.qty);
-        const avgCost = Number(p.avgCost);
-        let price: number | null = null;
-        let marketValue: number | null = null;
-        let unrealizedPnl: number | null = null;
-        let unrealizedPnlPct: number | null = null;
+    const quoteMap = new Map<string, number>();
+    if (withQuotes && positions.length) {
+      const quotes = await getQuotes(
+        positions.map((p) => ({ symbol: p.symbol, assetType: p.assetType })),
+      ).catch(() => []);
+      for (const q of quotes) {
+        if (q.price > 0) quoteMap.set(`${q.assetType}:${q.symbol}`, q.price);
+      }
+    }
 
-        if (withQuotes) {
-          try {
-            const q = await getQuote(p.symbol, p.assetType);
-            price = q.price;
-            marketValue = qty * price;
-            const cost = qty * avgCost;
-            unrealizedPnl = marketValue - cost;
-            unrealizedPnlPct = cost > 0 ? (unrealizedPnl / cost) * 100 : null;
-          } catch {
-            // leave quote fields null
-          }
-        }
+    const items = positions.map((p) => {
+      const qty = Number(p.qty);
+      const avgCost = Number(p.avgCost);
+      const price = quoteMap.get(`${p.assetType}:${p.symbol}`) ?? null;
+      const marketValue = price != null ? qty * price : null;
+      const cost = qty * avgCost;
+      const unrealizedPnl =
+        marketValue != null ? marketValue - cost : null;
+      const unrealizedPnlPct =
+        unrealizedPnl != null && cost > 0
+          ? (unrealizedPnl / cost) * 100
+          : null;
 
-        return {
-          id: p.id,
-          symbol: p.symbol,
-          assetType: p.assetType,
-          qty,
-          avgCost,
-          price,
-          marketValue,
-          unrealizedPnl,
-          unrealizedPnlPct,
-          createdAt: p.createdAt,
-          updatedAt: p.updatedAt,
-        };
-      }),
-    );
+      return {
+        id: p.id,
+        symbol: p.symbol,
+        assetType: p.assetType,
+        qty,
+        avgCost,
+        price,
+        marketValue,
+        unrealizedPnl,
+        unrealizedPnlPct,
+        createdAt: p.createdAt,
+        updatedAt: p.updatedAt,
+      };
+    });
 
     return NextResponse.json({ positions: items });
   });

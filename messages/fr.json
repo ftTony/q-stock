@@ -638,6 +638,13 @@
   },
   "analysis": {
     "subtitle": "Pick an industry, then compare 2–4 peer stocks side by side",
+    "seoDescription": "Carte sectorielle et comparaison de pairs pour actions US, HK et A. Alignez 2 à 4 titres sur valorisation et fondamentaux. Usage pédagogique, pas un conseil d’investissement.",
+    "seoIntro": "Parcourez la carte sectorielle, puis alignez 2 à 4 pairs sur valorisation et fondamentaux.",
+    "seoHowTitle": "Trois étapes",
+    "seoHow1": "Choisissez US / HK / A, puis un secteur",
+    "seoHow2": "Parcourez par variation ; ajoutez 2 à 4 au panier",
+    "seoHow3": "Ouvrez la comparaison ; notes IA pour étudier",
+    "seoDisclaimer": "Données parfois retardées ou incomplètes. Outil d’apprentissage, pas un conseil d’investissement.",
     "search": "Search",
     "searchPlaceholder": "Ticker (e.g. NVDA / 00700)…",
     "recent": "Recent",

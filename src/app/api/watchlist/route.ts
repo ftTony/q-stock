@@ -21,6 +21,7 @@ export async function GET(req: Request) {
   const items = await prisma.watchlistItem.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
+    take: 200,
   });
 
   if (!withQuotes) {
@@ -38,7 +39,9 @@ export async function GET(req: Request) {
 
   return withUserMarket(session.user.id, async () => {
     const quotes = await getQuotes(
-      items.map((i) => ({ symbol: i.symbol, assetType: i.assetType })),
+      items
+        .slice(0, 80)
+        .map((i) => ({ symbol: i.symbol, assetType: i.assetType })),
     );
     const quoteMap = new Map(
       quotes.map((q) => [`${q.assetType}:${q.symbol}`, q]),

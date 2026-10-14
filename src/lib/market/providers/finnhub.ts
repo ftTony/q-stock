@@ -1,4 +1,5 @@
 import { cachedFetch } from "@/lib/cache";
+import { mapPoolSettled } from "@/lib/map-pool";
 import type { AssetType, OhlcvBar, Quote, SearchResult } from "@/lib/types";
 import { normalizeSymbol, toFinnhubSymbol } from "@/lib/market/symbols";
 import type { MarketDataProvider, QuoteWithSource } from "@/lib/market/types";
@@ -145,12 +146,9 @@ export const finnhubProvider: MarketDataProvider = {
   },
 
   async getQuotes(items) {
-    const results = await Promise.allSettled(
-      items.map((i) => fhGetQuote(i.symbol, i.assetType)),
+    return mapPoolSettled(items.slice(0, 80), 6, (i) =>
+      fhGetQuote(i.symbol, i.assetType),
     );
-    return results
-      .filter((r): r is PromiseFulfilledResult<QuoteWithSource> => r.status === "fulfilled")
-      .map((r) => r.value);
   },
 
   async getDailyCandles(symbol, assetType, from, to) {

@@ -638,6 +638,13 @@
   },
   "analysis": {
     "subtitle": "Pick an industry, then compare 2–4 peer stocks side by side",
+    "seoDescription": "Peta haba industri dan banding rakan untuk saham AS, HK dan A. Jajar 2–4 nama pada penilaian dan asas. Untuk belajar sahaja, bukan nasihat pelaburan.",
+    "seoIntro": "Imbas peta haba industri, kemudian jajar 2–4 rakan pada penilaian dan asas.",
+    "seoHowTitle": "Tiga langkah",
+    "seoHow1": "Pilih AS / HK / A, kemudian industri",
+    "seoHow2": "Imbas mengikut perubahan; tambah 2–4 ke bakul",
+    "seoHow3": "Buka banding; nota AI untuk belajar",
+    "seoDisclaimer": "Data mungkin tertunda atau tidak lengkap. Alat pembelajaran, bukan nasihat pelaburan.",
     "search": "Search",
     "searchPlaceholder": "Ticker (e.g. NVDA / 00700)…",
     "recent": "Recent",

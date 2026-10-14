@@ -1,4 +1,5 @@
 import { cachedFetch } from "@/lib/cache";
+import { mapPoolSettled } from "@/lib/map-pool";
 import type { MarketDataProvider, QuoteWithSource } from "@/lib/market/types";
 import { MarketDataError } from "@/lib/market/types";
 import { resolveOkxCreds } from "@/lib/market/resolve-market-creds";
@@ -236,16 +237,8 @@ export const okxProvider: MarketDataProvider = {
   },
 
   async getQuotes(items) {
-    const crypto = items.filter((i) => i.assetType === "crypto");
-    const results = await Promise.allSettled(
-      crypto.map((i) => this.getQuote(i.symbol, "crypto")),
-    );
-    return results
-      .filter(
-        (r): r is PromiseFulfilledResult<QuoteWithSource> =>
-          r.status === "fulfilled",
-      )
-      .map((r) => r.value);
+    const crypto = items.filter((i) => i.assetType === "crypto").slice(0, 80);
+    return mapPoolSettled(crypto, 6, (i) => this.getQuote(i.symbol, "crypto"));
   },
 
   async getDailyCandles(symbol, assetType, from, to) {

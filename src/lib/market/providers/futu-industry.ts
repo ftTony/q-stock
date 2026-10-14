@@ -1,4 +1,5 @@
 import { cachedFetch } from "@/lib/cache";
+import { mapPool } from "@/lib/map-pool";
 import {
   futuRequest,
   isFutuConfigured,
@@ -93,24 +94,6 @@ async function snapshotCodes(codes: string[]): Promise<Map<string, SnapRow>> {
   return byCode;
 }
 
-async function mapPool<T, R>(
-  items: T[],
-  concurrency: number,
-  fn: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const out: R[] = new Array(items.length);
-  let next = 0;
-  async function worker() {
-    while (next < items.length) {
-      const i = next++;
-      out[i] = await fn(items[i]);
-    }
-  }
-  const n = Math.min(concurrency, Math.max(1, items.length));
-  await Promise.all(Array.from({ length: n }, () => worker()));
-  return out;
-}
-
 export async function getFutuIndustryHeatmap(
   assetType: AssetType,
   limit = 40,
@@ -175,7 +158,7 @@ export async function getFutuIndustryHeatmap(
       .sort((a, b) => b.cellBase.weight - a.cellBase.weight)
       .slice(0, limit);
 
-    const memberLists = await mapPool(ranked, 6, async (row) => {
+    const memberLists = await mapPool(ranked, 3, async (row) => {
       try {
         const { data: stockData } = await futuRequest<{
           stock_list?: StockRow[];

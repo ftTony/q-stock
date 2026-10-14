@@ -9,9 +9,9 @@ import {
 import type { AssetType, Quote } from "@/lib/types";
 
 export function pollIntervalMs(): number {
-  const n = Number(process.env.QUOTE_POLL_MS || 1500);
-  if (!Number.isFinite(n)) return 1500;
-  return Math.min(10_000, Math.max(500, Math.floor(n)));
+  const n = Number(process.env.QUOTE_POLL_MS || 4000);
+  if (!Number.isFinite(n)) return 4000;
+  return Math.min(15_000, Math.max(1500, Math.floor(n)));
 }
 
 export async function fetchQuotesFor(

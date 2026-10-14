@@ -7,6 +7,7 @@ import {
   localizedPath,
   type AppLocale,
 } from "@/i18n/config";
+import { cachedFetch } from "@/lib/cache";
 import { getQuote } from "@/lib/market";
 import { displayName } from "@/lib/market-names";
 import { siteOrigin } from "@/lib/seo/site-url";
@@ -65,14 +66,19 @@ function languageAlternates(
   return languages;
 }
 
-/** Best-effort live quote for SSR / metadata (deduped per request). */
+/** Best-effort quote for SSR / metadata (request-deduped + 60s shared cache). */
 export const fetchSymbolQuote = cache(
   async (symbol: string, assetType: AssetType): Promise<Quote | null> => {
+    const sym = symbol.toUpperCase();
     try {
-      return await getQuote(symbol, assetType);
+      return await cachedFetch(
+        `seo:quote:v1:${assetType}:${sym}`,
+        60_000,
+        () => getQuote(sym, assetType),
+      );
     } catch (err) {
       console.warn(
-        `[seo] symbol quote failed ${assetType}/${symbol}:`,
+        `[seo] symbol quote failed ${assetType}/${sym}:`,
         err instanceof Error ? err.message : err,
       );
       return null;

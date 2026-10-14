@@ -27,9 +27,9 @@ const POPULAR: Record<SitemapMarket, readonly string[]> = {
 
 /** How many symbols to pull per equity market from APIs. */
 function rankLimit(): number {
-  const n = Number(process.env.SITEMAP_RANK_LIMIT || 200);
-  if (!Number.isFinite(n)) return 200;
-  return Math.min(2000, Math.max(30, Math.floor(n)));
+  const n = Number(process.env.SITEMAP_RANK_LIMIT || 120);
+  if (!Number.isFinite(n)) return 120;
+  return Math.min(400, Math.max(30, Math.floor(n)));
 }
 
 function normalizeSymbol(assetType: AssetType, symbol: string): string {
@@ -156,29 +156,31 @@ async function symbolsFromCryptoApi(): Promise<string[]> {
 
   // Top USDT pairs by quote volume (Binance public 24hr ticker).
   try {
-    const rows = await cachedFetch(
-      "seo:binance:ticker24h:usdt:v2",
+    const usdt = await cachedFetch(
+      `seo:binance:ticker24h:usdt:v3:${rankLimit()}`,
       6 * 60 * 60_000,
       async () => {
         const res = await fetch("https://api.binance.com/api/v3/ticker/24hr", {
           signal: AbortSignal.timeout(15000),
         });
         if (!res.ok) throw new Error(`Binance HTTP ${res.status}`);
-        return (await res.json()) as Array<{
+        const rows = (await res.json()) as Array<{
           symbol?: string;
           quoteVolume?: string;
         }>;
+        return rows
+          .filter(
+            (r) => typeof r.symbol === "string" && r.symbol.endsWith("USDT"),
+          )
+          .map((r) => ({
+            base: r.symbol!.slice(0, -4),
+            vol: Number(r.quoteVolume || 0),
+          }))
+          .filter((r) => r.base && Number.isFinite(r.vol))
+          .sort((a, b) => b.vol - a.vol)
+          .slice(0, rankLimit());
       },
     );
-    const usdt = rows
-      .filter((r) => typeof r.symbol === "string" && r.symbol.endsWith("USDT"))
-      .map((r) => ({
-        base: r.symbol!.slice(0, -4),
-        vol: Number(r.quoteVolume || 0),
-      }))
-      .filter((r) => r.base && Number.isFinite(r.vol))
-      .sort((a, b) => b.vol - a.vol)
-      .slice(0, rankLimit());
     for (const r of usdt) {
       const n = normalizeSymbol("crypto", r.base);
       if (n) out.add(n);
@@ -215,25 +217,25 @@ async function symbolsFromDb(
         where: { assetType: market },
         distinct: ["symbol"],
         select: { symbol: true },
-        take: 2000,
+        take: 400,
       }),
       prisma.priceAlert.findMany({
         where: { assetType: market },
         distinct: ["symbol"],
         select: { symbol: true },
-        take: 2000,
+        take: 400,
       }),
       prisma.paperPosition.findMany({
         where: { assetType: market },
         distinct: ["symbol"],
         select: { symbol: true },
-        take: 2000,
+        take: 400,
       }),
       prisma.paperOrder.findMany({
         where: { assetType: market, status: "filled" },
         distinct: ["symbol"],
         select: { symbol: true },
-        take: 2000,
+        take: 400,
       }),
     ]);
 

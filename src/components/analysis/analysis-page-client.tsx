@@ -22,7 +22,6 @@ export function AnalysisPageClient({ initialIndustries }: Props) {
   const t = useTranslations("analysis");
   const tMarket = useTranslations("market");
   const tCommon = useTranslations("common");
-  const tNav = useTranslations("nav");
   const page = useAnalysisPage(initialIndustries);
 
   function addFromSearch(
@@ -54,14 +53,6 @@ export function AnalysisPageClient({ initialIndustries }: Props) {
     <div className="space-y-3">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div className="min-w-0 space-y-2">
-          <div className="space-y-0.5">
-            <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-              {tNav("analysis")}
-            </h1>
-            <p className="text-xs text-[var(--muted)] sm:text-sm">
-              {t("subtitle")}
-            </p>
-          </div>
           <SegmentedControl
             value={page.assetType}
             onChange={(v) => page.setAssetType(v as AnalysisEquityType)}

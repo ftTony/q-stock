@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import type { Quote } from "@/lib/types";
 import {
@@ -52,7 +52,6 @@ export function useAnalysisPage(initialIndustries: IndustryHeatCell[]) {
   const [recent, setRecent] = useState<AnalysisRecentItem[]>([]);
   const [watched, setWatched] = useState<Set<string>>(new Set());
   const [sort, setSort] = useState<"changeDesc" | "changeAsc">("changeDesc");
-  const skipFirstLoad = useRef(true);
 
   useEffect(() => {
     setRecent(readRecent());
@@ -111,10 +110,6 @@ export function useAnalysisPage(initialIndustries: IndustryHeatCell[]) {
   }, []);
 
   useEffect(() => {
-    if (skipFirstLoad.current) {
-      skipFirstLoad.current = false;
-      return;
-    }
     void loadIndustries(assetType);
   }, [assetType, loadIndustries]);
 

@@ -638,6 +638,13 @@
   },
   "analysis": {
     "subtitle": "Pick an industry, then compare 2–4 peer stocks side by side",
+    "seoDescription": "Branchen-Heatmap und Peer-Vergleich für US-, HK- und A-Aktien. 2–4 Titel zu Bewertung und Fundamentdaten nebeneinander. Nur zum Lernen, keine Anlageberatung.",
+    "seoIntro": "Branchen-Heatmap scannen, dann 2–4 Peers zu Bewertung und Fundamentdaten vergleichen.",
+    "seoHowTitle": "Drei Schritte",
+    "seoHow1": "US / HK / A wählen, dann eine Branche",
+    "seoHow2": "Nach Veränderung sortieren; 2–4 in den Korb",
+    "seoHow3": "Vergleich öffnen; KI-Notizen nur zum Lernen",
+    "seoDisclaimer": "Daten können verzögert oder unvollständig sein. Lernwerkzeug, keine Anlageberatung.",
     "search": "Search",
     "searchPlaceholder": "Ticker (e.g. NVDA / 00700)…",
     "recent": "Recent",

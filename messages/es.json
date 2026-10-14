@@ -638,6 +638,13 @@
   },
   "analysis": {
     "subtitle": "Pick an industry, then compare 2–4 peer stocks side by side",
+    "seoDescription": "Mapa de calor sectorial y comparativa de pares para EE. UU., HK y A-shares. Alinea 2–4 nombres en valoración y fundamentales. Solo para aprender; no es asesoramiento.",
+    "seoIntro": "Recorre el mapa sectorial y alinea 2–4 pares en valoración y fundamentales.",
+    "seoHowTitle": "Tres pasos",
+    "seoHow1": "Elige EE. UU. / HK / A y un sector",
+    "seoHow2": "Revisa por variación; añade 2–4 al cesto",
+    "seoHow3": "Abre comparar; notas de IA solo para estudiar",
+    "seoDisclaimer": "Los datos pueden ir retrasados o incompletos. Herramienta de aprendizaje, no asesoramiento de inversión.",
     "search": "Search",
     "searchPlaceholder": "Ticker (e.g. NVDA / 00700)…",
     "recent": "Recent",

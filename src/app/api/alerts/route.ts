@@ -20,6 +20,7 @@ export async function GET() {
   const alerts = await prisma.priceAlert.findMany({
     where: { userId: session.user.id },
     orderBy: { createdAt: "desc" },
+    take: 200,
   });
 
   return NextResponse.json({

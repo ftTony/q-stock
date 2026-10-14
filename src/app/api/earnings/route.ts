@@ -239,7 +239,8 @@ async function enrichBundle(
   const needWeek =
     !metrics.some((m) => m.key === "52WeekHigh") ||
     !metrics.some((m) => m.key === "52WeekLow");
-  if (needWeek) {
+  // Skip year-of-daily candles on 1GB hosts unless explicitly enabled.
+  if (needWeek && process.env.EARNINGS_WEEK52_CANDLES === "1") {
     metrics = mergeMetrics(metrics, await week52FromCandles(sym, assetType));
   }
 

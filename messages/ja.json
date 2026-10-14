@@ -638,6 +638,13 @@
   },
   "analysis": {
     "subtitle": "Pick an industry, then compare 2–4 peer stocks side by side",
+    "seoDescription": "米株・香港株・A株の業種ヒートマップと同業比較。2〜4銘柄のバリュエーションとファンダを並べます。学習用であり投資助言ではありません。",
+    "seoIntro": "業種ヒートマップを見て、2〜4銘柄のバリュエーションとファンダを並べます。",
+    "seoHowTitle": "3ステップ",
+    "seoHow1": "米 / 香港 / A株を選び、業種を指定",
+    "seoHow2": "騰落で見て、2〜4銘柄を比較カゴへ",
+    "seoHow3": "比較を開く；AIメモは学習用",
+    "seoDisclaimer": "データは遅延や欠落があり得ます。学習ツールであり、投資助言ではありません。",
     "search": "Search",
     "searchPlaceholder": "Ticker (e.g. NVDA / 00700)…",
     "recent": "Recent",

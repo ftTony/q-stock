@@ -5,6 +5,7 @@ import {
   type SentimentSnapshot,
 } from "@/lib/adanos/client";
 import { cachedFetch } from "@/lib/cache";
+import { mapPool } from "@/lib/map-pool";
 import { getQuotes } from "@/lib/market";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import type { AssetType } from "@/lib/types";
@@ -72,24 +73,6 @@ function formatAiAdvice(
   return `${bias} ${a.bias} (${conf}%) ${summary}`;
 }
 
-async function mapPool<T, R>(
-  items: T[],
-  concurrency: number,
-  fn: (item: T) => Promise<R>,
-): Promise<R[]> {
-  const out: R[] = new Array(items.length);
-  let i = 0;
-  async function worker() {
-    for (;;) {
-      const idx = i++;
-      if (idx >= items.length) return;
-      out[idx] = await fn(items[idx]!);
-    }
-  }
-  const n = Math.max(1, Math.min(concurrency, items.length || 1));
-  await Promise.all(Array.from({ length: n }, () => worker()));
-  return out;
-}
 
 export async function gatherWatchlistDigest(opts: {
   userId: string;
@@ -102,8 +85,9 @@ export async function gatherWatchlistDigest(opts: {
   const aiMax = opts.aiMax ?? Number(process.env.WATCHLIST_DIGEST_AI_MAX || 8);
 
   return withUserMarket(opts.userId, async () => {
+    const items = opts.items.slice(0, 40);
     const quotes = await getQuotes(
-      opts.items.map((i) => ({
+      items.map((i) => ({
         symbol: i.symbol,
         assetType: i.assetType,
       })),
@@ -120,12 +104,12 @@ export async function gatherWatchlistDigest(opts: {
       marketSentiment = "—";
     }
 
-    const withAi = opts.items.slice(0, Math.max(0, aiMax));
+    const withAi = items.slice(0, Math.max(0, aiMax));
     const aiKeys = new Set(
       withAi.map((i) => `${i.assetType}:${i.symbol.toUpperCase()}`),
     );
 
-    const sentiments = await mapPool(opts.items, 3, async (item) => {
+    const sentiments = await mapPool(items, 3, async (item) => {
       try {
         const bundle = await getSymbolSentiment(item.symbol, item.assetType);
         return formatSentiment(pickSymbolSentiment(bundle));
@@ -134,7 +118,7 @@ export async function gatherWatchlistDigest(opts: {
       }
     });
 
-    const aiAdvice = await mapPool(opts.items, 1, async (item) => {
+    const aiAdvice = await mapPool(items, 1, async (item) => {
       const key = `${item.assetType}:${item.symbol.toUpperCase()}`;
       if (!aiKeys.has(key)) return "—";
       const cacheKey = `ai:trend:digest:${opts.userId}:${item.assetType}:${item.symbol.toUpperCase()}:${locale}:${opts.tradeDate}`;
@@ -153,7 +137,7 @@ export async function gatherWatchlistDigest(opts: {
       }
     });
 
-    const rows: DigestRow[] = opts.items.map((item, idx) => {
+    const rows: DigestRow[] = items.map((item, idx) => {
       const q = quoteMap.get(`${item.assetType}:${item.symbol}`);
       return {
         symbol: item.symbol,

@@ -45,7 +45,7 @@ export async function GET(req: Request) {
       } else if (resolution === "Q") {
         from = to - 10 * 365 * 24 * 3600;
       } else {
-        from = to - Math.floor(1.5 * 365 * 24 * 3600);
+        from = to - Math.floor(0.75 * 365 * 24 * 3600);
       }
 
       let bars;
@@ -69,6 +69,7 @@ export async function GET(req: Request) {
         bars = await getDailyCandles(symbol, assetType, from, to);
       }
 
+      if (bars.length > 400) bars = bars.slice(-400);
       const indicators = withIndicators ? computeIndicators(bars) : undefined;
       return NextResponse.json({
         bars,

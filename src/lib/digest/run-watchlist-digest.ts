@@ -48,8 +48,10 @@ export async function tickWatchlistDigest(prisma: PrismaClient): Promise<void> {
       watchlist: {
         select: { symbol: true, assetType: true },
         orderBy: { createdAt: "asc" },
+        take: 40,
       },
     },
+    take: 50,
   });
 
   if (!users.length) {

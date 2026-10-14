@@ -638,6 +638,13 @@
   },
   "analysis": {
     "subtitle": "Pick an industry, then compare 2–4 peer stocks side by side",
+    "seoDescription": "미국·홍콩·A주 업종 히트맵과 동종 비교. 2–4종목을 밸류에이션·펀더멘털로 나란히 둡니다. 학습용이며 투자 자문이 아닙니다.",
+    "seoIntro": "업종 히트맵을 본 뒤 2–4종목을 밸류에이션·펀더멘털로 나란히 둡니다.",
+    "seoHowTitle": "세 단계",
+    "seoHow1": "미국 / 홍콩 / A주와 업종을 고릅니다",
+    "seoHow2": "등락으로 보고 2–4종목을 바구니에 넣습니다",
+    "seoHow3": "비교를 엽니다; AI 메모는 학습용",
+    "seoDisclaimer": "데이터는 지연되거나 불완전할 수 있습니다. 학습 도구이며 투자 자문이 아닙니다.",
     "search": "Search",
     "searchPlaceholder": "Ticker (e.g. NVDA / 00700)…",
     "recent": "Recent",

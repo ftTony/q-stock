@@ -29,6 +29,8 @@ async function tickAlerts() {
   const alerts = await prisma.priceAlert.findMany({
     where: { status: { in: ["active", "triggered"] } },
     include: { user: { select: { id: true, email: true } } },
+    take: 400,
+    orderBy: { updatedAt: "asc" },
   });
 
   if (!alerts.length) {
