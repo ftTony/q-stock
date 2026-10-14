@@ -5,7 +5,7 @@ import {
   localizedPath,
   type AppLocale,
 } from "@/i18n/config";
-import { siteOrigin } from "@/lib/seo/site-url";
+import { seoPublicOrigin } from "@/lib/seo/site-url";
 import { listLearnArticles } from "@/lib/learn/articles";
 import { TOOL_CATALOG } from "@/lib/tools/catalog";
 import {
@@ -96,7 +96,7 @@ function pushUnique(
 }
 
 export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
-  const origin = siteOrigin();
+  const origin = seoPublicOrigin();
   const entries: SitemapEntry[] = [];
   const seen = new Set<string>();
   for (const p of STATIC_PATHS) {
@@ -144,7 +144,7 @@ export function buildMarketSitemapEntries(
   symbols: string[],
   now = new Date(),
 ): SitemapEntry[] {
-  const origin = siteOrigin();
+  const origin = seoPublicOrigin();
   const entries: SitemapEntry[] = [];
   const seen = new Set<string>();
   const priority = MARKET_PRIORITY[market];
@@ -249,7 +249,7 @@ export function buildSitemapIndexXml(
   childPaths: string[],
   now = new Date(),
 ): string {
-  const origin = siteOrigin();
+  const origin = seoPublicOrigin();
   const lastmod = now.toISOString().slice(0, 10);
   const body = childPaths
     .map((p) => {

@@ -12,7 +12,7 @@ import {
   type SitemapSegmentId,
 } from "@/lib/seo/build-sitemap";
 import { usTradeDate } from "@/lib/market/session";
-import { siteOrigin } from "@/lib/seo/site-url";
+import { seoPublicOrigin } from "@/lib/seo/site-url";
 import { sitemapOutDir } from "@/lib/seo/sitemap-fs";
 
 async function removeStaleSegmentFiles(
@@ -119,7 +119,7 @@ export async function writeDailySitemapFile(opts?: {
   files.push(indexLatest, indexDated);
 
   console.info(
-    `[seo] wrote sitemap index+markets day=${day} origin=${siteOrigin()} urls=${totalUrls} files=${childNames.length} (${childNames.join(",")})`,
+    `[seo] wrote sitemap index+markets day=${day} origin=${seoPublicOrigin()} urls=${totalUrls} files=${childNames.length} (${childNames.join(",")})`,
   );
   return { wrote: true, day, files };
 }

@@ -11,6 +11,7 @@ import {
   sitemapEntriesToXml,
   type SitemapSegmentId,
 } from "@/lib/seo/build-sitemap";
+import { rewriteSitemapLoopbackOrigins } from "@/lib/seo/site-url";
 
 /** Directory for daily sitemap XML (shared with Worker via Compose volume). */
 export function sitemapOutDir(): string {
@@ -30,7 +31,8 @@ export async function readSitemapFile(
   fileName: string,
 ): Promise<string | null> {
   try {
-    return await fs.readFile(path.join(sitemapOutDir(), fileName), "utf8");
+    const raw = await fs.readFile(path.join(sitemapOutDir(), fileName), "utf8");
+    return rewriteSitemapLoopbackOrigins(raw);
   } catch {
     return null;
   }

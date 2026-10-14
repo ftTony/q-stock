@@ -16,14 +16,18 @@ function isLoopbackOrigin(origin: string): boolean {
   }
 }
 
-/** Canonical public origin for SEO absolute URLs (sitemap, robots, metadata). */
-export function siteOrigin(): string {
-  const raw = (
+function resolveConfiguredOrigin(): string {
+  return (
     readEnv("APP_URL") ||
     readEnv("AUTH_URL") ||
     readEnv("NEXTAUTH_URL") ||
     ""
   ).replace(/\/+$/, "");
+}
+
+/** Canonical public origin for SEO absolute URLs (sitemap, robots, metadata). */
+export function siteOrigin(): string {
+  const raw = resolveConfiguredOrigin();
 
   // Local `next build` (NODE_ENV=production) often has APP_URL=localhost.
   // Uploaded artifacts must still emit the public domain.
@@ -32,4 +36,23 @@ export function siteOrigin(): string {
     return raw || "http://localhost:3000";
   }
   return raw;
+}
+
+/**
+ * Origin for sitemap XML / robots Sitemap line.
+ * Never emits localhost — local `seo:sitemap` must still write crawlable URLs.
+ */
+export function seoPublicOrigin(): string {
+  const raw = resolveConfiguredOrigin();
+  if (!raw || isLoopbackOrigin(raw)) return PRODUCTION_ORIGIN;
+  return raw;
+}
+
+/** Fix already-written sitemap files that baked localhost into `<loc>`. */
+export function rewriteSitemapLoopbackOrigins(xml: string): string {
+  const publicOrigin = seoPublicOrigin();
+  return xml
+    .replaceAll("http://localhost:3000", publicOrigin)
+    .replaceAll("http://127.0.0.1:3000", publicOrigin)
+    .replaceAll("http://0.0.0.0:3000", publicOrigin);
 }
