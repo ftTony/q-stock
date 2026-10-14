@@ -32,8 +32,10 @@ services:
       DATABASE_URL: postgresql://qstock:qstock@db:5432/qstock?schema=public
       APP_URL: http://localhost:3000
       NEXT_PUBLIC_QUOTE_WS_URL: ${NEXT_PUBLIC_QUOTE_WS_URL:-ws://localhost:3001/ws/quotes}
+      LEARN_DATA_DIR: /app/data/learn
     volumes:
       - sitemaps:/app/public/sitemaps
+      - learn_data:/app/data/learn
     depends_on:
       db:
         condition: service_healthy
@@ -52,10 +54,12 @@ services:
     environment:
       DATABASE_URL: postgresql://qstock:qstock@db:5432/qstock?schema=public
       SITEMAP_OUT_DIR: /app/public/sitemaps
+      LEARN_DATA_DIR: /app/data/learn
       QUOTE_WS_PORT: "3001"
       QUOTE_WS_ENABLED: "true"
     volumes:
       - sitemaps:/app/public/sitemaps
+      - learn_data:/app/data/learn
     depends_on:
       db:
         condition: service_healthy
@@ -63,3 +67,4 @@ services:
 volumes:
   pgdata:
   sitemaps:
+  learn_data:

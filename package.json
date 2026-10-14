@@ -15,6 +15,8 @@
     "worker": "tsx src/workers/price-alerts.ts",
     "quote-ws": "tsx src/workers/quote-ws.ts",
     "seo:sitemap": "tsx scripts/generate-sitemap.ts",
+    "learn:import": "tsx scripts/import-learn.ts",
+    "learn:seed": "tsx scripts/import-learn.ts --seed",
     "postinstall": "prisma generate"
   },
   "dependencies": {

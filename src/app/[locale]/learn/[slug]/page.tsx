@@ -7,14 +7,15 @@ import { ScopedMessages } from "@/components/providers/scoped-messages";
 import {
   getLearnArticle,
   learnText,
-  listLearnArticles,
+  listLearnArticleCards,
+  listLearnSlugs,
 } from "@/lib/learn/articles";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 
 type Props = { params: Promise<{ locale: string; slug: string }> };
 
 export function generateStaticParams() {
-  return listLearnArticles().map((a) => ({ slug: a.slug }));
+  return listLearnSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
@@ -46,7 +47,8 @@ export default async function LearnArticlePage({ params }: Props) {
   const summary = learnText(locale, article.summary);
   const paragraphs = learnText(locale, article.paragraphs);
 
-  const related = listLearnArticles()
+  const cards = listLearnArticleCards();
+  const related = cards
     .filter((a) => a.slug !== slug)
     .filter((a) => a.category === article.category)
     .slice(0, 4)
@@ -59,7 +61,7 @@ export default async function LearnArticlePage({ params }: Props) {
   const relatedFallback =
     related.length > 0
       ? related
-      : listLearnArticles()
+      : cards
           .filter((a) => a.slug !== slug)
           .slice(0, 4)
           .map((a) => ({

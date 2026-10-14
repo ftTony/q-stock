@@ -2,7 +2,7 @@
 
 > 对应产品：`/learn`（列表）· `/learn/[slug]`（短文）  
 > 品牌口径：冷静投、学习参考、不荐股、不承诺收益  
-> 文稿：`src/lib/learn/articles-*.ts`（首发已上线列表/详情；持续按本文补文）  
+> 文稿：Postgres `LearnArticle` + 磁盘快照 `data/learn`（种子仍在 `src/lib/learn/articles-*.ts`；日更用 `npm run learn:import`）  
 > 上线步骤见 [可落地路线图 · 切片 A](./product-roadmap.md)；理财工具见 [PRD 索引](./prd/README.md)
 
 ---
@@ -174,12 +174,13 @@ Tools 计算器专文（`*-tool-guide`）可与 [切片 B](./product-roadmap.md)
   6. 收束：概率、非圣杯、与冷静投框架对齐
 文末 CTA（产品组件，不必写入 paragraphs）
 免责：仅供学习，不构成投资建议
-语种：zh-CN 完整；zh-TW / en 可 condensed，但要点不丢
-拆分：按类目文件（articles-basics / tools / mindset），单文件 <500 行
+语种：发布必填 zh-CN + en；zh-TW 可选
+步骤卡：正文用「一、」或「1)」开头，前端自动成卡片
 ```
 
-入库字段保持 `LearnArticle`：`slug` / `category` / `title` / `summary` / `paragraphs`。  
-若日后要封面图、阅读时长、relatedSlugs，再扩类型，勿一次把文章系统做成 CMS。
+入库字段：`slug` / `category` / `ctaHref?` / `status` / 各语种 `title`·`summary`·`paragraphs[]`。  
+导入：`npm run learn:seed`（灌现有 TS）或 `npm run learn:import -- batch.json`；API `POST /api/admin/learn/articles`（`Bearer LEARN_IMPORT_SECRET`）。  
+Web 读 `LEARN_DATA_DIR` 快照，不在请求路径扫全文库。站内 CMS 后置。
 
 ---
 
@@ -230,13 +231,13 @@ Tools 计算器专文（`*-tool-guide`）可与 [切片 B](./product-roadmap.md)
 
 | 阶段 | 产出 | 说明 |
 |---|---|---|
-| 切片 A 当周 | 首发包 8 篇可打开 | 5 篇新写可先 zh-CN+en |
+| 切片 A 当周 | 首发包 8 篇可打开 | 5 篇新写须 zh-CN+en |
 | 切片 A +1 周 | 书单总览 + 学习路线 + 2 篇导读 | 见 [learn-reading-list.md](./learn-reading-list.md) |
 | Tools 上线周 | 4 篇 tool-guide | 与计算器同发 |
-| 每月 | +2～4 篇 P1（含 1 篇书导读） | 财报季、情绪、订单等 |
+| **日常** | **约 10 篇/天**（中英成稿） | JSON 批次 `learn:import`；不必发版 |
 | 季度 | 抽检过时文案 + 词条 SEO + 书单加减 | 改产品名/路由时必改文 |
 
-一人兼职时：优先 **首发包**，tool-guide 可复用各 PRD「文案要点」扩写。
+批次示例：`data/batches/2026-10-14.json` 为 `{ "articles": [ … ] }` 或纯数组；每篇含双语字段后导入即刷新快照。
 
 ---
 
@@ -249,6 +250,7 @@ Tools 计算器专文（`*-tool-guide`）可与 [切片 B](./product-roadmap.md)
 - [ ] 无荐股/目标价/保证收益措辞（抽检）  
 - [ ] 链到尚未上线的 Tools 时：要么不上该 CTA，要么 Tools 已发布  
 - [ ] 书单：总览 + 路线页可打开；导读含「讲了什么 / 启发 / 站内练习」；无暴富承诺  
+- [ ] `learn:seed` / `learn:import` 后快照存在；缺 en 不能 published；sitemap 含新 slug  
 
 ---
 

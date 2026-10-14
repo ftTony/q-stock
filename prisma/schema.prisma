@@ -362,3 +362,35 @@ model PaperOrder {
   @@index([userId, status])
   @@index([symbol, assetType, status])
 }
+
+/** Investment knowledge articles (/learn). Bodies live in LearnArticleLocale. */
+model LearnArticle {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  category    String
+  ctaHref     String?
+  status      String    @default("draft")
+  sortOrder   Int       @default(0)
+  publishedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  locales LearnArticleLocale[]
+
+  @@index([status, sortOrder])
+  @@index([category, status])
+}
+
+model LearnArticleLocale {
+  id         String @id @default(cuid())
+  articleId  String
+  locale     String
+  title      String
+  summary    String
+  paragraphs Json
+
+  article LearnArticle @relation(fields: [articleId], references: [id], onDelete: Cascade)
+
+  @@unique([articleId, locale])
+  @@index([locale])
+}

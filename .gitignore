@@ -39,6 +39,15 @@ yarn-error.log*
 # generated SEO sitemaps (worker / npm run seo:sitemap)
 /public/sitemaps/
 
+# learn article disk snapshot (npm run learn:seed / learn:import)
+/data/learn/
+!/data/learn/.gitkeep
+
+# learn article disk snapshot (npm run learn:seed / learn:import)
+/data/learn/by-slug/
+/data/learn/index.json
+!/data/learn/.gitkeep
+
 # vercel
 .vercel
 .cursor

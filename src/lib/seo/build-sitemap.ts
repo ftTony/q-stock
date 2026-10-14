@@ -6,7 +6,7 @@ import {
   type AppLocale,
 } from "@/i18n/config";
 import { seoPublicOrigin } from "@/lib/seo/site-url";
-import { listLearnArticles } from "@/lib/learn/articles";
+import { listLearnSlugs } from "@/lib/learn/articles";
 import { TOOL_CATALOG } from "@/lib/tools/catalog";
 import {
   resolveSymbolsForMarket,
@@ -111,8 +111,8 @@ export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
       });
     }
   }
-  for (const article of listLearnArticles()) {
-    const path = `/learn/${article.slug}`;
+  for (const slug of listLearnSlugs()) {
+    const path = `/learn/${slug}`;
     const languages = languageMapForPath(origin, path);
     for (const locale of SITEMAP_LOCALES) {
       pushUnique(entries, seen, {

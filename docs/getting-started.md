@@ -108,6 +108,26 @@ npm run worker
 
 Worker 按 `ALERT_POLL_INTERVAL_MS`（默认 45000ms）轮询 `active` 提醒并尝试发信；在美股常规收盘后窗口（默认 16:00–17:00 ET）向有自选股的用户发送每日摘要邮件（行情、涨跌幅、情绪、AI 建议）。
 
+### 2.7 投资知识文章（可选入库）
+
+未跑 seed 时 `/learn` 仍读打包进代码的 TS 种子文。入库后 Web 优先读 `data/learn` 快照：
+
+```bash
+npx prisma migrate deploy
+npm run learn:seed
+# 或日更批次（须含 zh-CN + en）：
+npm run learn:import -- data/batches/example-learn-batch.json
+```
+
+HTTP 导入（需配置 `LEARN_IMPORT_SECRET`）：
+
+```bash
+curl -X POST "$APP_URL/api/admin/learn/articles" \
+  -H "Authorization: Bearer $LEARN_IMPORT_SECRET" \
+  -H "Content-Type: application/json" \
+  -d @data/batches/example-learn-batch.json
+```
+
 ## 3. 环境变量说明
 
 | 变量 | 必填 | 说明 |
@@ -135,6 +155,8 @@ Worker 按 `ALERT_POLL_INTERVAL_MS`（默认 45000ms）轮询 `active` 提醒并
 | `ALERT_POLL_INTERVAL_MS` | 否 | Worker 轮询间隔，默认 45000 |
 | `QUOTE_POLL_MS` | 否 | Quote WS 兜底轮询间隔，默认 4000（1G 主机勿低于 1500） |
 | `CACHE_MEMORY_MAX` | 否 | 进程内 API 缓存条数上限，默认 250 |
+| `LEARN_DATA_DIR` | 否 | 投资知识文章磁盘快照目录，默认 `data/learn` |
+| `LEARN_IMPORT_SECRET` | 导入 API 时 | `POST /api/admin/learn/articles` 的 Bearer；未设则接口 401 |
 | `NEXT_PUBLIC_GA_MEASUREMENT_ID` | 否 | Google Analytics 4 衡量 ID（`G-…`）；未设则不加载统计 |
 | `GOOGLE_SITE_VERIFICATION` | 否 | Search Console HTML 标签验证码（`content` 值） |
 | `SITEMAP_OUT_DIR` | 否 | 每日 sitemap XML 输出目录，默认 `public/sitemaps`（Worker 美东 00:00–01:00 生成；Web `/sitemap.xml` 优先读此目录，避免请求时打行情/DB） |

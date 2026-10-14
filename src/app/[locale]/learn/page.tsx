@@ -7,7 +7,7 @@ import { Link } from "@/i18n/routing";
 import {
   LEARN_CATEGORIES,
   learnText,
-  listLearnArticles,
+  listLearnArticleCards,
 } from "@/lib/learn/articles";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 
@@ -31,7 +31,7 @@ export default async function LearnIndexPage({ params }: Props) {
     LEARN_CATEGORIES.map((key) => [key, t(`categories.${key}`)]),
   ) as Record<(typeof LEARN_CATEGORIES)[number], string>;
 
-  const articles = listLearnArticles().map((a) => ({
+  const articles = listLearnArticleCards().map((a) => ({
     slug: a.slug,
     category: a.category,
     categoryLabel: categoryLabels[a.category],
