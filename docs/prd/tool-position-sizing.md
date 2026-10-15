@@ -7,7 +7,7 @@
 | 路由 | `/tools/position` |
 | 状态 | 待开发（Coming soon → 首批上线） |
 | 优先级 | P0 |
-| 相关 | [工具索引](./README.md) · [路线图切片 B](../product-roadmap.md) |
+| 相关 | [工具索引](./README.md) · [路线图切片 B](../product-roadmap.md) · [模拟盘风险控制](./risk-control.md)（结果 CTA 可带回模拟单） |
 
 ---
 

@@ -2,7 +2,8 @@
 
 > 状态：**设计稿 / 规划**（未改代码）  
 > 目标：把 `/symbol/[assetType]/[symbol]` 从「功能堆叠面板」收成 **简洁、精专的金融看盘+下单台**，并把 **AI 问股 / 冷静情景 / 贪婪·恐惧检视** 嵌进下单动线（不是角落 FAB 孤岛）  
-> 配套能力规划：[symbol-advanced-and-futu-paper.md](./symbol-advanced-and-futu-paper.md) · [行情 AI 功能](../行情AI功能.md)  
+> 配套能力规划：[symbol-advanced-and-futu-paper.md](./symbol-advanced-and-futu-paper.md) · [行情 AI 功能](../行情AI功能.md) · [模拟盘风险控制](./risk-control.md)  
+
 > 技术参考：[financial-chart-tech.md](../financial-chart-tech.md) · [longbridge-web-trade-tech.md](../longbridge-web-trade-tech.md)
 
 ---

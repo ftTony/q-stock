@@ -17,3 +17,12 @@
 - 结果区 CTA：去 `/portfolio`（模拟）或 `/markets`（行情）。  
 - 不输出「应买入/应卖出」结论；不做实盘下单。  
 - 单文件遵守仓库 500 行上限：逻辑放 `src/lib/tools/*`，UI 放 `src/components/tools/*`。
+
+---
+
+## 相关（非纯计算器）
+
+| 主题 | PRD | 说明 |
+|---|---|---|
+| 模拟盘风险控制 | [risk-control.md](./risk-control.md) | 下单前摘要、账户规则、与仓位工具/AI 衔接；作用于 paper，非真券商 OMS |
+| 交易策略与回测 | [strategy-and-backtest.md](./strategy-and-backtest.md) | 规则实验室：模板、单标的回放、模拟标签；非量化 IDE / 非实盘自动交易 |

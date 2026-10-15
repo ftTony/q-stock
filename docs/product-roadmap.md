@@ -66,7 +66,8 @@
 | B3 | 结果区 CTA：去模拟盘 / 去某市场看板（期权页另链仓位工具） | 有明确下一跳 |
 | B4 | 免责声明块（非投资建议） | 文案与 disclaimer 口径一致 |
 
-**非目标**：回测引擎、实盘同步持仓、期权链实盘报价/下单。
+**非目标（切片 B）**：完整回测引擎、实盘同步持仓、期权链实盘报价/下单。  
+规则实验室 / 回放见独立规划：[prd/strategy-and-backtest.md](./prd/strategy-and-backtest.md)（另排期，非本切片必做）。
 
 **PRD**： [仓位](./prd/tool-position-sizing.md) · [定投](./prd/tool-dca.md) · [复利](./prd/tool-compound.md) · [期权](./prd/tool-options.md)
 
@@ -81,12 +82,46 @@
 | 步骤 | 动作 | 完成定义 |
 |---|---|---|
 | C1 | 产品内「首次引导」或空态引导：自选 → 提醒或 AI → 模拟 → 复盘 | 新号走一遍无需猜路由 |
-| C2 | 情景地图 → 纸面条件单草案：打通现有雏形 | 从 AI 结果可生成/跳转模拟挂单草案 |
+| C2 | 情景地图 → 纸面条件单草案：打通现有雏形 | 从 AI 结果可生成/跳转模拟挂单草案（见 C2 与切片 D） |
 | C3 | Settings / 用尽配额文案：免费次数、邀请、BYOK 三条出路写清 | 用户不被「不能用了」堵死 |
 | C4 | 营销与 `/pricing`：分栏「在线使用」vs「源码部署」 | 两套 CTA，不混在一个按钮 |
 | C5 | （可选）收盘自选摘要邮件：打开 worker digest 的用户可见开关 | 至少美股收盘一封可用 |
 
 **非目标**：付费订阅计费系统（可先文案 + 邀请/BYOK；支付后置）。
+
+---
+
+### 切片 D — 个股工作台 + 模拟风控 P0（约 2–3 周，可与 C 后半并行）
+
+**目标**：个股页终端化；AI 冷静层接入下单；模拟盘下单前风险可见。
+
+| 步骤 | 动作 | 完成定义 |
+|---|---|---|
+| D1 | 个股布局：QuoteBar + 图区一体 + 右栏 Tabs（下单 / 冷静 / …） | 一屏内可见价、图、下单；见 [symbol-trading-ui](./prd/symbol-trading-ui.md) |
+| D2 | 冷静 Tab：情景筹码 +「预填并去下单」（不自动提交） | 切回下单 Tab +「AI 草稿」横幅可撤销 |
+| D3 | 下单前：风险摘要 + 情绪自检（软提示） | 符合 [risk-control](./prd/risk-control.md) **P0** 验收 |
+| D4 | 分享：Facebook / X 等社交 + 复制链接 | 报价条旁可分享当前个股页 |
+| D5 | （可选）衍生品 Tab 空态 + 链 `/tools/options` | 美/港显示 Tab；无假链、无期权下单 |
+
+**非目标（本切片）**：L2 盘口实装、富途模拟切换、账户级硬熔断（风控 **P1**）、规则回测引擎。
+
+**PRD**：[个股 UI](./prd/symbol-trading-ui.md) · [风控 P0](./prd/risk-control.md) · [高级盘/富途](./prd/symbol-advanced-and-futu-paper.md)（后置）
+
+---
+
+### 切片 E — 规则实验室（另排期，约 2–4 周，建议中期或短期有余力）
+
+**目标**：可解释的策略模板 + 单标的规则回放；服务 Learn/模拟，非量化平台。
+
+| 步骤 | 动作 | 完成定义 |
+|---|---|---|
+| E0 | P0：模板库 + 我的策略 + 模拟单策略标签 | 见 [strategy-and-backtest](./prd/strategy-and-backtest.md) P0 |
+| E1 | P1：单标的日 K 异步回放（曲线 + 买入持有对照 + 免责） | Worker 跑、限流、不拖垮 Web |
+| E2 | P2：双规则对比 / 分享（可选） | 同 PRD P2 |
+
+**非目标**：实盘自动交易、策略 IDE、全市场扫描回测。
+
+**依赖**：切片 B 仓位工具文案互链；风控 P0 后再做「回放结果 → 模拟草稿」更稳。
 
 ---
 
@@ -202,5 +237,7 @@
 
 - [产品现状盘点](./product-status.md)  
 - [产品机会头脑风暴](./product-opportunity-brainstorm.md)  
+- [整站页面导航](./prd/site-navigation.md)  
 - [需求文档](./requirements.md)  
 - [生产部署](./deployment.md)  
+- PRD：[个股 UI](./prd/symbol-trading-ui.md) · [风控](./prd/risk-control.md) · [策略回测](./prd/strategy-and-backtest.md)  
