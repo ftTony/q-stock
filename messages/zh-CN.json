@@ -35,7 +35,10 @@
     "expandSidebar": "展开侧栏",
     "openMenu": "打开菜单",
     "closeMenu": "关闭菜单",
-    "review": "复盘笔记"
+    "review": "复盘笔记",
+    "tools": "理财工具",
+    "learn": "投资知识",
+    "pricing": "定价"
   },
   "market": {
     "stocks": "美股",

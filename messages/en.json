@@ -35,7 +35,10 @@
     "expandSidebar": "Expand sidebar",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "review": "Review"
+    "review": "Review",
+    "tools": "Tools",
+    "learn": "Learn",
+    "pricing": "Pricing"
   },
   "market": {
     "stocks": "US Stocks",
@@ -789,7 +792,7 @@
       "capabilities": {
         "eyebrow": "01 · Capabilities",
         "title": "What you can do",
-        "subtitle": "Ask AI first; quotes, watchlist, and compare stay as supporting tools—restrained and checkable."
+        "subtitle": "AI ask-stock at the center; markets, watchlists, and compare around it—restrained and checkable."
       }
     },
     "featureOpen": "Open",

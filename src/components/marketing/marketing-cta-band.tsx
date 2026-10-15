@@ -2,6 +2,7 @@
 
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { MARKETING_SHELL_WIDTH } from "@/components/marketing/marketing-width";
 
 const ADVANCED_QUOTES_FALLBACK: Record<string, string> = {
   "zh-CN": "高级行情",
@@ -9,7 +10,7 @@ const ADVANCED_QUOTES_FALLBACK: Record<string, string> = {
   en: "Advanced quotes",
 };
 
-/** Shared bottom CTA + site links (landing story, learn, tools, disclaimer). */
+/** Shared bottom CTA + site links (learn/tools/pricing live in marketing header). */
 export function MarketingCtaBand({
   compact = false,
 }: {
@@ -31,7 +32,7 @@ export function MarketingCtaBand({
       }}
     >
       <div
-        className={`mx-auto flex w-full max-w-5xl flex-col px-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:px-6 ${
+        className={`flex flex-col sm:flex-row sm:items-center sm:justify-between sm:gap-8 ${MARKETING_SHELL_WIDTH} ${
           compact ? "gap-4 py-5 sm:py-6" : "gap-6 py-8 sm:py-10"
         }`}
       >
@@ -47,15 +48,6 @@ export function MarketingCtaBand({
           <nav className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[var(--muted)]">
             <Link href="/about" className="hover:text-[var(--foreground)]">
               {t("footerAbout")}
-            </Link>
-            <Link href="/learn" className="hover:text-[var(--foreground)]">
-              {t("footerLearn")}
-            </Link>
-            <Link href="/tools" className="hover:text-[var(--foreground)]">
-              {t("footerTools")}
-            </Link>
-            <Link href="/pricing" className="hover:text-[var(--foreground)]">
-              {t("footerPricing")}
             </Link>
             <Link
               href="/advanced-quotes"
