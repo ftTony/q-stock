@@ -165,6 +165,8 @@ z.object({
 - UI：详情交易侧栏增加「情景推演」；用户确认后才调用现有 `POST /api/trading/orders` 填限价/止损草稿
 - 文案固定：「仅模拟盘草稿，非投资建议」
 
+**个股工作台融合（UI 规划）**：见 [`prd/symbol-trading-ui.md`](./prd/symbol-trading-ui.md) §4.9 — 右栏 Tabs `下单 | 冷静 | 盘口 | 分笔`；问股入口进 QuoteBar；下单前增加贪婪/恐惧 **情绪自检条**（不阻断，写入模拟单 meta 供复盘）。
+
 真券商（[`docs/longbridge-web-trade-tech.md`](docs/longbridge-web-trade-tech.md)）保持预留，**本方案不纳入排期**。
 
 ---
