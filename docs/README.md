@@ -12,6 +12,7 @@
 | [个股专业交易台 UI](./prd/symbol-trading-ui.md) | 报价条+主图+右栏下单/冷静；次级含衍生品；AI 问股/贪婪恐惧/分享；完整示意稿 |
 | [模拟盘风险控制 PRD](./prd/risk-control.md) | 下单前风险摘要、账户上限/单日熔断、与仓位工具·AI 冷静衔接 |
 | [交易策略与回测 PRD](./prd/strategy-and-backtest.md) | 规则实验室：模板/我的策略、单标的回放、与模拟盘标签衔接 |
+| [策略与回测方向：用规则削弱贪婪与恐惧](./strategy-backtest-direction.md) | 四个外部项目的启发、产品分期、回测可信度与纪律化决策设计 |
 | [投资知识内容规划](./learn-content-plan.md) | Learn 专栏定位、选题目录、首发包与写作模板 |
 | [推荐书单与学习路线](./learn-reading-list.md) | 理财书讲了什么、启发、三条路线与导读 slug |
 | [需求文档](./requirements.md) | 功能范围、页面、验收要点（与现网代码对齐） |
