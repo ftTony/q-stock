@@ -55,7 +55,7 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
 
           <nav
             aria-label={tNav("main")}
-            className="hidden min-w-0 flex-1 items-center justify-center gap-1 md:flex lg:gap-2"
+            className="ml-auto hidden min-w-0 items-center justify-end gap-1 md:flex lg:gap-2"
           >
             {MARKETING_LINKS.map((item) => {
               const active = linkActive(item.href);
@@ -75,7 +75,7 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
             })}
           </nav>
 
-          <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+          <div className="flex shrink-0 items-center gap-2 sm:gap-3">
             <TopBarActions
               showMarketStatus={false}
               showNotifications={false}
