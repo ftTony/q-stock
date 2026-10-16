@@ -87,7 +87,7 @@ type OkxCandle = string[];
 
 async function fetchCandles(
   symbol: string,
-  bar: "1D" | "1Mutc",
+  bar: "1m" | "5m" | "1D" | "1Mutc",
   fromSec: number,
   toSec: number,
 ): Promise<OhlcvBar[]> {
@@ -267,6 +267,25 @@ export const okxProvider: MarketDataProvider = {
     const key = `okx:candle:M:${normalized}:${from}:${to}`;
     return cachedFetch(key, 120_000, async () => {
       return fetchCandles(normalized, "1Mutc", from, to);
+    });
+  },
+
+  async getIntradayCandles(symbol, assetType, from, to, interval) {
+    if (assetType !== "crypto") {
+      throw new MarketDataError("OKX provider is crypto-only", "okx");
+    }
+    const normalized = normalizeSymbol(symbol, "crypto");
+    const bar = interval === "5" ? "5m" : "1m";
+    const key = `okx:candle:${bar}:${normalized}:${from}:${to}`;
+    return cachedFetch(key, 30_000, async () => {
+      const bars = await fetchCandles(normalized, bar, from, to);
+      if (!bars.length) {
+        throw new MarketDataError(
+          `OKX returned no ${bar} candles for ${normalized}`,
+          "okx",
+        );
+      }
+      return bars;
     });
   },
 

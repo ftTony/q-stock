@@ -221,6 +221,7 @@ export default function PortfolioPage() {
           accountTitle: tTrade("accountTitle"),
           accountDesc: tTrade("accountDesc"),
           reset: tTrade("reset"),
+          riskSettings: tTrade("riskSettings"),
           loading: tTrade("loading"),
           cash: tTrade("cash"),
           marketValue: tTrade("marketValue"),

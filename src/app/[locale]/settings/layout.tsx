@@ -18,7 +18,7 @@ export async function generateMetadata({
 
 export default async function PrivateLayout({ children }: Props) {
   return (
-    <ScopedMessages namespaces={["settings"]}>
+    <ScopedMessages namespaces={["settings", "paperRisk"]}>
       <div className="settings-ui">{children}</div>
     </ScopedMessages>
   );

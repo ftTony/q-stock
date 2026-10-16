@@ -26,7 +26,14 @@ export function useSymbolCandles(
       if (res.ok) {
         const next = (data.bars ?? []) as OhlcvBar[];
         setBars(next);
-        setHasMoreCandles(next.length > 0);
+        // Intraday windows are fixed-size; daily/Q/Y can paginate older.
+        const canPaginate =
+          next.length > 0 &&
+          data.hasMore !== false &&
+          resolution !== "T" &&
+          resolution !== "1" &&
+          resolution !== "5";
+        setHasMoreCandles(canPaginate);
       }
     } finally {
       setLoadingChart(false);

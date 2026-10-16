@@ -181,6 +181,29 @@ export const longbridgeProvider: MarketDataProvider = {
     );
   },
 
+  async getIntradayCandles(symbol, assetType, from, to, interval) {
+    // Period: Min_1=1, Min_5=4 (longbridge Node SDK enum)
+    const period = interval === "5" ? 4 : 1;
+    const normalized = normalizeSymbol(symbol, assetType);
+    const key = `lb:candle:${interval}m:${normalized}:${from}:${to}`;
+    return cachedFetch(key, 30_000, async () => {
+      const bars = await fetchLbHistoryBars(
+        symbol,
+        assetType,
+        from,
+        to,
+        period,
+      );
+      if (!bars.length) {
+        throw new MarketDataError(
+          `Longbridge returned no ${interval}m candles`,
+          "longbridge",
+        );
+      }
+      return bars;
+    });
+  },
+
   async searchSymbols(q, assetType): Promise<SearchResult[]> {
     if (assetType === "crypto") return [];
     const query = q.trim().toUpperCase();

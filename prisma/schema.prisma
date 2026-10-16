@@ -99,6 +99,9 @@ model User {
   paperPositions     PaperPosition[]
   paperOrders        PaperOrder[]
   reviewNotes        ReviewNote[]
+  paperRiskSettings  PaperRiskSettings?
+  strategies         Strategy[]
+  strategyReplays    StrategyReplay[]
   marketCredentials   UserMarketCredential[]
   serviceCredentials  UserServiceCredential[]
   passwordResetTokens PasswordResetToken[]
@@ -313,12 +316,29 @@ model ReviewNote {
 }
 
 model PaperAccount {
-  id          String   @id @default(cuid())
-  userId      String   @unique
-  cashBalance Decimal  @db.Decimal(18, 4)
-  currency    String   @default("USD")
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id             String    @id @default(cuid())
+  userId         String    @unique
+  cashBalance    Decimal   @db.Decimal(18, 4)
+  currency       String    @default("USD")
+  /** Equity snapshot at start of risk day (for daily loss circuit). */
+  dayStartEquity Decimal?  @db.Decimal(18, 4)
+  dayStartDate   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+/** Per-user paper-trading risk limits (calm investing). */
+model PaperRiskSettings {
+  userId                  String   @id
+  maxPositionPctPerSymbol Float    @default(20)
+  maxGrossExposurePct     Float    @default(80)
+  maxDailyLossPct         Float    @default(5)
+  maxOrderNotionalPct     Float?
+  softOnly                Boolean  @default(true)
+  requireEmotionCheck     Boolean  @default(false)
+  updatedAt               DateTime @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
@@ -340,27 +360,79 @@ model PaperPosition {
 }
 
 model PaperOrder {
-  id           String      @id @default(cuid())
-  userId       String
-  symbol       String
-  assetType    AssetType
-  side         OrderSide
-  type         OrderType
-  qty          Decimal     @db.Decimal(18, 8)
-  limitPrice   Decimal?    @db.Decimal(18, 8)
-  stopPrice    Decimal?    @db.Decimal(18, 8)
-  status       OrderStatus @default(pending)
-  filledPrice  Decimal?    @db.Decimal(18, 8)
-  filledAt     DateTime?
-  rejectReason String?
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  id                String      @id @default(cuid())
+  userId            String
+  symbol            String
+  assetType         AssetType
+  side              OrderSide
+  type              OrderType
+  qty               Decimal     @db.Decimal(18, 8)
+  limitPrice        Decimal?    @db.Decimal(18, 8)
+  stopPrice         Decimal?    @db.Decimal(18, 8)
+  status            OrderStatus @default(pending)
+  filledPrice       Decimal?    @db.Decimal(18, 8)
+  filledAt          DateTime?
+  rejectReason      String?
+  /** Calm emotion tags at submit (fomo / panic / etc). */
+  emotionTags       String[]    @default([])
+  invalidationNote  String?
+  strategyId        String?
+  /** Snapshot: equity / notional / riskAmount at place time. */
+  riskSnapshot      Json?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategy Strategy? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
 
   @@index([status])
   @@index([userId, status])
   @@index([symbol, assetType, status])
+  @@index([strategyId])
+}
+
+/** Rule lab strategy (template or user-owned). */
+model Strategy {
+  id          String   @id @default(cuid())
+  userId      String?
+  slug        String?
+  name        String
+  description String?
+  rules       Json
+  isTemplate  Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user    User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders  PaperOrder[]
+  replays StrategyReplay[]
+
+  @@index([userId])
+  @@index([isTemplate])
+  @@unique([slug])
+}
+
+/** Async single-symbol rule replay job. */
+model StrategyReplay {
+  id          String    @id @default(cuid())
+  userId      String
+  strategyId  String
+  symbol      String
+  assetType   AssetType
+  rangeFrom   DateTime
+  rangeTo     DateTime
+  assumptions Json
+  status      String    @default("pending")
+  result      Json?
+  error       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  strategy Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([status])
 }
 
 /** Investment knowledge articles (/learn). Bodies live in LearnArticleLocale. */

@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { SymbolPageClient } from "@/components/symbol/symbol-page-client";
-import { SymbolRelatedLinks } from "@/components/symbol/symbol-related-links";
 import { SymbolSeoHeading } from "@/components/symbol/symbol-seo-heading";
 import { ScopedMessages } from "@/components/providers/scoped-messages";
 import {
@@ -49,9 +48,16 @@ export default async function SymbolPage({ params }: Props) {
           "ai",
           "aiChart",
           "aiChat",
+          "aiScenario",
+          "alerts",
           "comments",
           "earnings",
+          "orderRisk",
+          "paperRiskBar",
           "symbol",
+          "symbolEmotion",
+          "symbolRail",
+          "symbolShare",
           "trading",
         ]}
       >
@@ -60,9 +66,6 @@ export default async function SymbolPage({ params }: Props) {
           assetType={assetType}
           initialQuote={quote}
         />
-        <div className="mt-4">
-          <SymbolRelatedLinks symbol={symbol} assetType={assetType} />
-        </div>
       </ScopedMessages>
     </>
   );

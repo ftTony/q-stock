@@ -3,18 +3,30 @@ import { auth } from "@/lib/auth";
 import { aggregateCandles } from "@/lib/candles/aggregate";
 import {
   getDailyCandles,
+  getIntradayCandles,
   getMonthlyCandles,
   MarketDataError,
 } from "@/lib/market";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import { computeIndicators } from "@/lib/indicators";
-import { parseAssetType, type CandleResolution } from "@/lib/types";
+import {
+  isIntradayResolution,
+  parseAssetType,
+  type CandleResolution,
+} from "@/lib/types";
 
 function parseUnix(value: string | null): number | null {
   if (!value) return null;
   const n = Number(value);
   if (!Number.isFinite(n) || n <= 0) return null;
   return Math.floor(n);
+}
+
+function defaultIntradayFrom(resolution: CandleResolution, to: number): number {
+  // Cap windows for 1GB host — prefer recent session over deep history.
+  if (resolution === "T") return to - 1 * 24 * 3600;
+  if (resolution === "1") return to - 2 * 24 * 3600;
+  return to - 5 * 24 * 3600; // 5m
 }
 
 export async function GET(req: Request) {
@@ -40,12 +52,65 @@ export async function GET(req: Request) {
       let from: number;
       if (fromParam && fromParam < to) {
         from = fromParam;
+      } else if (isIntradayResolution(resolution)) {
+        from = defaultIntradayFrom(resolution, to);
       } else if (resolution === "Y") {
         from = to - 20 * 365 * 24 * 3600;
       } else if (resolution === "Q") {
         from = to - 10 * 365 * 24 * 3600;
       } else {
         from = to - Math.floor(0.75 * 365 * 24 * 3600);
+      }
+
+      if (isIntradayResolution(resolution)) {
+        const interval = resolution === "5" ? "5" : "1";
+        let bars;
+        try {
+          bars = await getIntradayCandles(
+            symbol,
+            assetType,
+            from,
+            to,
+            interval,
+          );
+        } catch (err) {
+          console.warn(
+            "candles intraday",
+            err instanceof Error ? err.message : err,
+          );
+          return NextResponse.json({
+            bars: [],
+            indicators: undefined,
+            resolution,
+            from,
+            to,
+            hasMore: false,
+            unavailable: "intraday",
+          });
+        }
+        if (!bars.length) {
+          return NextResponse.json({
+            bars: [],
+            indicators: undefined,
+            resolution,
+            from,
+            to,
+            hasMore: false,
+            unavailable: "intraday",
+          });
+        }
+        // Cap denser minute series harder than daily (memory).
+        const cap = resolution === "5" ? 400 : 500;
+        if (bars.length > cap) bars = bars.slice(-cap);
+        const indicators = withIndicators ? computeIndicators(bars) : undefined;
+        return NextResponse.json({
+          bars,
+          indicators,
+          resolution,
+          from,
+          to,
+          hasMore: false,
+        });
       }
 
       let bars;

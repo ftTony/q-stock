@@ -1,332 +1,229 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { localizedPath } from "@/i18n/config";
 import { SiteLogo } from "@/components/brand/site-logo";
 
-export const SIDEBAR_WIDTH_EXPANDED = 270;
-export const SIDEBAR_WIDTH_COLLAPSED = 72;
-const STORAGE_KEY = "qstock-sidebar-collapsed";
+/** Icon-rail width (product chrome — always compact). */
+export const SIDEBAR_WIDTH_EXPANDED = 56;
+export const SIDEBAR_WIDTH_COLLAPSED = 56;
 
-function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
+function IconGrid({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="3" y="3" width="7" height="7" rx="1.5" />
-      <rect x="14" y="3" width="7" height="7" rx="1.5" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" />
-      <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <rect x="3.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="3.5" width="7" height="7" rx="1.5" />
+      <rect x="3.5" y="13.5" width="7" height="7" rx="1.5" />
+      <rect x="13.5" y="13.5" width="7" height="7" rx="1.5" />
     </svg>
   );
 }
 
-function IconChart({ className = "h-4 w-4" }: { className?: string }) {
+function IconChart({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M4 19V5" />
-      <path d="M4 19h16" />
-      <path d="M8 15l3-4 3 2 4-6" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M4 19V5" strokeLinecap="round" />
+      <path d="M4 19h16" strokeLinecap="round" />
+      <path d="M8 15l3.2-4 2.8 2.2L18 8" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
 }
 
-function IconStar({ className = "h-4 w-4" }: { className?: string }) {
+function IconBag({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M12 3l2.7 5.5 6 .9-4.4 4.2 1 6-5.3-2.8L6.7 19.6l1-6L3.4 9.4l6-.9L12 3z" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M4 8h16v11a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V8z" />
+      <path d="M8 8V6.5A1.5 1.5 0 0 1 9.5 5h5A1.5 1.5 0 0 1 16 6.5V8" />
+      <path d="M10 13h4" strokeLinecap="round" />
     </svg>
   );
 }
 
-function IconBell({ className = "h-4 w-4" }: { className?: string }) {
+function IconDoc({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 7H3s3 0 3-7" />
-      <path d="M10 19a2 2 0 0 0 4 0" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <rect x="6" y="3.5" width="12" height="17" rx="2" />
+      <path d="M9 9h6M9 12.5h6M9 16h4" strokeLinecap="round" />
     </svg>
   );
 }
 
-function IconBag({ className = "h-4 w-4" }: { className?: string }) {
+function IconStar({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M4 7h16v12H4z" />
-      <path d="M8 7V5h8v2" />
-      <path d="M8 12h8M8 16h5" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M12 3.5l2.4 5 5.5.8-4 3.9.9 5.5L12 16.5 7.2 18.7l.9-5.5-4-3.9 5.5-.8L12 3.5z" strokeLinejoin="round" />
     </svg>
   );
 }
 
-function IconNotebook({ className = "h-4 w-4" }: { className?: string }) {
+function IconBell({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M7 3.5h10a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 7 3.5z" />
-      <path d="M9.5 8h5M9.5 12h5M9.5 16h3.5" />
-      <path d="M5.5 8H4M5.5 12H4M5.5 16H4" />
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6.5 2.5 6.5 2.5 6.5H4s2.5 0 2.5-6.5" strokeLinejoin="round" />
+      <path d="M10 19a2 2 0 0 0 4 0" strokeLinecap="round" />
     </svg>
   );
 }
 
-function IconGear({ className = "h-4 w-4" }: { className?: string }) {
+function IconLab({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M9 3v7.2L4.8 18.5A1.8 1.8 0 0 0 6.4 21h11.2a1.8 1.8 0 0 0 1.6-2.5L15 10.2V3" />
+      <path d="M8.5 3h7" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IconGear({ className = "h-[18px] w-[18px]" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
       <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9c.3.6.9 1 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z" />
+      <path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6.2 6.2l1.6 1.6M16.2 16.2l1.6 1.6M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6" strokeLinecap="round" />
     </svg>
   );
 }
 
-function IconBolt({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M13 2 4 14h6l-1 8 10-13h-6l1-7z" />
-    </svg>
-  );
-}
-
-function IconUser({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <circle cx="12" cy="8" r="3.5" />
-      <path d="M5 19c1.8-3.2 4.2-4.5 7-4.5s5.2 1.3 7 4.5" />
-    </svg>
-  );
-}
-
-function IconChevron({ collapsed }: { collapsed: boolean }) {
-  return (
-    <svg
-      className="h-3.5 w-3.5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2.2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      {collapsed ? <path d="M10 6l6 6-6 6" /> : <path d="M14 6l-6 6 6 6" />}
-    </svg>
-  );
-}
-
-function NavItem({
+function RailItem({
   href,
   active,
   icon,
   label,
-  collapsed,
   onNavigate,
+  hard,
 }: {
   href: string;
   active?: boolean;
   icon: React.ReactNode;
   label: string;
-  collapsed: boolean;
   onNavigate?: () => void;
+  /** Full page navigation (marketing/home). */
+  hard?: boolean;
 }) {
+  const className = `flex h-10 w-10 items-center justify-center rounded-lg transition ${
+    active
+      ? "bg-[var(--sidebar-active)] text-[var(--brand-text)]"
+      : "text-[color-mix(in_srgb,var(--muted)_88%,transparent)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+  }`;
+
+  if (hard) {
+    return (
+      <a href={href} title={label} aria-label={label} className={className}>
+        {icon}
+      </a>
+    );
+  }
+
   return (
     <Link
       href={href}
-      title={collapsed ? label : undefined}
+      title={label}
       aria-label={label}
       onClick={onNavigate}
-      className={`relative flex items-center rounded-xl text-sm transition ${
-        collapsed ? "justify-center px-2 py-2.5" : "gap-3 px-3 py-2.5"
-      } ${
-        active
-          ? "bg-[var(--sidebar-active)] text-[var(--brand-text)]"
-          : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-      }`}
+      className={className}
     >
-      {active && (
-        <span className="absolute left-0 top-1/2 h-6 w-1 -translate-y-1/2 rounded-r-full bg-[var(--brand)]" />
-      )}
-      <span className="opacity-90">{icon}</span>
-      {!collapsed && <span className="font-medium">{label}</span>}
+      {icon}
     </Link>
   );
 }
 
 type Props = {
-  collapsed: boolean;
-  onCollapsedChange: (collapsed: boolean) => void;
+  collapsed?: boolean;
+  onCollapsedChange?: (collapsed: boolean) => void;
   onNavigate?: () => void;
   showCollapse?: boolean;
 };
 
-export function AppSidebar({
-  collapsed,
-  onCollapsedChange,
-  onNavigate,
-  showCollapse = true,
-}: Props) {
+/** Desktop product chrome: always a narrow icon rail (mockup-aligned). */
+export function AppSidebar({ onNavigate }: Props) {
   const t = useTranslations("nav");
   const locale = useLocale();
   const pathname = usePathname();
   const homeHref = localizedPath(locale, "/");
 
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
-  const isAnalysis = pathname.startsWith("/analysis");
-  const isSymbol = pathname.startsWith("/symbol");
+  const isAnalysis = pathname.startsWith("/analysis") || pathname.startsWith("/symbol");
   const isWatchlist = pathname.startsWith("/watchlist");
   const isPortfolio = pathname.startsWith("/portfolio");
   const isReview = pathname.startsWith("/review");
+  const isStrategies = pathname.startsWith("/strategies");
   const isAlerts = pathname.startsWith("/alerts");
-
-  const toggleLabel = collapsed ? t("expandSidebar") : t("collapseSidebar");
+  const isSettings = pathname.startsWith("/settings");
 
   return (
     <aside className="flex h-full w-full flex-col border-r border-[var(--border)] bg-[var(--sidebar)]">
-      <div
-        className={`flex items-center border-b border-[var(--border)] ${
-          collapsed ? "flex-col gap-2 px-2 py-3" : "gap-1 pr-2"
-        }`}
-        style={collapsed ? undefined : { paddingTop: 7, paddingLeft: 12, paddingBottom: 2 }}
-      >
-        {/* Full navigation: soft Link is cancelled when AppShell swaps Main→Marketing. */}
-        <a
-          href={homeHref}
-          className={`relative z-10 min-w-0 ${collapsed ? "" : "flex-1"}`}
-        >
-          <SiteLogo
-            height={collapsed ? 32 : 40}
-            priority
-            variant={collapsed ? "mark" : "full"}
-          />
+      <div className="flex items-center justify-center border-b border-[var(--border)] py-3">
+        <a href={homeHref} className="relative z-10" aria-label={t("markets")}>
+          <SiteLogo height={28} priority variant="mark" />
         </a>
-        {showCollapse ? (
-          <button
-            type="button"
-            onClick={() => onCollapsedChange(!collapsed)}
-            aria-label={toggleLabel}
-            title={toggleLabel}
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md text-[var(--muted)] transition hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-          >
-            <IconChevron collapsed={collapsed} />
-          </button>
-        ) : null}
       </div>
 
-      <div
-        className={`qt-scroll flex-1 space-y-6 overflow-y-auto py-4 ${
-          collapsed ? "px-2" : "px-3"
-        }`}
-      >
-        <div className="space-y-1">
-          {!collapsed && (
-            <div className="px-3 pb-2 text-[11px] font-semibold tracking-wider text-[var(--muted)] uppercase">
-              {t("main")}
-            </div>
-          )}
-          <NavItem
-            href="/markets"
-            active={isMarkets}
-            icon={<IconGrid />}
-            label={t("markets")}
-            collapsed={collapsed}
-            onNavigate={onNavigate}
-          />
-          <NavItem
-            href="/analysis"
-            active={isAnalysis || isSymbol}
-            icon={<IconChart />}
-            label={t("analysis")}
-            collapsed={collapsed}
-            onNavigate={onNavigate}
-          />
-          <NavItem
-            href="/portfolio"
-            active={isPortfolio}
-            icon={<IconBag />}
-            label={t("portfolio")}
-            collapsed={collapsed}
-            onNavigate={onNavigate}
-          />
-          <NavItem
-            href="/watchlist"
-            active={isWatchlist}
-            icon={<IconStar />}
-            label={t("watchlist")}
-            collapsed={collapsed}
-            onNavigate={onNavigate}
-          />
-          <NavItem
-            href="/review"
-            active={isReview}
-            icon={<IconNotebook />}
-            label={t("review")}
-            collapsed={collapsed}
-            onNavigate={onNavigate}
-          />
-          <NavItem
-            href="/alerts"
-            active={isAlerts}
-            icon={<IconBell />}
-            label={t("alerts")}
-            collapsed={collapsed}
-            onNavigate={onNavigate}
-          />
-        </div>
-      </div>
+      <nav className="qt-scroll flex flex-1 flex-col items-center gap-1.5 overflow-y-auto px-1.5 py-3">
+        <RailItem
+          href="/markets"
+          active={isMarkets}
+          icon={<IconGrid />}
+          label={t("markets")}
+          onNavigate={onNavigate}
+        />
+        <RailItem
+          href="/analysis"
+          active={isAnalysis}
+          icon={<IconChart />}
+          label={t("analysis")}
+          onNavigate={onNavigate}
+        />
+        <RailItem
+          href="/portfolio"
+          active={isPortfolio}
+          icon={<IconBag />}
+          label={t("portfolio")}
+          onNavigate={onNavigate}
+        />
+        <RailItem
+          href="/review"
+          active={isReview}
+          icon={<IconDoc />}
+          label={t("review")}
+          onNavigate={onNavigate}
+        />
+        <RailItem
+          href="/watchlist"
+          active={isWatchlist}
+          icon={<IconStar />}
+          label={t("watchlist")}
+          onNavigate={onNavigate}
+        />
+        <RailItem
+          href="/alerts"
+          active={isAlerts}
+          icon={<IconBell />}
+          label={t("alerts")}
+          onNavigate={onNavigate}
+        />
+        <RailItem
+          href="/strategies"
+          active={isStrategies}
+          icon={<IconLab />}
+          label={t("strategies")}
+          onNavigate={onNavigate}
+        />
+      </nav>
 
-      <div className={`border-t border-[var(--border)] ${collapsed ? "p-2" : "p-3"}`}>
-        <div className={collapsed ? "flex flex-col gap-1.5" : "grid grid-cols-3 gap-1.5"}>
-          <Link
-            href="/alerts"
-            aria-label={t("quickTrade")}
-            title={t("quickTrade")}
-            onClick={onNavigate}
-            className="qt-btn qt-btn-primary flex h-9 items-center justify-center rounded-lg"
-          >
-            <IconBolt className="h-4 w-4" />
-          </Link>
-          <Link
-            href="/settings"
-            aria-label={t("settings")}
-            title={t("settings")}
-            onClick={onNavigate}
-            className="qt-btn qt-btn-ghost flex h-9 items-center justify-center rounded-lg border border-[var(--border)]"
-          >
-            <IconGear className="h-4 w-4" />
-          </Link>
-          <Link
-            href="/about"
-            aria-label={t("about")}
-            title={t("about")}
-            onClick={onNavigate}
-            className="qt-btn qt-btn-ghost flex h-9 items-center justify-center rounded-lg border border-[var(--border)]"
-          >
-            <IconUser className="h-4 w-4" />
-          </Link>
-        </div>
+      <div className="flex flex-col items-center gap-1.5 border-t border-[var(--border)] px-1.5 py-3">
+        <RailItem
+          href="/settings"
+          active={isSettings}
+          icon={<IconGear />}
+          label={t("settings")}
+          onNavigate={onNavigate}
+        />
       </div>
     </aside>
   );
 }
 
-/** Persist + hydrate sidebar collapse preference (lg only). */
+/** Kept for MainAppShell API; rail is always compact. */
 export function useSidebarCollapsed() {
-  const [collapsed, setCollapsed] = useState(false);
-  const [hydrated, setHydrated] = useState(false);
-
-  useEffect(() => {
-    try {
-      if (localStorage.getItem(STORAGE_KEY) === "1") setCollapsed(true);
-    } catch {
-      /* ignore */
-    }
-    setHydrated(true);
-  }, []);
-
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem(STORAGE_KEY, collapsed ? "1" : "0");
-    } catch {
-      /* ignore */
-    }
-  }, [collapsed, hydrated]);
-
-  return [collapsed, setCollapsed] as const;
+  return [true, (_v: boolean) => {}] as const;
 }

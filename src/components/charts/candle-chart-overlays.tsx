@@ -43,6 +43,8 @@ type Props = {
   onToggleFullscreen: () => void;
   flags: IndicatorFlags;
   onFlagToggle?: (key: keyof IndicatorFlags) => void;
+  /** When false, hide floating MA/MACD pills (parent toolbar owns them). */
+  showFloatingIndicators?: boolean;
   indicatorsLabel?: string;
   loadingMore?: boolean;
 };
@@ -64,6 +66,7 @@ export function CandleChartOverlays({
   onToggleFullscreen,
   flags,
   onFlagToggle,
+  showFloatingIndicators = true,
   indicatorsLabel,
   loadingMore,
 }: Props) {
@@ -168,8 +171,8 @@ export function CandleChartOverlays({
         </button>
       </div>
 
-      {/* Floating indicators: md+ only; mobile uses chart section toolbar */}
-      {onFlagToggle ? (
+      {/* Floating indicators — hide when parent chart toolbar already exposes them */}
+      {showFloatingIndicators && onFlagToggle ? (
         <div className="pointer-events-none absolute bottom-28 left-12 z-10 hidden sm:bottom-32 sm:left-14 md:block lg:bottom-36">
           <div className="pointer-events-auto flex max-w-full flex-wrap items-center gap-1 rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 px-1.5 py-1 text-[11px] shadow-sm backdrop-blur-sm sm:text-xs">
             {indicatorsLabel ? (

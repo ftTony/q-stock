@@ -2,7 +2,14 @@ export type AssetType = "stock" | "hk" | "crypto" | "cn";
 
 export const ASSET_TYPES = ["stock", "hk", "crypto", "cn"] as const;
 
-export type CandleResolution = "D" | "Q" | "Y";
+/** Chart period. T = session line (1m), 1/5 = minute candles. */
+export type CandleResolution = "T" | "1" | "5" | "D" | "Q" | "Y";
+
+export const INTRADAY_RESOLUTIONS: CandleResolution[] = ["T", "1", "5"];
+
+export function isIntradayResolution(r: CandleResolution): boolean {
+  return r === "T" || r === "1" || r === "5";
+}
 
 export interface OhlcvBar {
   time: number;

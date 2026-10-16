@@ -20,6 +20,7 @@ type Props = {
     accountTitle: string;
     accountDesc: string;
     reset: string;
+    riskSettings: string;
     loading: string;
     cash: string;
     marketValue: string;
@@ -61,15 +62,23 @@ export function PortfolioPaperSection({
           <h2 className="text-lg font-semibold">{labels.accountTitle}</h2>
           <p className="text-sm text-[var(--muted)]">{labels.accountDesc}</p>
         </div>
-        <SubmitButton
-          type="button"
-          loading={resetting}
-          loadingLabel={labels.loading}
-          onClick={onReset}
-          className="qt-btn-ghost border border-[var(--border)] px-3 py-1.5 text-sm"
-        >
-          {labels.reset}
-        </SubmitButton>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            href="/settings"
+            className="qt-btn qt-btn-ghost h-8 border border-[var(--border)] px-3 text-[12px]"
+          >
+            {labels.riskSettings}
+          </Link>
+          <SubmitButton
+            type="button"
+            loading={resetting}
+            loadingLabel={labels.loading}
+            onClick={onReset}
+            className="qt-btn-ghost border border-[var(--border)] px-3 py-1.5 text-sm"
+          >
+            {labels.reset}
+          </SubmitButton>
+        </div>
       </div>
       {tradeMsg && (
         <p className="text-xs text-[var(--muted)]">{tradeMsg}</p>

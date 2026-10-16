@@ -111,6 +111,24 @@ export async function getMonthlyCandles(
   );
 }
 
+export async function getIntradayCandles(
+  symbol: string,
+  assetType: AssetType,
+  from: number,
+  to: number,
+  interval: "1" | "5",
+): Promise<OhlcvBar[]> {
+  const providers = listProvidersForCandles(assetType).filter(
+    (p) => typeof p.getIntradayCandles === "function",
+  );
+  return withProviderFailover(
+    assetType,
+    (p) => p.getIntradayCandles!(symbol, assetType, from, to, interval),
+    `intraday ${interval}m ${symbol}`,
+    providers,
+  );
+}
+
 export async function searchSymbols(
   q: string,
   assetType: AssetType,

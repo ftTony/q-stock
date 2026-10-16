@@ -5,13 +5,21 @@ import {
   type IndicatorFlags,
 } from "@/components/charts/candle-chart";
 import { INDICATOR_KEYS } from "@/components/charts/candle-chart-overlays";
-import type { AssetType, CandleResolution, OhlcvBar } from "@/lib/types";
+import {
+  isIntradayResolution,
+  type AssetType,
+  type CandleResolution,
+  type OhlcvBar,
+} from "@/lib/types";
+
+const PRIMARY_INDICATORS = new Set(["ma", "macd"]);
 
 type Props = {
   resolution: CandleResolution;
   onResolutionChange: (r: CandleResolution) => void;
-  resolutionLabels: { D: string; Q: string; Y: string };
+  resolutionLabels: Record<CandleResolution, string>;
   indicatorsLabel: string;
+  intradayUnavailableLabel: string;
   flags: IndicatorFlags;
   onFlagToggle: (key: keyof IndicatorFlags) => void;
   loadingChart: boolean;
@@ -29,6 +37,7 @@ export function SymbolChartSection({
   onResolutionChange,
   resolutionLabels,
   indicatorsLabel,
+  intradayUnavailableLabel,
   flags,
   onFlagToggle,
   loadingChart,
@@ -40,45 +49,51 @@ export function SymbolChartSection({
   loadingMore,
   hasMore,
 }: Props) {
+  const periods: CandleResolution[] = ["T", "1", "5", "D", "Q", "Y"];
+  const primaryKeys = INDICATOR_KEYS.filter(([k]) => PRIMARY_INDICATORS.has(k));
+  const moreKeys = INDICATOR_KEYS.filter(([k]) => !PRIMARY_INDICATORS.has(k));
+  const intradayEmpty =
+    isIntradayResolution(resolution) && !loadingChart && bars.length === 0;
+
   return (
-    <div className="space-y-3 min-w-0">
-      <div className="flex flex-wrap items-center gap-1.5">
-        {(
-          [
-            ["D", resolutionLabels.D],
-            ["Q", resolutionLabels.Q],
-            ["Y", resolutionLabels.Y],
-          ] as const
-        ).map(([key, label]) => (
+    <div className="aw-surface-flush flex h-full min-h-0 flex-col">
+      <div className="aw-chart-toolbar flex shrink-0 flex-wrap items-center gap-0.5 border-b border-[var(--border)] bg-[var(--surface)] px-2">
+        {periods.map((key) => (
           <button
             key={key}
             type="button"
             onClick={() => onResolutionChange(key)}
-            className={`h-6 rounded-md px-1.5 text-[10px] leading-none font-medium ${
-              resolution === key
-                ? "bg-[var(--brand)] text-[#0b1220]"
-                : "border border-[var(--border)] bg-[var(--panel)] text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
-            }`}
+            data-active={resolution === key}
+            className="aw-toolbar-btn"
           >
-            {label}
+            {resolutionLabels[key]}
           </button>
         ))}
 
-        {/* Mobile: indicators live here so they don’t cover the plot */}
+        <span className="mx-1.5 h-3 w-px bg-[var(--border)]" aria-hidden />
+
         <div
-          className="flex max-w-full flex-wrap items-center gap-1 md:hidden"
+          className="flex max-w-full flex-wrap items-center gap-1"
           aria-label={indicatorsLabel}
         >
-          {INDICATOR_KEYS.map(([key, label]) => (
+          {primaryKeys.map(([key, label]) => (
             <button
               key={key}
               type="button"
               onClick={() => onFlagToggle(key)}
-              className={`h-6 rounded-md border px-1.5 text-[10px] leading-none ${
-                flags[key]
-                  ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                  : "border-[var(--border)] bg-[var(--panel)] text-[var(--muted)]"
-              }`}
+              data-active={flags[key]}
+              className="aw-toolbar-btn"
+            >
+              {label}
+            </button>
+          ))}
+          {moreKeys.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onFlagToggle(key)}
+              data-active={flags[key]}
+              className="aw-toolbar-btn max-sm:hidden text-[var(--muted)]"
             >
               {label}
             </button>
@@ -87,22 +102,32 @@ export function SymbolChartSection({
       </div>
 
       {loadingChart ? (
-        <div className="qt-panel flex h-[360px] items-center justify-center text-sm text-[var(--muted)] sm:h-[520px] lg:h-[620px]">
-          {loadingLabel}
+        <div className="flex min-h-[280px] flex-1 items-center justify-center lg:min-h-0">
+          <div
+            className="h-full min-h-[280px] w-full animate-pulse bg-[var(--surface-2)]/60 lg:min-h-0"
+            aria-label={loadingLabel}
+          />
+        </div>
+      ) : intradayEmpty ? (
+        <div className="aw-caption flex min-h-[280px] flex-1 items-center justify-center px-6 text-center text-[14px] lg:min-h-0">
+          {intradayUnavailableLabel}
         </div>
       ) : (
-        <CandleChart
-          bars={bars}
-          flags={flags}
-          onFlagToggle={onFlagToggle}
-          indicatorsLabel={indicatorsLabel}
-          resetKey={`${assetType}:${symbol}:${resolution}`}
-          resolution={resolution}
-          symbol={symbol}
-          onLoadMore={onLoadMore}
-          loadingMore={loadingMore}
-          hasMore={hasMore}
-        />
+        <div className="min-h-0 flex-1 [&_>div]:h-full [&_>div]:rounded-none [&_>div]:border-0">
+          <CandleChart
+            bars={bars}
+            flags={flags}
+            onFlagToggle={onFlagToggle}
+            indicatorsLabel={indicatorsLabel}
+            showFloatingIndicators={false}
+            resetKey={`${assetType}:${symbol}:${resolution}`}
+            resolution={resolution}
+            fillParent
+            onLoadMore={isIntradayResolution(resolution) ? undefined : onLoadMore}
+            loadingMore={loadingMore}
+            hasMore={hasMore && !isIntradayResolution(resolution)}
+          />
+        </div>
       )}
     </div>
   );

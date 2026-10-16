@@ -1,21 +1,32 @@
 "use client";
 
-import { TradePanel } from "@/components/trading/trade-panel";
-import { SubmitButton } from "@/components/ui/submit-button";
-import { QtSelect } from "@/components/ui/qt-select";
+import { useCallback, useMemo, useState } from "react";
 import { SymbolAiFab } from "@/components/symbol/symbol-ai-fab";
-import { SymbolHeader } from "@/components/symbol/symbol-header";
 import { SymbolChartSection } from "@/components/symbol/symbol-chart-section";
+import { SymbolOrderRail } from "@/components/symbol/symbol-order-rail";
+import { SymbolQuoteBar } from "@/components/symbol/symbol-quote-bar";
+import { SymbolRailStats } from "@/components/symbol/symbol-rail-stats";
 import { SymbolTabsPanel } from "@/components/symbol/symbol-tabs-panel";
 import { useSymbolPage } from "@/components/symbol/use-symbol-page";
 import { isMarketIndexSymbol } from "@/lib/market/indices";
-import type { AssetType, Quote } from "@/lib/types";
+import type { AssetType, CandleResolution, Quote } from "@/lib/types";
+import "./apple-workbench.css";
+import "./apple-quote-chrome.css";
 
 type Props = {
   symbol: string;
   assetType: AssetType;
   initialQuote?: Quote | null;
 };
+
+function metricOf(
+  metrics: { metric?: string; value?: number | null }[],
+  key: string,
+): number | null {
+  const hit = metrics.find((m) => m.metric === key);
+  const v = hit?.value;
+  return v != null && Number.isFinite(v) ? v : null;
+}
 
 export function SymbolPageClient({
   symbol,
@@ -24,110 +35,87 @@ export function SymbolPageClient({
 }: Props) {
   const isIndex = isMarketIndexSymbol(symbol);
   const s = useSymbolPage(symbol, assetType, isIndex, initialQuote);
+  const [aiOpen, setAiOpen] = useState(false);
+  const [quoteBusy, setQuoteBusy] = useState(false);
+
+  const marketCap = useMemo(() => {
+    const m = metricOf(s.earningsMetrics, "marketCapitalization");
+    // Finnhub marketCapitalization is in millions
+    return m != null ? m * 1e6 : null;
+  }, [s.earningsMetrics]);
+
+  const resolutionLabels = {
+    T: s.t("intraday"),
+    "1": s.t("min1"),
+    "5": s.t("min5"),
+    D: s.t("day"),
+    Q: s.t("quarter"),
+    Y: s.t("year"),
+  } satisfies Record<CandleResolution, string>;
+
+  const refreshQuote = useCallback(async () => {
+    setQuoteBusy(true);
+    try {
+      await s.loadQuote();
+    } finally {
+      setQuoteBusy(false);
+    }
+  }, [s.loadQuote]);
 
   return (
-    <div className="space-y-4">
-      <SymbolHeader
-        symbol={symbol}
-        assetType={assetType}
-        quote={s.quote}
-        metrics={s.earningsMetrics}
-        updatedAt={s.updatedAt}
-        inWatchlist={s.inWatchlist}
-        watchBusy={s.watchBusy}
-        watchLabel={s.t("addWatchlist")}
-        watchLabelActive={s.t("inWatchlist")}
-        loadingLabel={s.tCommon("loading")}
-        backLabel={s.t("back")}
-        onToggleWatchlist={() => void s.toggleWatchlist()}
-      />
+    <div className="aw aw-stack flex min-h-0 flex-1 flex-col bg-[#e6edf6] lg:overflow-hidden">
+      <div className="shrink-0">
+        <SymbolQuoteBar
+          symbol={symbol}
+          assetType={assetType}
+          quote={s.quote}
+          updatedAt={s.updatedAt}
+          inWatchlist={s.inWatchlist}
+          watchBusy={s.watchBusy}
+          onToggleWatchlist={() => void s.toggleWatchlist()}
+          onOpenAi={() => setAiOpen(true)}
+          onRefresh={() => void refreshQuote()}
+          refreshBusy={quoteBusy}
+          marketCap={marketCap}
+          alert={{
+            condition: s.alertCondition,
+            onConditionChange: s.setAlertCondition,
+            price: s.alertPrice,
+            onPriceChange: s.setAlertPrice,
+            busy: s.alertBusy,
+            message: s.alertMsg,
+            onSubmit: s.createAlert,
+          }}
+        />
+      </div>
 
-      <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px] xl:grid-cols-[minmax(0,1fr)_360px] lg:items-start animate-[qtFade_0.45s_ease]">
-        <div className="lg:col-start-1 min-w-0">
-          <SymbolChartSection
-            resolution={s.resolution}
-            onResolutionChange={s.setResolution}
-            resolutionLabels={{
-              D: s.t("day"),
-              Q: s.t("quarter"),
-              Y: s.t("year"),
-            }}
-            indicatorsLabel={s.t("indicators")}
-            flags={s.flags}
-            onFlagToggle={(key) =>
-              s.setFlags((f) => ({ ...f, [key]: !f[key] }))
-            }
-            loadingChart={s.loadingChart}
-            loadingLabel={s.tCommon("loading")}
-            bars={s.bars}
-            assetType={assetType}
-            symbol={symbol}
-            onLoadMore={s.loadMoreCandles}
-            loadingMore={s.loadingMoreCandles}
-            hasMore={s.hasMoreCandles}
-          />
-        </div>
-
-        <aside className="flex flex-col gap-3 lg:col-start-2 lg:row-span-2 lg:sticky lg:top-20 lg:max-h-[calc(100dvh-5.5rem)] lg:overflow-y-auto lg:overscroll-contain qt-scroll">
-          <TradePanel
-            symbol={symbol}
-            assetType={assetType}
-            lastPrice={s.quote?.price ?? null}
-            bid={s.quote?.bid ?? null}
-            ask={s.quote?.ask ?? null}
-          />
-        </aside>
-
-        <div className="space-y-4 min-w-0 lg:col-start-1">
-          <form
-            onSubmit={s.createAlert}
-            aria-label={s.t("setAlert")}
-            className="qt-panel flex flex-wrap items-center gap-1.5 px-2.5 py-2 sm:gap-2 sm:px-4 sm:py-2.5"
-          >
-            {/* Title needs width — hide on narrow so condition + price + CTA stay one row. */}
-            <div className="hidden shrink-0 text-[14px] font-medium leading-none md:block">
-              {s.t("setAlert")}
-            </div>
-            <QtSelect
-              value={s.alertCondition}
-              onChange={(v) => s.setAlertCondition(v as "gte" | "lte")}
-              aria-label={s.tAlerts("condition")}
-              className="w-[6.25rem] shrink-0 sm:w-32"
-              triggerClassName="h-9 px-2 text-[13px] sm:px-2.5 sm:text-[14px]"
-              options={[
-                { value: "gte", label: s.tAlerts("gte") },
-                { value: "lte", label: s.tAlerts("lte") },
-              ]}
-            />
-            <input
-              type="number"
-              step="any"
-              required
-              value={s.alertPrice}
-              onChange={(e) => s.setAlertPrice(e.target.value)}
-              placeholder={s.tAlerts("triggerPrice")}
-              aria-label={s.tAlerts("triggerPrice")}
-              className="qt-input h-9 min-w-0 flex-1 px-2 text-[13px] tabular-nums sm:w-28 sm:flex-none sm:px-2.5 sm:text-[14px]"
-            />
-            <SubmitButton
-              type="submit"
-              loading={s.alertBusy}
-              loadingLabel={s.tCommon("loading")}
-              className="qt-btn-primary h-9 max-w-[4.5rem] shrink-0 truncate rounded-md px-2.5 text-[13px] font-medium leading-none sm:max-w-none sm:px-3 sm:text-[14px]"
-            >
-              {s.tAlerts("create")}
-            </SubmitButton>
-            {s.alertMsg ? (
-              <span className="w-full text-[12px] text-[var(--muted)] sm:w-auto sm:text-[14px]">
-                {s.alertMsg}
-              </span>
-            ) : null}
-          </form>
-
+      <div className="aw-workbench-grid min-h-0 flex-1 lg:overflow-hidden">
+        <div className="aw-stack-y flex min-h-0 min-w-0 flex-col overflow-hidden bg-white">
           <SymbolTabsPanel
             tabs={s.tabs}
             tab={s.tab}
             onTabChange={s.setTab}
+            chartSlot={
+              <SymbolChartSection
+                resolution={s.resolution}
+                onResolutionChange={s.setResolution}
+                resolutionLabels={resolutionLabels}
+                indicatorsLabel={s.t("indicators")}
+                intradayUnavailableLabel={s.t("intradayUnavailable")}
+                flags={s.flags}
+                onFlagToggle={(key) =>
+                  s.setFlags((f) => ({ ...f, [key]: !f[key] }))
+                }
+                loadingChart={s.loadingChart}
+                loadingLabel={s.tCommon("loading")}
+                bars={s.bars}
+                assetType={assetType}
+                symbol={symbol}
+                onLoadMore={s.loadMoreCandles}
+                loadingMore={s.loadingMoreCandles}
+                hasMore={s.hasMoreCandles}
+              />
+            }
             degraded={s.degraded}
             degradedLabel={s.tCommon("degraded")}
             tabLoading={s.tabLoading}
@@ -135,6 +123,7 @@ export function SymbolPageClient({
             symbol={symbol}
             assetType={assetType}
             isIndex={isIndex}
+            lastPrice={s.quote?.price ?? null}
             news={s.news}
             press={s.press}
             earnings={s.earnings}
@@ -176,9 +165,30 @@ export function SymbolPageClient({
             aiRegenerateLabel={s.t("aiRegenerate")}
           />
         </div>
+
+        <aside className="aw-workbench-rail aw-region min-h-0 gap-0 overflow-hidden bg-[var(--aw-canvas)]">
+          <div className="shrink-0">
+            <SymbolRailStats quote={s.quote} marketCap={marketCap} />
+          </div>
+          <SymbolOrderRail
+            symbol={symbol}
+            assetType={assetType}
+            lastPrice={s.quote?.price ?? null}
+            bid={s.quote?.bid ?? null}
+            ask={s.quote?.ask ?? null}
+            onOpenAi={() => setAiOpen(true)}
+            isIndex={isIndex}
+          />
+        </aside>
       </div>
 
-      <SymbolAiFab symbol={symbol} assetType={assetType} />
+      <SymbolAiFab
+        symbol={symbol}
+        assetType={assetType}
+        open={aiOpen}
+        onOpenChange={setAiOpen}
+        showFab
+      />
     </div>
   );
 }

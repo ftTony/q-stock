@@ -224,6 +224,14 @@ async function tickSeoSitemap() {
 async function tick() {
   await tickAlerts();
   await tickPaperOrders();
+  try {
+    const { tickStrategyReplays } = await import(
+      "@/lib/strategy/run-replay-job"
+    );
+    await tickStrategyReplays(2);
+  } catch (err) {
+    console.error("[strategy-replay] tick failed", err);
+  }
   await tickWatchlistDigest(prisma);
   await tickSeoSitemap();
 }

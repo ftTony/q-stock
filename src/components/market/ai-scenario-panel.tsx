@@ -6,6 +6,7 @@ import { AiLoginGate } from "@/components/ai/ai-login-gate";
 import { useAiAccess } from "@/components/ai/use-ai-access";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { TopToast } from "@/components/ui/top-toast";
+import { formatNumber } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 
 type PaperDraft = {
@@ -29,16 +30,19 @@ type ScenarioPayload = {
   error?: string;
 };
 
+export type ApplyDraftPayload = {
+  side: "buy" | "sell";
+  type: "limit" | "stop";
+  price: number;
+  qtyHint?: number;
+  invalidationNote?: string;
+};
+
 export function AiScenarioPanel(props: {
   symbol: string;
   assetType: AssetType;
   cashBalance?: number | null;
-  onApplyDraft?: (draft: {
-    side: "buy" | "sell";
-    type: "limit" | "stop";
-    price: number;
-    qtyHint?: number;
-  }) => void;
+  onApplyDraft?: (draft: ApplyDraftPayload) => void;
 }) {
   const t = useTranslations("aiScenario");
   const tAi = useTranslations("ai");
@@ -77,114 +81,162 @@ export function AiScenarioPanel(props: {
     }
   }
 
-  function applyDraft() {
+  function buildPayload(withQty: boolean): ApplyDraftPayload | null {
     const d = data?.paperDraft;
-    if (!d?.side || !d.type || !(d.price != null && d.price > 0)) return;
+    if (!d?.side || !d.type || !(d.price != null && d.price > 0)) return null;
     let qtyHint: number | undefined;
-    if (props.cashBalance != null && d.side === "buy" && d.price > 0) {
+    if (
+      withQty &&
+      props.cashBalance != null &&
+      d.side === "buy" &&
+      d.price > 0
+    ) {
       const notional = (props.cashBalance * d.sizeHintPct) / 100;
       qtyHint = Math.max(1, Math.floor(notional / d.price));
     }
-    props.onApplyDraft?.({
+    return {
       side: d.side,
       type: d.type,
       price: d.price,
       qtyHint,
-    });
+      invalidationNote: data?.regimes[0]?.invalidation,
+    };
   }
 
   if (!access.loggedIn && !access.sessionLoading) {
     return (
-      <div className="qt-panel">
+      <div className="p-3">
         <AiLoginGate className="min-h-[14rem] py-8" />
       </div>
     );
   }
 
+  const draft = data?.paperDraft;
+  const canApply =
+    Boolean(props.onApplyDraft) &&
+    Boolean(draft?.side && draft.type && draft.price != null && draft.price > 0);
+
+  const qtyHint =
+    draft &&
+    props.cashBalance != null &&
+    draft.side === "buy" &&
+    draft.price != null &&
+    draft.price > 0
+      ? Math.max(
+          1,
+          Math.floor((props.cashBalance * draft.sizeHintPct) / 100 / draft.price),
+        )
+      : null;
+
   return (
-    <div className="qt-panel space-y-3 p-3 sm:p-4">
+    <div className="space-y-0 p-3">
       <TopToast
         key={access.toastKey}
         message={access.toastMsg}
         tone={access.toastTone}
         onDismiss={access.dismissToast}
       />
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <h3 className="text-sm font-semibold">{t("title")}</h3>
-          <p className="text-xs text-[var(--muted)]">{t("subtitle")}</p>
+      <div className="flex items-start justify-between gap-3 pb-3">
+        <div className="min-w-0">
+          <h3 className="aw-caption-strong">{t("title")}</h3>
+          <p className="aw-caption mt-1">{t("subtitle")}</p>
         </div>
         <SubmitButton
           type="button"
           loading={busy}
           showElapsed={(s) => tAi("elapsed", { seconds: s })}
           onClick={() => void run()}
-          className="qt-btn-ghost shrink-0 border border-[var(--border)] px-3 py-1.5"
+          className="h-8 shrink-0 !rounded-none !border-0 !bg-transparent !px-2 !py-0 !text-[13px] font-medium !text-[var(--brand-text)] shadow-none"
         >
           {t("run")}
         </SubmitButton>
       </div>
 
-      {error && <p className="text-xs text-[var(--down)]">{error}</p>}
+      {error && (
+        <p className="border-t border-[var(--border)] py-2 text-xs text-[var(--down)]">
+          {error}
+        </p>
+      )}
 
       {data && (
-        <div className="space-y-3 text-sm">
-          <ul className="space-y-2">
+        <div className="divide-y divide-[var(--border)] text-[13px]">
+          <ul className="divide-y divide-[var(--border)]">
             {data.regimes.map((r, i) => (
               <li
                 key={i}
-                className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-2"
+                className="flex items-start justify-between gap-3 py-2.5"
               >
-                <div className="flex justify-between gap-2 font-medium">
-                  <span>{r.name}</span>
-                  <span className="tabular-nums text-[var(--muted)]">
-                    {Math.round(r.probability * 100)}%
-                  </span>
-                </div>
-                <p className="mt-1 text-xs text-[var(--muted)]">
-                  {t("invalidation")}: {r.invalidation}
-                </p>
-                {r.watchLevels.length > 0 && (
-                  <p className="mt-1 text-xs tabular-nums">
-                    {t("levels")}:{" "}
-                    {r.watchLevels.map((n) => n.toFixed(2)).join(" · ")}
+                <div className="min-w-0">
+                  <p className="font-medium tracking-[-0.08px]">{r.name}</p>
+                  <p className="aw-caption mt-0.5">
+                    {t("invalidation")}: {r.invalidation}
                   </p>
-                )}
+                </div>
+                <span className="aw-caption shrink-0 tabular-nums">
+                  {Math.round(r.probability * 100)}%
+                </span>
               </li>
             ))}
           </ul>
 
-          {data.paperDraft && (
-            <div className="rounded-lg border border-dashed border-[var(--border)] px-3 py-2">
-              <p className="text-xs font-medium text-[var(--muted)]">
-                {t("draft")}
-              </p>
-              <p className="mt-1 text-sm">
-                {(data.paperDraft.side || "—").toUpperCase()}{" "}
-                {data.paperDraft.type || "—"} @{" "}
-                {data.paperDraft.price?.toFixed(2) ?? "—"} · ≤
-                {data.paperDraft.sizeHintPct}%
-              </p>
-              <p className="mt-1 text-xs text-[var(--muted)]">
-                {data.paperDraft.rationale}
-              </p>
-              {props.onApplyDraft &&
-                data.paperDraft.side &&
-                data.paperDraft.type &&
-                data.paperDraft.price != null && (
-                  <SubmitButton
-                    type="button"
-                    onClick={applyDraft}
-                    className="qt-btn-primary mt-2 px-2.5 py-1 text-xs"
-                  >
-                    {t("applyDraft")}
-                  </SubmitButton>
-                )}
+          {data.calmReminder ? (
+            <div className="py-2.5">
+              <p className="aw-caption-strong text-[12px]">{t("calmTitle")}</p>
+              <p className="aw-caption mt-1">{data.calmReminder}</p>
             </div>
-          )}
+          ) : null}
 
-          <p className="text-xs text-[var(--muted)]">{data.calmReminder}</p>
-          <p className="text-[11px] text-[var(--muted)]">
+          {draft && canApply ? (
+            <div className="space-y-2.5 py-3">
+              <p className="aw-caption-strong text-[12px]">{t("draft")}</p>
+              <dl className="grid grid-cols-[4.5rem_1fr] gap-y-1.5 text-[12px]">
+                <dt className="aw-metric-label">{t("draftSide")}</dt>
+                <dd
+                  className={
+                    draft.side === "sell"
+                      ? "font-medium text-[var(--down)]"
+                      : "font-medium text-[var(--up)]"
+                  }
+                >
+                  {draft.side === "sell" ? t("sideSell") : t("sideBuy")}
+                  {" · "}
+                  {draft.type === "stop" ? t("typeStop") : t("typeLimit")}
+                </dd>
+                <dt className="aw-metric-label">{t("draftQty")}</dt>
+                <dd className="tabular-nums">
+                  {qtyHint != null
+                    ? formatNumber(qtyHint, { maximumFractionDigits: 0 })
+                    : t("chipSize", { pct: draft.sizeHintPct })}
+                </dd>
+                <dt className="aw-metric-label">{t("draftPrice")}</dt>
+                <dd className="tabular-nums">
+                  {draft.price != null
+                    ? formatNumber(draft.price, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })
+                    : "—"}
+                </dd>
+              </dl>
+              {draft.rationale ? (
+                <p className="border-t border-[var(--border)] pt-2 text-[11px] leading-snug text-[var(--muted)]">
+                  {draft.rationale}
+                </p>
+              ) : null}
+              <SubmitButton
+                type="button"
+                onClick={() => {
+                  const p = buildPayload(true);
+                  if (p) props.onApplyDraft?.(p);
+                }}
+                className="!mt-1 w-full !rounded-full !border-0 !bg-[var(--brand)] !py-2.5 !text-[14px] font-normal !text-white"
+              >
+                {t("applyAndGo")}
+              </SubmitButton>
+            </div>
+          ) : null}
+
+          <p className="aw-caption py-2.5">
             {data.disclaimer || tAi("disclaimer")} · {t("paperOnly")}
           </p>
         </div>

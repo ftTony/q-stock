@@ -1,7 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { formatToolNumber } from "@/lib/tools/catalog";
 import {
   POSITION_EXAMPLE,
@@ -11,15 +13,32 @@ import {
   type PositionSide,
 } from "@/lib/tools/position";
 import { QtSelect } from "@/components/ui/qt-select";
+import type { AssetType } from "@/lib/types";
 
 function num(v: string, fallback = 0) {
   const n = Number(v);
   return Number.isFinite(n) ? n : fallback;
 }
 
+function initialFromQuery(sp: URLSearchParams): PositionInput {
+  const base = { ...POSITION_EXAMPLE };
+  const equity = num(sp.get("equity") ?? "");
+  const entry = num(sp.get("entry") ?? "");
+  const stop = num(sp.get("stop") ?? "");
+  if (equity > 0) base.equity = equity;
+  if (entry > 0) base.entry = entry;
+  if (stop > 0) base.stop = stop;
+  return base;
+}
+
 export function PositionCalculator() {
   const t = useTranslations("tools");
-  const [form, setForm] = useState<PositionInput>(POSITION_EXAMPLE);
+  const searchParams = useSearchParams();
+  const [form, setForm] = useState<PositionInput>(() =>
+    initialFromQuery(searchParams),
+  );
+  const symbol = (searchParams.get("symbol") || "").toUpperCase();
+  const assetType = (searchParams.get("assetType") || "stock") as AssetType;
 
   const result = useMemo(() => calcPosition(form), [form]);
 
@@ -187,6 +206,14 @@ export function PositionCalculator() {
             <p className="text-xs text-[var(--muted)]">
               {form.side === "long" ? t("position.hintLong") : t("position.hintShort")}
             </p>
+            {symbol ? (
+              <Link
+                href={`/symbol/${assetType}/${encodeURIComponent(symbol)}?qty=${result.qty}&entry=${form.entry}&invalidation=${form.stop}`}
+                className="qt-btn qt-btn-primary inline-flex h-9 items-center px-3.5 text-sm"
+              >
+                {t("position.applyPaper")}
+              </Link>
+            ) : null}
           </div>
         ) : (
           <p className="text-sm text-[var(--muted)]">

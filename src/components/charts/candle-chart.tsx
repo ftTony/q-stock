@@ -26,12 +26,14 @@ export function CandleChart({
   flags,
   onFlagToggle,
   indicatorsLabel,
+  showFloatingIndicators = true,
   resetKey,
   resolution = "D",
   symbol = "",
   onLoadMore,
   loadingMore = false,
   hasMore = true,
+  fillParent = false,
 }: {
   bars: OhlcvBar[];
   /** @deprecated KLineChart computes indicators internally */
@@ -39,12 +41,16 @@ export function CandleChart({
   flags: IndicatorFlags;
   onFlagToggle?: (key: keyof IndicatorFlags) => void;
   indicatorsLabel?: string;
+  /** False when a parent toolbar already lists MA/MACD/… */
+  showFloatingIndicators?: boolean;
   resetKey?: string;
   resolution?: string;
   symbol?: string;
   onLoadMore?: (earliestTime: number) => Promise<OhlcvBar[] | void> | void;
   loadingMore?: boolean;
   hasMore?: boolean;
+  /** Fill a flex parent instead of fixed 360/520/620 heights. */
+  fillParent?: boolean;
 }) {
   const shellRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -148,7 +154,7 @@ export function CandleChart({
       kcRef.current = KC;
       const chart = KC.init(containerRef.current, {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        styles: buildChartStyles(tipLabelsRef.current) as any,
+        styles: buildChartStyles(tipLabelsRef.current, resolution) as any,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       if (!chart) return;
@@ -235,8 +241,8 @@ export function CandleChart({
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart || !ready) return;
-    chart.setStyles(buildChartStyles(tipLabelsRef.current) as never);
-  }, [changeColorScheme, ready, locale]);
+    chart.setStyles(buildChartStyles(tipLabelsRef.current, resolution) as never);
+  }, [changeColorScheme, ready, locale, resolution]);
 
   useEffect(() => {
     function onFsChange() {
@@ -285,13 +291,19 @@ export function CandleChart({
     setDrawingTool("none");
   };
 
+  const shellClass = fullscreen
+    ? "relative flex h-screen flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)]"
+    : fillParent
+      ? "relative flex h-[360px] flex-col overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)] sm:h-[520px] lg:h-full lg:min-h-[280px]"
+      : "relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)]";
+
+  const plotClass =
+    fullscreen || fillParent
+      ? "min-h-0 w-full flex-1"
+      : "h-[360px] w-full sm:h-[520px] lg:h-[620px]";
+
   return (
-    <div
-      ref={shellRef}
-      className={`relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)] ${
-        fullscreen ? "flex h-screen flex-col rounded-none border-0" : ""
-      }`}
-    >
+    <div ref={shellRef} className={shellClass}>
       <CandleChartOverlays
         drawingTool={drawingTool}
         onStartDrawing={startDrawing}
@@ -300,18 +312,12 @@ export function CandleChart({
         onToggleFullscreen={() => void toggleFullscreen()}
         flags={flags}
         onFlagToggle={onFlagToggle}
+        showFloatingIndicators={showFloatingIndicators}
         indicatorsLabel={indicatorsLabel}
         loadingMore={loadingMore}
       />
 
-      <div
-        ref={containerRef}
-        className={
-          fullscreen
-            ? "min-h-0 w-full flex-1"
-            : "h-[360px] w-full sm:h-[520px] lg:h-[620px]"
-        }
-      />
+      <div ref={containerRef} className={plotClass} />
     </div>
   );
 }

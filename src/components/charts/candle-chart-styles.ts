@@ -33,7 +33,14 @@ function readThemeColors() {
   };
 }
 
-export function buildChartStyles(labels: TipLabels) {
+/** 分时 uses area line; other periods use solid candles. */
+export function candleTypeFromResolution(
+  resolution: string,
+): "area" | "candle_solid" {
+  return resolution === "T" ? "area" : "candle_solid";
+}
+
+export function buildChartStyles(labels: TipLabels, resolution = "D") {
   const c = readThemeColors();
   // Always use a dark glass tip + light text — theme CSS vars can make
   // legend titles land as near-black on a dark rect (unreadable on mobile).
@@ -67,7 +74,7 @@ export function buildChartStyles(labels: TipLabels) {
       vertical: { color: c.grid },
     },
     candle: {
-      type: "candle_solid" as const,
+      type: candleTypeFromResolution(resolution),
       bar: {
         upColor: c.up,
         downColor: c.down,
@@ -202,5 +209,9 @@ export function buildChartStyles(labels: TipLabels) {
 export function periodFromResolution(resolution: string) {
   if (resolution === "Y") return { type: "year" as const, span: 1 };
   if (resolution === "Q") return { type: "month" as const, span: 3 };
+  if (resolution === "5") return { type: "minute" as const, span: 5 };
+  if (resolution === "T" || resolution === "1") {
+    return { type: "minute" as const, span: 1 };
+  }
   return { type: "day" as const, span: 1 };
 }

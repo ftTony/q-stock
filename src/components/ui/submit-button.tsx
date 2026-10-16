@@ -93,7 +93,7 @@ export function SubmitButton({
       type={type}
       disabled={isDisabled}
       aria-busy={loading || undefined}
-      className={`qt-btn inline-flex items-center justify-center gap-2 ${className} text-[14px]`}
+      className={`qt-btn inline-flex items-center justify-center gap-2 text-[14px] ${className}`}
       {...rest}
     >
       {loading && <Spinner />}

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CompoundCalculator } from "@/components/tools/compound-calculator";
@@ -42,7 +43,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 function Calculator({ slug }: { slug: ToolSlug }) {
-  if (slug === "position") return <PositionCalculator />;
+  if (slug === "position") {
+    return (
+      <Suspense fallback={<p className="text-sm text-[var(--muted)]">…</p>}>
+        <PositionCalculator />
+      </Suspense>
+    );
+  }
   if (slug === "risk-reward") return <RiskRewardCalculator />;
   if (slug === "dca") return <DcaCalculator />;
   if (slug === "compound") return <CompoundCalculator />;

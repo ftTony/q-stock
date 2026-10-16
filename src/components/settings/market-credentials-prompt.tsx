@@ -11,9 +11,9 @@ import {
 } from "@/lib/market/creds-status-client";
 
 /**
- * Single markets/data-source notice (marquee + actions).
- * Shown when broker keys are missing; hidden on settings / auth / about.
- * `fluid` matches full-bleed pages (markets / analysis / symbol).
+ * Slim scrolling notice when broker OpenAPI keys are missing.
+ * Text marquees; CTA buttons stay pinned on the right.
+ * Hidden on settings / auth / about. `fluid` = full-bleed pages.
  */
 export function MarketCredentialsPrompt({ fluid = false }: { fluid?: boolean }) {
   const t = useTranslations("settings");
@@ -78,49 +78,49 @@ export function MarketCredentialsPrompt({ fluid = false }: { fluid?: boolean }) 
       ? "/settings?setupKeys=1"
       : "/login?next=/settings%3FsetupKeys%3D1";
 
-  const segment = (
-    <span className="inline-flex items-center gap-3 px-4 text-[12px] sm:px-6 sm:text-[13px]">
-      <span className="font-medium text-[var(--foreground)]">
-        {t("credsPromptTitle")}
-      </span>
-      <span className="text-[var(--muted)]">{t("credsPromptBody")}</span>
-      <span aria-hidden className="text-[var(--border)]">
-        {" | "}
-      </span>
-    </span>
-  );
+  const title = t("credsPromptTitle");
+  const body = t("credsPromptBody");
 
   return (
     <div
       role="status"
-      className="border-b border-[var(--border)] bg-[var(--brand-soft)] py-2"
+      aria-label={`${title}. ${body}`}
+      className="border-b border-[var(--border)] bg-[var(--brand-soft)]"
     >
       <div
         className={
           fluid
-            ? "flex w-full items-center gap-2 px-2 sm:px-4"
-            : "mx-auto flex w-full max-w-6xl items-center gap-2 px-2 sm:px-4"
+            ? "flex w-full items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-4"
+            : "mx-auto flex w-full max-w-6xl items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-4"
         }
       >
-        <div className="qt-marquee min-w-0 flex-1">
+        <div className="qt-marquee min-w-0 flex-1 py-0.5">
           <div className="qt-marquee-track">
-            {segment}
-            {segment}
-            {segment}
-            {segment}
+            {[0, 1].map((i) => (
+              <span
+                key={i}
+                aria-hidden={i === 1 ? true : undefined}
+                className="inline-flex items-baseline gap-1.5 whitespace-nowrap pr-10 text-[12px] leading-none tracking-[-0.12px]"
+              >
+                <span className="font-semibold text-[var(--foreground)]">
+                  {title}
+                </span>
+                <span className="text-[var(--muted)]">{body}</span>
+              </span>
+            ))}
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-1.5 pr-1 sm:gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           <Link
             href={settingsHref}
-            className="qt-btn qt-btn-primary h-8 px-3 text-xs"
+            className="qt-btn qt-btn-primary inline-flex h-7 items-center justify-center !rounded-full !px-3.5 !py-0 text-[12px] font-medium leading-none !text-[var(--on-brand)] no-underline transition active:scale-95"
           >
             {t("credsPromptAction")}
           </Link>
           <button
             type="button"
             onClick={dismiss}
-            className="rounded-lg px-2 py-1 text-xs text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+            className="inline-flex h-7 items-center justify-center rounded-full px-2.5 text-[12px] font-medium leading-none text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
           >
             {t("credsPromptLater")}
           </button>

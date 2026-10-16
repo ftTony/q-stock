@@ -34,6 +34,14 @@ export interface MarketDataProvider {
     from: number,
     to: number,
   ): Promise<OhlcvBar[]>;
+  /** 1m / 5m bars. Optional — providers without minute history omit this. */
+  getIntradayCandles?(
+    symbol: string,
+    assetType: AssetType,
+    from: number,
+    to: number,
+    interval: "1" | "5",
+  ): Promise<OhlcvBar[]>;
   searchSymbols(q: string, assetType: AssetType): Promise<SearchResult[]>;
 }
 

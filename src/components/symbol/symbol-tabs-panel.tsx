@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent } from "react";
+import { FormEvent, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
 import {
@@ -17,6 +17,7 @@ import {
   CompanyProfilePanel,
   OfficersPanel,
 } from "@/components/market/company-panel";
+import { SymbolDerivativesPanel } from "@/components/symbol/symbol-derivatives-panel";
 import { PaginatedList } from "@/components/ui/paginated-list";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { TopToast } from "@/components/ui/top-toast";
@@ -25,6 +26,12 @@ import { formatDate, formatDateTime } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 
 export type SymbolTab =
+  | "chart"
+  | "overview"
+  | "derivatives"
+  | "funds"
+  | "short"
+  | "chips"
   | "news"
   | "earnings"
   | "press"
@@ -64,6 +71,8 @@ type Props = {
   tabs: TabItem[];
   tab: SymbolTab;
   onTabChange: (id: SymbolTab) => void;
+  /** Rendered when active tab is `chart` (main workbench chart). */
+  chartSlot?: ReactNode;
   degraded: boolean;
   degradedLabel: string;
   tabLoading: boolean;
@@ -71,6 +80,7 @@ type Props = {
   symbol: string;
   assetType: AssetType;
   isIndex: boolean;
+  lastPrice?: number | null;
   news: NewsRow[];
   press: PressRow[];
   earnings: EarningsSurprise[];
@@ -118,6 +128,7 @@ export function SymbolTabsPanel({
   tabs,
   tab,
   onTabChange,
+  chartSlot,
   degraded,
   degradedLabel,
   tabLoading,
@@ -125,6 +136,7 @@ export function SymbolTabsPanel({
   symbol,
   assetType,
   isIndex,
+  lastPrice = null,
   news,
   press,
   earnings,
@@ -165,20 +177,19 @@ export function SymbolTabsPanel({
 }: Props) {
   const tAi = useTranslations("ai");
 
+  const t = useTranslations("symbol");
+
   return (
-    <div className="space-y-4 min-w-0">
-      <div className="overflow-x-auto">
-        <div className="flex min-w-max gap-1 border-b border-[var(--border)]">
+    <div className="aw-surface-flush flex min-h-0 min-w-0 flex-1 flex-col bg-white">
+      <div className="shrink-0 overflow-x-auto">
+        <div className="flex min-w-max gap-0.5 border-b border-[var(--border)] bg-[#edf2f8]">
           {tabs.map((item) => (
             <button
               key={item.id}
               type="button"
               onClick={() => onTabChange(item.id)}
-              className={`px-3 py-2 text-sm ${
-                tab === item.id
-                  ? "border-b-2 border-[var(--brand)] font-medium text-[var(--foreground)]"
-                  : "text-[var(--muted)]"
-              }`}
+              data-active={tab === item.id}
+              className="aw-tab"
             >
               {item.label}
             </button>
@@ -186,17 +197,27 @@ export function SymbolTabsPanel({
         </div>
       </div>
 
-      {degraded && (
-        <p className="text-xs text-[var(--muted)]">{degradedLabel}</p>
-      )}
+      {degraded && tab !== "chart" ? (
+        <p className="aw-caption px-4 pt-3 sm:px-5">{degradedLabel}</p>
+      ) : null}
 
-      <div className="qt-panel p-4">
+      {tab === "chart" && chartSlot ? (
+        <div className="aw-tab-chart min-h-0 flex-1 overflow-hidden">{chartSlot}</div>
+      ) : (
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 qt-scroll sm:p-5">
         {tabLoading ? (
           <div className="flex h-40 items-center justify-center text-sm text-[var(--muted)]">
             {loadingLabel}
           </div>
         ) : (
           <>
+            {tab === "derivatives" && (
+              <SymbolDerivativesPanel
+                symbol={symbol}
+                assetType={assetType}
+                lastPrice={lastPrice}
+              />
+            )}
             {tab === "news" && (
               <PaginatedList
                 items={news}
@@ -448,6 +469,7 @@ export function SymbolTabsPanel({
           </>
         )}
       </div>
+      )}
     </div>
   );
 }

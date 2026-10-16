@@ -9,33 +9,42 @@ import type { AssetType, OhlcvBar } from "@/lib/types";
 
 export type LbModule = typeof import("longbridge");
 
-let lbPromise: Promise<LbModule> | null = null;
-
-const quoteCtxCache = new Map<
-  string,
-  InstanceType<LbModule["QuoteContext"]>
->();
-const contentCtxCache = new Map<
-  string,
-  InstanceType<LbModule["ContentContext"]>
->();
-const fundamentalCtxCache = new Map<
-  string,
-  InstanceType<LbModule["FundamentalContext"]>
->();
-
-const MAX_CTX = 32;
-
-function trimMap<K, V>(map: Map<K, V>, max: number) {
-  while (map.size > max) {
-    const first = map.keys().next().value;
-    if (first === undefined) break;
-    map.delete(first);
-  }
-}
-
 /** Longbridge Language enum: 0=zh-CN, 1=zh-HK, 2=en. */
 export type LbLanguageId = 0 | 1 | 2 | "default";
+
+type QuoteCtx = InstanceType<LbModule["QuoteContext"]>;
+type ContentCtx = InstanceType<LbModule["ContentContext"]>;
+type FundamentalCtx = InstanceType<LbModule["FundamentalContext"]>;
+
+/**
+ * Persist context maps on globalThis so Next.js HMR does not orphan
+ * WebSocket connections (account limit is typically 10).
+ */
+type LbGlobal = {
+  lbPromise: Promise<LbModule> | null;
+  quote: Map<string, QuoteCtx>;
+  content: Map<string, ContentCtx>;
+  fundamental: Map<string, FundamentalCtx>;
+  /** In-flight create locks — avoid concurrent .new() for the same key. */
+  locks: Map<string, Promise<unknown>>;
+};
+
+const G = (() => {
+  const g = globalThis as typeof globalThis & { __qstockLb?: LbGlobal };
+  if (!g.__qstockLb) {
+    g.__qstockLb = {
+      lbPromise: null,
+      quote: new Map(),
+      content: new Map(),
+      fundamental: new Map(),
+      locks: new Map(),
+    };
+  }
+  return g.__qstockLb;
+})();
+
+/** Keep ≤2 fingerprints (platform + one BYOK). Hard account cap ≈ 10. */
+const MAX_FP = 2;
 
 function requireLongbridgeCreds(): LongbridgeCreds {
   const c = resolveLongbridgeCreds();
@@ -54,10 +63,10 @@ export function hasLongbridgeCreds(): boolean {
 }
 
 export async function loadLb(): Promise<LbModule> {
-  if (!lbPromise) {
-    lbPromise = import("longbridge");
+  if (!G.lbPromise) {
+    G.lbPromise = import("longbridge");
   }
-  return lbPromise;
+  return G.lbPromise;
 }
 
 function makeConfig(
@@ -75,18 +84,55 @@ function makeConfig(
   );
 }
 
-export async function getQuoteCtx(): Promise<
-  InstanceType<LbModule["QuoteContext"]>
-> {
+function trimFpMap<V>(map: Map<string, V>, max: number) {
+  while (map.size > max) {
+    const first = map.keys().next().value;
+    if (first === undefined) break;
+    // Node SDK has no close(); orphaned sockets expire server-side in ~1–5min.
+    map.delete(first);
+  }
+}
+
+function mapConnError(err: unknown): never {
+  const msg = err instanceof Error ? err.message : String(err);
+  if (/connections limitation/i.test(msg)) {
+    throw new MarketDataError(
+      "Longbridge quote connections exhausted (limit 10). Reuse one QuoteContext; wait 1–5 min after restarts, then retry.",
+      "longbridge",
+    );
+  }
+  throw err instanceof Error ? err : new Error(msg);
+}
+
+async function withCreateLock<T>(key: string, create: () => Promise<T>): Promise<T> {
+  const existing = G.locks.get(key);
+  if (existing) return existing as Promise<T>;
+  const p = create().finally(() => {
+    if (G.locks.get(key) === p) G.locks.delete(key);
+  });
+  G.locks.set(key, p);
+  return p;
+}
+
+export async function getQuoteCtx(): Promise<QuoteCtx> {
   const creds = requireLongbridgeCreds();
   const key = fingerprintLongbridge(creds);
-  const hit = quoteCtxCache.get(key);
+  const hit = G.quote.get(key);
   if (hit) return hit;
-  const lb = await loadLb();
-  const ctx = lb.QuoteContext.new(makeConfig(lb, creds));
-  quoteCtxCache.set(key, ctx);
-  trimMap(quoteCtxCache, MAX_CTX);
-  return ctx;
+
+  return withCreateLock(`q:${key}`, async () => {
+    const again = G.quote.get(key);
+    if (again) return again;
+    try {
+      const lb = await loadLb();
+      const ctx = lb.QuoteContext.new(makeConfig(lb, creds));
+      G.quote.set(key, ctx);
+      trimFpMap(G.quote, MAX_FP);
+      return ctx;
+    } catch (err) {
+      mapConnError(err);
+    }
+  });
 }
 
 /** @deprecated Prefer getQuoteCtx */
@@ -110,28 +156,51 @@ export function lbLanguage(locale?: string): LbLanguageId {
   return "default";
 }
 
-export async function getContentCtx(language: LbLanguageId = "default") {
+/**
+ * One ContentContext per credential fingerprint (not per language).
+ * Language is fixed at first create to avoid blowing the connection quota.
+ */
+export async function getContentCtx(_language: LbLanguageId = "default") {
   const creds = requireLongbridgeCreds();
-  const key = `${fingerprintLongbridge(creds)}:c:${language}`;
-  const cached = contentCtxCache.get(key);
-  if (cached) return cached;
-  const lb = await loadLb();
-  const ctx = lb.ContentContext.new(makeConfig(lb, creds, language));
-  contentCtxCache.set(key, ctx);
-  trimMap(contentCtxCache, MAX_CTX);
-  return ctx;
+  const key = fingerprintLongbridge(creds);
+  const hit = G.content.get(key);
+  if (hit) return hit;
+
+  return withCreateLock(`c:${key}`, async () => {
+    const again = G.content.get(key);
+    if (again) return again;
+    try {
+      const lb = await loadLb();
+      // Prefer zh-CN for this product; quota cannot afford per-locale sockets.
+      const ctx = lb.ContentContext.new(makeConfig(lb, creds, 0));
+      G.content.set(key, ctx);
+      trimFpMap(G.content, MAX_FP);
+      return ctx;
+    } catch (err) {
+      mapConnError(err);
+    }
+  });
 }
 
-export async function getFundamentalCtx(language: LbLanguageId = "default") {
+export async function getFundamentalCtx(_language: LbLanguageId = "default") {
   const creds = requireLongbridgeCreds();
-  const key = `${fingerprintLongbridge(creds)}:f:${language}`;
-  const cached = fundamentalCtxCache.get(key);
-  if (cached) return cached;
-  const lb = await loadLb();
-  const ctx = lb.FundamentalContext.new(makeConfig(lb, creds, language));
-  fundamentalCtxCache.set(key, ctx);
-  trimMap(fundamentalCtxCache, MAX_CTX);
-  return ctx;
+  const key = fingerprintLongbridge(creds);
+  const hit = G.fundamental.get(key);
+  if (hit) return hit;
+
+  return withCreateLock(`f:${key}`, async () => {
+    const again = G.fundamental.get(key);
+    if (again) return again;
+    try {
+      const lb = await loadLb();
+      const ctx = lb.FundamentalContext.new(makeConfig(lb, creds, 0));
+      G.fundamental.set(key, ctx);
+      trimFpMap(G.fundamental, MAX_FP);
+      return ctx;
+    } catch (err) {
+      mapConnError(err);
+    }
+  });
 }
 
 export function strOrUndef(v: unknown): string | undefined {
@@ -209,7 +278,10 @@ export async function fetchLbHistoryBars(
 
   // Fallback: latest-N window (works near "now", not deep history)
   const daySpan = Math.max(1, Math.ceil((to - from) / 86400));
-  const count = Math.min(1000, daySpan + 5);
+  // Period enum: Min_1=1, Min_5=4, Day=14 — minute periods need denser counts
+  const barsPerDay =
+    period === 1 ? 420 : period === 4 ? 84 : period < 14 ? 50 : 1;
+  const count = Math.min(1000, daySpan * barsPerDay + 20);
   const sticks = await ctx.candlesticks(lbSym, period, count, 0, 0);
   const bars = mapLbCandles(sticks, from, to);
   if (!bars.length) {

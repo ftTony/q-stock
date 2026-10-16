@@ -81,10 +81,10 @@ export function AiChartReadPanel(props: {
   }
 
   return (
-    <div
+    <section
       className={
         page
-          ? "space-y-3"
+          ? "aw-ai-section space-y-3"
           : "mt-6 space-y-3 border-t border-[var(--border)] pt-4"
       }
     >
@@ -95,23 +95,31 @@ export function AiChartReadPanel(props: {
         onDismiss={access.dismissToast}
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-2">
+      <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h3 className="text-base font-semibold">{t("title")}</h3>
-          <p className="mt-0.5 text-sm leading-snug text-[var(--muted)]">
+          <h3 className={page ? "aw-ai-section-title" : "text-base font-semibold"}>
+            {t("title")}
+          </h3>
+          <p
+            className={
+              page
+                ? "aw-ai-section-sub mt-1"
+                : "mt-0.5 text-sm leading-snug text-[var(--muted)]"
+            }
+          >
             {t("subtitle")}
           </p>
           {fromHistory && data ? (
             <p className="mt-1 text-xs text-[var(--muted)]">{t("historyHint")}</p>
           ) : null}
         </div>
-        <div className="flex shrink-0 items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
           {data ? (
             <button
               type="button"
               onClick={onClear}
               disabled={busy}
-              className="qt-btn-ghost rounded-md px-2 py-1 text-xs text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
+              className="aw-ai-text-btn disabled:opacity-50"
             >
               {t("clearHistory")}
             </button>
@@ -122,7 +130,11 @@ export function AiChartReadPanel(props: {
               loading={busy}
               showElapsed={(s) => tAi("elapsed", { seconds: s })}
               onClick={() => void run()}
-              className="qt-btn-ghost border border-[var(--border)] px-4 py-2"
+              className={
+                page
+                  ? "aw-ai-pearl-btn"
+                  : "qt-btn-ghost border border-[var(--border)] px-4 py-2"
+              }
             >
               {data ? t("rerun") : t("run")}
             </SubmitButton>
@@ -173,6 +185,6 @@ export function AiChartReadPanel(props: {
           </p>
         </div>
       )}
-    </div>
+    </section>
   );
 }

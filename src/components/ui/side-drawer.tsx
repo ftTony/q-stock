@@ -8,6 +8,8 @@ export function SideDrawer(props: {
   onClose: () => void;
   title: string;
   subtitle?: string;
+  /** Extra classes on the panel (e.g. `aw aw-ai-desk`). */
+  className?: string;
   children: ReactNode;
 }) {
   const [mounted, setMounted] = useState(false);
@@ -50,15 +52,15 @@ export function SideDrawer(props: {
         aria-label={props.title}
         className={`absolute inset-y-0 right-0 flex w-full max-w-[min(100vw,42rem)] flex-col border-l border-[var(--border)] bg-[var(--panel)] pb-[env(safe-area-inset-bottom,0px)] shadow-2xl transition-transform duration-300 ease-out sm:max-w-[42rem] ${
           props.open ? "translate-x-0" : "translate-x-full"
-        }`}
+        } ${props.className ?? ""}`}
       >
-        <header className="flex shrink-0 items-start justify-between gap-3 border-b border-[var(--border)] px-5 py-4">
+        <header className="aw-drawer-header flex shrink-0 items-start justify-between gap-3 border-b border-[var(--border)] px-5 py-4 sm:px-6">
           <div className="min-w-0">
-            <h2 className="truncate text-[17px] font-semibold tracking-tight">
+            <h2 className="aw-drawer-title truncate text-[17px] font-semibold tracking-tight">
               {props.title}
             </h2>
             {props.subtitle ? (
-              <p className="mt-1 text-[14px] leading-snug text-[var(--muted)]">
+              <p className="aw-drawer-subtitle mt-1 text-[14px] leading-snug text-[var(--muted)]">
                 {props.subtitle}
               </p>
             ) : null}
@@ -66,21 +68,22 @@ export function SideDrawer(props: {
           <button
             type="button"
             onClick={props.onClose}
-            className="qt-btn-ghost inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-[var(--muted)] hover:text-[var(--foreground)]"
+            className="aw-drawer-close inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-[8px] bg-[var(--surface-2)] text-[var(--muted)] transition hover:text-[var(--foreground)] active:scale-95"
             aria-label="Close"
           >
             <svg
-              className="h-5 w-5"
+              className="h-4 w-4"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.2"
+              strokeLinecap="round"
             >
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
         </header>
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain qt-scroll">
+        <div className="aw-drawer-body min-h-0 flex-1 overflow-y-auto overscroll-contain qt-scroll">
           {props.children}
         </div>
       </aside>

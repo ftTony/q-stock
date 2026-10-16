@@ -43,6 +43,7 @@ function isAppPath(pathname: string) {
     "/review",
     "/analysis",
     "/symbol",
+    "/strategies",
     "/settings",
     "/about",
   ];

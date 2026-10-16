@@ -17,6 +17,7 @@ import { MarketOkxCredentialsForm } from "@/components/settings/market-okx-crede
 import { MarketVendorPrefs } from "@/components/settings/market-vendor-prefs";
 import { AiCredentialsForm } from "@/components/settings/ai-credentials-form";
 import { InvitePanel } from "@/components/settings/invite-panel";
+import { PaperRiskSettingsForm } from "@/components/settings/paper-risk-settings-form";
 import {
   locales,
   languageLabels,
@@ -296,6 +297,7 @@ export default function SettingsPage() {
 
       {loggedIn ? (
         <>
+          <PaperRiskSettingsForm />
           <MarketVendorPrefs />
           <Suspense
             fallback={<PanelSkeleton rows={4} label={tCommon("loading")} />}

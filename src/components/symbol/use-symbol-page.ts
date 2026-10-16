@@ -19,6 +19,10 @@ import {
 import { useSymbolAiAnalysis } from "@/components/symbol/use-symbol-ai-analysis";
 import { useSymbolCandles } from "@/components/symbol/use-symbol-candles";
 import {
+  buildSymbolTabs,
+  fallbackSymbolTab,
+} from "@/components/symbol/symbol-page-tabs";
+import {
   quotePollIntervalMs,
   useQuoteChannels,
 } from "@/hooks/use-quote-socket";
@@ -65,10 +69,9 @@ export function useSymbolPage(
     macd: false,
   });
   const candles = useSymbolCandles(symbol, assetType, resolution);
-  const [tab, setTab] = useState<SymbolTab>(
-    assetType === "cn" ? "ai" : "news",
-  );
-  const ai = useSymbolAiAnalysis(symbol, assetType, tab === "ai");
+  const [tab, setTab] = useState<SymbolTab>("chart");
+  /** Trend AI tab removed from secondary; desk is QuoteBar / FAB drawer. */
+  const ai = useSymbolAiAnalysis(symbol, assetType, false);
   const [news, setNews] = useState<NewsRow[]>([]);
   const [earnings, setEarnings] = useState<EarningsSurprise[]>([]);
   const [earningsUpcoming, setEarningsUpcoming] = useState<EarningsCalendarRow[]>([]);
@@ -316,61 +319,15 @@ export function useSymbolPage(
     };
   }, [session, symbol, assetType]);
 
-  const tabs = useMemo(() => {
-    const all: { id: SymbolTab; label: string }[] = [
-      { id: "news", label: t("news") },
-      { id: "earnings", label: t("earnings") },
-      { id: "press", label: t("press") },
-      { id: "profile", label: t("profile") },
-      { id: "officers", label: t("officers") },
-      { id: "comments", label: t("comments") },
-      { id: "sentiment", label: t("sentiment") },
-      { id: "ai", label: t("ai") },
-    ];
-    if (assetType === "crypto" || isIndex) {
-      return all.filter(
-        (x) =>
-          x.id !== "earnings" &&
-          x.id !== "press" &&
-          x.id !== "profile" &&
-          x.id !== "officers",
-      );
-    }
-    // A-shares: no Finnhub/Adanos news·sentiment — keep comments + AI (+ chart above)
-    if (assetType === "cn") {
-      return all.filter(
-        (x) =>
-          x.id === "comments" ||
-          x.id === "ai",
-      );
-    }
-    if (assetType === "hk") {
-      return all.filter((x) => x.id !== "sentiment");
-    }
-    return all;
-  }, [t, assetType, isIndex]);
+  const tabs = useMemo(
+    () => buildSymbolTabs(t, assetType, isIndex),
+    [t, assetType, isIndex],
+  );
 
   useEffect(() => {
-    if (
-      (assetType === "crypto" || isIndex) &&
-      (tab === "earnings" ||
-        tab === "press" ||
-        tab === "profile" ||
-        tab === "officers")
-    ) {
-      setTab("news");
-    }
-    if (assetType === "hk" && tab === "sentiment") {
-      setTab("news");
-    }
-    if (
-      assetType === "cn" &&
-      tab !== "comments" &&
-      tab !== "ai"
-    ) {
-      setTab("ai");
-    }
-  }, [assetType, isIndex, tab]);
+    const next = fallbackSymbolTab(tabs, tab);
+    if (next !== tab) setTab(next);
+  }, [assetType, isIndex, tab, tabs]);
 
   async function postComment(e: FormEvent) {
     e.preventDefault();
@@ -499,6 +456,7 @@ export function useSymbolPage(
     inWatchlist,
     watchBusy,
     updatedAt,
+    loadQuote,
     postComment,
     deleteComment,
     createAlert,

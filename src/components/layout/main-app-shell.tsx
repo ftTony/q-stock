@@ -7,8 +7,6 @@ import { localizedPath } from "@/i18n/config";
 import {
   AppSidebar,
   SIDEBAR_WIDTH_COLLAPSED,
-  SIDEBAR_WIDTH_EXPANDED,
-  useSidebarCollapsed,
 } from "@/components/layout/app-sidebar";
 import { TopBarActions } from "@/components/layout/topbar-actions";
 import { TopbarIndexTicker } from "@/components/layout/topbar-index-ticker";
@@ -66,7 +64,6 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
   const homeHref = localizedPath(locale, "/");
   const { status: sessionStatus } = useSession();
   const mounted = useMounted();
-  const [collapsed, setCollapsed] = useSidebarCollapsed();
 
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isWatchlist = pathname.startsWith("/watchlist");
@@ -82,28 +79,47 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
     isPortfolio ||
     pathname.startsWith("/analysis") ||
     pathname.startsWith("/symbol") ||
+    pathname.startsWith("/strategies") ||
     (isAccountGatePage && !authed);
+  const isSymbol = pathname.startsWith("/symbol");
+  const isStrategies = pathname.startsWith("/strategies");
   const mainRailClass = isFluidMain
-    ? "w-full px-4 sm:px-6"
+    ? isSymbol || isStrategies
+      ? "w-full px-3 sm:px-4"
+      : "w-full px-4 sm:px-6"
     : "mx-auto w-full max-w-6xl px-4 sm:px-6";
-  // Width must match SSR (collapsed=false) until localStorage is read.
-  const sidebarWidth =
-    mounted && collapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED;
+  const sidebarWidth = SIDEBAR_WIDTH_COLLAPSED;
 
   return (
     <div
-      className="min-h-dvh lg:flex"
+      className={
+        isSymbol
+          ? "min-h-dvh bg-[#e6edf6] lg:flex lg:h-dvh lg:overflow-hidden"
+          : "min-h-dvh lg:flex"
+      }
       style={{ ["--sidebar-w" as string]: `${sidebarWidth}px` }}
     >
       <div
-        className="hidden shrink-0 transition-[width] duration-200 ease-out lg:sticky lg:top-0 lg:flex lg:h-dvh lg:self-start"
+        className="hidden shrink-0 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:self-start"
         style={{ width: sidebarWidth }}
       >
-        <AppSidebar collapsed={collapsed} onCollapsedChange={setCollapsed} />
+        <AppSidebar />
       </div>
 
-      <div className="flex min-h-dvh min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-40 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
+      <div
+        className={
+          isSymbol
+            ? "flex min-h-dvh min-w-0 flex-1 flex-col bg-[#e6edf6] lg:h-dvh lg:overflow-hidden"
+            : "flex min-h-dvh min-w-0 flex-1 flex-col"
+        }
+      >
+        <header
+          className={`sticky top-0 z-40 shrink-0 border-b border-[var(--border)] backdrop-blur-xl ${
+            isSymbol
+              ? "bg-[#e6edf6]/90"
+              : "bg-[var(--background)]/85"
+          }`}
+        >
           <div className="flex h-14 items-center justify-between gap-2 px-3 sm:gap-3 sm:px-4 lg:px-6">
             <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
               <a
@@ -122,8 +138,24 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
 
         <MarketCredentialsPrompt fluid={isFluidMain} />
 
-        <main className="flex-1 py-5 pb-24 sm:py-6 lg:pb-6">
-          <div className={mainRailClass}>{children}</div>
+        <main
+          className={
+            isSymbol
+              ? "flex min-h-0 flex-1 flex-col py-3 pb-24 sm:py-3.5 lg:overflow-hidden lg:pb-3"
+              : `flex-1 pb-24 lg:pb-6 ${
+                  isStrategies ? "py-3 sm:py-3.5" : "py-5 sm:py-6"
+                }`
+          }
+        >
+          <div
+            className={
+              isSymbol
+                ? `${mainRailClass} flex min-h-0 flex-1 flex-col`
+                : mainRailClass
+            }
+          >
+            {children}
+          </div>
         </main>
 
         <DataSourceBadge />

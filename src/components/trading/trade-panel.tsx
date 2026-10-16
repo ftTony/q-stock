@@ -2,6 +2,7 @@
 
 import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
@@ -10,10 +11,26 @@ import { SegmentedControl } from "@/components/ui/segmented-control";
 import { TopToast, type ToastTone } from "@/components/ui/top-toast";
 import { useMounted } from "@/hooks/use-mounted";
 import { formatNumber } from "@/lib/format-number";
+import { summarizeOrderRisk } from "@/lib/trading/risk-math";
+import type { EmotionTagId } from "@/components/symbol/symbol-emotion-check";
+import { TradeAccountStrip } from "@/components/trading/trade-account-strip";
+import { TradeAiLinks } from "@/components/trading/trade-ai-links";
+import { TradeBidAsk } from "@/components/trading/trade-bid-ask";
+import { TradeCalmFields } from "@/components/trading/trade-calm-fields";
+import { TradeOpenOrders } from "@/components/trading/trade-open-orders";
 import type { AssetType } from "@/lib/types";
 
 type Side = "buy" | "sell";
 type OrderType = "market" | "limit" | "stop";
+
+export type TradeAiDraft = {
+  side: "buy" | "sell";
+  type: "limit" | "stop";
+  price: number;
+  qtyHint?: number;
+  invalidationNote?: string;
+  nonce: number;
+};
 
 type Account = { cashBalance: number; currency: string };
 type Position = { qty: number; avgCost: number };
@@ -41,22 +58,38 @@ export function TradePanel({
   lastPrice,
   bid = null,
   ask = null,
+  aiDraft = null,
+  onDismissAiDraft,
+  onCashBalance,
+  onOpenCalm,
+  onOpenAi,
 }: {
   symbol: string;
   assetType: AssetType;
   lastPrice: number | null;
   bid?: number | null;
   ask?: number | null;
+  aiDraft?: TradeAiDraft | null;
+  onDismissAiDraft?: () => void;
+  onCashBalance?: (cash: number | null) => void;
+  onOpenCalm?: () => void;
+  onOpenAi?: () => void;
 }) {
   const t = useTranslations("trading");
-  const tSymbol = useTranslations("symbol");
   const { data: session, status } = useSession();
+  const searchParams = useSearchParams();
   const mounted = useMounted();
   const [side, setSide] = useState<Side>("buy");
   const [orderType, setOrderType] = useState<OrderType>("market");
   const [qty, setQty] = useState("1");
   const [limitPrice, setLimitPrice] = useState("");
   const [stopPrice, setStopPrice] = useState("");
+  const [invalidationPrice, setInvalidationPrice] = useState("");
+  const [emotionTags, setEmotionTags] = useState<EmotionTagId[]>([]);
+  const [strategyId, setStrategyId] = useState<string>("");
+  const [strategies, setStrategies] = useState<
+    Array<{ id: string; name: string }>
+  >([]);
   const [account, setAccount] = useState<Account | null>(null);
   const [position, setPosition] = useState<Position | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -70,16 +103,18 @@ export function TradePanel({
     if (!session?.user) return;
     setLoading(true);
     try {
-      const [a, p, o] = await Promise.all([
+      const [a, p, o, st] = await Promise.all([
         fetch("/api/trading/account"),
         fetch("/api/trading/positions"),
         fetch(
           `/api/trading/orders?symbol=${symbol}&assetType=${assetType}&status=pending`,
         ),
+        fetch("/api/strategies?mine=1").catch(() => null),
       ]);
       if (a.ok) {
         const aj = await a.json();
         setAccount(aj.account);
+        onCashBalance?.(aj.account?.cashBalance ?? null);
       }
       if (p.ok) {
         const pj = await p.json();
@@ -93,10 +128,19 @@ export function TradePanel({
         const oj = await o.json();
         setOrders(oj.orders ?? []);
       }
+      if (st && st.ok) {
+        const sj = await st.json();
+        setStrategies(
+          (sj.strategies ?? []).map((x: { id: string; name: string }) => ({
+            id: x.id,
+            name: x.name,
+          })),
+        );
+      }
     } finally {
       setLoading(false);
     }
-  }, [session?.user, symbol, assetType]);
+  }, [session?.user, symbol, assetType, onCashBalance]);
 
   useEffect(() => {
     void load();
@@ -108,6 +152,36 @@ export function TradePanel({
       setStopPrice((prev) => prev || String(Number(lastPrice.toFixed(4))));
     }
   }, [lastPrice]);
+
+  useEffect(() => {
+    const q = Number(searchParams.get("qty"));
+    if (q > 0) setQty(String(q));
+    const inv = searchParams.get("invalidation");
+    if (inv && Number(inv) > 0) setInvalidationPrice(inv);
+    const entry = searchParams.get("entry");
+    if (entry && Number(entry) > 0) {
+      setOrderType("limit");
+      setLimitPrice(String(Number(Number(entry).toFixed(4))));
+    }
+  }, [searchParams]);
+
+  useEffect(() => {
+    if (!aiDraft) return;
+    setSide(aiDraft.side);
+    setOrderType(aiDraft.type);
+    if (aiDraft.type === "limit") {
+      setLimitPrice(String(Number(aiDraft.price.toFixed(4))));
+    } else {
+      setStopPrice(String(Number(aiDraft.price.toFixed(4))));
+    }
+    if (aiDraft.qtyHint != null && aiDraft.qtyHint > 0) {
+      setQty(String(aiDraft.qtyHint));
+    }
+    if (aiDraft.invalidationNote) {
+      const m = aiDraft.invalidationNote.match(/(\d+(\.\d+)?)/);
+      if (m) setInvalidationPrice(m[1]!);
+    }
+  }, [aiDraft]);
 
   const qtyNum = Number(qty) || 0;
   const estimatePrice = useMemo(() => {
@@ -133,12 +207,34 @@ export function TradePanel({
     }
     setBusy(true);
     try {
+      const stopForRisk =
+        orderType === "stop"
+          ? Number(stopPrice)
+          : Number(invalidationPrice) || null;
+      const risk = summarizeOrderRisk({
+        equity: account?.cashBalance ?? 0,
+        qty: qtyNum,
+        entry: estimatePrice,
+        stop: stopForRisk,
+      });
       const body: Record<string, unknown> = {
         symbol,
         assetType,
         side,
         type: orderType,
         qty: qtyNum,
+        emotionTags,
+        invalidationNote: invalidationPrice
+          ? `invalidation=${invalidationPrice}`
+          : null,
+        strategyId: strategyId || null,
+        riskSnapshot: {
+          equity: account?.cashBalance ?? null,
+          notional: risk.notional,
+          riskAmount: risk.riskAmount,
+          riskPct: risk.riskPct,
+          positionPct: risk.positionPct,
+        },
       };
       if (orderType === "limit") body.limitPrice = Number(limitPrice);
       if (orderType === "stop") body.stopPrice = Number(stopPrice);
@@ -157,6 +253,8 @@ export function TradePanel({
         data.order?.status === "filled" ? t("orderFilled") : t("orderPending"),
         "success",
       );
+      setEmotionTags([]);
+      onDismissAiDraft?.();
       await load();
     } finally {
       setBusy(false);
@@ -176,18 +274,16 @@ export function TradePanel({
   // Match SSR (session status is "loading") on the first client paint.
   if (!mounted || status === "loading") {
     return (
-      <div className="qt-panel p-4 text-sm text-[var(--muted)]">{t("loading")}</div>
+      <div className="p-4 text-sm text-[var(--muted)]">{t("loading")}</div>
     );
   }
 
   if (!session?.user) {
     return (
-      <div className="qt-panel space-y-3 p-4">
-        <h2 className="text-sm font-semibold tracking-wide uppercase text-[var(--muted)]">
-          {t("title")}
-        </h2>
-        <p className="text-sm text-[var(--muted)]">{t("loginRequired")}</p>
-        <Link href="/login" className="qt-btn qt-btn-primary inline-flex px-3 py-1.5 text-sm">
+      <div className="space-y-3 p-3">
+        <p className="aw-caption-strong">{t("title")}</p>
+        <p className="aw-caption">{t("loginRequired")}</p>
+        <Link href="/login" className="aw-btn-pill inline-flex">
           {t("login")}
         </Link>
       </div>
@@ -195,68 +291,52 @@ export function TradePanel({
   }
 
   return (
-    <div className="qt-panel space-y-4 p-4">
+    <div className="space-y-3 p-3">
       <TopToast
         key={msgKey}
         message={msg}
         tone={msgTone}
         onDismiss={() => setMsg(null)}
       />
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold tracking-wide uppercase text-[var(--muted)]">
-          {t("title")}
-        </h2>
-        {loading && (
-          <span className="text-[11px] text-[var(--muted)]">{t("loading")}</span>
-        )}
+      <div className="flex items-baseline justify-between gap-2">
+        <div className="flex items-baseline gap-2">
+          <p className="aw-caption-strong">{t("title")}</p>
+          <span className="aw-caption">{t("paperBadge")}</span>
+        </div>
+        {loading ? <span className="aw-caption">{t("loading")}</span> : null}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/50 px-3 py-2">
-          <div className="text-[11px] text-[var(--muted)]">{t("cash")}</div>
-          <div className="mt-0.5 font-semibold tabular-nums">
-            ${fmtMoney(account?.cashBalance ?? 0)}
-          </div>
-        </div>
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/50 px-3 py-2">
-          <div className="text-[11px] text-[var(--muted)]">{t("position")}</div>
-          <div className="mt-0.5 font-semibold tabular-nums">
-            {position ? position.qty : 0}
-          </div>
-          {position && (
-            <div className="text-[11px] text-[var(--muted)] tabular-nums">
-              {t("avgCost")} ${fmtMoney(position.avgCost)}
-            </div>
-          )}
-        </div>
-      </div>
+      <TradeAccountStrip
+        positionQty={position ? position.qty : 0}
+        avgCost={position ? position.avgCost : null}
+      />
 
       <SegmentedControl
         value={side}
         onChange={setSide}
-        className="rounded-xl bg-[var(--surface-2)] p-1"
-        buttonClassName="flex-1 py-2 text-sm font-semibold"
+        className="aw-side-seg border-b border-[var(--border)]"
+        buttonClassName="flex-1"
         options={[
           {
             value: "buy",
             label: t("buy"),
-            indicatorClassName: "bg-[var(--up)]",
-            activeTextClassName: "text-white",
+            indicatorClassName:
+              "bg-[color-mix(in_srgb,var(--up)_14%,transparent)]",
+            activeTextClassName: "text-[var(--up)] font-semibold",
           },
           {
             value: "sell",
             label: t("sell"),
-            indicatorClassName: "bg-[var(--down)]",
-            activeTextClassName: "text-white",
+            indicatorClassName:
+              "bg-[color-mix(in_srgb,var(--down)_14%,transparent)]",
+            activeTextClassName: "text-[var(--down)] font-semibold",
           },
         ]}
       />
 
-      <form onSubmit={onSubmit} className="space-y-3">
+      <form onSubmit={onSubmit} className="space-y-2.5">
         <div>
-          <label className="mb-1 block text-[11px] text-[var(--muted)]">
-            {t("orderType")}
-          </label>
+          <label className="aw-metric-label mb-1 block">{t("orderType")}</label>
           <QtSelect
             value={orderType}
             onChange={(v) => setOrderType(v as OrderType)}
@@ -269,9 +349,7 @@ export function TradePanel({
         </div>
 
         <div>
-          <label className="mb-1 block text-[11px] text-[var(--muted)]">
-            {t("qty")}
-          </label>
+          <label className="aw-metric-label mb-1 block">{t("qty")}</label>
           <input
             type="number"
             min="0"
@@ -279,52 +357,23 @@ export function TradePanel({
             required
             value={qty}
             onChange={(e) => setQty(e.target.value)}
-            className="qt-input w-full px-2 py-2 text-sm tabular-nums"
+            className="qt-input w-full px-2.5 py-2 tabular-nums"
           />
         </div>
 
-        {(bid != null || ask != null || lastPrice != null) && (
-          <div className="grid grid-cols-2 gap-2 text-[11px] text-[var(--muted)]">
-            <button
-              type="button"
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/60 px-2 py-1.5 text-left hover:border-[var(--up)]"
-              onClick={() => {
-                const p = bid ?? lastPrice;
-                if (p != null) {
-                  setLimitPrice(String(Number(p.toFixed(4))));
-                  setOrderType("limit");
-                }
-              }}
-            >
-              <div>{tSymbol("bid")}</div>
-              <div className="mt-0.5 font-medium tabular-nums text-[var(--up)]">
-                {bid != null ? fmtMoney(bid) : lastPrice != null ? fmtMoney(lastPrice) : "-"}
-              </div>
-            </button>
-            <button
-              type="button"
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/60 px-2 py-1.5 text-left hover:border-[var(--down)]"
-              onClick={() => {
-                const p = ask ?? lastPrice;
-                if (p != null) {
-                  setLimitPrice(String(Number(p.toFixed(4))));
-                  setOrderType("limit");
-                }
-              }}
-            >
-              <div>{tSymbol("ask")}</div>
-              <div className="mt-0.5 font-medium tabular-nums text-[var(--down)]">
-                {ask != null ? fmtMoney(ask) : lastPrice != null ? fmtMoney(lastPrice) : "-"}
-              </div>
-            </button>
-          </div>
-        )}
+        <TradeBidAsk
+          bid={bid}
+          ask={ask}
+          lastPrice={lastPrice}
+          onPick={(p) => {
+            setLimitPrice(String(Number(p.toFixed(4))));
+            setOrderType("limit");
+          }}
+        />
 
         {orderType === "limit" && (
           <div>
-            <label className="mb-1 block text-[11px] text-[var(--muted)]">
-              {t("limitPrice")}
-            </label>
+            <label className="aw-metric-label mb-1 block">{t("limitPrice")}</label>
             <input
               type="number"
               min="0"
@@ -332,16 +381,14 @@ export function TradePanel({
               required
               value={limitPrice}
               onChange={(e) => setLimitPrice(e.target.value)}
-              className="qt-input w-full px-2 py-2 text-sm tabular-nums"
+              className="qt-input w-full px-2.5 py-2 tabular-nums"
             />
           </div>
         )}
 
         {orderType === "stop" && (
           <div>
-            <label className="mb-1 block text-[11px] text-[var(--muted)]">
-              {t("stopPrice")}
-            </label>
+            <label className="aw-metric-label mb-1 block">{t("stopPrice")}</label>
             <input
               type="number"
               min="0"
@@ -349,69 +396,71 @@ export function TradePanel({
               required
               value={stopPrice}
               onChange={(e) => setStopPrice(e.target.value)}
-              className="qt-input w-full px-2 py-2 text-sm tabular-nums"
+              className="qt-input w-full px-2.5 py-2 tabular-nums"
             />
           </div>
         )}
 
-        <div className="flex items-center justify-between rounded-lg bg-[var(--surface-2)]/70 px-3 py-2 text-sm">
-          <span className="text-[var(--muted)]">{t("estimate")}</span>
-          <span className="tabular-nums font-semibold text-[var(--foreground)]">
-            ${fmtMoney(estimate)}
-          </span>
+        <div className="flex items-baseline justify-between gap-2 border-t border-[var(--border)] pt-2">
+          <span className="aw-metric-label">{t("estimate")}</span>
+          <span className="aw-metric-value">${fmtMoney(estimate)}</span>
         </div>
+
+        {aiDraft ? (
+          <div className="flex items-center justify-between gap-2 border-t border-[var(--border)] pt-2 text-[12px] text-[var(--brand-text)]">
+            <span>{t("aiDraftBanner")}</span>
+            <button
+              type="button"
+              className="underline"
+              onClick={() => onDismissAiDraft?.()}
+            >
+              {t("aiDraftUndo")}
+            </button>
+          </div>
+        ) : null}
+
+        <TradeCalmFields
+          invalidationPrice={invalidationPrice}
+          onInvalidationPrice={setInvalidationPrice}
+          strategies={strategies}
+          strategyId={strategyId}
+          onStrategyId={setStrategyId}
+          equity={account?.cashBalance ?? null}
+          qty={qtyNum}
+          entry={estimatePrice}
+          stop={
+            orderType === "stop"
+              ? Number(stopPrice) || null
+              : Number(invalidationPrice) || null
+          }
+          symbol={symbol}
+          assetType={assetType}
+          emotionTags={emotionTags}
+          onEmotionTags={setEmotionTags}
+        />
+
+        <TradeAiLinks onOpenCalm={onOpenCalm} onOpenAi={onOpenAi} />
 
         <SubmitButton
           type="submit"
           loading={busy}
           loadingLabel={t("loading")}
           disabled={!(qtyNum > 0)}
-          className={`w-full py-3 text-sm font-semibold ${
+          className={`w-full !rounded-full !border-0 py-2.5 text-[14px] font-semibold !text-white hover:!opacity-100 ${
             side === "buy"
-              ? "bg-[var(--up)] text-white hover:brightness-110"
-              : "bg-[var(--down)] text-white hover:brightness-110"
+              ? "!bg-[var(--up)] hover:!brightness-110 hover:!bg-[var(--up)]"
+              : "!bg-[var(--down)] hover:!brightness-110 hover:!bg-[var(--down)]"
           }`}
         >
           {side === "buy" ? t("submitBuy") : t("submitSell")}
         </SubmitButton>
       </form>
 
-      {orders.length > 0 && (
-        <div className="border-t border-[var(--border)] pt-3">
-          <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
-            {t("openOrders")}
-          </h3>
-          <ul className="space-y-2 text-xs">
-            {orders.map((o) => (
-              <li
-                key={o.id}
-                className="flex items-start justify-between gap-2 border-b border-[var(--border)]/60 pb-2 last:border-0"
-              >
-                <div>
-                  <div className="font-medium">
-                    {t(o.side)} · {t(o.type)} · {o.qty}
-                  </div>
-                  <div className="text-[var(--muted)] tabular-nums">
-                    {o.type === "limit" && o.limitPrice != null
-                      ? `@ ${fmtMoney(o.limitPrice)}`
-                      : o.type === "stop" && o.stopPrice != null
-                        ? `stop ${fmtMoney(o.stopPrice)}`
-                        : ""}
-                  </div>
-                </div>
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() => void cancel(o.id)}
-                  className="shrink-0 text-[var(--brand-text)] hover:underline disabled:opacity-50"
-                >
-                  {t("cancel")}
-                </button>
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
+      <TradeOpenOrders
+        orders={orders}
+        busy={busy}
+        onCancel={(id) => void cancel(id)}
+      />
     </div>
   );
 }

@@ -193,6 +193,24 @@ export const futuProvider: MarketDataProvider = {
     return fetchKlines(symbol, assetType, from, to, 4);
   },
 
+  async getIntradayCandles(symbol, assetType, from, to, interval) {
+    // ktype: 1=1min, 6=5min
+    const bars = await fetchKlines(
+      symbol,
+      assetType,
+      from,
+      to,
+      interval === "5" ? 6 : 1,
+    );
+    if (!bars.length) {
+      throw new MarketDataError(
+        `Futu returned no ${interval}m klines`,
+        "futu",
+      );
+    }
+    return bars;
+  },
+
   async searchSymbols(q, assetType): Promise<SearchResult[]> {
     if (assetType === "crypto") return [];
     const query = q.trim().toUpperCase();
@@ -247,7 +265,9 @@ async function fetchKlines(
   const code = toFutuSymbol(normalized, assetType);
   const key = `futu:candle:v2:${ktype}:${normalized}:${from}:${to}`;
 
-  return cachedFetch(key, ktype === 2 ? 60_000 : 120_000, async () => {
+  const ttl =
+    ktype === 1 || ktype === 6 ? 30_000 : ktype === 2 ? 60_000 : 120_000;
+  return cachedFetch(key, ttl, async () => {
     const path = `/api/v1.0/quote/${encodeURIComponent(code)}/history-kline`;
     const byTime = new Map<number, OhlcvBar>();
     let endYmd = toDateYmd(to);

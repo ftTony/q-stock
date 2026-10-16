@@ -123,7 +123,7 @@ async function binanceFetch<T>(
 
 async function fetchKlines(
   symbol: string,
-  interval: "1d" | "1M",
+  interval: "1m" | "5m" | "1d" | "1M",
   fromSec: number,
   toSec: number,
 ): Promise<OhlcvBar[]> {
@@ -276,6 +276,26 @@ export const binanceProvider: MarketDataProvider = {
     return cachedFetch(key, 120_000, async () => {
       const bars = await fetchKlines(normalized, "1M", from, to);
       if (!bars.length) return [];
+      return bars;
+    });
+  },
+
+  async getIntradayCandles(symbol, assetType, from, to, interval) {
+    if (assetType !== "crypto") {
+      throw new MarketDataError("Binance provider is crypto-only", "binance");
+    }
+    const normalized = normalizeSymbol(symbol, "crypto");
+    const mode = hasUserApiKey() ? "key" : "web";
+    const iv = interval === "5" ? "5m" : "1m";
+    const key = `bn:candle:${iv}:${mode}:${normalized}:${from}:${to}`;
+    return cachedFetch(key, 30_000, async () => {
+      const bars = await fetchKlines(normalized, iv, from, to);
+      if (!bars.length) {
+        throw new MarketDataError(
+          `Binance returned no ${iv} klines for ${normalized}`,
+          "binance",
+        );
+      }
       return bars;
     });
   },

@@ -11,54 +11,79 @@ import { AiChatPanel } from "@/components/market/ai-chat-panel";
 import { IconRobot } from "@/components/ui/icon-robot";
 import { SideDrawer } from "@/components/ui/side-drawer";
 import type { AssetType } from "@/lib/types";
+import "./apple-workbench.css";
+import "./apple-ai-desk.css";
 
-export function SymbolAiFab(props: {
+type Props = {
   symbol: string;
   assetType: AssetType;
-}) {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  /** Mobile secondary entry; desktop can hide when QuoteBar has AI. */
+  showFab?: boolean;
+};
+
+export function SymbolAiFab({
+  symbol,
+  assetType,
+  open: openProp,
+  onOpenChange,
+  showFab = true,
+}: Props) {
   const t = useTranslations("symbol");
   const { status } = useSession();
-  const [open, setOpen] = useState(false);
+  const [innerOpen, setInnerOpen] = useState(false);
+  const controlled = openProp !== undefined;
+  const open = openProp ?? innerOpen;
+  const setOpen = useCallback(
+    (next: boolean) => {
+      onOpenChange?.(next);
+      if (!controlled) setInnerOpen(next);
+    },
+    [onOpenChange, controlled],
+  );
   const [view, setView] = useState<"desk" | "history">("desk");
   const [loadSessionId, setLoadSessionId] = useState<string | null>(null);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const label = t("openAi");
-  const close = useCallback(() => setOpen(false), []);
+  const close = useCallback(() => setOpen(false), [setOpen]);
 
+  // Reset only when the symbol changes (not when opening/closing).
   useEffect(() => {
     setOpen(false);
     setView("desk");
     setLoadSessionId(null);
     setActiveSessionId(null);
-  }, [props.symbol, props.assetType]);
+  }, [symbol, assetType, setOpen]);
 
   return (
     <>
-      <button
-        type="button"
-        aria-label={label}
-        title={label}
-        suppressHydrationWarning
-        onClick={() => {
-          setView("desk");
-          setOpen(true);
-        }}
-        className={`fixed z-50 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand)] text-white shadow-md transition hover:brightness-110 active:scale-[0.97] bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] lg:bottom-6 lg:right-6 ${
-          open
-            ? "pointer-events-none scale-95 opacity-0"
-            : "opacity-100"
-        }`}
-      >
-        <IconRobot className="h-6 w-6" />
-      </button>
+      {showFab ? (
+        <button
+          type="button"
+          aria-label={label}
+          title={label}
+          suppressHydrationWarning
+          onClick={() => {
+            setView("desk");
+            setOpen(true);
+          }}
+          className={`fixed z-50 inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--brand)] text-white shadow-md transition hover:brightness-110 active:scale-[0.97] bottom-[calc(4.75rem+env(safe-area-inset-bottom,0px))] right-[max(1rem,env(safe-area-inset-right,0px))] lg:hidden ${
+            open ? "pointer-events-none scale-95 opacity-0" : "opacity-100"
+          }`}
+        >
+          <IconRobot className="h-6 w-6" />
+        </button>
+      ) : null}
 
       <SideDrawer
         open={open}
         onClose={close}
+        className="aw aw-ai-desk"
         title={
           view === "history"
-            ? t("aiHistoryTitle", { symbol: props.symbol })
-            : t("aiDeskTitle", { symbol: props.symbol })
+            ? t("aiHistoryTitle", { symbol })
+            : t("aiDeskTitle", { symbol })
         }
         subtitle={
           view === "history" ? t("aiHistorySubtitle") : t("aiDeskSubtitle")
@@ -69,10 +94,10 @@ export function SymbolAiFab(props: {
         ) : status === "unauthenticated" ? (
           <AiLoginGate className="min-h-full py-16" />
         ) : view === "history" ? (
-          <div className="p-5 pb-8">
+          <div className="aw-ai-desk-body">
             <AiChatHistoryPanel
-              symbol={props.symbol}
-              assetType={props.assetType}
+              symbol={symbol}
+              assetType={assetType}
               activeSessionId={activeSessionId}
               onClose={() => setView("desk")}
               onSelect={(id) => {
@@ -89,18 +114,18 @@ export function SymbolAiFab(props: {
             />
           </div>
         ) : (
-          <div className="space-y-2 p-5 pb-8 text-[15px]">
-            <AiQuotaBadge className="mb-2 text-sm" />
+          <div className="aw-ai-desk-body">
+            <AiQuotaBadge className="aw-ai-quota" />
             <AiChartReadPanel
-              key={`chart-${props.assetType}-${props.symbol}`}
-              symbol={props.symbol}
-              assetType={props.assetType}
+              key={`chart-${assetType}-${symbol}`}
+              symbol={symbol}
+              assetType={assetType}
               layout="page"
             />
             <AiChatPanel
-              key={`chat-${props.assetType}-${props.symbol}`}
-              symbol={props.symbol}
-              assetType={props.assetType}
+              key={`chat-${assetType}-${symbol}`}
+              symbol={symbol}
+              assetType={assetType}
               layout="page"
               onOpenHistory={() => setView("history")}
               loadSessionId={loadSessionId}

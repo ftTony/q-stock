@@ -222,10 +222,10 @@ export function AiChatPanel(props: {
   }
 
   return (
-    <div
+    <section
       className={
         page
-          ? "space-y-3 border-t border-[var(--border)] pt-4"
+          ? "aw-ai-section aw-ai-chat space-y-3"
           : "mt-6 space-y-3 border-t border-[var(--border)] pt-4"
       }
     >
@@ -239,14 +239,16 @@ export function AiChatPanel(props: {
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0">
           <h3
-            className={page ? "text-base font-semibold" : "text-sm font-semibold"}
+            className={
+              page ? "aw-ai-section-title" : "text-sm font-semibold"
+            }
           >
             {t("title")}
           </h3>
           <p
             className={
               page
-                ? "mt-0.5 text-sm leading-snug text-[var(--muted)]"
+                ? "aw-ai-section-sub mt-1"
                 : "text-xs text-[var(--muted)]"
             }
           >
@@ -254,13 +256,17 @@ export function AiChatPanel(props: {
           </p>
         </div>
         {access.loggedIn ? (
-          <div className="flex shrink-0 items-center gap-1">
+          <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
             {props.onOpenHistory ? (
               <button
                 type="button"
                 onClick={props.onOpenHistory}
                 disabled={busy}
-                className="qt-btn-ghost rounded-md px-2 py-1 text-[14px] text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
+                className={
+                  page
+                    ? "aw-ai-chip-btn disabled:opacity-50"
+                    : "qt-btn-ghost rounded-md px-2 py-1 text-[14px] text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
+                }
               >
                 {t("history")}
               </button>
@@ -273,7 +279,11 @@ export function AiChatPanel(props: {
                 setError(null);
               }}
               disabled={busy || (!sessionId && messages.length === 0)}
-              className="qt-btn-ghost rounded-md px-2 py-1 text-[14px] text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
+              className={
+                page
+                  ? "aw-ai-text-btn disabled:opacity-50"
+                  : "qt-btn-ghost rounded-md px-2 py-1 text-[14px] text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
+              }
             >
               {t("newChat")}
             </button>
@@ -284,7 +294,7 @@ export function AiChatPanel(props: {
       <div
         className={
           page
-            ? "max-h-[min(24rem,46dvh)] min-h-[12rem] space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 p-3.5 text-[15px] leading-relaxed qt-scroll"
+            ? "aw-ai-thread max-h-[min(24rem,46dvh)] min-h-[11rem] space-y-2 overflow-y-auto p-4 text-[15px] leading-relaxed qt-scroll"
             : "max-h-64 space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 p-3 text-sm qt-scroll"
         }
       >
@@ -292,15 +302,23 @@ export function AiChatPanel(props: {
           <p className="text-[var(--muted)]">{tCommon("loading")}</p>
         )}
         {!hydrating && messages.length === 0 && (
-          <p className="text-[var(--muted)]">{t("empty")}</p>
+          <p
+            className={
+              page
+                ? "flex h-full min-h-[8rem] items-center justify-center text-center text-[14px] text-[var(--muted)]"
+                : "text-[var(--muted)]"
+            }
+          >
+            {t("empty")}
+          </p>
         )}
         {messages.map((m, i) => (
           <div
             key={`${m.role}-${i}-${m.content.slice(0, 12)}`}
             className={
               m.role === "user"
-                ? `ml-6 rounded-lg bg-[var(--brand-soft)] px-3 text-[var(--brand-text)] ${page ? "py-2.5" : "py-2"}`
-                : `mr-4 rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 whitespace-pre-wrap ${page ? "py-2.5" : "py-2"}`
+                ? `ml-6 rounded-[11px] bg-[var(--brand-soft)] px-3 text-[var(--brand-text)] ${page ? "py-2.5" : "py-2"}`
+                : `mr-4 rounded-[11px] border border-[var(--border)] bg-[var(--panel)] px-3 whitespace-pre-wrap ${page ? "py-2.5" : "py-2"}`
             }
           >
             {m.content || (busy && i === messages.length - 1 ? "…" : "")}
@@ -319,7 +337,7 @@ export function AiChatPanel(props: {
         </p>
       )}
 
-      <form onSubmit={onSend} className="flex gap-2">
+      <form onSubmit={onSend} className="flex items-center gap-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -327,7 +345,7 @@ export function AiChatPanel(props: {
           disabled={busy || !access.loggedIn || hydrating}
           className={
             page
-              ? "qt-input min-w-0 flex-1 px-3.5 py-2.5 text-[14px]"
+              ? "aw-ai-input min-w-0 flex-1"
               : "qt-input min-w-0 flex-1 px-3 py-2 text-[14px]"
           }
           maxLength={2000}
@@ -338,23 +356,25 @@ export function AiChatPanel(props: {
             showElapsed={(s) => tAi("elapsed", { seconds: s })}
             className={
               page
-                ? "qt-btn-primary shrink-0 px-4 py-2.5"
+                ? "aw-ai-send shrink-0"
                 : "qt-btn-primary shrink-0 px-3 py-2"
             }
           >
             {t("send")}
           </SubmitButton>
         ) : (
-          <AiLoginButton className="qt-btn-primary inline-flex shrink-0 items-center justify-center px-4 py-2.5 text-[14px] font-medium" />
+          <AiLoginButton
+            className={
+              page
+                ? "aw-ai-send inline-flex shrink-0 items-center justify-center"
+                : "qt-btn-primary inline-flex shrink-0 items-center justify-center px-4 py-2.5 text-[14px] font-medium"
+            }
+          />
         )}
       </form>
-      <p
-        className={
-          page ? "text-xs text-[var(--muted)]" : "text-[11px] text-[var(--muted)]"
-        }
-      >
+      <p className={page ? "aw-ai-legal" : "text-[11px] text-[var(--muted)]"}>
         {tAi("disclaimer")}
       </p>
-    </div>
+    </section>
   );
 }

@@ -1,9 +1,16 @@
-import type { AssetType, OrderSide, OrderType, PaperOrder } from "@prisma/client";
+import type {
+  AssetType,
+  OrderSide,
+  OrderType,
+  PaperOrder,
+  Prisma,
+} from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getQuote } from "@/lib/market";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import { normalizeSymbol } from "@/lib/types";
 import { ensureAccount } from "@/lib/trading/account";
+import { assertPaperRisk } from "@/lib/trading/assert-paper-risk";
 import { TradingError, applyFillInTx, fillPendingOrder, shouldTriggerPending } from "@/lib/trading/execute";
 
 export type PlaceOrderInput = {
@@ -15,6 +22,10 @@ export type PlaceOrderInput = {
   qty: number;
   limitPrice?: number | null;
   stopPrice?: number | null;
+  emotionTags?: string[];
+  invalidationNote?: string | null;
+  strategyId?: string | null;
+  riskSnapshot?: Record<string, unknown> | null;
 };
 
 export function serializeOrder(order: PaperOrder) {
@@ -32,8 +43,29 @@ export function serializeOrder(order: PaperOrder) {
     filledPrice: order.filledPrice != null ? Number(order.filledPrice) : null,
     filledAt: order.filledAt,
     rejectReason: order.rejectReason,
+    emotionTags: order.emotionTags ?? [],
+    invalidationNote: order.invalidationNote ?? null,
+    strategyId: order.strategyId ?? null,
+    riskSnapshot: order.riskSnapshot ?? null,
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,
+  };
+}
+
+function orderMeta(input: PlaceOrderInput): {
+  emotionTags: string[];
+  invalidationNote: string | null;
+  strategyId: string | null;
+  riskSnapshot?: Prisma.InputJsonValue;
+} {
+  return {
+    emotionTags: input.emotionTags ?? [],
+    invalidationNote: input.invalidationNote ?? null,
+    strategyId: input.strategyId ?? null,
+    riskSnapshot:
+      input.riskSnapshot != null
+        ? (input.riskSnapshot as Prisma.InputJsonValue)
+        : undefined,
   };
 }
 
@@ -60,6 +92,17 @@ async function placeOrderInner(input: PlaceOrderInput) {
   }
 
   await ensureAccount(input.userId);
+  await assertPaperRisk({
+    userId: input.userId,
+    symbol,
+    assetType: input.assetType,
+    side: input.side,
+    qty,
+    type: input.type,
+    limitPrice: input.limitPrice,
+    stopPrice: input.stopPrice,
+    emotionTags: input.emotionTags,
+  });
 
   if (input.type === "market") {
     const quote = await getQuote(symbol, input.assetType);
@@ -102,6 +145,7 @@ async function placeOrderInner(input: PlaceOrderInput) {
           type: "market",
           qty,
           status: "pending",
+          ...orderMeta(input),
         },
       });
 
@@ -168,6 +212,7 @@ async function placeOrderInner(input: PlaceOrderInput) {
         limitPrice: input.type === "limit" ? input.limitPrice! : null,
         stopPrice: input.type === "stop" ? input.stopPrice! : null,
         status: "pending",
+        ...orderMeta(input),
       },
     });
   });

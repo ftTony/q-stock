@@ -57,6 +57,10 @@ const createSchema = z.object({
   qty: z.number().positive(),
   limitPrice: z.number().positive().optional().nullable(),
   stopPrice: z.number().positive().optional().nullable(),
+  emotionTags: z.array(z.string().max(32)).max(8).optional(),
+  invalidationNote: z.string().max(200).optional().nullable(),
+  strategyId: z.string().cuid().optional().nullable(),
+  riskSnapshot: z.record(z.string(), z.unknown()).optional().nullable(),
 });
 
 export async function POST(req: Request) {

@@ -190,6 +190,29 @@ export const finnhubProvider: MarketDataProvider = {
     });
   },
 
+  async getIntradayCandles(symbol, assetType, from, to, interval) {
+    const normalized = normalizeSymbol(symbol, assetType);
+    const fh = toFinnhubSymbol(normalized, assetType);
+    const key = `fh:candle:${interval}m:${assetType}:${normalized}:${from}:${to}`;
+    return cachedFetch(key, 30_000, async () => {
+      const path = assetType === "crypto" ? "/crypto/candle" : "/stock/candle";
+      const raw = await finnhubFetch<RawCandle>(path, {
+        symbol: fh,
+        resolution: interval,
+        from,
+        to,
+      });
+      const bars = mapCandles(raw);
+      if (!bars.length) {
+        throw new MarketDataError(
+          `Finnhub returned no ${interval}m candles for ${fh}`,
+          "finnhub",
+        );
+      }
+      return bars;
+    });
+  },
+
   async searchSymbols(q, assetType) {
     const query = q.trim();
     if (query.length < 1) return [];
