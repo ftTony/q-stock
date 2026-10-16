@@ -39,8 +39,10 @@
     "tools": "Tools",
     "learn": "Learn",
     "pricing": "Pricing",
-    "strategies": "Rule lab",
-    "home": "Home"
+    "strategies": "Regellabor",
+    "home": "Startseite",
+    "language": "Sprache",
+    "appearance": "Darstellung"
   },
   "market": {
     "stocks": "US-Aktien",

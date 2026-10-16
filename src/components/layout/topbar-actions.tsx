@@ -83,11 +83,15 @@ function MarketStatus({ t }: { t: (key: string) => string }) {
 export function TopBarActions({
   showMarketStatus = true,
   showNotifications = true,
+  showTheme = true,
+  showLanguage = true,
   placement = "header",
   compact = false,
 }: {
   showMarketStatus?: boolean;
   showNotifications?: boolean;
+  showTheme?: boolean;
+  showLanguage?: boolean;
   placement?: "header" | "sidebar";
   compact?: boolean;
 }) {
@@ -169,6 +173,7 @@ export function TopBarActions({
         <MarketStatus t={(key) => t(key as "marketOpen")} />
       )}
 
+      {showTheme ? (
       <button
         type="button"
         className="qt-btn qt-btn-ghost h-9 w-9"
@@ -189,6 +194,7 @@ export function TopBarActions({
           </svg>
         )}
       </button>
+      ) : null}
 
       {loggedIn && showNotifications && (
         <div className="relative" ref={notifRef}>
@@ -262,6 +268,7 @@ export function TopBarActions({
         </div>
       )}
 
+      {showLanguage ? (
       <div className="relative" ref={langRef}>
         <button
           type="button"
@@ -337,6 +344,7 @@ export function TopBarActions({
           </div>
         )}
       </div>
+      ) : null}
 
       {!mounted ? (
         <span className="inline-block h-9 w-9 shrink-0" aria-hidden />

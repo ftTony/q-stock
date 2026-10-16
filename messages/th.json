@@ -39,8 +39,10 @@
     "tools": "Tools",
     "learn": "Learn",
     "pricing": "Pricing",
-    "strategies": "Rule lab",
-    "home": "Home"
+    "strategies": "ห้องทดลองกฎ",
+    "home": "หน้าแรก",
+    "language": "ภาษา",
+    "appearance": "ลักษณะ"
   },
   "market": {
     "stocks": "หุ้นสหรัฐฯ",

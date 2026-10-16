@@ -171,6 +171,12 @@ export function AiScenarioPanel(props: {
                   <p className="aw-caption mt-0.5">
                     {t("invalidation")}: {r.invalidation}
                   </p>
+                  {r.watchLevels.length > 0 && (
+                    <p className="aw-caption mt-1 tabular-nums">
+                      {t("levels")}:{" "}
+                      {r.watchLevels.map((n) => n.toFixed(2)).join(" · ")}
+                    </p>
+                  )}
                 </div>
                 <span className="aw-caption shrink-0 tabular-nums">
                   {Math.round(r.probability * 100)}%

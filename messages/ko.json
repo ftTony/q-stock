@@ -39,8 +39,10 @@
     "tools": "Tools",
     "learn": "Learn",
     "pricing": "Pricing",
-    "strategies": "Rule lab",
-    "home": "Home"
+    "strategies": "규칙 연구실",
+    "home": "홈",
+    "language": "언어",
+    "appearance": "외관"
   },
   "market": {
     "stocks": "미국 주식",

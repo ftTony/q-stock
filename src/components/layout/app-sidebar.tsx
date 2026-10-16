@@ -9,6 +9,14 @@ import { SiteLogo } from "@/components/brand/site-logo";
 export const SIDEBAR_WIDTH_EXPANDED = 56;
 export const SIDEBAR_WIDTH_COLLAPSED = 56;
 
+function IconHome({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" />
+    </svg>
+  );
+}
+
 function IconGrid({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -141,6 +149,7 @@ export function AppSidebar({ onNavigate }: Props) {
   const pathname = usePathname();
   const homeHref = localizedPath(locale, "/");
 
+  const isHome = pathname === "/";
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isAnalysis = pathname.startsWith("/analysis") || pathname.startsWith("/symbol");
   const isWatchlist = pathname.startsWith("/watchlist");
@@ -159,6 +168,14 @@ export function AppSidebar({ onNavigate }: Props) {
       </div>
 
       <nav className="qt-scroll flex flex-1 flex-col items-center gap-1.5 overflow-y-auto px-1.5 py-3">
+        <RailItem
+          href={homeHref}
+          active={isHome}
+          icon={<IconHome />}
+          label={t("home")}
+          onNavigate={onNavigate}
+          hard
+        />
         <RailItem
           href="/markets"
           active={isMarkets}
