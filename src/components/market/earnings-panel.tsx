@@ -134,12 +134,9 @@ export function EarningsPanel({
           <h3 className="mb-3 text-sm font-semibold tracking-wide text-[var(--muted)] uppercase">
             {t("metrics")}
           </h3>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-x-4 gap-y-3 border-t border-[var(--border)] pt-3 sm:grid-cols-3 lg:grid-cols-4">
             {metrics.map((m) => (
-              <div
-                key={m.key}
-                className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/50 px-3 py-2.5"
-              >
+              <div key={m.key} className="min-w-0">
                 <div className="text-[11px] text-[var(--muted)]">
                   {METRIC_LABEL_KEYS[m.key]
                     ? t(METRIC_LABEL_KEYS[m.key] as "metricPeTtm")

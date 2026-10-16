@@ -38,7 +38,10 @@
     "review": "Review",
     "tools": "Tools",
     "learn": "Learn",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "home": "หน้าแรก",
+    "language": "ภาษา",
+    "appearance": "ลักษณะ"
   },
   "market": {
     "stocks": "หุ้นสหรัฐฯ",

@@ -38,7 +38,10 @@
     "review": "複盤筆記",
     "tools": "理財工具",
     "learn": "投資知識",
-    "pricing": "定價"
+    "pricing": "定價",
+    "home": "首頁",
+    "language": "語言",
+    "appearance": "外觀"
   },
   "market": {
     "stocks": "美股",

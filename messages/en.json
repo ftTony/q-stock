@@ -38,7 +38,10 @@
     "review": "Review",
     "tools": "Tools",
     "learn": "Learn",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "home": "Home",
+    "language": "Language",
+    "appearance": "Appearance"
   },
   "market": {
     "stocks": "US Stocks",

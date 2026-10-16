@@ -38,7 +38,10 @@
     "review": "Review",
     "tools": "Tools",
     "learn": "Learn",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "home": "홈",
+    "language": "언어",
+    "appearance": "外观"
   },
   "market": {
     "stocks": "미국 주식",

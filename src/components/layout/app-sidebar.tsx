@@ -10,6 +10,14 @@ export const SIDEBAR_WIDTH_EXPANDED = 270;
 export const SIDEBAR_WIDTH_COLLAPSED = 72;
 const STORAGE_KEY = "qstock-sidebar-collapsed";
 
+function IconHome({ className = "h-4 w-4" }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+      <path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-5v-6H10v6H5a1 1 0 0 1-1-1v-9.5z" />
+    </svg>
+  );
+}
+
 function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
@@ -166,6 +174,7 @@ export function AppSidebar({
   const pathname = usePathname();
   const homeHref = localizedPath(locale, "/");
 
+  const isHome = pathname === "/";
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isAnalysis = pathname.startsWith("/analysis");
   const isSymbol = pathname.startsWith("/symbol");
@@ -219,6 +228,14 @@ export function AppSidebar({
               {t("main")}
             </div>
           )}
+          <NavItem
+            href="/"
+            active={isHome}
+            icon={<IconHome />}
+            label={t("home")}
+            collapsed={collapsed}
+            onNavigate={onNavigate}
+          />
           <NavItem
             href="/markets"
             active={isMarkets}

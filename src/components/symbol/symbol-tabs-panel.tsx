@@ -166,9 +166,9 @@ export function SymbolTabsPanel({
   const tAi = useTranslations("ai");
 
   return (
-    <div className="space-y-4 min-w-0">
-      <div className="overflow-x-auto">
-        <div className="flex min-w-max gap-1 border-b border-[var(--border)]">
+    <div className="qt-panel min-w-0 overflow-hidden">
+      <div className="overflow-x-auto border-b border-[var(--border)]">
+        <div className="flex min-w-max gap-1">
           {tabs.map((item) => (
             <button
               key={item.id}
@@ -186,11 +186,13 @@ export function SymbolTabsPanel({
         </div>
       </div>
 
-      {degraded && (
-        <p className="text-xs text-[var(--muted)]">{degradedLabel}</p>
-      )}
+      {degraded ? (
+        <p className="border-b border-[var(--border)] px-4 py-2 text-xs text-[var(--muted)]">
+          {degradedLabel}
+        </p>
+      ) : null}
 
-      <div className="qt-panel p-4">
+      <div className="p-4">
         {tabLoading ? (
           <div className="flex h-40 items-center justify-center text-sm text-[var(--muted)]">
             {loadingLabel}
@@ -348,7 +350,7 @@ export function SymbolTabsPanel({
             )}
 
             {tab === "sentiment" && (
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-0 divide-y divide-[var(--border)] sm:grid-cols-2 sm:divide-x sm:divide-y-0">
                 {(["news", "reddit"] as const).map((key) => {
                   const s = sentiment?.[key] as
                     | {
@@ -366,7 +368,7 @@ export function SymbolTabsPanel({
                     return (
                       <div
                         key={key}
-                        className="rounded-md border border-[var(--border)] p-3 text-sm text-[var(--muted)]"
+                        className="py-3 text-sm text-[var(--muted)] first:pt-0 sm:px-3 sm:py-0 sm:first:pl-0 sm:last:pr-0"
                       >
                         {key}: N/A
                       </div>
@@ -375,7 +377,7 @@ export function SymbolTabsPanel({
                   return (
                     <div
                       key={key}
-                      className="rounded-md border border-[var(--border)] p-3 text-sm"
+                      className="py-3 text-sm first:pt-0 last:pb-0 sm:px-3 sm:py-0 sm:first:pl-0 sm:last:pr-0"
                     >
                       <div className="mb-2 font-medium capitalize">
                         {s.source || key}

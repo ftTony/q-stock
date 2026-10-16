@@ -38,7 +38,10 @@
     "review": "Review",
     "tools": "Tools",
     "learn": "Learn",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "home": "Inicio",
+    "language": "Idioma",
+    "appearance": "Apariencia"
   },
   "market": {
     "stocks": "Acciones US",

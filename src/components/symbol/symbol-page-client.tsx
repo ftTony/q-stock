@@ -82,7 +82,7 @@ export function SymbolPageClient({
           <form
             onSubmit={s.createAlert}
             aria-label={s.t("setAlert")}
-            className="qt-panel flex flex-wrap items-center gap-1.5 px-2.5 py-2 sm:gap-2 sm:px-4 sm:py-2.5"
+            className="flex flex-wrap items-center gap-1.5 border-y border-[var(--border)] bg-[var(--panel)] px-2.5 py-2 sm:gap-2 sm:px-4 sm:py-2.5"
           >
             {/* Title needs width — hide on narrow so condition + price + CTA stay one row. */}
             <div className="hidden shrink-0 text-[14px] font-medium leading-none md:block">

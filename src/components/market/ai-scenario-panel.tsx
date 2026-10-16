@@ -129,12 +129,9 @@ export function AiScenarioPanel(props: {
 
       {data && (
         <div className="space-y-3 text-sm">
-          <ul className="space-y-2">
+          <ul className="divide-y divide-[var(--border)] border-y border-[var(--border)]">
             {data.regimes.map((r, i) => (
-              <li
-                key={i}
-                className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-2"
-              >
+              <li key={i} className="py-2.5">
                 <div className="flex justify-between gap-2 font-medium">
                   <span>{r.name}</span>
                   <span className="tabular-nums text-[var(--muted)]">
@@ -155,7 +152,7 @@ export function AiScenarioPanel(props: {
           </ul>
 
           {data.paperDraft && (
-            <div className="rounded-lg border border-dashed border-[var(--border)] px-3 py-2">
+            <div className="border-t border-[var(--border)] pt-3">
               <p className="text-xs font-medium text-[var(--muted)]">
                 {t("draft")}
               </p>

@@ -38,7 +38,10 @@
     "review": "Review",
     "tools": "Tools",
     "learn": "Learn",
-    "pricing": "Pricing"
+    "pricing": "Pricing",
+    "home": "ホーム",
+    "language": "言語",
+    "appearance": "外観"
   },
   "market": {
     "stocks": "米国株",

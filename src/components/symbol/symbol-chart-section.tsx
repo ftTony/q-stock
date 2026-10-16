@@ -54,10 +54,10 @@ export function SymbolChartSection({
             key={key}
             type="button"
             onClick={() => onResolutionChange(key)}
-            className={`h-6 rounded-md px-1.5 text-[10px] leading-none font-medium ${
+            className={`h-6 px-1.5 text-[10px] leading-none font-medium ${
               resolution === key
-                ? "bg-[var(--brand)] text-[#0b1220]"
-                : "border border-[var(--border)] bg-[var(--panel)] text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+                ? "border-b-2 border-[var(--brand)] text-[var(--foreground)]"
+                : "text-[var(--muted)] hover:text-[var(--foreground)]"
             }`}
           >
             {label}
@@ -74,10 +74,10 @@ export function SymbolChartSection({
               key={key}
               type="button"
               onClick={() => onFlagToggle(key)}
-              className={`h-6 rounded-md border px-1.5 text-[10px] leading-none ${
+              className={`h-6 px-1.5 text-[10px] leading-none ${
                 flags[key]
-                  ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                  : "border-[var(--border)] bg-[var(--panel)] text-[var(--muted)]"
+                  ? "border-b-2 border-[var(--brand)] font-medium text-[var(--brand-text)]"
+                  : "text-[var(--muted)]"
               }`}
             >
               {label}
@@ -87,7 +87,7 @@ export function SymbolChartSection({
       </div>
 
       {loadingChart ? (
-        <div className="qt-panel flex h-[360px] items-center justify-center text-sm text-[var(--muted)] sm:h-[520px] lg:h-[620px]">
+        <div className="flex h-[360px] items-center justify-center border-b border-[var(--border)] text-sm text-[var(--muted)] sm:h-[520px] lg:h-[620px]">
           {loadingLabel}
         </div>
       ) : (

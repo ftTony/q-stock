@@ -183,7 +183,7 @@ export function TradePanel({
   if (!session?.user) {
     return (
       <div className="qt-panel space-y-3 p-4">
-        <h2 className="text-sm font-semibold tracking-wide uppercase text-[var(--muted)]">
+        <h2 className="text-sm font-semibold tracking-wide text-[var(--muted)]">
           {t("title")}
         </h2>
         <p className="text-sm text-[var(--muted)]">{t("loginRequired")}</p>
@@ -195,64 +195,66 @@ export function TradePanel({
   }
 
   return (
-    <div className="qt-panel space-y-4 p-4">
+    <div className="qt-panel">
       <TopToast
         key={msgKey}
         message={msg}
         tone={msgTone}
         onDismiss={() => setMsg(null)}
       />
-      <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold tracking-wide uppercase text-[var(--muted)]">
+      <div className="flex items-baseline justify-between gap-2 border-b border-[var(--border)] px-4 py-3">
+        <h2 className="text-sm font-semibold tracking-wide text-[var(--muted)]">
           {t("title")}
         </h2>
-        {loading && (
+        {loading ? (
           <span className="text-[11px] text-[var(--muted)]">{t("loading")}</span>
-        )}
+        ) : null}
       </div>
 
-      <div className="grid grid-cols-2 gap-2 text-sm">
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/50 px-3 py-2">
+      <div className="grid grid-cols-2 gap-x-3 border-b border-[var(--border)] px-4 py-3">
+        <div className="min-w-0">
           <div className="text-[11px] text-[var(--muted)]">{t("cash")}</div>
-          <div className="mt-0.5 font-semibold tabular-nums">
+          <div className="mt-0.5 truncate text-sm font-semibold tabular-nums">
             ${fmtMoney(account?.cashBalance ?? 0)}
           </div>
         </div>
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/50 px-3 py-2">
+        <div className="min-w-0">
           <div className="text-[11px] text-[var(--muted)]">{t("position")}</div>
-          <div className="mt-0.5 font-semibold tabular-nums">
+          <div className="mt-0.5 truncate text-sm font-semibold tabular-nums">
             {position ? position.qty : 0}
           </div>
-          {position && (
+          {position ? (
             <div className="text-[11px] text-[var(--muted)] tabular-nums">
               {t("avgCost")} ${fmtMoney(position.avgCost)}
             </div>
-          )}
+          ) : null}
         </div>
       </div>
 
-      <SegmentedControl
-        value={side}
-        onChange={setSide}
-        className="rounded-xl bg-[var(--surface-2)] p-1"
-        buttonClassName="flex-1 py-2 text-sm font-semibold"
-        options={[
-          {
-            value: "buy",
-            label: t("buy"),
-            indicatorClassName: "bg-[var(--up)]",
-            activeTextClassName: "text-white",
-          },
-          {
-            value: "sell",
-            label: t("sell"),
-            indicatorClassName: "bg-[var(--down)]",
-            activeTextClassName: "text-white",
-          },
-        ]}
-      />
+      <div className="border-b border-[var(--border)] px-4 py-2">
+        <SegmentedControl
+          value={side}
+          onChange={setSide}
+          className="w-full"
+          buttonClassName="flex-1 py-2 text-sm font-semibold"
+          options={[
+            {
+              value: "buy",
+              label: t("buy"),
+              indicatorClassName: "bg-[var(--up)]",
+              activeTextClassName: "text-white",
+            },
+            {
+              value: "sell",
+              label: t("sell"),
+              indicatorClassName: "bg-[var(--down)]",
+              activeTextClassName: "text-white",
+            },
+          ]}
+        />
+      </div>
 
-      <form onSubmit={onSubmit} className="space-y-3">
+      <form onSubmit={onSubmit} className="space-y-3 px-4 py-3">
         <div>
           <label className="mb-1 block text-[11px] text-[var(--muted)]">
             {t("orderType")}
@@ -284,10 +286,10 @@ export function TradePanel({
         </div>
 
         {(bid != null || ask != null || lastPrice != null) && (
-          <div className="grid grid-cols-2 gap-2 text-[11px] text-[var(--muted)]">
+          <div className="grid grid-cols-2 gap-x-3 border-y border-[var(--border)] py-2.5">
             <button
               type="button"
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/60 px-2 py-1.5 text-left hover:border-[var(--up)]"
+              className="min-w-0 text-left"
               onClick={() => {
                 const p = bid ?? lastPrice;
                 if (p != null) {
@@ -296,14 +298,18 @@ export function TradePanel({
                 }
               }}
             >
-              <div>{tSymbol("bid")}</div>
-              <div className="mt-0.5 font-medium tabular-nums text-[var(--up)]">
-                {bid != null ? fmtMoney(bid) : lastPrice != null ? fmtMoney(lastPrice) : "-"}
+              <div className="text-[11px] text-[var(--muted)]">{tSymbol("bid")}</div>
+              <div className="mt-0.5 text-sm font-medium tabular-nums text-[var(--up)]">
+                {bid != null
+                  ? fmtMoney(bid)
+                  : lastPrice != null
+                    ? fmtMoney(lastPrice)
+                    : "—"}
               </div>
             </button>
             <button
               type="button"
-              className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)]/60 px-2 py-1.5 text-left hover:border-[var(--down)]"
+              className="min-w-0 text-left"
               onClick={() => {
                 const p = ask ?? lastPrice;
                 if (p != null) {
@@ -312,9 +318,13 @@ export function TradePanel({
                 }
               }}
             >
-              <div>{tSymbol("ask")}</div>
-              <div className="mt-0.5 font-medium tabular-nums text-[var(--down)]">
-                {ask != null ? fmtMoney(ask) : lastPrice != null ? fmtMoney(lastPrice) : "-"}
+              <div className="text-[11px] text-[var(--muted)]">{tSymbol("ask")}</div>
+              <div className="mt-0.5 text-sm font-medium tabular-nums text-[var(--down)]">
+                {ask != null
+                  ? fmtMoney(ask)
+                  : lastPrice != null
+                    ? fmtMoney(lastPrice)
+                    : "—"}
               </div>
             </button>
           </div>
@@ -354,9 +364,9 @@ export function TradePanel({
           </div>
         )}
 
-        <div className="flex items-center justify-between rounded-lg bg-[var(--surface-2)]/70 px-3 py-2 text-sm">
-          <span className="text-[var(--muted)]">{t("estimate")}</span>
-          <span className="tabular-nums font-semibold text-[var(--foreground)]">
+        <div className="flex items-baseline justify-between gap-2 border-t border-[var(--border)] pt-2.5 text-sm">
+          <span className="text-[11px] text-[var(--muted)]">{t("estimate")}</span>
+          <span className="font-semibold tabular-nums text-[var(--foreground)]">
             ${fmtMoney(estimate)}
           </span>
         </div>
@@ -376,16 +386,16 @@ export function TradePanel({
         </SubmitButton>
       </form>
 
-      {orders.length > 0 && (
-        <div className="border-t border-[var(--border)] pt-3">
+      {orders.length > 0 ? (
+        <div className="border-t border-[var(--border)] px-4 py-3">
           <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
             {t("openOrders")}
           </h3>
-          <ul className="space-y-2 text-xs">
+          <ul className="divide-y divide-[var(--border)] text-xs">
             {orders.map((o) => (
               <li
                 key={o.id}
-                className="flex items-start justify-between gap-2 border-b border-[var(--border)]/60 pb-2 last:border-0"
+                className="flex items-start justify-between gap-2 py-2 first:pt-0 last:pb-0"
               >
                 <div>
                   <div className="font-medium">
@@ -411,7 +421,7 @@ export function TradePanel({
             ))}
           </ul>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

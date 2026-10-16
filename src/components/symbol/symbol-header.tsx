@@ -226,7 +226,10 @@ export function SymbolHeader({
         </div>
       )}
 
-      <div ref={sentinelRef} className="qt-panel px-3 py-2 sm:px-4">
+      <div
+        ref={sentinelRef}
+        className="border-b border-[var(--border)] bg-[var(--panel)] px-3 py-2 sm:px-4"
+      >
         <div className="flex items-center justify-between gap-2">
           {titleRow}
           <WatchButton {...watchProps} />
