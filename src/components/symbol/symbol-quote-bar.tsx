@@ -85,39 +85,35 @@ export function SymbolQuoteBar({
               <path d="M15 18l-6-6 6-6" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
           </Link>
-          <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="aw-ticker">{symbol}</span>
-              <div className="hidden sm:block">
-                <SymbolShareMenu
-                  symbol={symbol}
-                  price={quote?.price ?? null}
-                  changePct={quote?.percentChange ?? null}
-                />
-              </div>
-            </div>
-            <p className="aw-caption mt-0.5 max-w-[12rem] truncate leading-none sm:max-w-[18rem]">
+          <div className="flex min-w-0 items-baseline gap-1.5">
+            <span className="aw-ticker shrink-0">{symbol}</span>
+            <span className="aw-caption max-w-[8rem] truncate sm:max-w-[14rem]">
               {displayName(symbol, assetType)}
-            </p>
+            </span>
+            <div className="hidden shrink-0 self-center sm:block">
+              <SymbolShareMenu
+                symbol={symbol}
+                price={quote?.price ?? null}
+                changePct={quote?.percentChange ?? null}
+              />
+            </div>
           </div>
         </div>
 
         <div className="flex min-w-0 items-center gap-3 sm:gap-4">
           <div className="shrink-0">
             {quote ? (
-              <>
+              <div className="flex items-baseline gap-2">
                 <div className="aw-price">
                   <PriceText value={quote.price} change={quote.change} />
                 </div>
-                <div className="mt-0.5 flex items-baseline gap-2">
-                  <ChangePct value={quote.percentChange} />
-                  {timeLabel ? (
-                    <span className="aw-caption tabular-nums" suppressHydrationWarning>
-                      {timeLabel}
-                    </span>
-                  ) : null}
-                </div>
-              </>
+                <ChangePct value={quote.percentChange} />
+                {timeLabel ? (
+                  <span className="aw-caption tabular-nums" suppressHydrationWarning>
+                    {timeLabel}
+                  </span>
+                ) : null}
+              </div>
             ) : (
               <span className="aw-caption">—</span>
             )}
