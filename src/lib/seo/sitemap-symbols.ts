@@ -15,6 +15,7 @@ import {
   POPULAR_STOCKS,
   type AssetType,
 } from "@/lib/types";
+import { isSitemapTicker } from "@/lib/seo/sitemap-locales";
 
 export type SitemapMarket = "stock" | "hk" | "cn" | "crypto";
 
@@ -199,7 +200,7 @@ async function symbolsFromCryptoApi(): Promise<string[]> {
 export async function fetchSymbolsFromMarketApi(
   market: SitemapMarket,
 ): Promise<string[]> {
-  const cacheKey = `seo:symbols:api:v2:${market}:${rankLimit()}`;
+  const cacheKey = `seo:symbols:api:v3:${market}:${rankLimit()}`;
   return cachedFetch(cacheKey, 6 * 60 * 60_000, async () => {
     if (market === "crypto") return symbolsFromCryptoApi();
     return symbolsFromEquityRanks(market);
@@ -251,6 +252,7 @@ async function symbolsFromDb(
 
 /**
  * Resolve sitemap tickers: market API ranks → DB activity → popular seed.
+ * Hard-capped after merge so DB watchlists cannot explode crawl budget.
  */
 export async function resolveSymbolsForMarket(
   market: SitemapMarket,
@@ -262,7 +264,9 @@ export async function resolveSymbolsForMarket(
   try {
     const fromApi = await fetchSymbolsFromMarketApi(market);
     apiCount = fromApi.length;
-    for (const s of fromApi) set.add(s);
+    for (const s of fromApi) {
+      if (isSitemapTicker(market, s)) set.add(s);
+    }
   } catch (err) {
     console.warn(
       `[seo] market API symbols failed (${market}):`,
@@ -274,15 +278,20 @@ export async function resolveSymbolsForMarket(
   if (prisma) {
     const fromDb = await symbolsFromDb(market, prisma);
     dbCount = fromDb.length;
-    for (const s of fromDb) set.add(s);
+    for (const s of fromDb) {
+      if (isSitemapTicker(market, s)) set.add(s);
+    }
   }
 
   // Always keep a minimal seed so empty API days still have URLs.
-  for (const s of seedSymbolsForMarket(market)) set.add(s);
+  for (const s of seedSymbolsForMarket(market)) {
+    if (isSitemapTicker(market, s)) set.add(s);
+  }
 
-  const list = [...set].sort();
+  const limit = rankLimit();
+  const list = [...set].sort().slice(0, limit);
   console.info(
-    `[seo] symbols ${market}=${list.length} (api=${apiCount} db=${dbCount} +seed)`,
+    `[seo] symbols ${market}=${list.length}/${set.size} (api=${apiCount} db=${dbCount} +seed cap=${limit})`,
   );
   return list;
 }

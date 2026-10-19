@@ -11,6 +11,10 @@ import { cachedFetch } from "@/lib/cache";
 import { getQuote } from "@/lib/market";
 import { displayName } from "@/lib/market-names";
 import { siteOrigin } from "@/lib/seo/site-url";
+import {
+  isSitemapTicker,
+  sitemapLocales,
+} from "@/lib/seo/sitemap-locales";
 import type { AssetType, Quote } from "@/lib/types";
 
 function currencyFor(assetType: AssetType): string {
@@ -57,12 +61,14 @@ function languageAlternates(
   path: string,
 ): NonNullable<Metadata["alternates"]>["languages"] {
   const origin = siteOrigin();
+  const langs = sitemapLocales();
   const languages: Record<string, string> = {};
-  for (const locale of locales) {
+  for (const locale of langs) {
     const p = localizedPath(locale, path);
     languages[locale] = p === "/" ? `${origin}/` : `${origin}${p}`;
   }
-  languages["x-default"] = `${origin}${localizedPath(defaultLocale, path)}`;
+  const xDefault: AppLocale = langs.includes("zh-CN") ? "zh-CN" : defaultLocale;
+  languages["x-default"] = `${origin}${localizedPath(xDefault, path)}`;
   return languages;
 }
 
@@ -187,13 +193,23 @@ export async function buildSymbolMetadata(
   const path = `/symbol/${assetType}/${encodeURIComponent(symbol)}`;
   const pagePath = localizedPath(loc, path);
   const canonical = `${origin}${pagePath}`;
+  // Junk tickers + non-sitemap locales stay out of the index (crawl budget).
+  const indexable =
+    isSitemapTicker(assetType, symbol) && sitemapLocales().includes(loc);
 
   return {
     title: copy.title,
     description: copy.description,
+    robots: indexable
+      ? undefined
+      : {
+          index: false,
+          follow: true,
+          googleBot: { index: false, follow: true },
+        },
     alternates: {
       canonical,
-      languages: languageAlternates(path),
+      ...(indexable ? { languages: languageAlternates(path) } : {}),
     },
     openGraph: {
       type: "website",

@@ -7,20 +7,23 @@ import {
   type AppLocale,
 } from "@/i18n/config";
 import { siteOrigin } from "@/lib/seo/site-url";
+import { sitemapLocales } from "@/lib/seo/sitemap-locales";
 
 function languageAlternates(
   path: string,
 ): NonNullable<Metadata["alternates"]>["languages"] {
   const origin = siteOrigin();
+  const langs = sitemapLocales();
   const languages: Record<string, string> = {};
-  for (const locale of locales) {
+  for (const locale of langs) {
     const p = localizedPath(locale, path);
     languages[locale] = p === "/" ? `${origin}/` : `${origin}${p}`;
   }
+  const xDefault: AppLocale = langs.includes("zh-CN") ? "zh-CN" : defaultLocale;
   languages["x-default"] =
     path === "/"
       ? `${origin}/`
-      : `${origin}${localizedPath(defaultLocale, path)}`;
+      : `${origin}${localizedPath(xDefault, path)}`;
   return languages;
 }
 

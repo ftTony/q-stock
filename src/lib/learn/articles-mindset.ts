@@ -1,7 +1,11 @@
 import type { LearnArticle } from "@/lib/learn/types";
+import { LEARN_ARTICLE_DAO_GREED_FEAR } from "@/lib/learn/articles-mindset-dao";
+import { LEARN_ARTICLE_FINANCIAL_FREEDOM } from "@/lib/learn/articles-mindset-freedom";
 
 /** Mindset articles — depth aligned with kline-basics. */
 export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
+  LEARN_ARTICLE_FINANCIAL_FREEDOM,
+  LEARN_ARTICLE_DAO_GREED_FEAR,
   {
     slug: "calm-watching",
     category: "mindset",
@@ -26,7 +30,7 @@ export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
         "钱力股的 AI 读图与情景推演，也按「结构 → 关键位 → 失效」组织。它们是学习辅助，用来逼你把话说清楚，不是买卖指令，更不是保证方向正确。",
         "实操时可以这样练：打开一只你熟悉的标的，先关掉新闻和评论，只看日线与一条均线，用三句话写笔记。写得出来再去看短周期；写不出来，说明今天只适合观察，不适合动手。",
         "提醒适合绑定失效价或计划位，而不是「希望涨到的整数」。价格打到该线，先停手复核清单，而不是立刻加仓证明自己正确。冲动加仓，往往是在用仓位掩盖框架缺失。",
-        "冷静看盘的终点，不是永远不动，而是把「感觉」降级为参考，把结构、价位、失效升格为默认流程。流程可以反复用；情绪不能当策略。",
+        "冷静看盘的终点，不是永远不动，而是把「感觉」降级为参考，把结构、价位、失效升格为默认流程。流程可以反复用；情绪不能当策略。若刷屏欲望特别强，可先读《道德经看贪婪、恐惧与欲望》，把「少刺激」当成护栏再回来看盘。",
       ],
       "zh-TW": [
         "打開行情頁，漲跌顏色與短訊很容易把人拽進「此刻該不該動」。冷靜看盤不是關掉行情，而是先釘死判斷框架，再決定要不要動手。",
@@ -34,7 +38,7 @@ export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
         "一、結構：趨勢、震盪，還是破位後的混亂？",
         "二、價位：真正關鍵的支撐／阻力或區間沿在哪？",
         "三、失效：什麼情況出現，原先判斷就作廢？",
-        "錢力股的 AI 讀圖與情景也按這個順序組織，是學習輔助，不是買賣指令。把失效條件寫進提醒或筆記，打到該線先停手複核。",
+        "錢力股的 AI 讀圖與情景也按這個順序組織，是學習輔助，不是買賣指令。把失效條件寫進提醒或筆記，打到該線先停手複核。刷屏欲望強時，可先讀《道德經看貪婪、恐懼與欲望》。",
       ],
       en: [
         "Color, headlines, and screenshots yank attention toward “should I act now?” More refresh rarely brings clarity—it often brings chase. Calm watching means locking a frame before you move.",
@@ -42,7 +46,7 @@ export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
         "1) Structure: trend, range, or messy break?",
         "2) Levels: where are the real supports, resistances, or range edges you marked in advance?",
         "3) Invalidation: what voids this read? Without it, you will invent reasons to stay.",
-        "Q-Stock’s AI chart and scenario tools follow structure → levels → invalidation. They are study aids, not tickets. Practice: write three lines on a daily chart before looking at minutes; put invalidation into an alert and pause when it fires.",
+        "Q-Stock’s AI chart and scenario tools follow structure → levels → invalidation. They are study aids, not tickets. Practice: write three lines on a daily chart before looking at minutes; put invalidation into an alert and pause when it fires. If feed-chasing is loud, read the Tao Te Ching greed/fear/desire essay first.",
       ],
     },
   },
@@ -70,21 +74,21 @@ export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
         "三问之间有顺序：结构不清楚，后面两问容易变成自欺；风险不定，再漂亮的结构也是裸奔；失效不写，前面两问会在盘中被情绪改写。",
         "常见误用：把清单当成「做多许可证」。三问通过，只说明你具备动手的最低条件，不代表方向一定对。清单通过后仍可能亏钱——那是概率与风险预算要管的事，不是清单失灵。",
         "在钱力股可以先用模拟盘把这三问走通：每笔模拟单备注里写结构 / 风险% / 失效价，再用仓位计算器把「亏得起」换成数量。真盘前用同一套语言，比换一套口号更重要。",
-        "建议节奏：宁可少做几笔答得清的单，也不要每天几十次说不清的点点点。清单是外挂大脑，用来约束冲动，不是圣杯咒语。",
+        "建议节奏：宁可少做几笔答得清的单，也不要每天几十次说不清的点点点。清单是外挂大脑，用来约束冲动，不是圣杯咒语。若总被「再多一点」推着走，可对照《道德经看贪婪、恐惧与欲望》里的知足与知止；若总在盘中改规则，可读《思考，快与慢》导读——系统 1 很勤快，系统 2 要靠清单值班。",
       ],
       "zh-TW": [
         "很多後悔單，不是「沒看新聞」，而是動手前沒有固定問題。清單不是保證獲利，而是把衝動攔在門外。",
         "一、結構：趨勢、震盪，還是破位後的混亂？說不清就不要放大倉位。",
         "二、風險：這筆最多願意虧帳戶的百分之幾？先定虧得起，再反推數量。",
         "三、失效：什麼價位或條件出現，計畫就作廢？",
-        "在錢力股可用模擬盤把三問走通，再用倉位工具把「虧得起」算成數量。清單約束衝動，不是獲利咒語。",
+        "在錢力股可用模擬盤把三問走通，再用倉位工具把「虧得起」算成數量。清單約束衝動，不是獲利咒語。被「再多一點」推著走時，可讀《道德經看貪婪、恐懼與欲望》。",
       ],
       en: [
         "Regret often comes from skipping a fixed checklist—not from missing a headline. A short list is a gate: if you cannot answer, do not add risk.",
         "1) Structure: trend, range, or messy break? If you cannot name it, do not size up.",
         "2) Risk: what percent of equity is the max loss? Set the budget before dreaming about upside; the position tool turns that into size.",
         "3) Invalidation: what price or condition voids the plan? Without it, you will keep inventing reasons to stay.",
-        "Passing the checklist is a minimum to act—not a guarantee of direction. Practice on paper with three-line notes, then reuse the same language before real money. A checklist constrains impulse; it is not a profit spell.",
+        "Passing the checklist is a minimum to act—not a guarantee of direction. Practice on paper with three-line notes, then reuse the same language before real money. A checklist constrains impulse; it is not a profit spell. When “a bit more” keeps pushing you, read the Tao Te Ching greed/fear/desire essay.",
       ],
     },
   },
