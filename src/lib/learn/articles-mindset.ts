@@ -1,8 +1,10 @@
 import type { LearnArticle } from "@/lib/learn/types";
 import { LEARN_ARTICLE_DAO_GREED_FEAR } from "@/lib/learn/articles-mindset-dao";
+import { LEARN_ARTICLE_FINANCIAL_FREEDOM } from "@/lib/learn/articles-mindset-freedom";
 
 /** Mindset articles — depth aligned with kline-basics. */
 export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
+  LEARN_ARTICLE_FINANCIAL_FREEDOM,
   LEARN_ARTICLE_DAO_GREED_FEAR,
   {
     slug: "calm-watching",
