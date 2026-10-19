@@ -33,6 +33,9 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
   const mounted = useMounted();
   const { theme, setTheme, resolvedTheme } = useTheme();
   const [menuOpen, setMenuOpen] = useState(false);
+  /** Stay mounted briefly so close can animate out. */
+  const [menuPainted, setMenuPainted] = useState(false);
+  const [menuVisible, setMenuVisible] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
   const isLandingHome = pathname === "/";
   /** Full-viewport chrome for short pages only (pricing scrolls — too tall for one screen). */
@@ -48,6 +51,19 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
     setMenuOpen(false);
     setLangOpen(false);
   }, [pathname]);
+
+  useEffect(() => {
+    if (menuOpen) {
+      setMenuPainted(true);
+      const id = requestAnimationFrame(() => {
+        requestAnimationFrame(() => setMenuVisible(true));
+      });
+      return () => cancelAnimationFrame(id);
+    }
+    setMenuVisible(false);
+    const t = window.setTimeout(() => setMenuPainted(false), 280);
+    return () => window.clearTimeout(t);
+  }, [menuOpen]);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -119,27 +135,41 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
             />
             <button
               type="button"
-              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--foreground)] transition hover:bg-[var(--sidebar-hover)] md:hidden"
+              className="inline-flex h-9 w-9 items-center justify-center rounded-lg text-[var(--foreground)] transition hover:bg-[var(--sidebar-hover)] active:scale-95 md:hidden motion-reduce:active:scale-100"
               aria-label={menuOpen ? tNav("closeMenu") : tNav("openMenu")}
               aria-expanded={menuOpen}
               onClick={() => setMenuOpen((v) => !v)}
             >
-              {menuOpen ? (
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
-                </svg>
-              ) : (
-                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
-                </svg>
-              )}
+              <span className="relative block h-[14px] w-[18px]" aria-hidden>
+                <span
+                  className={`absolute left-0 block h-[1.5px] w-full rounded-full bg-current transition-[top,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                    menuOpen ? "top-[6.25px] rotate-45" : "top-0 rotate-0"
+                  }`}
+                />
+                <span
+                  className={`absolute left-0 top-[6.25px] block h-[1.5px] w-full rounded-full bg-current transition-opacity duration-200 ease-out motion-reduce:transition-none ${
+                    menuOpen ? "opacity-0" : "opacity-100"
+                  }`}
+                />
+                <span
+                  className={`absolute left-0 block h-[1.5px] w-full rounded-full bg-current transition-[top,transform] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)] motion-reduce:transition-none ${
+                    menuOpen
+                      ? "top-[6.25px] -rotate-45"
+                      : "top-[12.5px] rotate-0"
+                  }`}
+                />
+              </span>
             </button>
           </div>
         </div>
       </header>
 
-      {menuOpen ? (
-        <div className="fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-[var(--panel)] md:hidden">
+      {menuPainted ? (
+        <div
+          className={`mkt-nav-drawer fixed inset-x-0 bottom-0 top-14 z-30 flex flex-col bg-[var(--panel)] md:hidden ${
+            menuVisible ? "is-open" : ""
+          }`}
+        >
           <nav aria-label={tNav("main")} className="flex-1 overflow-y-auto">
             {MARKETING_LINKS.map((item) => {
               const active = linkActive(item.href);
@@ -148,7 +178,7 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   onClick={() => setMenuOpen(false)}
-                  className={`block border-b border-[var(--border)] px-5 py-4 text-[16px] ${
+                  className={`mkt-nav-item block border-b border-[var(--border)] px-5 py-4 text-[16px] ${
                     active
                       ? "font-semibold text-[var(--brand-text)]"
                       : "font-medium text-[var(--foreground)]"
@@ -159,7 +189,7 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
               );
             })}
           </nav>
-          <div className="relative space-y-3 border-t border-[var(--border)] px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+          <div className="mkt-nav-foot relative space-y-3 border-t border-[var(--border)] px-5 py-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
             {langOpen ? (
               <div
                 role="listbox"

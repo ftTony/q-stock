@@ -1,13 +1,13 @@
 import type { PrismaClient } from "@prisma/client";
 import {
   defaultLocale,
-  locales,
   localizedPath,
   type AppLocale,
 } from "@/i18n/config";
 import { seoPublicOrigin } from "@/lib/seo/site-url";
 import { listLearnSlugs } from "@/lib/learn/articles";
 import { TOOL_CATALOG } from "@/lib/tools/catalog";
+import { sitemapLocales } from "@/lib/seo/sitemap-locales";
 import {
   resolveSymbolsForMarket,
   seedSymbolsForMarket,
@@ -32,8 +32,7 @@ export type SitemapEntry = {
 
 export type SitemapSegmentId = "static" | SitemapMarket;
 
-/** All app locales get distinct sitemap URLs. */
-export const SITEMAP_LOCALES: AppLocale[] = [...locales];
+export { sitemapLocales } from "@/lib/seo/sitemap-locales";
 
 export const SITEMAP_SEGMENTS: SitemapSegmentId[] = [
   "static",
@@ -72,16 +71,19 @@ function absUrl(origin: string, locale: AppLocale, path: string): string {
   return locPath === "/" ? `${origin}/` : `${origin}${locPath}`;
 }
 
-/** Map of every locale (+ x-default) for a logical path. */
+/** Map of sitemap locales (+ x-default) for a logical path. */
 export function languageMapForPath(
   origin: string,
   path: string,
 ): Record<string, string> {
+  const langs = sitemapLocales();
   const languages: Record<string, string> = {};
-  for (const locale of SITEMAP_LOCALES) {
+  for (const locale of langs) {
     languages[locale] = absUrl(origin, locale, path);
   }
-  languages["x-default"] = absUrl(origin, defaultLocale, path);
+  // Prefer zh-CN as x-default on CN-facing sitemaps when present.
+  const xDefault: AppLocale = langs.includes("zh-CN") ? "zh-CN" : defaultLocale;
+  languages["x-default"] = absUrl(origin, xDefault, path);
   return languages;
 }
 
@@ -101,7 +103,7 @@ export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
   const seen = new Set<string>();
   for (const p of STATIC_PATHS) {
     const languages = languageMapForPath(origin, p.path);
-    for (const locale of SITEMAP_LOCALES) {
+    for (const locale of sitemapLocales()) {
       pushUnique(entries, seen, {
         url: languages[locale]!,
         lastModified: now,
@@ -114,7 +116,7 @@ export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
   for (const slug of listLearnSlugs()) {
     const path = `/learn/${slug}`;
     const languages = languageMapForPath(origin, path);
-    for (const locale of SITEMAP_LOCALES) {
+    for (const locale of sitemapLocales()) {
       pushUnique(entries, seen, {
         url: languages[locale]!,
         lastModified: now,
@@ -126,7 +128,7 @@ export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
   }
   for (const tool of TOOL_CATALOG) {
     const languages = languageMapForPath(origin, tool.href);
-    for (const locale of SITEMAP_LOCALES) {
+    for (const locale of sitemapLocales()) {
       pushUnique(entries, seen, {
         url: languages[locale]!,
         lastModified: now,
@@ -149,9 +151,11 @@ export function buildMarketSitemapEntries(
   const seen = new Set<string>();
   const priority = MARKET_PRIORITY[market];
   for (const symbol of symbols) {
+    // Defense in depth — resolveSymbolsForMarket already filters.
+    if (!symbol || /[^\x20-\x7E]/.test(symbol)) continue;
     const path = `/symbol/${market}/${symbol}`;
     const languages = languageMapForPath(origin, path);
-    for (const locale of SITEMAP_LOCALES) {
+    for (const locale of sitemapLocales()) {
       pushUnique(entries, seen, {
         url: languages[locale]!,
         lastModified: now,
