@@ -1,6 +1,5 @@
 import { Suspense } from "react";
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -20,17 +19,10 @@ import "../globals.css";
  *
  * 注意：`lang` 取自 `params.locale`（构建期可推导），**不要**改成 `getLocale()`，
  * 那会读请求头并把 ISR 打回动态渲染。
+ *
+ * Fonts: avoid `next/font/google` — Google Fonts fetch fails on many CN hosts
+ * and crashes Turbopack/Jest workers with "child process exceptions".
  */
-
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 const siteVerification = googleSiteVerification();
 
@@ -135,9 +127,7 @@ export default async function LocaleLayout({
           }}
         />
       </head>
-      <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
+      <body className="antialiased">
         <NextIntlClientProvider messages={messages}>
           <AppProviders>
             <AppShell>{children}</AppShell>

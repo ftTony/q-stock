@@ -52,15 +52,14 @@ export function useQuoteChannels(
 
   const stableChannels = useMemo(() => {
     if (!channels?.length) return [] as StreamChannel[];
-    return channels.map((ch) =>
-      ch.type === "indices"
-        ? ({ type: "indices" } as const)
-        : {
-            type: "symbol" as const,
-            assetType: ch.assetType,
-            symbol: ch.symbol.trim().toUpperCase(),
-          },
-    );
+    return channels.map((ch) => {
+      if (ch.type === "indices") return { type: "indices" } as const;
+      return {
+        type: ch.type,
+        assetType: ch.assetType,
+        symbol: ch.symbol.trim().toUpperCase(),
+      };
+    });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- channelSig
   }, [channelSig]);
 

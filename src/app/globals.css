@@ -22,6 +22,13 @@
   --down: #16a34a;
   --radius: 14px;
   --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  /* Local stacks — no Google Fonts download at build/dev time. */
+  --font-geist-sans:
+    ui-sans-serif, system-ui, -apple-system, "Segoe UI", "PingFang SC",
+    "Microsoft YaHei", "Noto Sans SC", sans-serif;
+  --font-geist-mono:
+    ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono",
+    monospace;
 }
 
 html[data-change="us"] {

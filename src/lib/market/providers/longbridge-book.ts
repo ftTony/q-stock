@@ -1,4 +1,9 @@
 import { cachedFetch } from "@/lib/cache";
+import type {
+  DepthBook,
+  DepthLevel,
+  TradeTick,
+} from "@/lib/market/book-types";
 import {
   dec,
   getQuoteCtx,
@@ -8,23 +13,7 @@ import { normalizeSymbol, toLongbridgeSymbol } from "@/lib/market/symbols";
 import { MarketDataError } from "@/lib/market/types";
 import type { AssetType } from "@/lib/types";
 
-export type DepthLevel = {
-  price: number;
-  volume: number;
-  orderNum: number;
-};
-
-export type DepthBook = {
-  bids: DepthLevel[];
-  asks: DepthLevel[];
-};
-
-export type TradeTick = {
-  price: number;
-  volume: number;
-  time: number;
-  direction: "up" | "down" | "neutral";
-};
+export type { DepthBook, DepthLevel, TradeTick };
 
 function assertEquity(assetType: AssetType) {
   if (assetType === "crypto") {

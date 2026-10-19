@@ -292,6 +292,28 @@ export class QuoteSocketClient {
       this.emit(channelKey({ type: "indices" }), msg);
       return;
     }
+    if (msg.op === "depth") {
+      this.emit(
+        channelKey({
+          type: "depth",
+          assetType: msg.assetType,
+          symbol: msg.symbol,
+        }),
+        msg,
+      );
+      return;
+    }
+    if (msg.op === "trades") {
+      this.emit(
+        channelKey({
+          type: "trades",
+          assetType: msg.assetType,
+          symbol: msg.symbol,
+        }),
+        msg,
+      );
+      return;
+    }
     if (msg.op === "snapshot") {
       if (msg.quotes?.length) {
         for (const q of msg.quotes) {
@@ -318,7 +340,12 @@ export class QuoteSocketClient {
   }
 
   private emit(key: string, msg: ServerMessage) {
-    if (msg.op === "quote" || msg.op === "indices") {
+    if (
+      msg.op === "quote" ||
+      msg.op === "indices" ||
+      msg.op === "depth" ||
+      msg.op === "trades"
+    ) {
       this.lastMsg.set(key, msg);
     }
     const entry = this.channels.get(key);
@@ -410,7 +437,10 @@ function normalizeChannel(ch: StreamChannel): StreamChannel | null {
   if (ch.type === "indices") return { type: "indices" };
   const symbol = ch.symbol?.trim().toUpperCase();
   if (!symbol) return null;
-  return { type: "symbol", assetType: ch.assetType, symbol };
+  if (ch.type === "depth" || ch.type === "trades" || ch.type === "symbol") {
+    return { type: ch.type, assetType: ch.assetType, symbol };
+  }
+  return null;
 }
 
 let singleton: QuoteSocketClient | null = null;

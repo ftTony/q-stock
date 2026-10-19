@@ -1,15 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { useRailDepth } from "@/components/symbol/use-rail-depth";
 import { formatNumber, formatTime } from "@/lib/format-number";
-import type { DepthBook, TradeTick } from "@/lib/market/providers/longbridge-book";
+import type { DepthBook, TradeTick } from "@/lib/market/book-types";
 import type { AssetType } from "@/lib/types";
 
 type Mode = "book" | "ticks" | "split";
-
-const POLL_MS = 4000;
 
 function fmtPx(n: number) {
   return formatNumber(n, {
@@ -162,96 +160,11 @@ export function SymbolRailDepth({
   assetType: AssetType;
 }) {
   const t = useTranslations("symbolRail");
-  const [book, setBook] = useState<DepthBook | null>(null);
-  const [trades, setTrades] = useState<TradeTick[]>([]);
-  const [unavailable, setUnavailable] = useState(false);
-  const [locked, setLocked] = useState(false);
-  const [detail, setDetail] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    let cancelled = false;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    let stopPoll = false;
-
-    function reasonOf(data: { detail?: unknown }): string | null {
-      return typeof data.detail === "string" && data.detail.trim()
-        ? data.detail.trim()
-        : null;
-    }
-
-    async function loadBook(): Promise<"ok" | "empty" | "locked"> {
-      const res = await fetch(
-        `/api/market/depth?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-      );
-      const data = await res.json();
-      if (data.code === "ADVANCED_QUOTES_REQUIRED" || res.status === 403) {
-        setBook(null);
-        setDetail(reasonOf(data));
-        return "locked";
-      }
-      if (data.unavailable || (!data.bids?.length && !data.asks?.length)) {
-        setBook(null);
-        setDetail(reasonOf(data));
-        return "empty";
-      }
-      setBook({ bids: data.bids ?? [], asks: data.asks ?? [] });
-      return "ok";
-    }
-
-    async function loadTicks(): Promise<"ok" | "empty" | "locked"> {
-      const res = await fetch(
-        `/api/market/trades?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-      );
-      const data = await res.json();
-      if (data.code === "ADVANCED_QUOTES_REQUIRED" || res.status === 403) {
-        setTrades([]);
-        setDetail((prev) => prev ?? reasonOf(data));
-        return "locked";
-      }
-      if (data.unavailable || !data.trades?.length) {
-        setTrades([]);
-        setDetail((prev) => prev ?? reasonOf(data));
-        return "empty";
-      }
-      setTrades(data.trades as TradeTick[]);
-      return "ok";
-    }
-
-    async function load() {
-      try {
-        const wantBook = mode === "book" || mode === "split";
-        const wantTicks = mode === "ticks" || mode === "split";
-        const [bookState, tickState] = await Promise.all([
-          wantBook ? loadBook() : Promise.resolve("ok" as const),
-          wantTicks ? loadTicks() : Promise.resolve("ok" as const),
-        ]);
-        if (cancelled) return;
-        const isLocked = bookState === "locked" || tickState === "locked";
-        if (isLocked) stopPoll = true;
-        setLocked(isLocked);
-        if (bookState === "ok" && tickState === "ok") setDetail(null);
-        const failed =
-          (wantBook && bookState !== "ok") || (wantTicks && tickState !== "ok");
-        setUnavailable(failed && mode !== "split");
-        if (mode === "split") setUnavailable(false);
-      } catch {
-        if (!cancelled) setUnavailable(true);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-      if (!cancelled && !stopPoll) {
-        timer = setTimeout(() => void load(), POLL_MS);
-      }
-    }
-
-    setLoading(true);
-    void load();
-    return () => {
-      cancelled = true;
-      if (timer) clearTimeout(timer);
-    };
-  }, [mode, symbol, assetType]);
+  const { book, trades, unavailable, locked, detail, loading } = useRailDepth(
+    mode,
+    symbol,
+    assetType,
+  );
 
   if (loading && unavailable === false && !book && !trades.length) {
     return (

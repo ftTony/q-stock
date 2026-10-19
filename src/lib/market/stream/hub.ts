@@ -5,10 +5,16 @@ import {
   quoteForIndexDef,
 } from "@/lib/market/index-quotes";
 import {
+  fetchLbDepth,
+  fetchLbTrades,
+} from "@/lib/market/providers/longbridge-book";
+import {
   initLongbridgePush,
   isLongbridgePushAvailable,
   seedQuoteCache,
+  setLongbridgeDepthHandler,
   setLongbridgeQuoteHandler,
+  setLongbridgeTradesHandler,
   syncLongbridgeSubscriptions,
 } from "@/lib/market/stream/longbridge-push";
 import {
@@ -23,9 +29,11 @@ import {
 } from "@/lib/market/stream/symbol-map";
 import {
   channelKey,
+  depthChannelKey,
   indicesChannelKey,
   parseChannelKey,
   symbolChannelKey,
+  tradesChannelKey,
   type ClientMessage,
   type ServerMessage,
   type StreamChannel,
@@ -72,16 +80,25 @@ function broadcast(channel: string, msg: ServerMessage) {
   }
 }
 
-function activeSymbolItems(): InternalSymbol[] {
+function collectByType(
+  type: "symbol" | "depth" | "trades",
+): InternalSymbol[] {
   const out = new Map<string, InternalSymbol>();
   for (const key of channelSubs.keys()) {
     const ch = parseChannelKey(key);
-    if (ch?.type === "symbol") {
-      out.set(`${ch.assetType}:${ch.symbol}`, {
-        assetType: ch.assetType,
-        symbol: ch.symbol,
-      });
-    }
+    if (ch?.type !== type) continue;
+    out.set(`${ch.assetType}:${ch.symbol}`, {
+      assetType: ch.assetType,
+      symbol: ch.symbol,
+    });
+  }
+  return [...out.values()];
+}
+
+function activeSymbolItems(): InternalSymbol[] {
+  const out = new Map<string, InternalSymbol>();
+  for (const it of collectByType("symbol")) {
+    out.set(`${it.assetType}:${it.symbol}`, it);
   }
   if (channelSubs.has(indicesChannelKey())) {
     for (const it of indexItems()) {
@@ -97,65 +114,121 @@ function activeSymbolItems(): InternalSymbol[] {
 function scheduleSyncLb() {
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
-    void syncLongbridgeSubscriptions(activeSymbolItems());
+    void syncLongbridgeSubscriptions({
+      quotes: activeSymbolItems(),
+      depth: collectByType("depth"),
+      trades: collectByType("trades"),
+    });
   }, 200);
+}
+
+async function sendBookSnapshot(
+  ws: WebSocket,
+  assetType: InternalSymbol["assetType"],
+  symbol: string,
+) {
+  if (assetType === "crypto") return;
+  try {
+    const book = await fetchLbDepth(symbol, assetType, 10);
+    send(ws, {
+      op: "depth",
+      assetType,
+      symbol: symbol.toUpperCase(),
+      book,
+    });
+  } catch {
+    /* permission / empty — client may REST-fallback */
+  }
+}
+
+async function sendTradesSnapshot(
+  ws: WebSocket,
+  assetType: InternalSymbol["assetType"],
+  symbol: string,
+) {
+  if (assetType === "crypto") return;
+  try {
+    const trades = await fetchLbTrades(symbol, assetType, 40);
+    send(ws, {
+      op: "trades",
+      assetType,
+      symbol: symbol.toUpperCase(),
+      trades,
+      mode: "snapshot",
+    });
+  } catch {
+    /* ignore */
+  }
 }
 
 async function sendSnapshot(ws: WebSocket, channels: StreamChannel[]) {
   const wantSymbols: InternalSymbol[] = [];
   let wantIndices = false;
+  const depthWanted: InternalSymbol[] = [];
+  const tradesWanted: InternalSymbol[] = [];
   for (const ch of channels) {
-    if (ch.type === "indices") wantIndices = true;
-    else
-      wantSymbols.push({
-        assetType: ch.assetType,
-        symbol: ch.symbol.toUpperCase(),
-      });
+    if (ch.type === "indices") {
+      wantIndices = true;
+      continue;
+    }
+    const it = {
+      assetType: ch.assetType,
+      symbol: ch.symbol.toUpperCase(),
+    };
+    if (ch.type === "symbol") wantSymbols.push(it);
+    else if (ch.type === "depth") depthWanted.push(it);
+    else if (ch.type === "trades") tradesWanted.push(it);
   }
   if (wantIndices) {
     for (const it of indexItems()) wantSymbols.push(it);
   }
-  const quotes = await fetchQuotesFor(wantSymbols);
-  seedQuoteCache(quotes);
-  const msg: ServerMessage = { op: "snapshot" };
-  if (quotes.length) {
-    const symSet = new Set(
-      channels
-        .filter((c): c is Extract<StreamChannel, { type: "symbol" }> =>
-          c.type === "symbol",
-        )
-        .map((c) => `${c.assetType}:${c.symbol.toUpperCase()}`),
-    );
-    msg.quotes = quotes.filter((q) =>
-      symSet.has(`${q.assetType}:${q.symbol.toUpperCase()}`),
-    );
-  }
-  if (wantIndices) {
-    const bundles = quotesToIndexBundles(quotes);
-    const merged: Partial<Record<"stock" | "hk" | "cn", IndexQuote[]>> = {};
-    for (const market of ["stock", "hk", "cn"] as const) {
-      const indices = bundles[market];
-      if (!indices) continue;
-      const next = mergeIndexQuotes(lastIndexBundles[market], indices);
-      lastIndexBundles[market] = next;
-      merged[market] = next;
-    }
-    msg.indicesByMarket = merged;
-  }
-  send(ws, msg);
 
-  // Also fan out live quote messages for convenience
-  if (msg.quotes) {
-    for (const q of msg.quotes) {
-      send(ws, { op: "quote", quote: q });
+  if (wantSymbols.length || wantIndices) {
+    const quotes = await fetchQuotesFor(wantSymbols);
+    seedQuoteCache(quotes);
+    const msg: ServerMessage = { op: "snapshot" };
+    if (quotes.length) {
+      const symSet = new Set(
+        channels
+          .filter((c): c is Extract<StreamChannel, { type: "symbol" }> =>
+            c.type === "symbol",
+          )
+          .map((c) => `${c.assetType}:${c.symbol.toUpperCase()}`),
+      );
+      msg.quotes = quotes.filter((q) =>
+        symSet.has(`${q.assetType}:${q.symbol.toUpperCase()}`),
+      );
+    }
+    if (wantIndices) {
+      const bundles = quotesToIndexBundles(quotes);
+      const merged: Partial<Record<"stock" | "hk" | "cn", IndexQuote[]>> = {};
+      for (const market of ["stock", "hk", "cn"] as const) {
+        const indices = bundles[market];
+        if (!indices) continue;
+        const next = mergeIndexQuotes(lastIndexBundles[market], indices);
+        lastIndexBundles[market] = next;
+        merged[market] = next;
+      }
+      msg.indicesByMarket = merged;
+    }
+    send(ws, msg);
+    if (msg.quotes) {
+      for (const q of msg.quotes) send(ws, { op: "quote", quote: q });
+    }
+    if (msg.indicesByMarket) {
+      for (const market of ["stock", "hk", "cn"] as const) {
+        const indices = msg.indicesByMarket[market];
+        if (indices) send(ws, { op: "indices", assetType: market, indices });
+      }
     }
   }
-  if (msg.indicesByMarket) {
-    for (const market of ["stock", "hk", "cn"] as const) {
-      const indices = msg.indicesByMarket[market];
-      if (indices) send(ws, { op: "indices", assetType: market, indices });
-    }
-  }
+
+  await Promise.all([
+    ...depthWanted.map((it) => sendBookSnapshot(ws, it.assetType, it.symbol)),
+    ...tradesWanted.map((it) =>
+      sendTradesSnapshot(ws, it.assetType, it.symbol),
+    ),
+  ]);
 }
 
 function addSub(ws: WebSocket, key: string) {
@@ -186,7 +259,7 @@ function handleSubscribe(ws: WebSocket, channels: StreamChannel[]) {
     }
     if (!ch.symbol?.trim()) continue;
     const n: StreamChannel = {
-      type: "symbol",
+      type: ch.type,
       assetType: ch.assetType,
       symbol: ch.symbol.trim().toUpperCase(),
     };
@@ -282,6 +355,23 @@ export async function startQuoteHub(): Promise<void> {
   started = true;
   await initLongbridgePush();
   setLongbridgeQuoteHandler((quote) => emitQuote(quote));
+  setLongbridgeDepthHandler((internal, book) => {
+    broadcast(depthChannelKey(internal.assetType, internal.symbol), {
+      op: "depth",
+      assetType: internal.assetType,
+      symbol: internal.symbol.toUpperCase(),
+      book,
+    });
+  });
+  setLongbridgeTradesHandler((internal, trades) => {
+    broadcast(tradesChannelKey(internal.assetType, internal.symbol), {
+      op: "trades",
+      assetType: internal.assetType,
+      symbol: internal.symbol.toUpperCase(),
+      trades,
+      mode: "append",
+    });
+  });
   pollTimer = setInterval(() => void pollTick(), pollIntervalMs());
   console.info(
     `[quote-ws] hub started push=${isLongbridgePushAvailable()} pollMs=${pollIntervalMs()}`,
