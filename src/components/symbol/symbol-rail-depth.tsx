@@ -22,6 +22,22 @@ function fmtVol(n: number) {
   return formatNumber(n, { maximumFractionDigits: 0 });
 }
 
+function TickPrice({ trade }: { trade: TradeTick }) {
+  return (
+    <span
+      className={`truncate text-right font-medium ${
+        trade.direction === "up"
+          ? "text-[var(--up)]"
+          : trade.direction === "down"
+            ? "text-[var(--down)]"
+            : "text-[var(--foreground)]"
+      }`}
+    >
+      {fmtPx(trade.price)}
+    </span>
+  );
+}
+
 function TicksList({
   trades,
   title,
@@ -37,11 +53,15 @@ function TicksList({
   limit?: number;
 }) {
   const rows = limit != null ? trades.slice(0, limit) : trades;
+  const mid = Math.ceil(rows.length / 2);
+  const pairs = Array.from({ length: mid }, (_, i) => [rows[i], rows[i + mid]] as const);
   const grid =
-    "grid grid-cols-[4.75rem_minmax(0,1fr)_3.25rem] items-center gap-x-3";
+    "grid grid-cols-[3.6rem_minmax(0,1fr)_3rem_3.6rem_minmax(0,1fr)_3rem] items-center gap-x-1.5";
+  const head =
+    "whitespace-nowrap text-[12px] leading-none tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]";
   return (
-    <div className="px-3 py-3">
-      <p className="text-[14px] font-semibold leading-[1.29] tracking-[-0.224px] text-[var(--aw-ink,var(--foreground))]">
+    <div className="px-2 py-2">
+      <p className="text-[12px] font-semibold leading-none tracking-[-0.12px] text-[var(--aw-ink,var(--foreground))]">
         {title}
       </p>
       {rows.length === 0 ? (
@@ -49,36 +69,44 @@ function TicksList({
           {empty}
         </p>
       ) : (
-        <div className="mt-2">
-          <div
-            className={`${grid} border-b border-[var(--aw-hairline,var(--border))] pb-1.5 text-[12px] leading-[1.3] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]`}
-          >
+        <div className="mt-1.5">
+          <div className={`${grid} border-b border-[var(--aw-hairline,var(--border))] pb-1 ${head}`}>
+            <span>{cols.time}</span>
+            <span className="text-right">{cols.price}</span>
+            <span className="text-right">{cols.volume}</span>
             <span>{cols.time}</span>
             <span className="text-right">{cols.price}</span>
             <span className="text-right">{cols.volume}</span>
           </div>
-          {rows.map((tr, i) => (
+          {pairs.map(([left, right], i) => (
             <div
-              key={`${tr.time}-${i}`}
-              className={`${grid} min-h-[28px] text-[12px] tabular-nums leading-[1.3] tracking-[-0.12px]`}
+              key={`${left.time}-${i}`}
+              className={`${grid} h-[22px] text-[12px] tabular-nums leading-none tracking-[-0.12px]`}
             >
-              <span className="text-[var(--aw-ink-muted-48,var(--muted))]">
-                {formatTime(tr.time * 1000)}
+              <span className="truncate text-[var(--aw-ink-muted-48,var(--muted))]">
+                {formatTime(left.time * 1000)}
               </span>
-              <span
-                className={`text-right font-medium ${
-                  tr.direction === "up"
-                    ? "text-[var(--up)]"
-                    : tr.direction === "down"
-                      ? "text-[var(--down)]"
-                      : "text-[var(--foreground)]"
-                }`}
-              >
-                {fmtPx(tr.price)}
-              </span>
+              <TickPrice trade={left} />
               <span className="text-right text-[var(--aw-ink-muted-48,var(--muted))]">
-                {fmtVol(tr.volume)}
+                {fmtVol(left.volume)}
               </span>
+              {right ? (
+                <>
+                  <span className="truncate text-[var(--aw-ink-muted-48,var(--muted))]">
+                    {formatTime(right.time * 1000)}
+                  </span>
+                  <TickPrice trade={right} />
+                  <span className="text-right text-[var(--aw-ink-muted-48,var(--muted))]">
+                    {fmtVol(right.volume)}
+                  </span>
+                </>
+              ) : (
+                <>
+                  <span />
+                  <span />
+                  <span />
+                </>
+              )}
             </div>
           ))}
         </div>

@@ -73,7 +73,7 @@ export function SymbolQuoteBar({
   const watchLabel = inWatchlist ? t("inWatchlist") : t("addWatchlist");
 
   return (
-    <div className="bg-[var(--aw-canvas,#fff)] px-3 py-2.5 sm:px-4">
+    <div className="bg-[var(--aw-canvas,#fff)] px-3 py-1.5 sm:px-4">
       <div className="flex items-center gap-3 lg:gap-4">
         <div className="flex shrink-0 items-center gap-2">
           <Link
@@ -96,7 +96,7 @@ export function SymbolQuoteBar({
                 />
               </div>
             </div>
-            <p className="aw-caption mt-1 max-w-[12rem] truncate sm:max-w-[18rem]">
+            <p className="aw-caption mt-0.5 max-w-[12rem] truncate leading-none sm:max-w-[18rem]">
               {displayName(symbol, assetType)}
             </p>
           </div>
@@ -109,7 +109,7 @@ export function SymbolQuoteBar({
                 <div className="aw-price">
                   <PriceText value={quote.price} change={quote.change} />
                 </div>
-                <div className="mt-1 flex items-baseline gap-2">
+                <div className="mt-0.5 flex items-baseline gap-2">
                   <ChangePct value={quote.percentChange} />
                   {timeLabel ? (
                     <span className="aw-caption tabular-nums" suppressHydrationWarning>

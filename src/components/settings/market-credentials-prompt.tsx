@@ -90,11 +90,11 @@ export function MarketCredentialsPrompt({ fluid = false }: { fluid?: boolean }) 
       <div
         className={
           fluid
-            ? "flex w-full items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-4"
-            : "mx-auto flex w-full max-w-6xl items-center gap-2 px-3 py-1.5 sm:gap-3 sm:px-4"
+            ? "flex h-8 w-full items-center gap-2 px-3 sm:gap-3 sm:px-4"
+            : "mx-auto flex h-8 w-full max-w-6xl items-center gap-2 px-3 sm:gap-3 sm:px-4"
         }
       >
-        <div className="qt-marquee min-w-0 flex-1 py-0.5">
+        <div className="qt-marquee min-w-0 flex-1">
           <div className="qt-marquee-track">
             {[0, 1].map((i) => (
               <span
@@ -110,17 +110,17 @@ export function MarketCredentialsPrompt({ fluid = false }: { fluid?: boolean }) 
             ))}
           </div>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-1.5">
           <Link
             href={settingsHref}
-            className="qt-btn qt-btn-primary inline-flex h-7 items-center justify-center !rounded-full !px-3.5 !py-0 text-[12px] font-medium leading-none !text-[var(--on-brand)] no-underline transition active:scale-95"
+            className="qt-btn qt-btn-primary inline-flex h-6 items-center justify-center !rounded-full !px-2.5 !py-0 !text-[12px] !font-medium !leading-none !text-[var(--on-brand)] no-underline transition active:scale-95"
           >
             {t("credsPromptAction")}
           </Link>
           <button
             type="button"
             onClick={dismiss}
-            className="inline-flex h-7 items-center justify-center rounded-full px-2.5 text-[12px] font-medium leading-none text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+            className="inline-flex h-6 items-center justify-center rounded-full px-1.5 !text-[12px] !font-medium !leading-none text-[var(--muted)] hover:text-[var(--foreground)]"
           >
             {t("credsPromptLater")}
           </button>

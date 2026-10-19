@@ -243,9 +243,9 @@
     -apple-system,
     BlinkMacSystemFont,
     sans-serif;
-  font-size: 21px;
+  font-size: 17px;
   font-weight: 600;
-  line-height: 1.19;
+  line-height: 1.1;
   letter-spacing: 0.231px;
   color: var(--aw-ink);
 }
@@ -257,9 +257,9 @@
     -apple-system,
     BlinkMacSystemFont,
     sans-serif;
-  font-size: 28px;
+  font-size: 22px;
   font-weight: 600;
-  line-height: 1.14;
+  line-height: 1.1;
   letter-spacing: -0.28px;
   font-variant-numeric: tabular-nums;
 }
@@ -302,8 +302,8 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  height: 36px;
-  padding: 0 18px;
+  height: 30px;
+  padding: 0 14px;
   border-radius: var(--aw-radius-pill);
   background: var(--aw-primary);
   color: var(--aw-on-primary);
@@ -343,8 +343,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 30px;
+  height: 30px;
   border-radius: var(--aw-radius-full, 9999px);
   background: rgba(210, 210, 215, 0.64);
   color: var(--aw-ink);

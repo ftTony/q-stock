@@ -70,7 +70,7 @@ export function SymbolSentimentChip({ sentiment }: Props) {
 
   return (
     <div
-      className="border-b border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas)]"
+      className="hidden items-end gap-3 border-l border-[var(--aw-hairline,var(--border))] pl-3 md:flex"
       title={t("sentiment")}
       aria-label={t("sentiment")}
     >
@@ -88,25 +88,16 @@ export function SymbolSentimentChip({ sentiment }: Props) {
                 ? "text-[var(--up)]"
                 : "text-[var(--aw-ink,var(--foreground))]";
         return (
-          <div key={label} className="px-2 py-1">
-            <div className="mb-0.5 flex items-baseline justify-between gap-2 text-[12px] leading-none tracking-[-0.12px]">
+          <div key={label} className="w-[5.5rem]">
+            <div className="mb-1 flex items-baseline justify-between gap-1.5 text-[12px] leading-none tracking-[-0.12px]">
               <span className="text-[var(--aw-ink-muted-48,var(--muted))]">{label}</span>
               <span className={`tabular-nums font-semibold ${tone}`}>
                 {formatScore(bucket)}
               </span>
             </div>
-            <div className="flex h-[6px] w-full overflow-hidden">
-              <div
-                className="h-full bg-[var(--down)]"
-                style={{ width: `${bearish}%` }}
-              />
-              <div
-                className="h-full bg-[var(--up)]"
-                style={{ width: `${bullish}%` }}
-              />
-              {fill == null ? (
-                <div className="h-full w-full bg-[var(--aw-hairline,#d5dce8)]" />
-              ) : null}
+            <div className="flex h-[3px] w-full overflow-hidden rounded-full bg-[var(--aw-hairline,#d5dce8)]">
+              <div className="h-full bg-[var(--down)]" style={{ width: `${bearish}%` }} />
+              <div className="h-full bg-[var(--up)]" style={{ width: `${bullish}%` }} />
             </div>
           </div>
         );
