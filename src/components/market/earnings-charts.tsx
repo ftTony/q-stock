@@ -39,9 +39,9 @@ export function EarningsCharts({
   if (!series.length && !revSeries.length) return null;
 
   return (
-    <div className="space-y-5">
+    <div className="divide-y divide-[var(--border)]">
       {series.length > 0 && (
-        <section className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 p-3 sm:p-4">
+        <section className="pb-4">
           <h3 className="mb-3 text-sm font-semibold tracking-wide text-[var(--muted)] uppercase">
             {labels.chartEps}
           </h3>
@@ -60,7 +60,7 @@ export function EarningsCharts({
       )}
 
       {series.some((s) => s.surprisePercent != null) && (
-        <section className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 p-3 sm:p-4">
+        <section className="py-4">
           <h3 className="mb-3 text-sm font-semibold tracking-wide text-[var(--muted)] uppercase">
             {labels.chartSurprise}
           </h3>
@@ -69,7 +69,7 @@ export function EarningsCharts({
       )}
 
       {revSeries.length > 0 && (
-        <section className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 p-3 sm:p-4">
+        <section className="pt-4">
           <h3 className="mb-3 text-sm font-semibold tracking-wide text-[var(--muted)] uppercase">
             {labels.chartRevenue}
           </h3>

@@ -40,7 +40,9 @@
     "learn": "Learn",
     "pricing": "Pricing",
     "strategies": "Rule lab",
-    "home": "Home"
+    "home": "Home",
+    "language": "Language",
+    "appearance": "Appearance"
   },
   "market": {
     "stocks": "US Stocks",
