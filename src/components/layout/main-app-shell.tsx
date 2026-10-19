@@ -84,9 +84,11 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
   const isSymbol = pathname.startsWith("/symbol");
   const isStrategies = pathname.startsWith("/strategies");
   const mainRailClass = isFluidMain
-    ? isSymbol || isStrategies
-      ? "w-full px-3 sm:px-4"
-      : "w-full px-4 sm:px-6"
+    ? isSymbol
+      ? "w-full px-0"
+      : isStrategies
+        ? "w-full px-3 sm:px-4"
+        : "w-full px-4 sm:px-6"
     : "mx-auto w-full max-w-6xl px-4 sm:px-6";
   const sidebarWidth = SIDEBAR_WIDTH_COLLAPSED;
 
@@ -141,7 +143,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
         <main
           className={
             isSymbol
-              ? "flex min-h-0 flex-1 flex-col py-3 pb-24 sm:py-3.5 lg:overflow-hidden lg:pb-3"
+              ? "flex min-h-0 flex-1 flex-col pb-20 lg:overflow-hidden lg:pb-0"
               : `flex-1 pb-24 lg:pb-6 ${
                   isStrategies ? "py-3 sm:py-3.5" : "py-5 sm:py-6"
                 }`

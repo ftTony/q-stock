@@ -9,6 +9,10 @@ import { IconHeart } from "@/components/ui/icon-heart";
 import { IconRobot } from "@/components/ui/icon-robot";
 import { SymbolAlertStrip } from "@/components/symbol/symbol-alert-strip";
 import { SymbolShareMenu } from "@/components/symbol/symbol-share-menu";
+import {
+  SymbolSentimentChip,
+  type SymbolSentiment,
+} from "@/components/symbol/symbol-sentiment-chip";
 import { formatTime } from "@/lib/format-number";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
@@ -37,6 +41,7 @@ type Props = {
   /** Kept for API compat; OHLC now lives in SymbolRailStats. */
   marketCap?: number | null;
   alert?: AlertProps;
+  sentiment?: SymbolSentiment;
 };
 
 export function SymbolQuoteBar({
@@ -51,6 +56,7 @@ export function SymbolQuoteBar({
   onRefresh,
   refreshBusy = false,
   alert,
+  sentiment = null,
 }: Props) {
   const t = useTranslations("symbol");
   const tCommon = useTranslations("common");
@@ -67,8 +73,8 @@ export function SymbolQuoteBar({
   const watchLabel = inWatchlist ? t("inWatchlist") : t("addWatchlist");
 
   return (
-    <div className="aw-surface bg-white px-4 py-3 sm:px-5">
-      <div className="flex items-center gap-4 lg:gap-5">
+    <div className="bg-[var(--aw-canvas,#fff)] px-3 py-2.5 sm:px-4">
+      <div className="flex items-center gap-3 lg:gap-4">
         <div className="flex shrink-0 items-center gap-2">
           <Link
             href="/markets"
@@ -96,24 +102,27 @@ export function SymbolQuoteBar({
           </div>
         </div>
 
-        <div className="shrink-0">
-          {quote ? (
-            <>
-              <div className="aw-price">
-                <PriceText value={quote.price} change={quote.change} />
-              </div>
-              <div className="mt-1 flex items-baseline gap-2">
-                <ChangePct value={quote.percentChange} />
-                {timeLabel ? (
-                  <span className="aw-caption tabular-nums" suppressHydrationWarning>
-                    {timeLabel}
-                  </span>
-                ) : null}
-              </div>
-            </>
-          ) : (
-            <span className="aw-caption">—</span>
-          )}
+        <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+          <div className="shrink-0">
+            {quote ? (
+              <>
+                <div className="aw-price">
+                  <PriceText value={quote.price} change={quote.change} />
+                </div>
+                <div className="mt-1 flex items-baseline gap-2">
+                  <ChangePct value={quote.percentChange} />
+                  {timeLabel ? (
+                    <span className="aw-caption tabular-nums" suppressHydrationWarning>
+                      {timeLabel}
+                    </span>
+                  ) : null}
+                </div>
+              </>
+            ) : (
+              <span className="aw-caption">—</span>
+            )}
+          </div>
+          <SymbolSentimentChip sentiment={sentiment} />
         </div>
 
         <div className="aw-quote-actions ml-auto flex shrink-0 items-center justify-end gap-3">

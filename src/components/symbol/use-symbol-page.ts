@@ -19,9 +19,11 @@ import {
 import { useSymbolAiAnalysis } from "@/components/symbol/use-symbol-ai-analysis";
 import { useSymbolCandles } from "@/components/symbol/use-symbol-candles";
 import {
+  SYMBOL_COMMENTS_ENABLED,
   buildSymbolTabs,
   fallbackSymbolTab,
 } from "@/components/symbol/symbol-page-tabs";
+import type { SymbolSentiment } from "@/components/symbol/symbol-sentiment-chip";
 import {
   quotePollIntervalMs,
   useQuoteChannels,
@@ -84,10 +86,7 @@ export function useSymbolPage(
   const [company, setCompany] = useState<CompanyProfile | null>(null);
   const [officers, setOfficers] = useState<CompanyOfficer[]>([]);
   const [tabLoading, setTabLoading] = useState(false);
-  const [sentiment, setSentiment] = useState<{
-    news?: Record<string, unknown>;
-    reddit?: Record<string, unknown>;
-  } | null>(null);
+  const [sentiment, setSentiment] = useState<SymbolSentiment>(null);
   const earningsLoadedRef = useRef(false);
   const [alertPrice, setAlertPrice] = useState("");
   const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
@@ -218,7 +217,7 @@ export function useSymbolPage(
         const data = await res.json();
         setPress(data.press ?? []);
         if (data.degraded) setDegraded(true);
-      } else if (tab === "profile" || tab === "officers") {
+      } else if (tab === "profile") {
         if (assetType === "crypto" || isIndex) {
           setCompany(null);
           setOfficers([]);
@@ -231,14 +230,10 @@ export function useSymbolPage(
         setCompany(data.profile ?? null);
         setOfficers(data.officers ?? []);
         if (!res.ok || data.degraded) setDegraded(true);
-      } else if (tab === "comments") {
+      } else if (tab === "comments" && SYMBOL_COMMENTS_ENABLED) {
         const res = await fetch(`/api/comments?symbol=${symbol}&assetType=${assetType}`);
         const data = await res.json();
         setComments(data.comments ?? []);
-      } else if (tab === "sentiment") {
-        const res = await fetch(`/api/sentiment?symbol=${symbol}&assetType=${assetType}`);
-        const data = await res.json();
-        setSentiment(data.sentiment ?? null);
       }
     } finally {
       setTabLoading(false);
@@ -289,6 +284,24 @@ export function useSymbolPage(
   useEffect(() => {
     void loadEarningsMetrics();
   }, [loadEarningsMetrics]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(
+          `/api/sentiment?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+        );
+        const data = await res.json();
+        if (!cancelled) setSentiment(data.sentiment ?? null);
+      } catch {
+        if (!cancelled) setSentiment(null);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [symbol, assetType]);
 
   useEffect(() => {
     void loadTab();

@@ -26,42 +26,59 @@ function TicksList({
   trades,
   title,
   empty,
+  cols,
   limit,
 }: {
   trades: TradeTick[];
   title: string;
   empty: string;
+  cols: { time: string; price: string; volume: string };
   /** Cap rows when embedded in a long rail page (no nested scroll). */
   limit?: number;
 }) {
   const rows = limit != null ? trades.slice(0, limit) : trades;
+  const grid =
+    "grid grid-cols-[4.75rem_minmax(0,1fr)_3.25rem] items-center gap-x-3";
   return (
-    <div className="space-y-2 p-3">
-      <p className="text-[12px] font-medium text-[var(--muted)]">{title}</p>
+    <div className="px-3 py-3">
+      <p className="text-[14px] font-semibold leading-[1.29] tracking-[-0.224px] text-[var(--aw-ink,var(--foreground))]">
+        {title}
+      </p>
       {rows.length === 0 ? (
-        <p className="text-[12px] leading-relaxed text-[var(--muted)]">{empty}</p>
+        <p className="mt-2 text-[12px] leading-[1.47] tracking-[-0.12px] text-[var(--muted)]">
+          {empty}
+        </p>
       ) : (
-        <div className="space-y-0.5">
+        <div className="mt-2">
+          <div
+            className={`${grid} border-b border-[var(--aw-hairline,var(--border))] pb-1.5 text-[12px] leading-[1.3] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]`}
+          >
+            <span>{cols.time}</span>
+            <span className="text-right">{cols.price}</span>
+            <span className="text-right">{cols.volume}</span>
+          </div>
           {rows.map((tr, i) => (
             <div
               key={`${tr.time}-${i}`}
-              className="flex items-center justify-between gap-2 text-[12px] tabular-nums"
+              className={`${grid} min-h-[28px] text-[12px] tabular-nums leading-[1.3] tracking-[-0.12px]`}
             >
-              <span className="text-[11px] text-[var(--muted)]">
+              <span className="text-[var(--aw-ink-muted-48,var(--muted))]">
                 {formatTime(tr.time * 1000)}
               </span>
               <span
-                className={
+                className={`text-right font-medium ${
                   tr.direction === "up"
                     ? "text-[var(--up)]"
                     : tr.direction === "down"
                       ? "text-[var(--down)]"
                       : "text-[var(--foreground)]"
-                }
+                }`}
               >
                 {fmtPx(tr.price)}
               </span>
-              <span className="text-[var(--muted)]">{fmtVol(tr.volume)}</span>
+              <span className="text-right text-[var(--aw-ink-muted-48,var(--muted))]">
+                {fmtVol(tr.volume)}
+              </span>
             </div>
           ))}
         </div>
@@ -160,6 +177,12 @@ export function SymbolRailDepth({
   assetType: AssetType;
 }) {
   const t = useTranslations("symbolRail");
+  const tSymbol = useTranslations("symbol");
+  const tickCols = {
+    time: tSymbol("time"),
+    price: t("price"),
+    volume: tSymbol("volume"),
+  };
   const { book, trades, unavailable, locked, detail, loading } = useRailDepth(
     mode,
     symbol,
@@ -225,6 +248,7 @@ export function SymbolRailDepth({
               trades={trades}
               title={t("ticksTitle")}
               empty={t("ticksEmpty")}
+              cols={tickCols}
               limit={24}
             />
             <BookList
@@ -259,6 +283,11 @@ export function SymbolRailDepth({
   }
 
   return (
-    <TicksList trades={trades} title={t("ticksTitle")} empty={t("ticksEmpty")} />
+    <TicksList
+      trades={trades}
+      title={t("ticksTitle")}
+      empty={t("ticksEmpty")}
+      cols={tickCols}
+    />
   );
 }

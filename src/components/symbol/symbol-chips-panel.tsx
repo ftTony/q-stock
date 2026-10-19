@@ -67,11 +67,15 @@ export function SymbolChipsPanel({
   if (unavailable || !vp) {
     return (
       <div className="space-y-2 py-6 text-center">
-        <p className="text-sm font-medium">{t("chipsTitle")}</p>
-        <p className="mx-auto max-w-md text-[12px] text-[var(--muted)]">
+        <p className="text-[14px] font-semibold leading-[1.29] tracking-[-0.224px]">
+          {t("chipsTitle")}
+        </p>
+        <p className="mx-auto max-w-md text-[12px] leading-[1.47] tracking-[-0.12px] text-[var(--muted)]">
           {t("chipsEmpty")}
         </p>
-        <p className="text-[11px] text-[var(--muted)]">{t("chipsHint")}</p>
+        <p className="text-[12px] tracking-[-0.12px] text-[var(--muted)]">
+          {t("chipsHint")}
+        </p>
       </div>
     );
   }
@@ -98,12 +102,14 @@ export function SymbolChipsPanel({
           </span>
         ) : null}
       </div>
-      <p className="text-[11px] text-[var(--muted)]">{t("chipsHint")}</p>
+      <p className="text-[12px] tracking-[-0.12px] text-[var(--muted)]">
+        {t("chipsHint")}
+      </p>
       <div className="space-y-1">
         {[...vp.buckets].reverse().map((b) => (
           <div
             key={b.price}
-            className="grid grid-cols-[4.5rem_1fr_2.5rem] items-center gap-2 text-[11px] tabular-nums"
+            className="grid grid-cols-[4.5rem_1fr_2.5rem] items-center gap-2 text-[12px] tabular-nums tracking-[-0.12px]"
           >
             <span className="text-[var(--muted)]">
               {formatNumber(b.price, { maximumFractionDigits: 2 })}

@@ -1,6 +1,7 @@
 import type { LearnArticle } from "@/lib/learn/types";
 import { LEARN_ARTICLE_POOR_ECONOMICS } from "@/lib/learn/articles-reading-poor-economics";
 import { LEARN_ARTICLE_FAST_SLOW } from "@/lib/learn/articles-reading-fast-slow";
+import { LEARN_ARTICLE_INTELLIGENT_INVESTOR } from "@/lib/learn/articles-reading-intelligent-investor";
 
 /** Book list, learning paths, and featured book guides. */
 export const LEARN_ARTICLES_READING: LearnArticle[] = [
@@ -32,7 +33,7 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
         "三、《指数基金投资指南》。讲了什么：指数基金是什么、如何定投、估值与网格等国内读者熟悉的方法框架。启发：把「买股票」降维成可执行的定投计划；规则胜于感觉。注意：估值与网格有失效期，规则需自检。",
         "四、《投资中最简单的事》。讲了什么：能力圈、商业模式、估值与安全边际等「简单但难执行」的事。启发：把问题简化到可验证的少数变量；承认不懂比硬凑观点更重要。",
         "先读什么 · 进阶（可选：安全边际、周期、风险语言）：",
-        "一、《聪明的投资者》（建议选读）。讲了什么：投资与投机、安全边际、市场先生、防御型／进取型框架。启发：价格与价值可能偏离；先求不败；程序与纪律重于听消息。",
+        "一、《聪明的投资者》（建议选读）。讲了什么：投资与投机、安全边际、市场先生、防御型／进取型框架。启发：价格与价值可能偏离；先求不败；程序与纪律重于听消息。详见导读页。",
         "二、Howard Marks《周期》或《投资最重要的事》（择一）。讲了什么：信贷与情绪周期、风险不对称显现、所处周期位置往往比点位预测重要。启发：风险常在众人无感时累积；极端情绪处防极端仓位。",
         "三、《随机漫步的傻瓜》。讲了什么：运气与技能混淆、幸存者偏差、罕见事件。启发：短期盈亏说明不了水平；为没见过的风险留余地；慎把回测当能力。可与《黑天鹅》二选一，避免书单过载。",
         "四、《股票作手回忆录》。讲了什么：投机生涯里的趋势、人性与大起大落。启发：恐惧贪婪百年未变；投机成本极高。重要：当案例与反面教材，不当今日操作手册。",
@@ -56,7 +57,7 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
         "二、《共同基金常識》或《指數基金投資指南》。講了什麼：低成本／定投規則。啟發：紀律勝感覺；規則需自檢。",
         "三、《投資中最簡單的事》。講了什麼：能力圈與安全邊際。啟發：簡化到可驗證變量。",
         "先讀什麼 · 進階（可選）：",
-        "一、《聰明的投資者》。講了什麼：市場先生與安全邊際。啟發：先求不敗。",
+        "一、《聰明的投資者》。講了什麼：市場先生與安全邊際。啟發：先求不敗。見導讀。",
         "二、Marks 週期。講了什麼：週期位置。啟發：防極端倉位。",
         "三、《隨機漫步的傻瓜》。講了什麼：運氣與倖存者偏差。啟發：短期盈虧≠水平。",
         "四、《股票作手回憶錄》。當案例，不當手冊。五、Hull 僅選讀＋期權工具看最大虧損。六、《貧困的本質》：匱乏與機制，見導讀。",
@@ -77,7 +78,7 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
         "3) A solid index/DCA guide — Covers: rules-based investing. Takeaway: rules beat feelings; rules need self-checks.",
         "4) “Simple but hard” investing essays — Covers: circle of competence and margin of safety. Takeaway: few verifiable variables; admit what you don’t know.",
         "Read first · advanced (optional):",
-        "1) The Intelligent Investor (selective) — Covers: Mr. Market and margin of safety. Takeaway: survive first.",
+        "1) The Intelligent Investor (selective) — Covers: Mr. Market and margin of safety. Takeaway: survive first. See the guide page.",
         "2) Marks on cycles — Covers: where you are in the cycle. Takeaway: avoid extreme size at extremes.",
         "3) Fooled by Randomness — Covers: luck vs skill. Takeaway: short P&L ≠ skill.",
         "4) Reminiscences of a Stock Operator — cautionary case, not a playbook. 5) Hull-level texts — selective only; options tool for max loss. 6) Poor Economics — scarcity and mechanisms; see the guide.",
@@ -119,7 +120,7 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
         "路线 B 站内动作：四个市场看板各逛约 10 分钟只记差异（多市场 101）；读 K 线基础但不过度解读；定投 + 仓位工具写出规则；自选不超过约 10 只；做一次同业对比笔记；提醒只绑失效条件；AI 只问结构不求「买谁」。",
         "路线 C · 进阶冷静交易者（约 2–3 月，可选）",
         "目标：安全边际与周期意识、交易心理；衍生品只建立风险语言。毕业标准：能独立完成「结构 → 价位 → 失效 → 风险预算」；期权只做到「懂亏在哪」。",
-        "《聪明的投资者》（Benjamin Graham，建议选读）——讲了什么：投资与投机的区别、安全边际、市场先生、防御型/进取型投资者的行为框架。给人启发：价格与价值可能长期偏离；先求不败（安全边际与情绪管理）；程序与纪律重于听消息。注意：案例偏旧，读注释版；勿把公式当收银机；加密等不在原书框架内。",
+        "《聪明的投资者》（Benjamin Graham，建议选读）——讲了什么：投资与投机的区别、安全边际、市场先生、防御型/进取型投资者的行为框架。给人启发：价格与价值可能长期偏离；先求不败（安全边际与情绪管理）；程序与纪律重于听消息。注意：案例偏旧，读注释版；勿把公式当收银机；加密等不在原书框架内。站内有导读页可先读。",
         "Howard Marks《周期》或《投资最重要的事》（择一精读）——讲了什么：信贷与情绪周期、风险如何不对称显现、「现在所处周期位置」往往比点位预测更重要。给人启发：风险常在众人无感时累积；乐观顶点与悲观谷底都要防极端仓位。注意：偏机构与信用语境，个人用「仓位与预期」迁移即可。",
         "《随机漫步的傻瓜》（Nassim N. Taleb）——讲了什么：运气与技能混淆、幸存者偏差、罕见事件对结果的主导。给人启发：短期盈亏说明不了水平；要为「没见过的风险」留余地；慎把回测曲线当能力。可与《黑天鹅》二选一深读，避免书单过载。",
         "《股票作手回忆录》——讲了什么：小说化传记写投机生涯中的趋势、人性与大起大落。给人启发：恐惧与贪婪百年未变；投机成本极高；「按自己的系统」难在坚持。重要：这是案例与反面教材，不是今日可复制的操作手册——禁止把情节当策略。",
@@ -241,7 +242,7 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
         "三、在分析页做一次同业对比：练习「跟谁比」，而不是「谁明年翻倍」。",
         "四、模拟盘少而认真：验证你能否按规则执行与停手，而不是用虚拟曲线证明「我已战胜随机」。",
         "五、提醒只绑失效条件；AI 读图只问结构与价位，不求「给我买点」。",
-        "适合谁：走长期投资者路线（路线 B）的读者；已能停手、想建立市场谦逊与成本意识的人。若仍处在「必须每天交易证明自己」的阶段，建议先走路线 A（金钱行为与三问清单），再读本书，吸收会更好。",
+        "适合谁：走长期投资者路线（路线 B）的读者；已能停手、想建立市场谦逊与成本意识的人。若仍处在「必须每天交易证明自己」的阶段，建议先走路线 A（金钱行为与三问清单），再读本书，吸收会更好。路线 B 尾声可接《聪明的投资者》导读，补「不败」与市场先生语言。",
         "三句话收束：泡沫会换皮，预测很难稳；成本与分散比神操作更常可控；研究可以学，但请把工具当辅助，把纪律当主线。读完本书不会自动盈利——把启发写成你自己的定投/仓位规则与复盘习惯，才算读进了冷静投。完整顺序见《三条学习路线》。",
       ],
       "zh-TW": [
@@ -276,4 +277,5 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
   },
   LEARN_ARTICLE_POOR_ECONOMICS,
   LEARN_ARTICLE_FAST_SLOW,
+  LEARN_ARTICLE_INTELLIGENT_INVESTOR,
 ];

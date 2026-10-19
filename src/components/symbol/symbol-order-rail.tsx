@@ -79,14 +79,6 @@ export function SymbolOrderRail({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--aw-canvas)]">
-      <div className="shrink-0">
-        <SymbolPaperRiskBar
-          symbol={symbol}
-          assetType={assetType}
-          lastPrice={lastPrice}
-          refreshKey={accountTick}
-        />
-      </div>
       <div
         role="tablist"
         className="flex shrink-0 border-b border-[var(--border)]"
@@ -114,9 +106,15 @@ export function SymbolOrderRail({
 
       {activeTab === "order" ? (
         <RailScroll>
+          <SymbolPaperRiskBar
+            symbol={symbol}
+            assetType={assetType}
+            lastPrice={lastPrice}
+            refreshKey={accountTick}
+          />
           <Suspense
             fallback={
-              <div className="p-4 text-sm text-[var(--muted)]">
+              <div className="p-4 text-[12px] tracking-[-0.12px] text-[var(--muted)]">
                 {t("order")}…
               </div>
             }

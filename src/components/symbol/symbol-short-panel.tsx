@@ -62,12 +62,14 @@ export function SymbolShortPanel({
   if (unavailable) {
     return (
       <div className="space-y-2 py-6 text-center">
-        <p className="text-sm font-medium">{t("shortTitle")}</p>
-        <p className="mx-auto max-w-md text-[12px] text-[var(--muted)]">
+        <p className="text-[14px] font-semibold leading-[1.29] tracking-[-0.224px]">
+          {t("shortTitle")}
+        </p>
+        <p className="mx-auto max-w-md text-[12px] leading-[1.47] tracking-[-0.12px] text-[var(--muted)]">
           {t("shortEmpty")}
         </p>
         {detail ? (
-          <p className="mx-auto max-w-lg break-all text-[11px] text-[var(--muted)] opacity-80">
+          <p className="mx-auto max-w-lg break-all text-[12px] tracking-[-0.12px] text-[var(--muted)] opacity-80">
             {detail}
           </p>
         ) : null}

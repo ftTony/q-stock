@@ -63,8 +63,8 @@ export function SymbolPageClient({
   }, [s.loadQuote]);
 
   return (
-    <div className="aw aw-stack flex min-h-0 flex-1 flex-col bg-[#e6edf6] lg:overflow-hidden">
-      <div className="shrink-0">
+    <div className="aw aw-stack flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--aw-canvas)] lg:overflow-hidden">
+      <div className="shrink-0 border-b border-[var(--aw-hairline,var(--border))]">
         <SymbolQuoteBar
           symbol={symbol}
           assetType={assetType}
@@ -86,11 +86,12 @@ export function SymbolPageClient({
             message: s.alertMsg,
             onSubmit: s.createAlert,
           }}
+          sentiment={s.sentiment}
         />
       </div>
 
       <div className="aw-workbench-grid min-h-0 flex-1 lg:overflow-hidden">
-        <div className="aw-stack-y flex min-h-0 min-w-0 flex-col overflow-hidden bg-white">
+        <div className="aw-stack-y flex min-h-0 min-w-0 flex-col overflow-hidden bg-[var(--aw-canvas)]">
           <SymbolTabsPanel
             tabs={s.tabs}
             tab={s.tab}
@@ -166,7 +167,7 @@ export function SymbolPageClient({
           />
         </div>
 
-        <aside className="aw-workbench-rail aw-region min-h-0 gap-0 overflow-hidden bg-[var(--aw-canvas)]">
+        <aside className="aw-workbench-rail min-h-0 overflow-hidden bg-[var(--aw-canvas)]">
           <div className="shrink-0">
             <SymbolRailStats quote={s.quote} marketCap={marketCap} />
           </div>

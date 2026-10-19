@@ -42,8 +42,12 @@ function renderVal(key: MetricKey, value: number | null | undefined) {
   return fmtPx(value);
 }
 
-const PRICE_KEYS: MetricKey[] = ["open", "high", "low", "prevClose"];
-const SIZE_KEYS: MetricKey[] = ["volume", "amount", "mktCap"];
+/** Longbridge-style: three columns, label left / value right, hairline rows. */
+const ROWS: MetricKey[][] = [
+  ["open", "high", "low"],
+  ["prevClose", "volume", "amount"],
+  ["mktCap"],
+];
 
 export function SymbolRailStats({ quote, marketCap = null }: Props) {
   const t = useTranslations("symbol");
@@ -58,22 +62,33 @@ export function SymbolRailStats({ quote, marketCap = null }: Props) {
     mktCap: marketCap,
   };
 
-  const cells = (keys: MetricKey[]) =>
-    keys.map((key) => (
-      <div key={key} className="min-w-0 text-left">
-        <div className="aw-metric-label">{t(key)}</div>
-        <div className="aw-metric-value mt-0.5 truncate">
-          {quote ? renderVal(key, values[key]) : "—"}
-        </div>
-      </div>
-    ));
-
   return (
-    <div className="space-y-2 border-b border-[var(--border)] px-3 py-2.5">
-      <div className="grid grid-cols-4 gap-x-3">{cells(PRICE_KEYS)}</div>
-      <div className="grid grid-cols-3 gap-x-3 border-t border-[var(--border)] pt-2">
-        {cells(SIZE_KEYS)}
-      </div>
+    <div className="border-b border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas)] px-2 py-1.5">
+      {ROWS.map((row, ri) => (
+        <div
+          key={ri}
+          className="grid grid-cols-3 gap-x-2 py-0.5"
+        >
+          {row.map((key) => (
+            <div
+              key={key}
+              className="flex min-w-0 items-baseline justify-between gap-1"
+            >
+              <span className="shrink-0 text-[12px] leading-none tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                {t(key)}
+              </span>
+              <span className="truncate text-right text-[12px] font-medium tabular-nums leading-none tracking-[-0.12px] text-[var(--aw-ink,var(--foreground))]">
+                {quote ? renderVal(key, values[key]) : "—"}
+              </span>
+            </div>
+          ))}
+          {row.length < 3
+            ? Array.from({ length: 3 - row.length }).map((_, i) => (
+                <div key={`pad-${i}`} />
+              ))
+            : null}
+        </div>
+      ))}
     </div>
   );
 }

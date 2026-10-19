@@ -51,6 +51,7 @@ export default async function SymbolPage({ params }: Props) {
           "aiScenario",
           "alerts",
           "comments",
+          "company",
           "earnings",
           "orderRisk",
           "paperRiskBar",

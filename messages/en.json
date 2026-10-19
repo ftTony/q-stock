@@ -128,6 +128,8 @@
     "press": "Press",
     "comments": "Comments",
     "sentiment": "Sentiment",
+    "sentimentNews": "News",
+    "sentimentSocial": "Social",
     "ai": "AI Analysis",
     "day": "Daily",
     "quarter": "Quarterly",

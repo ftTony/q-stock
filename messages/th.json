@@ -128,6 +128,8 @@
     "press": "ข่าวประชาสัมพันธ์",
     "comments": "ความคิดเห็น",
     "sentiment": "ความรู้สึกตลาด",
+    "sentimentNews": "ข่าว",
+    "sentimentSocial": "โซเชียล",
     "ai": "วิเคราะห์โดย AI",
     "day": "Daily",
     "quarter": "Quarterly",

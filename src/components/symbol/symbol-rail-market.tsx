@@ -18,22 +18,20 @@ export function SymbolRailMarket({ symbol, assetType }: Props) {
     assetType === "stock" || assetType === "hk" || assetType === "cn";
 
   return (
-    <div className="space-y-2 bg-[var(--aw-parchment)] p-2">
-      <div className="overflow-hidden rounded-[11px] border border-[var(--aw-hairline)] bg-[var(--aw-canvas)]">
-        <SymbolRailDepth mode="split" symbol={symbol} assetType={assetType} />
-      </div>
+    <div className="bg-[var(--aw-canvas)]">
+      <SymbolRailDepth mode="split" symbol={symbol} assetType={assetType} />
       {showFunds ? (
-        <div className="rounded-[11px] border border-[var(--aw-hairline)] bg-[var(--aw-canvas)] p-2.5">
+        <div className="border-t border-[var(--aw-hairline)] px-3 py-3">
           <SymbolFundsPanel symbol={symbol} assetType={assetType} />
         </div>
       ) : null}
       {showShort ? (
-        <div className="rounded-[11px] border border-[var(--aw-hairline)] bg-[var(--aw-canvas)] p-2.5">
+        <div className="border-t border-[var(--aw-hairline)] px-3 py-3">
           <SymbolShortPanel symbol={symbol} assetType={assetType} />
         </div>
       ) : null}
       {showChips ? (
-        <div className="rounded-[11px] border border-[var(--aw-hairline)] bg-[var(--aw-canvas)] p-2.5">
+        <div className="border-t border-[var(--aw-hairline)] px-3 py-3">
           <SymbolChipsPanel symbol={symbol} assetType={assetType} />
         </div>
       ) : null}

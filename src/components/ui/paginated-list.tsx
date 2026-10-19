@@ -88,17 +88,17 @@ export function PaginatedList<T>({
   return (
     <div
       ref={rootRef}
-      className="space-y-3 scroll-mt-24"
+      className="scroll-mt-24"
       data-pager="paginated-list-v2"
     >
-      <ul className="space-y-3">
+      <ul>
         {slice.map((item, i) => renderItem(item, (page - 1) * pageSize + i))}
       </ul>
       {totalPages > 1 && (
-        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1.5 border-t border-[var(--border)] pt-3 sm:gap-2">
+        <div className="mt-3 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-3">
           <button
             type="button"
-            className="qt-btn qt-btn-ghost h-8 shrink-0 px-2.5 text-xs disabled:opacity-40 sm:px-3"
+            className="qt-btn qt-btn-ghost h-8 shrink-0 px-2.5 text-[12px] leading-none tracking-[-0.12px] disabled:opacity-40 sm:px-3"
             disabled={page <= 1}
             onClick={() => goTo(page - 1)}
             aria-label={labels.prev}
@@ -108,30 +108,30 @@ export function PaginatedList<T>({
             </span>
             <span className="hidden sm:inline">{labels.prev}</span>
           </button>
-          <div className="flex min-w-0 items-center justify-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-1 [&::-webkit-scrollbar]:hidden">
+          <div className="flex min-w-0 items-center justify-center gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {pages.map((p) => (
               <button
                 key={p}
                 type="button"
                 aria-label={`${p} / ${totalPages}`}
                 aria-current={p === page ? "page" : undefined}
-                className={`qt-btn h-8 min-w-7 shrink-0 px-1.5 text-xs tabular-nums sm:min-w-8 sm:px-2 ${
+                className={`qt-btn h-8 min-w-8 shrink-0 px-2 text-[12px] tabular-nums leading-none tracking-[-0.12px] ${
                   p === page
                     ? "qt-btn-primary"
-                    : "qt-btn-ghost text-[var(--muted)]"
+                    : "qt-btn-ghost text-[var(--aw-ink-muted-48,var(--muted))]"
                 }`}
                 onClick={() => goTo(p)}
               >
                 {p}
               </button>
             ))}
-            <span className="ml-0.5 hidden shrink-0 text-xs tabular-nums text-[var(--muted)] sm:ml-1 sm:inline">
+            <span className="ml-1 hidden shrink-0 text-[12px] tabular-nums tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))] sm:inline">
               {page} / {totalPages}
             </span>
           </div>
           <button
             type="button"
-            className="qt-btn qt-btn-ghost h-8 shrink-0 px-2.5 text-xs disabled:opacity-40 sm:px-3"
+            className="qt-btn qt-btn-ghost h-8 shrink-0 px-2.5 text-[12px] leading-none tracking-[-0.12px] disabled:opacity-40 sm:px-3"
             disabled={page >= totalPages}
             onClick={() => goTo(page + 1)}
             aria-label={labels.next}

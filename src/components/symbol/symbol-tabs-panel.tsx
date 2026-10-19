@@ -206,7 +206,7 @@ export function SymbolTabsPanel({
       ) : (
       <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 qt-scroll sm:p-5">
         {tabLoading ? (
-          <div className="flex h-40 items-center justify-center text-sm text-[var(--muted)]">
+          <div className="flex h-40 items-center justify-center text-[12px] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
             {loadingLabel}
           </div>
         ) : (
@@ -224,29 +224,29 @@ export function SymbolTabsPanel({
                 pageSize={8}
                 resetKey={`news-${news.length}-${news[0]?.headline ?? ""}`}
                 empty={
-                  <p className="text-sm text-[var(--muted)]">
+                  <p className="text-[12px] leading-[1.3] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
                     {degraded ? degradedLabel : errorLabel}
                   </p>
                 }
                 renderItem={(n, i) => (
                   <li
                     key={`${n.url || n.headline}-${i}`}
-                    className="border-b border-[var(--border)] pb-2.5 last:border-0"
+                    className="space-y-1 border-b border-[var(--aw-hairline,var(--border))] py-3 last:border-0"
                   >
                     <a
                       href={n.url || "#"}
                       target="_blank"
                       rel="noreferrer"
-                      className="text-sm font-medium leading-snug hover:text-[var(--brand)]"
+                      className="block text-[14px] font-semibold leading-[1.29] tracking-[-0.224px] text-[var(--aw-ink,var(--foreground))] hover:text-[var(--aw-primary,var(--brand))]"
                     >
                       {n.headline}
                     </a>
                     {n.summary && (
-                      <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[var(--muted)]">
+                      <p className="line-clamp-2 text-[12px] leading-[1.47] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
                         {n.summary}
                       </p>
                     )}
-                    <div className="mt-0.5 text-[11px] text-[var(--muted)]">
+                    <div className="text-[12px] leading-[1.3] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
                       {n.source}
                       {n.datetime
                         ? ` · ${formatDate(
@@ -261,7 +261,9 @@ export function SymbolTabsPanel({
 
             {tab === "earnings" &&
               (assetType === "crypto" || isIndex ? (
-                <p className="text-sm text-[var(--muted)]">{earningsCryptoNa}</p>
+                <p className="text-[12px] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                  {earningsCryptoNa}
+                </p>
               ) : (
                 <EarningsPanel
                   surprises={earnings}
@@ -275,34 +277,38 @@ export function SymbolTabsPanel({
 
             {tab === "press" &&
               (assetType === "crypto" || isIndex ? (
-                <p className="text-sm text-[var(--muted)]">N/A</p>
+                <p className="text-[12px] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                  N/A
+                </p>
               ) : (
                 <PaginatedList
                   items={press}
                   pageSize={8}
                   resetKey={`press-${press.length}-${press[0]?.headline ?? ""}`}
                   empty={
-                    <p className="text-sm text-[var(--muted)]">{degradedLabel}</p>
+                    <p className="text-[12px] leading-[1.3] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                      {degradedLabel}
+                    </p>
                   }
                   renderItem={(p, i) => (
                     <li
                       key={`${p.url || p.headline}-${i}`}
-                      className="border-b border-[var(--border)] pb-2.5 last:border-0"
+                      className="space-y-1 border-b border-[var(--aw-hairline,var(--border))] py-3 last:border-0"
                     >
                       <a
                         href={p.url || "#"}
                         target="_blank"
                         rel="noreferrer"
-                        className="text-sm font-medium leading-snug hover:text-[var(--brand)]"
+                        className="block text-[14px] font-semibold leading-[1.29] tracking-[-0.224px] text-[var(--aw-ink,var(--foreground))] hover:text-[var(--aw-primary,var(--brand))]"
                       >
                         {p.headline || p.description || "Press release"}
                       </a>
                       {p.description && p.headline && (
-                        <p className="mt-0.5 line-clamp-2 text-xs leading-relaxed text-[var(--muted)]">
+                        <p className="line-clamp-2 text-[12px] leading-[1.47] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
                           {p.description}
                         </p>
                       )}
-                      <div className="mt-0.5 text-[11px] text-[var(--muted)]">
+                      <div className="text-[12px] leading-[1.3] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
                         {p.datetime ? formatDateTime(p.datetime) : ""}
                         {p.source ? ` · ${p.source}` : ""}
                       </div>
@@ -311,9 +317,16 @@ export function SymbolTabsPanel({
                 />
               ))}
 
-            {tab === "profile" && <CompanyProfilePanel profile={company} />}
-
-            {tab === "officers" && <OfficersPanel officers={officers} />}
+            {tab === "profile" && (
+              <div className="space-y-6">
+                <CompanyProfilePanel profile={company} />
+                {officers.length > 0 ? (
+                  <div className="border-t border-[var(--aw-hairline,var(--border))] pt-5">
+                    <OfficersPanel officers={officers} title={t("officers")} />
+                  </div>
+                ) : null}
+              </div>
+            )}
 
             {tab === "comments" && (
               <div className="space-y-3">
@@ -369,7 +382,7 @@ export function SymbolTabsPanel({
             )}
 
             {tab === "sentiment" && (
-              <div className="grid gap-0 divide-y divide-[var(--border)] sm:grid-cols-2 sm:divide-x sm:divide-y-0">
+              <div className="grid gap-0 divide-y divide-[var(--aw-hairline,var(--border))] sm:grid-cols-2 sm:divide-x sm:divide-y-0">
                 {(["news", "reddit"] as const).map((key) => {
                   const s = sentiment?.[key] as
                     | {
@@ -387,7 +400,7 @@ export function SymbolTabsPanel({
                     return (
                       <div
                         key={key}
-                        className="py-3 text-sm text-[var(--muted)] first:pt-0 sm:px-3 sm:py-0 sm:first:pl-0 sm:last:pr-0"
+                        className="py-4 text-[12px] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))] first:pt-0 sm:px-4 sm:py-0 sm:first:pl-0 sm:last:pr-0"
                       >
                         {key}: N/A
                       </div>
@@ -396,32 +409,48 @@ export function SymbolTabsPanel({
                   return (
                     <div
                       key={key}
-                      className="py-3 text-sm first:pt-0 last:pb-0 sm:px-3 sm:py-0 sm:first:pl-0 sm:last:pr-0"
+                      className="space-y-3 py-4 first:pt-0 last:pb-0 sm:px-4 sm:py-0 sm:first:pl-0 sm:last:pr-0"
                     >
-                      <div className="mb-2 font-medium capitalize">
+                      <div className="text-[14px] font-semibold capitalize leading-[1.29] tracking-[-0.224px] text-[var(--aw-ink,var(--foreground))]">
                         {s.source || key}
                       </div>
                       {s.available === false ? (
-                        <p className="text-[var(--muted)]">
+                        <p className="text-[12px] leading-[1.47] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
                           {s.message || degradedLabel}
                         </p>
                       ) : (
-                        <dl className="grid grid-cols-2 gap-2">
-                          <div>
-                            <dt className="text-xs text-[var(--muted)]">Buzz</dt>
-                            <dd>{s.buzz_score?.toFixed?.(1) ?? "-"}</dd>
+                        <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+                          <div className="space-y-1">
+                            <dt className="text-[10px] leading-[1.3] tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                              Buzz
+                            </dt>
+                            <dd className="text-[13px] font-medium tabular-nums tracking-[-0.08px]">
+                              {s.buzz_score?.toFixed?.(1) ?? "-"}
+                            </dd>
                           </div>
-                          <div>
-                            <dt className="text-xs text-[var(--muted)]">Score</dt>
-                            <dd>{s.sentiment_score?.toFixed?.(3) ?? "-"}</dd>
+                          <div className="space-y-1">
+                            <dt className="text-[10px] leading-[1.3] tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                              Score
+                            </dt>
+                            <dd className="text-[13px] font-medium tabular-nums tracking-[-0.08px]">
+                              {s.sentiment_score?.toFixed?.(3) ?? "-"}
+                            </dd>
                           </div>
-                          <div>
-                            <dt className="text-xs text-[var(--muted)]">Bullish %</dt>
-                            <dd>{s.bullish_pct?.toFixed?.(1) ?? "-"}</dd>
+                          <div className="space-y-1">
+                            <dt className="text-[10px] leading-[1.3] tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                              Bullish %
+                            </dt>
+                            <dd className="text-[13px] font-medium tabular-nums tracking-[-0.08px]">
+                              {s.bullish_pct?.toFixed?.(1) ?? "-"}
+                            </dd>
                           </div>
-                          <div>
-                            <dt className="text-xs text-[var(--muted)]">Trend</dt>
-                            <dd>{s.trend ?? "-"}</dd>
+                          <div className="space-y-1">
+                            <dt className="text-[10px] leading-[1.3] tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                              Trend
+                            </dt>
+                            <dd className="text-[13px] font-medium tracking-[-0.08px]">
+                              {s.trend ?? "-"}
+                            </dd>
                           </div>
                         </dl>
                       )}

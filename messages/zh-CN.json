@@ -128,6 +128,8 @@
     "press": "公告",
     "comments": "评论",
     "sentiment": "情绪",
+    "sentimentNews": "新闻",
+    "sentimentSocial": "社交",
     "ai": "AI 分析",
     "day": "日",
     "quarter": "季",

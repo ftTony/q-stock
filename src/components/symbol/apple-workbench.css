@@ -144,7 +144,7 @@
 .aw-stack {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 0;
 }
 
 .aw-stack > .aw-surface {
@@ -168,14 +168,16 @@
 .aw-workbench-grid {
   display: flex;
   flex-direction: column;
-  gap: 14px;
-  background: transparent;
+  gap: 0;
+  background: var(--aw-canvas);
+  border: none;
+  min-height: 0;
 }
 
 .aw-workbench-grid > .aw-stack-y {
   background: var(--aw-canvas);
-  border: 1px solid var(--aw-hairline);
-  border-radius: var(--aw-radius-lg);
+  border: none;
+  border-radius: 0;
   box-shadow: none;
   overflow: hidden;
 }
@@ -185,8 +187,10 @@
   flex-direction: column;
   gap: 0;
   min-height: 0;
-  background: transparent;
+  background: var(--aw-canvas);
   border: none;
+  border-top: 1px solid var(--aw-hairline);
+  border-radius: 0;
   overflow: hidden;
 }
 
@@ -211,6 +215,10 @@
     grid-template-columns: minmax(0, 1fr) 360px;
     align-items: stretch;
     min-height: 0;
+  }
+  .aw-workbench-rail {
+    border-top: none;
+    border-left: 1px solid var(--aw-hairline);
   }
   .aw-workbench-rail,
   .aw-workbench-grid > .aw-stack-y {
