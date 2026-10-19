@@ -1,5 +1,6 @@
 import type { LearnArticle } from "@/lib/learn/types";
 import { LEARN_ARTICLE_POOR_ECONOMICS } from "@/lib/learn/articles-reading-poor-economics";
+import { LEARN_ARTICLE_FAST_SLOW } from "@/lib/learn/articles-reading-fast-slow";
 
 /** Book list, learning paths, and featured book guides. */
 export const LEARN_ARTICLES_READING: LearnArticle[] = [
@@ -24,7 +25,7 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
         "先读什么 · 入门（态度，先管行为，不急选股）：",
         "一、《金钱心理学》。讲了什么：用故事讲攒钱、运气与风险、知足与时间；行为往往比智商更影响结果。启发：理财首先是行为问题；「足够」比「最多」更可执行；财富是未花掉的钱；长期一致常胜过短期聪明。",
         "二、《小狗钱钱》。讲了什么：用童话讲储蓄、复利、目标与金钱习惯。启发：先有记录与目标，再谈复杂产品；小额坚持能形成正反馈。注意：隐喻勿直接套到股票杠杆。",
-        "三、《思考，快与慢》（建议跳读偏见章节）。讲了什么：双系统思维与锚定、损失厌恶、过度自信等偏见。启发：盘中「必须干一笔」多半是系统 1；清单与等待是系统 2 的外挂；亏损后加倍常是损失厌恶。",
+        "三、《思考，快与慢》（建议跳读偏见章节）。讲了什么：双系统思维与锚定、损失厌恶、过度自信等偏见。启发：盘中「必须干一笔」多半是系统 1；清单与等待是系统 2 的外挂；亏损后加倍常是损失厌恶。详见导读页。",
         "先读什么 · 基础（长期：谦逊、成本、分散）：",
         "一、《漫步华尔街》。讲了什么：市场史与泡沫、随机漫步／有效市场争论、技术与基本面的局限、分散与低成本长期思路。启发：短期难测；成本与分散往往比神操作更可控；对分析流派保持谦逊。",
         "二、《共同基金常识》。讲了什么：低成本指数基金、费用如何吞噬收益、长期持有与回归常识。启发：先问成本与自己能否坚持，再问明年暴涨标的；简单策略难在纪律。注意：语境偏美股，A/港只借框架。",
@@ -49,7 +50,7 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
         "先讀什麼 · 入門：",
         "一、《金錢心理學》。講了什麼：攢錢、運氣與風險、知足與時間。啟發：理財先是行為，「足夠」比「最多」可執行。",
         "二、《小狗錢錢》。講了什麼：儲蓄與複利習慣。啟發：先有記錄與目標。勿套槓桿。",
-        "三、《思考，快與慢》（跳讀偏見）。講了什麼：雙系統與損失厭惡等。啟發：清單是系統 2 外掛。",
+        "三、《思考，快與慢》（跳讀偏見）。講了什麼：雙系統與損失厭惡等。啟發：清單是系統 2 外掛。見導讀。",
         "先讀什麼 · 基礎：",
         "一、《漫步華爾街》。講了什麼：泡沫、隨機漫步爭論、分析局限、分散與低成本。啟發：短期難測，成本更可控。",
         "二、《共同基金常識》或《指數基金投資指南》。講了什麼：低成本／定投規則。啟發：紀律勝感覺；規則需自檢。",
@@ -69,7 +70,7 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
         "Read first · foundations (attitude):",
         "1) Psychology of Money — Covers: saving, luck vs risk, “enough,” time. Takeaway: behavior first; wealth is what you don’t spend.",
         "2) A gentle money-habits book — Covers: saving and compounding via metaphor. Takeaway: goals and records before complex products; do not map onto leverage.",
-        "3) Thinking, Fast and Slow (bias chapters) — Covers: System 1/2 and biases. Takeaway: checklists are System 2 prosthetics.",
+        "3) Thinking, Fast and Slow (bias chapters) — Covers: System 1/2 and biases. Takeaway: checklists are System 2 prosthetics. See the guide page.",
         "Read first · long-term:",
         "1) A Random Walk Down Wall Street — Covers: bubbles, random-walk debate, limits of analysis schools, diversification and low costs. Takeaway: forecasts are hard; costs and diversification are more controllable.",
         "2) Bogle’s common sense — Covers: indexing and fees. Takeaway: ask cost and persistence first; borrow the frame across markets carefully.",
@@ -133,7 +134,7 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
         "《金錢心理學》：故事講攢錢、運氣與風險、知足與時間；啟發——理財先是行為，「足夠」比「最多」可執行。",
         "《小狗錢錢》：童話講儲蓄與複利；啟發——先有記錄與目標。勿直接套槓桿。",
         "《思考，快與慢》（跳讀偏見）：雙系統與損失厭惡等；啟發——清單是系統 2 外掛。",
-        "站內：足夠線＋《財富自由到底是什麼》、複利／定投假設、三問、冷靜看盤、《道德經》短文、2～3 筆模擬＋複盤。",
+        "站內：足夠線＋財富自由短文、《貧困的本質》／《思考快與慢》導讀（有餘力）、複利／定投、三問、冷靜看盤、《道德經》短文、2～3 筆模擬＋複盤。",
         "路線 B（約 1–2 月）：市場謙遜、成本與分散。",
         "《漫步華爾街》：泡沫與分析流派局限、分散與低成本；啟發——短期難測，成本更可控。",
         "《共同基金常識》或《指數基金投資指南》：低成本／定投規則；啟發——紀律勝感覺；規則需自檢。",
@@ -152,7 +153,7 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
         "Psychology of Money — Covers: stories on saving, luck vs risk, “enough,” and time; behavior often beats IQ. Takeaway: wealth is what you don’t spend; consistent ordinary decisions beat brilliant blow-ups.",
         "A gentle money-habits book (e.g. Puppy Money) — Covers: saving, compounding, goals via metaphor. Takeaway: record and goals before complex products; do not map metaphors onto leverage.",
         "Thinking, Fast and Slow (bias chapters) — Covers: System 1/2 and biases like loss aversion. Takeaway: “must trade now” is often System 1; checklists are System 2 prosthetics.",
-        "Path A drills: write an enough-line and read the financial-freedom definition essay; compound/DCA assumption runs; three-question checklist; calm-watching; the Tao Te Ching greed/fear/desire essay; only a few planned paper trades plus one review.",
+        "Path A drills: write an enough-line and read the financial-freedom essay; optional Poor Economics / Thinking Fast and Slow guides; compound/DCA runs; three-question checklist; calm-watching; Tao Te Ching greed/fear essay; few planned paper trades plus one review.",
         "Path B (≈1–2 months): markets are hard to forecast; costs and diversification matter. Graduate when you stop treating short P&L as skill and keep a written DCA/sizing rule.",
         "A Random Walk Down Wall Street — Covers: history, bubbles, limits of analysis schools; case for diversification and low-cost long horizons. Takeaway: short-term prices are hard; costs and a keepable plan are more controllable.",
         "Bogle’s common sense or a solid index/DCA guide — Covers: fees, indexing, rules-based investing. Takeaway: ask cost and persistence before “next year’s winner”; rules need self-checks—no backtest promises here.",
@@ -274,4 +275,5 @@ export const LEARN_ARTICLES_READING: LearnArticle[] = [
     },
   },
   LEARN_ARTICLE_POOR_ECONOMICS,
+  LEARN_ARTICLE_FAST_SLOW,
 ];
