@@ -543,7 +543,7 @@
   "about": {
     "title": "About me",
     "subtitle": "Qianli Gu · a note from the author",
-    "p1": "A decade in financial software—front-end first, comfortable with back-end—and familiar with the full broker stack from account opening to trading, market data, and risk. This site is a personal learning / engineering sandbox. Content is for reference only and is not investment advice.",
+    "p1": "I’ve spent a decade building financial products—mainly front-end, with back-end when needed—across account opening, funding, market data, trading, and risk. Over time one thing became clear: retail investors face an uneven field. On the other side are institutions and quant teams with deeper research, execution, systems, and discipline; individuals are often short on information, tools, and time. I paid tuition myself: my worst drawdown was over 65%, and I still clung to that position, unwilling to admit the mistake and get out. Only afterward did it sink in—without timely review, mistakes repeat; without rules you can actually follow, emotion takes the next order. I built Qianli Gu first as personal learning and engineering practice, and as a toolkit I can use again and again. If you’ve taken similar detours, you’re welcome to review with a cooler head here too.",
     "p2": "If you can introduce me to Futu or Longbridge business teams, I’d love to explore a deeper partnership.",
     "p3": "If you can spare some “ammo” (budget), help top up API tokens — they’ll go toward more AI finance features.",
     "p4": "Thanks to everyone who stops by.",
@@ -556,7 +556,7 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "Note for friends in mainland China: investing in overseas stocks or BTC is currently illegal. This site is for learning only — please follow local laws.",
     "platformTitle": "About Qianli Gu",
-    "platformBody": "Qianli Gu (钱力股) is built around smart investing and value discovery. We use AI to support calmer research and review—and to help blunt the impact of fear, greed, and other human biases. Market data and content are for learning only, not investment advice."
+    "platformBody": "The idea behind Qianli Gu is simple: no stock tips, no “buy this / sell that” verdicts. We use AI and rules to connect research, a calmer pause before you order, and post-trade review—so fear and greed have less room to steer the next decision. Market data and content are for learning only, not investment advice."
   },
   "aiChart": {
     "title": "AI chart read",
@@ -780,7 +780,7 @@
       }
     },
     "storyTitle": "Why it exists",
-    "storyP1": "A decade in financial engineering—from onboarding and funding to trading, quotes, and risk. Q-Stock is a personal practice: use AI to dampen greed and fear in judgment.",
+    "storyP1": "A decade in financial products—from onboarding to quotes, trading, and risk. Qianli Gu is personal practice: AI and rules to connect calm research with post-trade review, so greed and fear steer less.",
     "storyP2": "If calmer watching beats chasing heat, start from the markets dashboard.",
     "storyLink": "About & contact",
     "ctaBandTitle": "Start with markets",

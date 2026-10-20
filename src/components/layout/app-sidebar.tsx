@@ -93,15 +93,6 @@ function IconBolt({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-function IconUser({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <circle cx="12" cy="8" r="3.5" />
-      <path d="M5 19c1.8-3.2 4.2-4.5 7-4.5s5.2 1.3 7 4.5" />
-    </svg>
-  );
-}
-
 function IconChevron({ collapsed }: { collapsed: boolean }) {
   return (
     <svg
@@ -306,15 +297,6 @@ export function AppSidebar({
             className="qt-btn qt-btn-ghost flex h-9 items-center justify-center rounded-lg border border-[var(--border)]"
           >
             <IconGear className="h-4 w-4" />
-          </Link>
-          <Link
-            href="/about"
-            aria-label={t("about")}
-            title={t("about")}
-            onClick={onNavigate}
-            className="qt-btn qt-btn-ghost flex h-9 items-center justify-center rounded-lg border border-[var(--border)]"
-          >
-            <IconUser className="h-4 w-4" />
           </Link>
         </div>
       </div>

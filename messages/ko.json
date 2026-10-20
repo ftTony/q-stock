@@ -538,7 +538,7 @@
   "about": {
     "title": "About me",
     "subtitle": "Qianli Gu · 작성자 인사",
-    "p1": "금융 소프트웨어 개발 10년, 프론트엔드 중심·백엔드 협업에 익숙하며 계좌 개설부터 거래·시세·리스크까지 증권·브로커 업무 전반을 이해합니다. 본 사이트는 개인 학습·기술 실험용이며, 시세와 콘텐츠는 참고용으로 투자 권유가 아닙니다.",
+    "p1": "금융 관련 제품을 10년간 개발해 왔습니다. 프론트엔드가 중심이고 필요하면 백엔드도 다루며, 계좌 개설·입금부터 시세·거래·리스크까지 접해 왔습니다. 시간이 지나며 한가지가 분명해졌습니다. 개인 투자자가 마주하는 시장은 본질적으로 비대칭입니다——맞은편에는 기관과 퀀트 팀이 있고 리서치·실행·시스템·규율이 더 갖춰진 반면, 개인은 정보·도구·시간에 묶이기 쉽습니다. 저도 수업료를 냈습니다. 최악의 드로다운이 65%를 넘겼는데도 그 종목을 붙들고, 실수를 인정하고 나오지 못했습니다. 나중에야 더 분명해졌습니다——제때 복기하지 않으면 실수는 반복되고, 실행 가능한 규칙이 없으면 감정이 다음 주문을 가져갑니다. 전리구(钱力股)는 먼저 개인 학습과 기술 실천이며, 반복해 쓸 수 있는 도구 키트가 되기를 바랍니다. 비슷한 우회로를 걸어 보셨다면, 여기서 조금 더 침착하게 복기해 보셔도 좋습니다.",
     "p2": "Futu·Longbridge 비즈니스 팀 소개가 가능하시면, 더 깊은 협업을 논의하고 싶습니다.",
     "p3": "여유(예산)가 되면 API 토큰 충전에 도움을 주세요. 이후 AI 금융 기능에 쓸 예정입니다.",
     "p4": "들러 주신 모든 분들께 감사드립니다.",
@@ -551,7 +551,7 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "중국 본토 이용자 안내: 현재 해외 주식·BTC 투자는 불법입니다. 본 사이트는 학습용이며 현지 법령을 지켜 주세요.",
     "platformTitle": "Qianli Gu 소개",
-    "platformBody": "Qianli Gu(钱力股)는 ‘스마트 투자’와 ‘가치 발굴’을 중심으로 합니다. AI로 더 차분한 리서치·복기를 돕고, 탐욕·공포 등 인간 약점이 판단을 흔드는 것을 줄이고자 합니다. 시세와 콘텐츠는 학습용이며 투자 권유가 아닙니다."
+    "platformBody": "전리구의 제품 철학은 단순합니다. 종목을 추천하지 않고 ‘사라/팔라’ 결론도 내지 않습니다. AI와 규칙으로 시세 보기, 주문 전의 침착함, 거래 후 복기를 이으며 탐욕과 공포가 다음 판단을 덜 흔들게 합니다. 시세와 콘텐츠는 학습용이며 어떠한 투자 권유도 아닙니다."
   },
   "aiChart": {
     "title": "AI chart read",
@@ -762,7 +762,7 @@
       }
     },
     "storyTitle": "Why it exists",
-    "storyP1": "A decade in financial engineering—from onboarding and funding to trading, quotes, and risk. Q-Stock is a personal practice: use AI to dampen greed and fear in judgment.",
+    "storyP1": "금융 제품 개발 10년—계좌 개설부터 시세·거래·리스크까지. 전리구는 개인 실천입니다. AI와 규칙으로 침착한 리서치와 거래 후 복기를 이으며, 탐욕과 공포가 덜 이끌게 합니다.",
     "storyP2": "If calmer watching beats chasing heat, start from the markets dashboard.",
     "storyLink": "About & contact",
     "ctaBandTitle": "Start with markets",
