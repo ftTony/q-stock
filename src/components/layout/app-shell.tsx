@@ -15,6 +15,7 @@ const MainAppShell = dynamic(
 function isMarketingPath(pathname: string) {
   return (
     pathname === "/" ||
+    pathname.startsWith("/about") ||
     pathname.startsWith("/disclaimer") ||
     pathname.startsWith("/learn") ||
     pathname.startsWith("/tools") ||
@@ -45,7 +46,6 @@ function isAppPath(pathname: string) {
     "/symbol",
     "/strategies",
     "/settings",
-    "/about",
   ];
   return prefixes.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),

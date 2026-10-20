@@ -604,7 +604,7 @@
   "about": {
     "title": "About me",
     "subtitle": "Qianli Gu · nota pengarang",
-    "p1": "Sedekad dalam perisian kewangan—utama front-end, selesa dengan back-end—dan biasa dengan aliran broker dari pembukaan akaun hingga dagangan, data pasaran dan risiko. Laman ini untuk pembelajaran / amalan teknikal peribadi. Kandungan hanya rujukan, bukan nasihat pelaburan.",
+    "p1": "Saya sudah sedekad membina produk kewangan—terutamanya front-end, juga back-end bila perlu—dari pembukaan akaun dan deposit hingga data pasaran, dagangan dan risiko. Lama-kelamaan satu perkara menjadi jelas: pelabur runcit menghadapi medan yang tidak setara. Di seberang selalunya institusi dan pasukan kuant dengan penyelidikan, pelaksanaan, sistem dan disiplin yang lebih lengkap; individu sering kekurangan maklumat, alat dan masa. Saya sendiri membayar yuran: drawdown terburuk saya melebihi 65%, dan saya masih berpegang pada posisi itu, enggan mengakui kesilapan dan keluar. Kemudian barulah lebih jelas—tanpa semakan tepat pada masanya, kesilapan mudah berulang; tanpa peraturan yang benar-benar boleh diikuti, emosi mengambil pesanan seterusnya. Saya bina Qianli Gu dahulu sebagai pembelajaran dan amalan teknikal peribadi, dan sebagai kit alat yang boleh digunakan berulang kali. Jika anda juga melalui jalan memutar yang serupa, sila semak dengan lebih tenang di sini.",
     "p2": "Jika boleh memperkenalkan saya kepada pasukan perniagaan Futu atau Longbridge, saya ingin meneroka kerjasama yang lebih mendalam.",
     "p3": "Jika ada “peluru” (bajet), bantu tambah token API — untuk lebih banyak ciri kewangan berasaskan AI.",
     "p4": "Terima kasih kepada setiap rakan yang singgah.",
@@ -617,7 +617,7 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "Peringatan untuk rakan di tanah besar China: melabur saham luar negara atau BTC kini adalah haram. Laman ini hanya untuk pembelajaran — patuhi undang-undang setempat.",
     "platformTitle": "Tentang Qianli Gu",
-    "platformBody": "Qianli Gu (钱力股) berpaksikan pelaburan pintar dan penemuan nilai. AI membantu kajian dan semakan yang lebih tenang, serta mengurangkan gangguan ketakutan, ketamakan dan kelemahan manusia lain. Data dan kandungan hanya untuk pembelajaran, bukan nasihat pelaburan."
+    "platformBody": "Idea di sebalik Qianli Gu mudah: tiada tip saham, tiada keputusan «beli / jual». Kami guna AI dan peraturan untuk menghubungkan penyelidikan, jeda lebih tenang sebelum order, dan semakan selepas dagangan—supaya takut dan ketamakan kurang mengemudi keputusan seterusnya. Data dan kandungan hanya untuk pembelajaran, bukan nasihat pelaburan."
   },
   "aiChart": {
     "title": "AI chart read",
@@ -836,7 +836,7 @@
       }
     },
     "storyTitle": "Why it exists",
-    "storyP1": "A decade in financial engineering—from onboarding and funding to trading, quotes, and risk. Q-Stock is a personal practice: use AI to dampen greed and fear in judgment.",
+    "storyP1": "Sedekad dalam produk kewangan—dari onboarding ke sebut harga, dagangan dan risiko. Qianli Gu ialah amalan peribadi: AI dan peraturan menghubungkan penyelidikan tenang dengan semakan selepas dagangan, supaya ketamakan dan takut kurang mengemudi.",
     "storyP2": "If calmer watching beats chasing heat, start from the markets dashboard.",
     "storyLink": "About & contact",
     "ctaBandTitle": "Start with markets",
@@ -857,7 +857,7 @@
     "featureOpen": "Open",
     "trustEyebrow": "02 · Trust",
     "storyEyebrow": "03 · Origin",
-    "storyQuote": "Calmer watching lasts longer than chasing heat.",
+    "storyQuote": "Pantau dengan tenang dan semak dengan jujur lebih tahan lama daripada kejar haba.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
     "dotHero": "Home",

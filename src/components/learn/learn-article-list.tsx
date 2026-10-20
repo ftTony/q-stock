@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { Link } from "@/i18n/routing";
+import { PaginatedList } from "@/components/ui/paginated-list";
 import type { LearnCategory } from "@/lib/learn/types";
 
 export type LearnArticleCard = {
@@ -25,6 +26,8 @@ const FILTERS: Array<LearnCategory | "all"> = [
   "mindset",
   "reading",
 ];
+
+const PAGE_SIZE = 12;
 
 export function LearnArticleList({
   articles,
@@ -64,8 +67,16 @@ export function LearnArticleList({
         })}
       </div>
 
-      <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-        {visible.map((article) => (
+      <PaginatedList
+        items={visible}
+        pageSize={PAGE_SIZE}
+        resetKey={filter}
+        variant="compact"
+        listClassName="grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+        empty={
+          <p className="text-sm text-[var(--muted)]">{labels.emptyFilter}</p>
+        }
+        renderItem={(article) => (
           <li key={article.slug}>
             <Link
               href={`/learn/${article.slug}`}
@@ -82,12 +93,8 @@ export function LearnArticleList({
               </p>
             </Link>
           </li>
-        ))}
-      </ul>
-
-      {visible.length === 0 ? (
-        <p className="text-sm text-[var(--muted)]">{labels.emptyFilter}</p>
-      ) : null}
+        )}
+      />
     </div>
   );
 }

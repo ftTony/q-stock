@@ -1,7 +1,13 @@
+import { LEARN_ARTICLE_FUNDAMENTALS } from "@/lib/learn/articles-basics-fundamentals";
+import { LEARN_ARTICLE_INDICATORS } from "@/lib/learn/articles-basics-indicators";
+import { LEARN_ARTICLE_PICKING } from "@/lib/learn/articles-basics-picking";
 import type { LearnArticle } from "@/lib/learn/types";
 
 /** Basics articles — depth aligned with kline-basics. */
 export const LEARN_ARTICLES_BASICS: LearnArticle[] = [
+  LEARN_ARTICLE_PICKING,
+  LEARN_ARTICLE_FUNDAMENTALS,
+  LEARN_ARTICLE_INDICATORS,
   {
     slug: "paper-review",
     category: "basics",

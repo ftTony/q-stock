@@ -604,7 +604,7 @@
   "about": {
     "title": "About me",
     "subtitle": "Qianli Gu · Notiz vom Autor",
-    "p1": "Ein Jahrzehnt Finanzsoftware — Frontend im Fokus, mit Backend-Erfahrung — und vertraut mit dem Broker-Stack von Kontoeröffnung über Trading und Marktdaten bis Risiko. Diese Seite ist ein persönliches Lern-/Technikprojekt. Inhalte dienen nur der Orientierung und sind keine Anlageberatung.",
+    "p1": "Seit einem Jahrzehnt baue ich Finanzprodukte — vor allem Frontend, bei Bedarf auch Backend — von Kontoeröffnung und Einzahlung über Marktdaten und Trading bis Risiko. Mit der Zeit wurde eines klar: Privatanleger stehen auf ungleichem Boden. Gegenüber sitzen oft Institutionen und Quant-Teams mit mehr Research, Ausführung, Systemen und Disziplin; Einzelne fehlen oft Information, Werkzeuge und Zeit. Ich habe selbst Lehrgeld gezahlt: mein schlimmster Drawdown lag über 65 %, und ich hielt die Position trotzdem fest, ohne den Fehler zuzugeben und auszusteigen. Danach wurde klar — ohne rechtzeitiges Review wiederholen sich Fehler; ohne Regeln, die man wirklich befolgt, übernimmt Emotion die nächste Order. Qianli Gu ist zuerst persönliches Lernen und Technikpraxis — und ein Toolkit, das ich immer wieder nutzen kann. Wenn du ähnliche Umwege kennst, bist du willkommen, hier kühler zu reviewen.",
     "p2": "Wenn Sie Kontakte zu Futu- oder Longbridge-Business-Teams haben, würde ich eine engere Zusammenarbeit gerne ausloten.",
     "p3": "Wer etwas „Munition“ (Budget) übrig hat: API-Token aufladen hilft — für mehr KI-Finanzfunktionen.",
     "p4": "Danke an alle, die vorbeischauen.",
@@ -617,7 +617,7 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "Hinweis für Freunde in Festlandchina: Anlagen in ausländische Aktien oder BTC sind derzeit rechtswidrig. Diese Seite dient nur dem Lernen — bitte geltendes Recht beachten.",
     "platformTitle": "Über Qianli Gu",
-    "platformBody": "Qianli Gu (钱力股) dreht sich um intelligentes Investing und Wertfindung. KI soll ruhigere Analyse und Review unterstützen und den Einfluss von Angst, Gier und anderen menschlichen Schwächen mindern. Marktdaten und Inhalte dienen nur dem Lernen, nicht der Anlageberatung."
+    "platformBody": "Die Idee hinter Qianli Gu ist einfach: keine Aktientipps, keine Urteile „kaufen / verkaufen“. KI und Regeln verbinden Research, eine ruhige Pause vor der Order und das Review danach — damit Angst und Gier die nächste Entscheidung weniger steuern. Marktdaten und Inhalte dienen nur dem Lernen, nicht der Anlageberatung."
   },
   "aiChart": {
     "title": "AI chart read",
@@ -836,7 +836,7 @@
       }
     },
     "storyTitle": "Why it exists",
-    "storyP1": "A decade in financial engineering—from onboarding and funding to trading, quotes, and risk. Q-Stock is a personal practice: use AI to dampen greed and fear in judgment.",
+    "storyP1": "Ein Jahrzehnt Finanzprodukte — von Onboarding über Quotes und Trading bis Risiko. Qianli Gu ist persönliche Praxis: KI und Regeln verbinden ruhiges Research mit dem Review nach dem Trade, damit Gier und Angst weniger steuern.",
     "storyP2": "If calmer watching beats chasing heat, start from the markets dashboard.",
     "storyLink": "About & contact",
     "ctaBandTitle": "Start with markets",
@@ -857,7 +857,7 @@
     "featureOpen": "Open",
     "trustEyebrow": "02 · Trust",
     "storyEyebrow": "03 · Origin",
-    "storyQuote": "Calmer watching lasts longer than chasing heat.",
+    "storyQuote": "Ruhig zuschauen und ehrlich reviewen hält länger als dem Hype hinterherzulaufen.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
     "dotHero": "Home",

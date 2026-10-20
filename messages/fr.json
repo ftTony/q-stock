@@ -604,7 +604,7 @@
   "about": {
     "title": "About me",
     "subtitle": "Qianli Gu · mot de l’auteur",
-    "p1": "Une décennie dans le logiciel financier — front-end d’abord, à l’aise avec le back-end — et familier du parcours courtier : ouverture de compte, trading, données de marché et risque. Ce site est un bac à sable personnel. Les contenus sont indicatifs et ne constituent pas un conseil en investissement.",
+    "p1": "Depuis dix ans, je construis des produits financiers — surtout le front-end, aussi le back-end quand il le faut — de l’ouverture de compte et du funding aux données de marché, au trading et au risque. Avec le temps, une chose est devenue claire : le particulier joue sur un terrain inégal. En face, institutions et équipes quant ont souvent plus de recherche, d’exécution, de systèmes et de discipline ; l’individu manque souvent d’information, d’outils et de temps. J’ai aussi payé mon écolage : mon pire drawdown a dépassé 65 %, et j’ai quand même agrippé cette position, sans vouloir admettre l’erreur ni sortir. Ensuite seulement j’ai mieux compris — sans revue à temps, les erreurs se répètent ; sans règles vraiment suivables, l’émotion prend le prochain ordre. J’ai fait Qianli Gu d’abord comme apprentissage et pratique technique personnelle, et comme une boîte à outils à réutiliser. Si vous avez aussi pris des détours semblables, vous êtes le bienvenu pour revoir plus calmement ici.",
     "p2": "Si vous pouvez me présenter les équipes business Futu ou Longbridge, j’aimerais explorer une collaboration plus poussée.",
     "p3": "Si vous avez un peu de « munitions » (budget), aidez à recharger des jetons d’API — pour de prochaines fonctions IA finance.",
     "p4": "Merci à toutes les personnes qui passent par ici.",
@@ -617,7 +617,7 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "Rappel aux amis en Chine continentale : investir dans des actions étrangères ou le BTC est actuellement illégal. Ce site est uniquement pédagogique — respectez les lois locales.",
     "platformTitle": "À propos de Qianli Gu",
-    "platformBody": "Qianli Gu (钱力股) s’articule autour de l’investissement intelligent et de la découverte de valeur. L’IA aide à analyser et à revoir avec plus de sang-froid, pour atténuer l’effet de la peur, de la cupidité et d’autres biais humains. Les données et contenus sont pédagogiques, pas un conseil en investissement."
+    "platformBody": "L’idée de Qianli Gu est simple : pas de tips boursiers, pas de verdict « achetez / vendez ». IA et règles relient l’analyse, une pause plus calme avant l’ordre, et la revue après le trade — pour que peur et cupidité dirigent moins la décision suivante. Données et contenus sont pédagogiques, pas un conseil en investissement."
   },
   "aiChart": {
     "title": "AI chart read",
@@ -836,7 +836,7 @@
       }
     },
     "storyTitle": "Why it exists",
-    "storyP1": "A decade in financial engineering—from onboarding and funding to trading, quotes, and risk. Q-Stock is a personal practice: use AI to dampen greed and fear in judgment.",
+    "storyP1": "Une décennie de produits financiers — de l’onboarding aux cotations, au trading et au risque. Qianli Gu est une pratique personnelle : IA et règles pour relier une analyse calme et la revue post-trade, afin que cupidité et peur dirigent moins.",
     "storyP2": "If calmer watching beats chasing heat, start from the markets dashboard.",
     "storyLink": "About & contact",
     "ctaBandTitle": "Start with markets",
@@ -857,7 +857,7 @@
     "featureOpen": "Open",
     "trustEyebrow": "02 · Trust",
     "storyEyebrow": "03 · Origin",
-    "storyQuote": "Calmer watching lasts longer than chasing heat.",
+    "storyQuote": "Regarder avec calme et revoir avec honnêteté dure plus longtemps que de courir après la chaleur.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
     "dotHero": "Home",
