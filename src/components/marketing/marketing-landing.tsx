@@ -121,9 +121,19 @@ function HeroScreen() {
             >
               {pending ? tCommon("loading") : t("ctaEnter")}
             </button>
+            <button
+              type="button"
+              disabled={pending}
+              onMouseEnter={() => router.prefetch("/portfolio")}
+              onFocus={() => router.prefetch("/portfolio")}
+              onClick={() => startTransition(() => router.push("/portfolio"))}
+              className="qt-btn qt-btn-ghost h-11 px-5 text-sm disabled:opacity-70"
+            >
+              {t("ctaPaper")}
+            </button>
             <a
               href="#features"
-              className="qt-btn qt-btn-ghost h-11 px-5 text-sm"
+              className="text-sm font-medium text-[var(--muted)] underline-offset-2 hover:text-[var(--foreground)] hover:underline"
             >
               {t("ctaStory")}
             </a>
