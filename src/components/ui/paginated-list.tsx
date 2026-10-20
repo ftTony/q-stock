@@ -15,6 +15,13 @@ type Props<T> = {
   /** Stable identity for the dataset (e.g. symbol+tab); resets to page 1 when it changes. */
   resetKey?: string;
   empty?: ReactNode;
+  /** Classes for the `<ul>` (default vertical stack). */
+  listClassName?: string;
+  /**
+   * `spread` — prev / pages / next across full width (dense tabs).
+   * `compact` — centered cluster, no redundant “n / total” (marketing grids).
+   */
+  variant?: "spread" | "compact";
   renderItem: (item: T, index: number) => ReactNode;
 };
 
@@ -49,6 +56,8 @@ export function PaginatedList<T>({
   pageSize = 8,
   resetKey,
   empty,
+  listClassName = "space-y-3",
+  variant = "spread",
   renderItem,
 }: Props<T>) {
   const locale = useLocale();
@@ -88,14 +97,20 @@ export function PaginatedList<T>({
   return (
     <div
       ref={rootRef}
-      className="space-y-3 scroll-mt-24"
+      className={`scroll-mt-24 ${variant === "compact" ? "space-y-8" : "space-y-3"}`}
       data-pager="paginated-list-v2"
     >
-      <ul className="space-y-3">
+      <ul className={listClassName}>
         {slice.map((item, i) => renderItem(item, (page - 1) * pageSize + i))}
       </ul>
       {totalPages > 1 && (
-        <div className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1.5 border-t border-[var(--border)] pt-3 sm:gap-2">
+        <div
+          className={
+            variant === "compact"
+              ? "flex items-center justify-center gap-1"
+              : "grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-1.5 border-t border-[var(--border)] pt-3 sm:gap-2"
+          }
+        >
           <button
             type="button"
             className="qt-btn qt-btn-ghost h-8 shrink-0 px-2.5 text-xs disabled:opacity-40 sm:px-3"
@@ -103,12 +118,24 @@ export function PaginatedList<T>({
             onClick={() => goTo(page - 1)}
             aria-label={labels.prev}
           >
-            <span className="sm:hidden" aria-hidden>
-              ‹
-            </span>
-            <span className="hidden sm:inline">{labels.prev}</span>
+            {variant === "compact" ? (
+              labels.prev
+            ) : (
+              <>
+                <span className="sm:hidden" aria-hidden>
+                  ‹
+                </span>
+                <span className="hidden sm:inline">{labels.prev}</span>
+              </>
+            )}
           </button>
-          <div className="flex min-w-0 items-center justify-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-1 [&::-webkit-scrollbar]:hidden">
+          <div
+            className={
+              variant === "compact"
+                ? "flex items-center gap-1"
+                : "flex min-w-0 items-center justify-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-1 [&::-webkit-scrollbar]:hidden"
+            }
+          >
             {pages.map((p) => (
               <button
                 key={p}
@@ -125,9 +152,11 @@ export function PaginatedList<T>({
                 {p}
               </button>
             ))}
-            <span className="ml-0.5 hidden shrink-0 text-xs tabular-nums text-[var(--muted)] sm:ml-1 sm:inline">
-              {page} / {totalPages}
-            </span>
+            {variant === "spread" ? (
+              <span className="ml-0.5 hidden shrink-0 text-xs tabular-nums text-[var(--muted)] sm:ml-1 sm:inline">
+                {page} / {totalPages}
+              </span>
+            ) : null}
           </div>
           <button
             type="button"
@@ -136,10 +165,16 @@ export function PaginatedList<T>({
             onClick={() => goTo(page + 1)}
             aria-label={labels.next}
           >
-            <span className="sm:hidden" aria-hidden>
-              ›
-            </span>
-            <span className="hidden sm:inline">{labels.next}</span>
+            {variant === "compact" ? (
+              labels.next
+            ) : (
+              <>
+                <span className="sm:hidden" aria-hidden>
+                  ›
+                </span>
+                <span className="hidden sm:inline">{labels.next}</span>
+              </>
+            )}
           </button>
         </div>
       )}

@@ -551,7 +551,7 @@
     "qrHint": "Scan to tip, or email for collaboration.",
     "mainlandNotice": "เตือนเพื่อนในจีนแผ่นดินใหญ่: ปัจจุบันการลงทุนหุ้นต่างประเทศหรือ BTC เป็นการกระทำผิดกฎหมาย เว็บนี้เพื่อการเรียนรู้เท่านั้น กรุณาปฏิบัติตามกฎหมายท้องถิ่น",
     "platformTitle": "เกี่ยวกับ Qianli Gu",
-    "platformBody": "Qianli Gu (钱力股) โฟกัสการลงทุนอัจฉริยะและการค้นพบมูลค่า ใช้ AI ช่วยวิเคราะห์และทบทวนอย่างใจเย็นยิ่งขึ้น และลดผลของความโลภ ความกลัว และจุดอ่อนของมนุษย์ ข้อมูลและเนื้อหาเพื่อการเรียนรู้เท่านั้น ไม่ใช่คำแนะนำการลงทุน"
+    "platformBody": "แนวคิดของ Qianli Gu เรียบง่าย: ไม่แนะนำหุ้น ไม่ฟันธง «ซื้อ/ขาย» เราใช้ AI กับกฎ เพื่อเชื่อมการดูตลาด ความใจเย็นก่อนส่งคำสั่ง และการรีวิวหลังเทรด—ให้ความโลภและความกลัวมีที่น้อยลงในการชี้นำการตัดสินใจครั้งถัดไป ข้อมูลและเนื้อหาเพื่อการเรียนรู้เท่านั้น ไม่ใช่คำแนะนำการลงทุน"
   },
   "aiChart": {
     "title": "AI chart read",
@@ -762,7 +762,7 @@
       }
     },
     "storyTitle": "Why it exists",
-    "storyP1": "A decade in financial engineering—from onboarding and funding to trading, quotes, and risk. Q-Stock is a personal practice: use AI to dampen greed and fear in judgment.",
+    "storyP1": "สิบปีกับผลิตภัณฑ์การเงิน—จากเปิดบัญชีถึงราคา เทรด และความเสี่ยง Qianli Gu คือการฝึกส่วนตัว: AI กับกฎเชื่อมการดูตลาดอย่างใจเย็นกับการรีวิวหลังเทรด ให้ความโลภและความกลัวชี้น้อยลง",
     "storyP2": "If calmer watching beats chasing heat, start from the markets dashboard.",
     "storyLink": "About & contact",
     "ctaBandTitle": "Start with markets",
