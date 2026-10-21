@@ -77,7 +77,7 @@ export function QuoteStatsGrid({
 
   return (
     <div
-      className={`grid grid-cols-3 gap-x-3 gap-y-1.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 ${className}`}
+      className={`grid grid-cols-4 gap-x-2 gap-y-1.5 sm:grid-cols-5 sm:gap-x-3 md:grid-cols-6 lg:grid-cols-7 ${className}`}
     >
       <StatCell label={t("open")}>{fmt(quote.open)}</StatCell>
       <StatCell label={t("high")}>{fmt(quote.high)}</StatCell>

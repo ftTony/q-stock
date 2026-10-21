@@ -69,6 +69,7 @@ function BackLink({ label }: { label: string }) {
     <Link
       href="/markets"
       className="inline-flex shrink-0 items-center gap-0.5 text-xs font-bold text-[var(--muted)] hover:text-[var(--brand-text)]"
+      aria-label={label}
     >
       <svg
         className="h-3.5 w-3.5 shrink-0"
@@ -82,7 +83,7 @@ function BackLink({ label }: { label: string }) {
       >
         <path d="M15 18l-6-6 6-6" />
       </svg>
-      {label}
+      <span className="hidden sm:inline">{label}</span>
     </Link>
   );
 }
@@ -101,37 +102,48 @@ function UpdatedAtLabel({ updatedAt }: { updatedAt: Date }) {
   );
 }
 
-function SymbolPriceRow({
+function SymbolIdentity({
   symbol,
   assetType,
-  quote,
-  updatedAt,
 }: {
   symbol: string;
   assetType: AssetType;
+}) {
+  const name = displayName(symbol, assetType);
+  return (
+    <div className="min-w-0">
+      {/* Visual title; page H1 lives in SymbolSeoHeading (sr-only for crawlers). */}
+      <p className="truncate text-sm font-semibold tracking-tight sm:text-[15px]">
+        {symbol}
+        {name && name !== symbol ? (
+          <span className="ml-1.5 text-[11px] font-normal text-[var(--muted)] sm:text-xs">
+            {name}
+          </span>
+        ) : null}
+      </p>
+    </div>
+  );
+}
+
+function SymbolQuoteMeta({
+  quote,
+  updatedAt,
+}: {
   quote: Quote | null;
   updatedAt: Date | null;
 }) {
+  if (!quote) {
+    return <span className="text-xs text-[var(--muted)]">—</span>;
+  }
   return (
-    <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-      {/* Page H1 is server-rendered in SymbolSeoHeading; keep this as a visual title. */}
-      <p className="text-sm font-semibold tracking-tight">
-        {symbol}{" "}
-        <span className="text-[11px] font-normal text-[var(--muted)]">
-          {displayName(symbol, assetType)}
-        </span>
-      </p>
-      {quote && (
-        <>
-          <span className="text-sm font-semibold tabular-nums">
-            <PriceText value={quote.price} change={quote.change} />
-          </span>
-          <span className="text-xs">
-            <ChangePct value={quote.percentChange} />
-          </span>
-          {updatedAt ? <UpdatedAtLabel updatedAt={updatedAt} /> : null}
-        </>
-      )}
+    <div className="flex shrink-0 items-baseline gap-1.5 sm:gap-2">
+      <span className="text-sm font-semibold tabular-nums sm:text-[15px]">
+        <PriceText value={quote.price} change={quote.change} />
+      </span>
+      <span className="text-xs">
+        <ChangePct value={quote.percentChange} />
+      </span>
+      {updatedAt ? <UpdatedAtLabel updatedAt={updatedAt} /> : null}
     </div>
   );
 }
@@ -200,15 +212,17 @@ export function SymbolHeader({
   const dockBg = `color-mix(in srgb, var(--panel) ${Math.round((1 - dockBlend) * 100)}%, var(--background) ${Math.round(dockBlend * 100)}%)`;
 
   const titleRow = (
-    <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1">
+    <div className="flex min-w-0 flex-1 items-center gap-2">
       <BackLink label={backLabel} />
-      <span className="hidden h-3.5 w-px shrink-0 bg-[var(--border)] sm:block" aria-hidden />
-      <SymbolPriceRow
-        symbol={symbol}
-        assetType={assetType}
-        quote={quote}
-        updatedAt={updatedAt}
+      <span
+        className="hidden h-3.5 w-px shrink-0 bg-[var(--border)] sm:block"
+        aria-hidden
       />
+      <SymbolIdentity symbol={symbol} assetType={assetType} />
+      <div className="ml-auto flex items-center gap-2">
+        <SymbolQuoteMeta quote={quote} updatedAt={updatedAt} />
+        <WatchButton {...watchProps} />
+      </div>
     </div>
   );
 
@@ -219,27 +233,21 @@ export function SymbolHeader({
           className="fixed inset-x-0 top-14 z-30 border-b border-[var(--border)] backdrop-blur-xl lg:left-[var(--sidebar-w,270px)]"
           style={{ backgroundColor: dockBg }}
         >
-          <div className="flex items-center justify-between gap-2 px-4 py-1.5 sm:px-6">
-            {titleRow}
-            <WatchButton {...watchProps} />
-          </div>
+          <div className="px-4 py-1.5 sm:px-6">{titleRow}</div>
         </div>
       )}
 
       <div
         ref={sentinelRef}
-        className="border-b border-[var(--border)] bg-[var(--panel)] px-3 py-2 sm:px-4"
+        className="border-b border-[var(--border)] bg-[var(--panel)] px-3 py-2.5 sm:px-4"
       >
-        <div className="flex items-center justify-between gap-2">
-          {titleRow}
-          <WatchButton {...watchProps} />
-        </div>
+        {titleRow}
         {quote && (
           <QuoteStatsGrid
             quote={quote}
             metrics={metrics}
             assetType={assetType}
-            className="mt-2 border-t border-[var(--border)]/70 pt-2"
+            className="mt-2.5 border-t border-[var(--border)]/70 pt-2.5"
           />
         )}
       </div>
