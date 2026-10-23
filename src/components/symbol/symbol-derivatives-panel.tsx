@@ -24,7 +24,7 @@ function OptionTable({
   const t = useTranslations("symbol");
   return (
     <div
-      className={`min-w-0 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
+      className={`min-h-0 min-w-0 flex-1 overflow-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
         flush ? "" : "border border-[var(--aw-hairline,var(--border))]"
       }`}
     >
@@ -249,15 +249,15 @@ export function SymbolDerivativesPanel({
   }, [symbol, assetType, expiry, lastPrice, unavailable, t]);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 flex-wrap items-center gap-x-4 gap-y-2 border-b border-[var(--aw-hairline,var(--border))] pb-3 text-[12px]">
-        <label className="inline-flex items-center gap-2 text-[var(--muted)]">
+    <div className="flex h-full min-h-0 flex-1 flex-col">
+      <div className="flex h-9 shrink-0 flex-wrap items-center gap-x-3 gap-y-1 border-b border-[var(--aw-hairline,var(--border))] px-4 text-[12px] sm:px-5">
+        <label className="inline-flex items-center gap-1.5 text-[var(--muted)]">
           <span className="shrink-0">{t("expiry")}</span>
           <select
             disabled={unavailable || !expiries.length}
             value={expiry}
             onChange={(e) => setExpiry(e.target.value)}
-            className="qt-input h-7 min-w-[9rem] rounded-none px-2 text-[12px] leading-none disabled:opacity-60"
+            className="qt-input h-6 min-w-[9rem] rounded-none px-2 text-[12px] leading-none disabled:opacity-60"
             aria-label={t("expiry")}
           >
             {unavailable || !expiries.length ? (
@@ -286,11 +286,11 @@ export function SymbolDerivativesPanel({
       </div>
 
       {loading ? (
-        <p className="aw-caption flex flex-1 items-center justify-center py-16">
+        <p className="aw-caption flex min-h-0 flex-1 items-center justify-center">
           …
         </p>
       ) : unavailable ? (
-        <div className="flex min-h-[min(48vh,22rem)] flex-1 flex-col items-center justify-center gap-3 px-4 py-10 text-center">
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 px-4 py-8 text-center">
           <EmptyChainArt />
           <p className="max-w-md text-[13px] font-medium tracking-[-0.08px] text-[var(--foreground)]">
             {t("derivativesEmpty")}
@@ -308,7 +308,7 @@ export function SymbolDerivativesPanel({
           </Link>
         </div>
       ) : (
-        <div className="mt-3 grid min-h-0 flex-1 divide-y divide-[var(--aw-hairline,var(--border))] overflow-hidden border border-[var(--aw-hairline,var(--border))] lg:grid-cols-2 lg:divide-x lg:divide-y-0">
+        <div className="grid min-h-0 flex-1 divide-y divide-[var(--aw-hairline,var(--border))] overflow-hidden lg:grid-cols-2 lg:divide-x lg:divide-y-0">
           <OptionTable
             title={t("calls")}
             rows={calls}
@@ -324,7 +324,7 @@ export function SymbolDerivativesPanel({
         </div>
       )}
 
-      <p className="aw-caption mt-auto shrink-0 border-t border-[var(--aw-hairline,var(--border))] pt-3 leading-relaxed">
+      <p className="aw-caption shrink-0 border-t border-[var(--aw-hairline,var(--border))] px-4 py-2.5 leading-relaxed sm:px-5">
         {t("derivativesDisclaimer")}
       </p>
     </div>

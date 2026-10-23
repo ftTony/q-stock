@@ -1,5 +1,7 @@
 /** Equity regular-session helpers (no holiday calendar — weekends + clock only). */
 
+import type { AssetType } from "@/lib/types";
+
 export type EquitySession = {
   usOpen: boolean;
   hkOpen: boolean;
@@ -7,6 +9,17 @@ export type EquitySession = {
   /** At least one equity market in regular session. */
   anyOpen: boolean;
 };
+
+/** Regular session for this asset: crypto always live; equities by venue clock. */
+export function isAssetSessionOpen(
+  assetType: AssetType,
+  now = new Date(),
+): boolean {
+  if (assetType === "crypto") return true;
+  if (assetType === "hk") return isHkRegularSessionOpen(now);
+  if (assetType === "cn") return isCnRegularSessionOpen(now);
+  return isUsRegularSessionOpen(now);
+}
 
 function zonedClock(now: Date, timeZone: string) {
   const parts = new Intl.DateTimeFormat("en-US", {

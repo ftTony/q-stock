@@ -191,6 +191,20 @@ export function SymbolTabsPanel({
 
       {tab === "chart" && chartSlot ? (
         <div className="aw-tab-chart min-h-0 flex-1 overflow-hidden">{chartSlot}</div>
+      ) : tab === "derivatives" ? (
+        <div className="aw-tab-fill flex min-h-0 flex-1 flex-col overflow-hidden">
+          {tabLoading ? (
+            <div className="flex min-h-0 flex-1 items-center justify-center text-[12px] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
+              {loadingLabel}
+            </div>
+          ) : (
+            <SymbolDerivativesPanel
+              symbol={symbol}
+              assetType={assetType}
+              lastPrice={lastPrice}
+            />
+          )}
+        </div>
       ) : (
       <div
         className={
@@ -205,13 +219,6 @@ export function SymbolTabsPanel({
           </div>
         ) : (
           <>
-            {tab === "derivatives" && (
-              <SymbolDerivativesPanel
-                symbol={symbol}
-                assetType={assetType}
-                lastPrice={lastPrice}
-              />
-            )}
             {tab === "news" && (
               <PaginatedList
                 items={news}

@@ -5,9 +5,13 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { AiLoginGate } from "@/components/ai/ai-login-gate";
 import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
-import { AiChartReadPanel } from "@/components/market/ai-chart-read-panel";
+import {
+  AiChartReadHeaderActions,
+  AiChartReadPanel,
+} from "@/components/market/ai-chart-read-panel";
 import { AiChatHistoryPanel } from "@/components/market/ai-chat-history-panel";
 import { AiChatPanel } from "@/components/market/ai-chat-panel";
+import { useAiChartRead } from "@/components/market/use-ai-chart-read";
 import { IconRobot } from "@/components/ui/icon-robot";
 import { SideDrawer } from "@/components/ui/side-drawer";
 import type { AssetType } from "@/lib/types";
@@ -45,6 +49,7 @@ export function SymbolAiFab({
   const [view, setView] = useState<"desk" | "history">("desk");
   const [loadSessionId, setLoadSessionId] = useState<string | null>(null);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
+  const chart = useAiChartRead(symbol, assetType);
   const label = t("openAi");
   const close = useCallback(() => setOpen(false), [setOpen]);
 
@@ -59,6 +64,14 @@ export function SymbolAiFab({
     setActiveSessionId(null);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- symbol switch only
   }, [symbol, assetType]);
+
+  const deskAuthed = view === "desk" && status === "authenticated";
+  const deskTrailing = deskAuthed ? (
+    <AiChartReadHeaderActions chart={chart} />
+  ) : null;
+  const deskSubtitleAside = deskAuthed ? (
+    <AiQuotaBadge className="aw-ai-quota-inline" />
+  ) : null;
 
   return (
     <>
@@ -93,6 +106,8 @@ export function SymbolAiFab({
         subtitle={
           view === "history" ? t("aiHistorySubtitle") : t("aiDeskSubtitle")
         }
+        subtitleAside={deskSubtitleAside}
+        headerTrailing={deskTrailing}
       >
         {status === "loading" ? (
           <p className="p-6 text-[14px] text-[var(--muted)]">…</p>
@@ -120,12 +135,12 @@ export function SymbolAiFab({
           </div>
         ) : (
           <div className="aw-ai-desk-body min-h-0 flex-1">
-            <AiQuotaBadge className="aw-ai-quota shrink-0" />
             <AiChartReadPanel
               key={`chart-${assetType}-${symbol}`}
               symbol={symbol}
               assetType={assetType}
               layout="page"
+              chart={chart}
             />
             <AiChatPanel
               key={`chat-${assetType}-${symbol}`}

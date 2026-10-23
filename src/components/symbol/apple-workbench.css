@@ -744,16 +744,24 @@ html.aw-rail-resizing {
 
 .aw-dock-drawer .aw-drawer-header {
   align-items: center;
+  /* Dense trading chrome: ~40px bar (not settings-modal py-3 + h-8). */
   background: var(--aw-canvas);
   border-bottom-color: var(--aw-hairline) !important;
-  padding: 12px 20px !important;
+  padding: 8px 16px 8px 20px !important;
+  min-height: 40px;
 }
 
 .aw-dock-drawer .aw-drawer-title {
-  font-size: 16px;
+  font-size: 16px !important;
   font-weight: 600;
-  letter-spacing: -0.3px;
+  line-height: 1.25;
+  letter-spacing: -0.25px;
   color: var(--aw-ink);
+}
+
+.aw-dock-drawer .aw-drawer-close {
+  height: 28px;
+  width: 28px;
 }
 
 .aw-dock-drawer > .aw-drawer-body {

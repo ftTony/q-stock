@@ -10,34 +10,38 @@
 }
 
 .aw-ai-desk .aw-drawer-header {
+  /* Left: title + subtitle; right: CTA + close vertically centered. */
+  align-items: center !important;
   background: var(--aw-canvas);
   border-bottom-color: var(--aw-hairline) !important;
-  padding-top: 14px !important;
-  padding-bottom: 12px !important;
+  padding: 10px 16px 10px 20px !important;
+  gap: 12px !important;
 }
 
 .aw-ai-desk .aw-drawer-title {
-  font-size: 17px;
+  font-size: 16px !important;
   font-weight: 600;
-  line-height: 1.2;
-  letter-spacing: -0.35px;
+  line-height: 1.25;
+  letter-spacing: -0.25px;
   color: var(--aw-ink);
 }
 
 .aw-ai-desk .aw-drawer-subtitle {
-  margin-top: 4px !important;
-  font-size: 12px;
+  margin: 0 !important;
+  font-size: 11px;
   font-weight: 400;
   line-height: 1.35;
   letter-spacing: -0.08px;
   color: var(--aw-ink-muted-48);
-  max-width: 32rem;
+  max-width: none;
 }
 
 .aw-ai-desk .aw-drawer-close {
+  height: 28px;
+  width: 28px;
   background: transparent;
   border: none;
-  border-radius: 9999px;
+  border-radius: 0;
   color: var(--aw-ink-muted-48);
 }
 
@@ -65,24 +69,32 @@
   background: var(--aw-canvas);
 }
 
-.aw-ai-desk .aw-ai-quota {
+.aw-ai-desk .aw-drawer-subtitle-row {
+  padding-right: 2px;
+}
+
+.aw-ai-desk .aw-ai-quota-inline {
   margin: 0;
-  padding: 8px 20px;
-  font-size: 12px;
-  line-height: 1.3;
+  padding: 0;
+  border: none;
+  flex-shrink: 0;
+  font-size: 11px !important;
+  line-height: 1.35;
   letter-spacing: -0.08px;
   color: var(--aw-ink-muted-48);
-  border-bottom: 1px solid var(--aw-hairline);
+  white-space: nowrap;
   background: transparent;
 }
 
-.aw-ai-desk .aw-ai-quota a {
+.aw-ai-desk .aw-ai-quota-inline a,
+.aw-ai-desk .aw-ai-quota-inline button {
   color: var(--aw-primary);
   text-decoration: none;
   font-weight: 500;
 }
 
-.aw-ai-desk .aw-ai-quota a:hover {
+.aw-ai-desk .aw-ai-quota-inline a:hover,
+.aw-ai-desk .aw-ai-quota-inline button:hover {
   text-decoration: underline;
 }
 
@@ -117,8 +129,8 @@
   flex: 1;
   min-height: 0;
   margin: 0;
-  padding: 12px 20px 16px;
-  gap: 10px;
+  padding: 8px 20px 12px;
+  gap: 8px;
   border: none;
   border-radius: 0;
   background: var(--aw-canvas);
@@ -141,44 +153,54 @@
   color: var(--aw-ink-muted-48);
 }
 
+/* Primary chart-read CTA in header — larger + brand fill. */
 .aw-ai-desk .aw-ai-pearl-btn.qt-btn,
 .aw-ai-desk button.aw-ai-pearl-btn {
-  background: var(--aw-canvas) !important;
-  color: var(--aw-ink) !important;
-  border: 1px solid var(--aw-hairline) !important;
-  border-radius: 9999px !important;
+  background: var(--aw-primary, var(--brand)) !important;
+  color: #fff !important;
+  border: none !important;
+  border-radius: 6px !important;
   box-shadow: none !important;
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: -0.12px;
-  padding: 6px 14px;
+  padding: 0 14px;
+  height: 32px;
   min-height: 32px;
   white-space: nowrap;
 }
 
 .aw-ai-desk .aw-ai-pearl-btn.qt-btn:hover,
 .aw-ai-desk button.aw-ai-pearl-btn:hover {
-  background: var(--aw-parchment) !important;
+  background: var(--aw-primary, var(--brand)) !important;
   opacity: 1 !important;
-  filter: none !important;
+  filter: brightness(1.06);
 }
 
 .aw-ai-desk .aw-ai-pearl-btn.qt-btn:active:not(:disabled) {
   transform: scale(0.97);
+  filter: brightness(0.96);
+}
+
+.aw-ai-desk .aw-ai-pearl-btn.qt-btn:disabled,
+.aw-ai-desk button.aw-ai-pearl-btn:disabled {
+  opacity: 0.55;
+  filter: none;
 }
 
 .aw-ai-chip-btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 10px;
+  height: 28px;
+  padding: 0 10px;
   font-size: 12px;
   font-weight: 500;
   letter-spacing: -0.08px;
-  color: var(--aw-ink-muted-80);
+  color: var(--aw-ink-muted-80, var(--aw-ink-muted-48));
   background: transparent;
   border: 1px solid var(--aw-hairline);
-  border-radius: 9999px;
+  border-radius: 6px;
   transition:
     color 0.12s ease,
     background 0.12s ease;
@@ -251,6 +273,25 @@
   gap: 8px;
   padding-top: 8px;
   border-top: 1px solid var(--aw-hairline);
+}
+
+.aw-ai-history-link {
+  display: inline-flex;
+  align-items: center;
+  height: 40px;
+  padding: 0 4px;
+  border: none;
+  background: transparent;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.08px;
+  color: var(--aw-ink-muted-48);
+  white-space: nowrap;
+  transition: color 0.12s ease;
+}
+
+.aw-ai-history-link:hover {
+  color: var(--aw-primary);
 }
 
 .aw-ai-input {

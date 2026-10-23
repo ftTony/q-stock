@@ -101,7 +101,8 @@ export async function GET(req: Request) {
         }
         // Cap denser minute series harder than daily (memory).
         const cap = resolution === "5" ? 400 : 500;
-        if (bars.length > cap) bars = bars.slice(-cap);
+        const truncated = bars.length > cap;
+        if (truncated) bars = bars.slice(-cap);
         const indicators = withIndicators ? computeIndicators(bars) : undefined;
         return NextResponse.json({
           bars,
@@ -109,7 +110,8 @@ export async function GET(req: Request) {
           resolution,
           from,
           to,
-          hasMore: false,
+          // Allow left-pan pagination (previous sessions); client stops on empty.
+          hasMore: truncated || bars.length > 0,
         });
       }
 

@@ -15,6 +15,8 @@ import {
   toKLineData,
   type TipLabels,
 } from "@/components/charts/candle-chart-styles";
+import { isAssetSessionOpen } from "@/lib/market/session";
+import type { AssetType } from "@/lib/types";
 
 export type { DrawingTool, IndicatorFlags };
 
@@ -30,6 +32,7 @@ export function CandleChart({
   resetKey,
   resolution = "D",
   symbol = "",
+  assetType = "stock",
   onLoadMore,
   loadingMore = false,
   hasMore = true,
@@ -46,6 +49,7 @@ export function CandleChart({
   resetKey?: string;
   resolution?: string;
   symbol?: string;
+  assetType?: AssetType;
   onLoadMore?: (earliestTime: number) => Promise<OhlcvBar[] | void> | void;
   loadingMore?: boolean;
   hasMore?: boolean;
@@ -64,6 +68,9 @@ export function CandleChart({
   const [drawingTool, setDrawingTool] = useState<DrawingTool>("none");
   const [ready, setReady] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const [liveSession, setLiveSession] = useState(() =>
+    isAssetSessionOpen(assetType),
+  );
   const { changeColorScheme } = usePreference();
   const locale = useLocale();
   const t = useTranslations("symbol");
@@ -88,6 +95,13 @@ export function CandleChart({
   hasMoreRef.current = hasMore;
   onLoadMoreRef.current = onLoadMore;
   flagsRef.current = flags;
+
+  useEffect(() => {
+    const tick = () => setLiveSession(isAssetSessionOpen(assetType));
+    tick();
+    const id = window.setInterval(tick, 30_000);
+    return () => window.clearInterval(id);
+  }, [assetType]);
 
   const syncIndicators = useCallback((chart: ChartInstance) => {
     const f = flagsRef.current;
@@ -154,7 +168,9 @@ export function CandleChart({
       kcRef.current = KC;
       const chart = KC.init(containerRef.current, {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        styles: buildChartStyles(tipLabelsRef.current, resolution) as any,
+        styles: buildChartStyles(tipLabelsRef.current, resolution, {
+          liveSession: isAssetSessionOpen(assetType),
+        }) as any,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       if (!chart) return;
@@ -241,8 +257,12 @@ export function CandleChart({
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart || !ready) return;
-    chart.setStyles(buildChartStyles(tipLabelsRef.current, resolution) as never);
-  }, [changeColorScheme, ready, locale, resolution]);
+    chart.setStyles(
+      buildChartStyles(tipLabelsRef.current, resolution, {
+        liveSession,
+      }) as never,
+    );
+  }, [changeColorScheme, ready, locale, resolution, liveSession]);
 
   useEffect(() => {
     function onFsChange() {

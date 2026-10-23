@@ -40,7 +40,11 @@ export function candleTypeFromResolution(
   return resolution === "T" ? "area" : "candle_solid";
 }
 
-export function buildChartStyles(labels: TipLabels, resolution = "D") {
+export function buildChartStyles(
+  labels: TipLabels,
+  resolution = "D",
+  opts?: { liveSession?: boolean },
+) {
   const c = readThemeColors();
   // Always use a dark glass tip + light text — theme CSS vars can make
   // legend titles land as near-black on a dark rect (unreadable on mobile).
@@ -56,6 +60,8 @@ export function buildChartStyles(labels: TipLabels, resolution = "D") {
   const tipOffsetLeft = narrow ? 48 : 52;
   const tipOffsetRight = narrow ? 52 : 56;
   const tipOffsetTop = 8;
+  // Area tip pulse only while the venue is in regular session (crypto = always).
+  const live = Boolean(opts?.liveSession);
 
   const tipLegend = (
     title: string,
@@ -85,6 +91,13 @@ export function buildChartStyles(labels: TipLabels, resolution = "D") {
         upWickColor: c.up,
         downWickColor: c.down,
         noChangeWickColor: c.muted,
+      },
+      area: {
+        point: {
+          show: live,
+          animation: live,
+          animationDuration: 1000,
+        },
       },
       priceMark: {
         high: {

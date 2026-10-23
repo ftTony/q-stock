@@ -195,10 +195,12 @@ export function SymbolChartSection({
             showFloatingIndicators={false}
             resetKey={`${assetType}:${symbol}:${resolution}`}
             resolution={resolution}
+            symbol={symbol}
+            assetType={assetType}
             fillParent
-            onLoadMore={isIntradayResolution(resolution) ? undefined : onLoadMore}
+            onLoadMore={onLoadMore}
             loadingMore={loadingMore}
-            hasMore={hasMore && !isIntradayResolution(resolution)}
+            hasMore={hasMore}
           />
         </div>
       )}

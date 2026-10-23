@@ -53,7 +53,11 @@ export function AiQuotaBadge(props: {
   if (!quota) return null;
 
   return (
-    <p className={`text-sm text-[var(--muted)] ${props.className ?? ""}`}>
+    <p
+      className={
+        props.className ?? "text-sm text-[var(--muted)]"
+      }
+    >
       {t("quotaRemaining", {
         remaining: quota.remaining,
         limit: quota.limit,

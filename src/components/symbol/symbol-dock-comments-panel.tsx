@@ -79,7 +79,7 @@ function EmptyCommentsArt() {
   );
 }
 
-/** Comments dock — composer on top when signed in; guest uses AuthLoginGate. */
+/** Comments dock — list scrolls; composer pinned at bottom (same as AI 问股). */
 export function SymbolDockCommentsPanel({
   comments,
   commentText,
@@ -113,25 +113,6 @@ export function SymbolDockCommentsPanel({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="shrink-0 border-b border-[var(--aw-hairline,var(--border))] px-5 py-3">
-        <form onSubmit={onPostComment} className="flex items-center gap-2">
-          <input
-            value={commentText}
-            onChange={(e) => onCommentTextChange(e.target.value)}
-            placeholder={commentsPlaceholder}
-            className="qt-input h-9 min-w-0 flex-1 px-3 text-[13px] leading-none"
-          />
-          <SubmitButton
-            type="submit"
-            loading={commentBusy}
-            loadingLabel={loadingLabel}
-            className="aw-btn-pill h-9 shrink-0 px-4 text-[13px]"
-          >
-            {commentsPost}
-          </SubmitButton>
-        </form>
-      </div>
-
       <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-3">
         {tabLoading ? (
           <p className="aw-caption flex min-h-[12rem] items-center justify-center">
@@ -171,6 +152,25 @@ export function SymbolDockCommentsPanel({
             ))}
           </ul>
         )}
+      </div>
+
+      <div className="shrink-0 border-t border-[var(--aw-hairline,var(--border))] px-5 py-3">
+        <form onSubmit={onPostComment} className="flex items-center gap-2">
+          <input
+            value={commentText}
+            onChange={(e) => onCommentTextChange(e.target.value)}
+            placeholder={commentsPlaceholder}
+            className="qt-input h-9 min-w-0 flex-1 px-3 text-[13px] leading-none"
+          />
+          <SubmitButton
+            type="submit"
+            loading={commentBusy}
+            loadingLabel={loadingLabel}
+            className="aw-btn-pill h-9 shrink-0 px-4 text-[13px]"
+          >
+            {commentsPost}
+          </SubmitButton>
+        </form>
       </div>
     </div>
   );

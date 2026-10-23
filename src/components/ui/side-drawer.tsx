@@ -13,6 +13,10 @@ export function SideDrawer(props: {
   onClose: () => void;
   title: string;
   subtitle?: string;
+  /** Inline after subtitle (e.g. AI quota). */
+  subtitleAside?: ReactNode;
+  /** Actions before the close control (e.g. chart-read). */
+  headerTrailing?: ReactNode;
   /** Extra classes on the panel (e.g. `aw aw-ai-desk`). */
   className?: string;
   /** Leave room for a fixed edge dock (e.g. Futu-style 40px icon strip). */
@@ -100,34 +104,42 @@ export function SideDrawer(props: {
           props.open ? "translate-x-0" : closedX
         } ${props.className ?? ""}`}
       >
-        <header className="aw-drawer-header flex shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-3.5 sm:px-6">
-          <div className="min-w-0">
-            <h2 className="aw-drawer-title truncate text-[17px] font-semibold tracking-tight">
+        <header className="aw-drawer-header flex w-full shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-2.5 sm:px-5">
+          <div className="min-w-0 flex-1">
+            <h2 className="aw-drawer-title truncate text-left text-[16px] font-semibold tracking-tight">
               {props.title}
             </h2>
-            {props.subtitle ? (
-              <p className="aw-drawer-subtitle mt-1 text-[14px] leading-snug text-[var(--muted)]">
-                {props.subtitle}
-              </p>
+            {props.subtitle || props.subtitleAside ? (
+              <div className="aw-drawer-subtitle-row mt-0.5 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                {props.subtitle ? (
+                  <p className="aw-drawer-subtitle min-w-0 text-left text-[12px] leading-snug text-[var(--muted)]">
+                    {props.subtitle}
+                  </p>
+                ) : null}
+                {props.subtitleAside}
+              </div>
             ) : null}
           </div>
-          <button
-            type="button"
-            onClick={props.onClose}
-            className="aw-drawer-close inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-none bg-transparent text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)] active:scale-95"
-            aria-label="Close"
-          >
-            <svg
-              className="h-4 w-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
+          <div className="flex shrink-0 items-center gap-1.5 self-center">
+            {props.headerTrailing}
+            <button
+              type="button"
+              onClick={props.onClose}
+              className="aw-drawer-close inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-none bg-transparent text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)] active:scale-95"
+              aria-label="Close"
             >
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
-          </button>
+              <svg
+                className="h-3.5 w-3.5"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+              >
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          </div>
         </header>
         <div className="aw-drawer-body min-h-0 flex-1 overflow-y-auto overscroll-contain qt-scroll">
           {bodyLive ? props.children : null}

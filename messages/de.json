@@ -664,7 +664,8 @@
     "historyBack": "Back",
     "historyDelete": "Delete",
     "historyLoadError": "Failed to load history",
-    "historyMeta": "{count} msgs · {time}"
+    "historyMeta": "{count} msgs · {time}",
+    "viewHistory": "View chat history"
   },
   "aiScenario": {
     "title": "Scenario map",

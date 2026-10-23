@@ -1,7 +1,16 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { AssetType, CandleResolution, OhlcvBar } from "@/lib/types";
+import {
+  isIntradayResolution,
+  type AssetType,
+  type CandleResolution,
+  type OhlcvBar,
+} from "@/lib/types";
+
+/** Soft cap after merges — keeps 1GB host from growing unbounded in-memory. */
+const MAX_BARS_INTRADAY = 900;
+const MAX_BARS_DAILY = 2200;
 
 export function useSymbolCandles(
   symbol: string,
@@ -26,14 +35,7 @@ export function useSymbolCandles(
       if (res.ok) {
         const next = (data.bars ?? []) as OhlcvBar[];
         setBars(next);
-        // Intraday windows are fixed-size; daily/Q/Y can paginate older.
-        const canPaginate =
-          next.length > 0 &&
-          data.hasMore !== false &&
-          resolution !== "T" &&
-          resolution !== "1" &&
-          resolution !== "5";
-        setHasMoreCandles(canPaginate);
+        setHasMoreCandles(next.length > 0 && data.hasMore !== false);
       }
     } finally {
       setLoadingChart(false);
@@ -46,10 +48,21 @@ export function useSymbolCandles(
       loadMoreLock.current = true;
       setLoadingMoreCandles(true);
       try {
-        const chunkDays =
-          resolution === "D" ? 280 : resolution === "Q" ? 1200 : 2500;
-        const to = earliestTime - 86400;
-        const from = to - chunkDays * 86400;
+        const intra = isIntradayResolution(resolution);
+        let to: number;
+        let from: number;
+        if (intra) {
+          // Previous session / day of minute bars (small chunks for 1GB host).
+          const chunkSec =
+            resolution === "5" ? 2 * 86400 : resolution === "1" ? 86400 : 86400;
+          to = earliestTime - 60;
+          from = to - chunkSec;
+        } else {
+          const chunkDays =
+            resolution === "D" ? 280 : resolution === "Q" ? 1200 : 2500;
+          to = earliestTime - 86400;
+          from = to - chunkDays * 86400;
+        }
         if (to <= 0 || from >= to) {
           setHasMoreCandles(false);
           return [];
@@ -67,12 +80,19 @@ export function useSymbolCandles(
           setHasMoreCandles(false);
           return [];
         }
+        const maxBars = intra ? MAX_BARS_INTRADAY : MAX_BARS_DAILY;
         setBars((prev) => {
           const byTime = new Map<number, OhlcvBar>();
           for (const b of older) byTime.set(b.time, b);
           for (const b of prev) byTime.set(b.time, b);
           const merged = [...byTime.values()].sort((a, b) => a.time - b.time);
-          if (older.length < 5) setHasMoreCandles(false);
+          if (
+            older.length < 5 ||
+            data.hasMore === false ||
+            merged.length >= maxBars
+          ) {
+            setHasMoreCandles(false);
+          }
           return merged;
         });
         return older;

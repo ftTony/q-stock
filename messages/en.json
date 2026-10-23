@@ -664,6 +664,7 @@
     "clearHistory": "Clear chat",
     "historyHint": "Restored last chat",
     "history": "History",
+    "viewHistory": "View chat history",
     "newChat": "New chat",
     "historyTitle": "Ask-AI history",
     "historySubtitle": "Past chats for {symbol} (saved to your account)",

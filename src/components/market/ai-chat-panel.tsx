@@ -304,54 +304,43 @@ export function AiChatPanel(props: {
         onDismiss={access.dismissToast}
       />
 
-      <div
-        className={`flex shrink-0 gap-3 ${
-          page ? "items-center justify-end" : "items-start justify-between"
-        }`}
-      >
-        {!page ? (
+      {/* Embed: title + actions on top. Desk: actions sit above composer. */}
+      {!page ? (
+        <div className="flex shrink-0 items-start justify-between gap-3">
           <div className="min-w-0">
             <h3 className="text-sm font-semibold">{t("title")}</h3>
             <p className="text-xs text-[var(--muted)]">
               {t("subtitle", { symbol: props.symbol })}
             </p>
           </div>
-        ) : null}
-        {access.loggedIn ? (
-          <div className="flex shrink-0 items-center gap-1.5">
-            {props.onOpenHistory ? (
+          {access.loggedIn ? (
+            <div className="flex shrink-0 items-center gap-1">
               <button
                 type="button"
-                onClick={props.onOpenHistory}
-                disabled={busy}
-                className={
-                  page
-                    ? "aw-ai-chip-btn disabled:opacity-50"
-                    : "qt-btn-ghost rounded-md px-2 py-1 text-[14px] text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
-                }
+                onClick={() => {
+                  setSessionId(null);
+                  setMessages([]);
+                  setError(null);
+                }}
+                disabled={busy || (!sessionId && messages.length === 0)}
+                className="qt-btn-ghost rounded-md px-2 py-1 text-[14px] text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
               >
-                {t("history")}
+                {t("newChat")}
               </button>
-            ) : null}
-            <button
-              type="button"
-              onClick={() => {
-                setSessionId(null);
-                setMessages([]);
-                setError(null);
-              }}
-              disabled={busy || (!sessionId && messages.length === 0)}
-              className={
-                page
-                  ? "aw-ai-text-btn disabled:opacity-50"
-                  : "qt-btn-ghost rounded-md px-2 py-1 text-[14px] text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
-              }
-            >
-              {t("newChat")}
-            </button>
-          </div>
-        ) : null}
-      </div>
+              {props.onOpenHistory ? (
+                <button
+                  type="button"
+                  onClick={props.onOpenHistory}
+                  disabled={busy}
+                  className="qt-btn-ghost rounded-md px-2 py-1 text-[14px] text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
+                >
+                  {t("history")}
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      ) : null}
 
       <div
         className={
@@ -444,6 +433,16 @@ export function AiChatPanel(props: {
             }
           />
         )}
+        {page && access.loggedIn && props.onOpenHistory ? (
+          <button
+            type="button"
+            onClick={props.onOpenHistory}
+            disabled={busy}
+            className="aw-ai-history-link shrink-0 disabled:opacity-50"
+          >
+            {t("viewHistory")}
+          </button>
+        ) : null}
       </form>
       <p className={page ? "aw-ai-legal shrink-0" : "aw-caption"}>
         {tAi("disclaimer")}

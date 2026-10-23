@@ -674,6 +674,7 @@
     "clearHistory": "清空對話",
     "historyHint": "已恢復上次對話",
     "history": "歷史",
+    "viewHistory": "查看歷史對話",
     "newChat": "新對話",
     "historyTitle": "問股歷史",
     "historySubtitle": "{symbol} 的過往對話（已儲存到帳戶）",
