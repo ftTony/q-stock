@@ -49,8 +49,8 @@ type Props = {
 
 function RailScroll({ children }: { children: ReactNode }) {
   return (
-    <div className="aw-rail-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain qt-scroll">
-      {children}
+    <div className="aw-rail-scroll flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain qt-scroll">
+      <div className="flex min-h-full flex-1 flex-col">{children}</div>
     </div>
   );
 }
@@ -111,7 +111,7 @@ export function SymbolOrderRail({
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--aw-canvas)]">
       <div
         role="tablist"
-        className="flex shrink-0 items-stretch border-b border-[var(--border)]"
+        className="flex shrink-0 items-stretch border-b border-[var(--aw-hairline,var(--border))]"
       >
         {railOptions.map((opt) => (
           <button

@@ -283,13 +283,13 @@ export function MarketCredentialsForm({
     <div
       ref={panelRef}
       id="market-credentials"
-      className={`qt-panel w-full space-y-4 p-4 ${highlight}`}
+      className={`w-full space-y-4 ${highlight}`}
     >
       <div>
-        <h2 className="text-sm font-semibold tracking-tight">
+        <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
           {t("credsTitle")}
         </h2>
-        <p className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--brand-soft)] px-3 py-2 text-xs leading-relaxed text-[var(--foreground)]">
+        <p className="aw-caption mt-1.5 leading-relaxed">
           {t("credsTrustNote")}
         </p>
       </div>

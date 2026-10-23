@@ -114,7 +114,7 @@ export function SideDrawer(props: {
           <button
             type="button"
             onClick={props.onClose}
-            className="aw-drawer-close inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-transparent text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)] active:scale-95"
+            className="aw-drawer-close inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-none bg-transparent text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)] active:scale-95"
             aria-label="Close"
           >
             <svg

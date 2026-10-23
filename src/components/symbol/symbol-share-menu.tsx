@@ -20,11 +20,11 @@ function shareText(symbol: string, price: number | null, changePct: number | nul
 }
 
 const tileClass =
-  "flex min-h-[4.25rem] flex-col items-center justify-center gap-1.5 rounded-xl border border-[var(--aw-hairline,var(--border))] px-2 py-3 text-[12px] font-medium text-[var(--aw-ink,var(--foreground))] transition hover:bg-[var(--aw-parchment,var(--surface-2))]";
+  "flex min-h-[4.25rem] flex-col items-center justify-center gap-1.5 rounded-none border border-[var(--aw-hairline,var(--border))] px-2 py-3 text-[12px] font-medium text-[var(--aw-ink,var(--foreground))] transition hover:bg-[var(--aw-parchment,var(--surface-2))]";
 
 function ShareIcon({ children }: { children: ReactNode }) {
   return (
-    <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[var(--aw-parchment,var(--surface-2))] text-[var(--aw-ink)]">
+    <span className="inline-flex h-8 w-8 items-center justify-center rounded-none bg-[var(--aw-parchment,var(--surface-2))] text-[var(--aw-ink)]">
       {children}
     </span>
   );
@@ -148,14 +148,14 @@ export function SymbolShareMenu({ symbol, price, changePct }: Props) {
         aria-haspopup="dialog"
         aria-expanded={open}
         title={t("title")}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
+        className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
       >
         <svg
-          className="h-5 w-5"
+          className="h-4 w-4"
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
-          strokeWidth="2"
+          strokeWidth="1.8"
         >
           <circle cx="18" cy="5" r="2.5" />
           <circle cx="6" cy="12" r="2.5" />
@@ -177,7 +177,7 @@ export function SymbolShareMenu({ symbol, price, changePct }: Props) {
                 role="dialog"
                 aria-modal="true"
                 aria-label={t("title")}
-                className="relative z-10 w-full max-w-[22rem] rounded-2xl border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] p-5 shadow-xl"
+                className="relative z-10 w-full max-w-[22rem] rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] p-5 shadow-[0_24px_80px_rgba(15,23,42,0.28)]"
               >
                 <div className="mb-4 flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -191,7 +191,7 @@ export function SymbolShareMenu({ symbol, price, changePct }: Props) {
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
-                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
+                    className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-none text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
                     aria-label="Close"
                   >
                     <svg

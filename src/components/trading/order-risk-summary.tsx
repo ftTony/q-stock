@@ -46,12 +46,10 @@ export function OrderRiskSummary({
 
   return (
     <div
-      className={`border-t border-[var(--aw-hairline,var(--border))] pt-3 text-[12px] leading-snug ${className}`}
+      className={`space-y-1 border-t border-[var(--aw-hairline,var(--border))] pt-2.5 ${className}`}
     >
-      <p className="text-[11px] font-medium leading-none text-[var(--muted)]">
-        {t("title")}
-      </p>
-      <p className="mt-1.5 tabular-nums text-[13px] text-[var(--foreground)]">
+      <p className="aw-metric-label">{t("title")}</p>
+      <p className="text-[12px] leading-snug tabular-nums tracking-[-0.08px] text-[var(--foreground)]">
         {t("positionPct", {
           pct:
             s.positionPct != null
@@ -62,7 +60,7 @@ export function OrderRiskSummary({
         })}
       </p>
       {s.hasStop && s.riskAmount != null ? (
-        <p className="mt-1 tabular-nums text-[13px] text-[var(--foreground)]">
+        <p className="text-[12px] leading-snug tabular-nums tracking-[-0.08px] text-[var(--foreground)]">
           {t("riskLine", {
             amount: formatNumber(s.riskAmount, {
               maximumFractionDigits: 2,
@@ -74,14 +72,14 @@ export function OrderRiskSummary({
           })}
         </p>
       ) : (
-        <p className="mt-1 text-[12px] text-[var(--muted)]">{t("noStop")}</p>
+        <p className="aw-caption">{t("noStop")}</p>
       )}
       {warn ? (
-        <p className="mt-1 text-[color-mix(in_srgb,#ca8a04_90%,var(--foreground))]">
+        <p className="text-[12px] leading-snug text-[color-mix(in_srgb,#ca8a04_90%,var(--foreground))]">
           {t("softCap", { max: maxPositionPct })}
         </p>
       ) : null}
-      <p className="mt-1.5">
+      <p>
         <Link href={toolHref} className="aw-text-link text-[12px]">
           {t("positionTool")}
         </Link>

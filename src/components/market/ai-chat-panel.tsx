@@ -10,6 +10,74 @@ import type { AssetType } from "@/lib/types";
 
 type ChatMsg = { role: "user" | "assistant"; content: string };
 
+function EmptyAiChatArt() {
+  return (
+    <svg
+      viewBox="0 0 160 100"
+      className="h-14 w-auto text-[var(--brand)]"
+      aria-hidden
+    >
+      <rect
+        x="24"
+        y="18"
+        width="72"
+        height="48"
+        rx="0"
+        fill="var(--panel)"
+        stroke="currentColor"
+        strokeOpacity="0.28"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M40 66h16l-7 12z"
+        fill="var(--panel)"
+        stroke="currentColor"
+        strokeOpacity="0.28"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M38 36h44M38 48h28"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="square"
+        opacity="0.45"
+      />
+      <rect
+        x="78"
+        y="30"
+        width="58"
+        height="40"
+        rx="0"
+        fill="var(--panel)"
+        stroke="currentColor"
+        strokeOpacity="0.55"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M92 46h30M92 58h18"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="square"
+        opacity="0.7"
+      />
+      <circle
+        cx="128"
+        cy="22"
+        r="3"
+        fill="currentColor"
+        opacity="0.55"
+      />
+      <path
+        d="M128 14v4M128 26v4M120 22h4M132 22h4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="square"
+        opacity="0.4"
+      />
+    </svg>
+  );
+}
+
 export function AiChatPanel(props: {
   symbol: string;
   assetType: AssetType;
@@ -298,6 +366,7 @@ export function AiChatPanel(props: {
         {!hydrating && messages.length === 0 && (
           page ? (
             <div className="aw-ai-thread-empty">
+              <EmptyAiChatArt />
               <p className="aw-ai-thread-empty-title">{t("empty")}</p>
               <p className="aw-ai-thread-empty-hint">
                 {t("subtitle", { symbol: props.symbol })}

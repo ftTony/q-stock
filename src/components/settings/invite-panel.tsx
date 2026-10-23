@@ -63,7 +63,6 @@ export function InvitePanel() {
   }
 
   function linkFor(row: InviteRow): string {
-    // Always use server-provided absolute link during render (SSR == client).
     return row.inviteLink;
   }
 
@@ -76,99 +75,103 @@ export function InvitePanel() {
   }
 
   return (
-    <section className="qt-panel flex h-full flex-col overflow-hidden">
-      <div className="border-b border-[var(--border)] px-4 py-2.5">
-        <h2 className="text-sm font-semibold tracking-tight">{t("inviteTitle")}</h2>
-      </div>
+    <section className="invite-panel border-t border-[var(--aw-hairline,var(--border))] pt-4">
+      <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
+        {t("inviteTitle")}
+      </h2>
+      <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--muted)]">
+        {t("inviteHint")}
+      </p>
 
-      <div className="flex flex-1 flex-col space-y-3 p-4">
-        <p className="rounded-lg bg-[color-mix(in_srgb,#3b82f6_10%,transparent)] px-3 py-2 text-[11px] leading-relaxed text-[color-mix(in_srgb,#1d4ed8_85%,var(--foreground))]">
-          {t("inviteHint")}
+      {aiQuota ? (
+        <p className="mt-2 text-[13px] leading-snug text-[var(--foreground)]">
+          {t("inviteAiBonus", {
+            remaining: aiQuota.remaining,
+            limit: aiQuota.limit,
+          })}
         </p>
+      ) : null}
 
-        {aiQuota && (
-          <p className="text-[11px] text-[var(--muted)]">
-            {t("inviteAiBonus", {
-              remaining: aiQuota.remaining,
-              limit: aiQuota.limit,
-            })}
-          </p>
-        )}
+      {error ? (
+        <p className="mt-2 text-[13px] text-[var(--down)]">{error}</p>
+      ) : null}
 
-        {error && <p className="text-xs text-[var(--down)]">{error}</p>}
+      {!invites && !error ? (
+        <div className="mt-2">
+          <InlineLoading label={tCommon("loading")} className="text-[13px]" />
+        </div>
+      ) : null}
 
-        {!invites && !error && (
-          <InlineLoading label={tCommon("loading")} className="text-xs" />
-        )}
+      {invites && invites.length === 0 ? (
+        <p className="mt-3 py-4 text-center text-[13px] text-[var(--muted)]">
+          {t("inviteEmpty")}
+        </p>
+      ) : null}
 
-        {invites && invites.length === 0 && (
-          <p className="py-8 text-center text-sm text-[var(--muted)]">
-            {t("inviteEmpty")}
-          </p>
-        )}
-
-        {invites && invites.length > 0 && (
-          <ul className="flex-1 divide-y divide-[var(--border)] rounded-lg border border-[var(--border)]">
-            {invites.map((row) => {
-              const used = row.used;
-              return (
-                <li
-                  key={row.code}
-                  className={`flex flex-wrap items-center gap-2 px-3 py-2 ${
-                    used ? "opacity-50" : ""
+      {invites && invites.length > 0 ? (
+        <ul className="invite-list mt-2 divide-y divide-[var(--aw-hairline,var(--border))]">
+          {invites.map((row) => {
+            const used = row.used;
+            return (
+              <li
+                key={row.code}
+                className={`flex items-center gap-2.5 py-2 ${
+                  used ? "opacity-50" : ""
+                }`}
+              >
+                <code
+                  className={`min-w-0 shrink font-mono text-[14px] font-medium tracking-[-0.02em] ${
+                    used
+                      ? "text-[var(--muted)] line-through"
+                      : "text-[var(--foreground)]"
                   }`}
+                  title={row.code}
                 >
-                  <code
-                    className={`min-w-0 flex-1 truncate font-mono text-[11px] tracking-wide ${
-                      used
-                        ? "text-[var(--muted)] line-through"
-                        : "text-[var(--foreground)]"
-                    }`}
-                    title={row.code}
-                  >
-                    {row.code}
-                  </code>
-                  <div className="flex shrink-0 items-center gap-1.5">
-                    {used ? (
-                      <span className="text-[11px] text-[var(--muted)]">
-                        {t("inviteUsed")}
-                      </span>
-                    ) : (
-                      <>
-                        <button
-                          type="button"
-                          className="qt-btn qt-btn-ghost h-9 px-3 font-medium"
-                          onClick={() =>
-                            copyText(`${row.code}-code`, shareCodeText(row.code))
-                          }
-                        >
-                          {copiedKey === `${row.code}-code`
-                            ? t("inviteCopied")
-                            : t("inviteCopyCode")}
-                        </button>
-                        <button
-                          type="button"
-                          className="qt-btn qt-btn-primary h-9 px-3 font-medium"
-                          onClick={() =>
-                            copyText(
-                              `${row.code}-link`,
-                              shareLinkText(linkFor(row)),
-                            )
-                          }
-                        >
-                          {copiedKey === `${row.code}-link`
-                            ? t("inviteCopied")
-                            : t("inviteCopyLink")}
-                        </button>
-                      </>
-                    )}
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
-      </div>
+                  {row.code}
+                </code>
+                <div className="ml-auto flex shrink-0 items-center gap-1.5">
+                  {used ? (
+                    <span className="text-[13px] text-[var(--muted)]">
+                      {t("inviteUsed")}
+                    </span>
+                  ) : (
+                    <>
+                      <button
+                        type="button"
+                        className="qt-btn qt-btn-ghost invite-action-btn"
+                        onClick={() =>
+                          copyText(
+                            `${row.code}-code`,
+                            shareCodeText(row.code),
+                          )
+                        }
+                      >
+                        {copiedKey === `${row.code}-code`
+                          ? t("inviteCopied")
+                          : t("inviteCopyCode")}
+                      </button>
+                      <button
+                        type="button"
+                        className="qt-btn qt-btn-primary invite-action-btn"
+                        onClick={() =>
+                          copyText(
+                            `${row.code}-link`,
+                            shareLinkText(linkFor(row)),
+                          )
+                        }
+                      >
+                        {copiedKey === `${row.code}-link`
+                          ? t("inviteCopied")
+                          : t("inviteCopyLink")}
+                      </button>
+                    </>
+                  )}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
     </section>
   );
 }

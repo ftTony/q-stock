@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { QtSelect } from "@/components/ui/qt-select";
+import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
 import { displayName } from "@/lib/market-names";
 import type { AssetType } from "@/lib/types";
 
@@ -131,7 +132,7 @@ export function SymbolWatchlistSettingsModal({
         role="dialog"
         aria-modal="true"
         aria-label={t("watchlistSettings")}
-        className="relative z-10 flex max-h-[min(90vh,32rem)] w-full max-w-[24rem] flex-col overflow-hidden rounded-2xl border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] shadow-xl"
+        className="relative z-10 flex max-h-[min(90vh,32rem)] w-full max-w-[24rem] flex-col overflow-hidden rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] shadow-[0_24px_80px_rgba(15,23,42,0.28)]"
       >
         <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[var(--aw-hairline,var(--border))] px-4 py-3">
           <h2 className="text-[15px] font-semibold tracking-tight text-[var(--foreground)]">
@@ -140,7 +141,7 @@ export function SymbolWatchlistSettingsModal({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-none text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
             aria-label="Close"
           >
             <svg
@@ -179,7 +180,7 @@ export function SymbolWatchlistSettingsModal({
             />
           </div>
           {results.length > 0 ? (
-            <ul className="absolute left-4 right-4 top-[calc(100%-0.25rem)] z-20 max-h-44 overflow-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-xl qt-scroll">
+            <ul className="absolute left-4 right-4 top-[calc(100%-0.25rem)] z-20 max-h-44 overflow-auto rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] shadow-xl qt-scroll">
               {results.map((r) => (
                 <li key={`${r.assetType}-${r.symbol}`}>
                   <button
@@ -210,9 +211,12 @@ export function SymbolWatchlistSettingsModal({
               {tCommon("loading")}
             </p>
           ) : rows.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-[var(--muted)]">
-              {tMarket("watchlistEmpty")}
-            </p>
+            <div className="px-4">
+              <EmptyStateBlock
+                art="watchlist"
+                label={tMarket("watchlistEmpty")}
+              />
+            </div>
           ) : (
             <ul>
               {rows.map((row) => (

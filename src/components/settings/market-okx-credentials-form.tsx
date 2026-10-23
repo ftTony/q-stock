@@ -126,7 +126,7 @@ export function MarketOkxCredentialsForm() {
   }
 
   return (
-    <div className="qt-panel w-full space-y-3 p-4">
+    <div className="w-full space-y-3 border-t border-[var(--aw-hairline,var(--border))] pt-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{t("credsOkx")}</h3>
         <span className="text-[11px] text-[var(--muted)]">

@@ -44,7 +44,7 @@ export function TradeCalmFields({
   return (
     <>
       <div>
-        <label className="aw-metric-label mb-1.5 block">
+        <label className="aw-metric-label mb-1 block">
           {t("invalidationPrice")}
         </label>
         <input
@@ -60,10 +60,11 @@ export function TradeCalmFields({
 
       {strategies.length > 0 || strategyId ? (
         <div>
-          <label className="aw-metric-label mb-1.5 block">{t("strategyTag")}</label>
+          <label className="aw-metric-label mb-1 block">{t("strategyTag")}</label>
           <QtSelect
             value={strategyId || "__none__"}
             onChange={(v) => onStrategyId(v === "__none__" ? "" : v)}
+            triggerClassName="h-9 px-3 text-[13px]"
             options={[
               { value: "__none__", label: t("strategyNone") },
               ...strategies.map((s) => ({ value: s.id, label: s.name })),

@@ -24,6 +24,61 @@ type Props = {
   loadingLabel: string;
 };
 
+function EmptyCommentsArt() {
+  return (
+    <svg
+      viewBox="0 0 160 100"
+      className="h-14 w-auto text-[var(--brand)]"
+      aria-hidden
+    >
+      <rect
+        x="28"
+        y="16"
+        width="88"
+        height="52"
+        rx="0"
+        fill="var(--panel)"
+        stroke="currentColor"
+        strokeOpacity="0.28"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M48 68h18l-8 14z"
+        fill="var(--panel)"
+        stroke="currentColor"
+        strokeOpacity="0.28"
+        strokeWidth="1.5"
+        strokeLinejoin="miter"
+      />
+      <path
+        d="M42 34h60M42 46h44"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="square"
+        opacity="0.45"
+      />
+      <rect
+        x="72"
+        y="36"
+        width="60"
+        height="40"
+        rx="0"
+        fill="var(--panel)"
+        stroke="currentColor"
+        strokeOpacity="0.55"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M86 52h32M86 62h20"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="square"
+        opacity="0.7"
+      />
+    </svg>
+  );
+}
+
 /** Comments dock — composer on top when signed in; guest uses AuthLoginGate. */
 export function SymbolDockCommentsPanel({
   comments,
@@ -83,9 +138,12 @@ export function SymbolDockCommentsPanel({
             {loadingLabel}
           </p>
         ) : comments.length === 0 ? (
-          <p className="aw-caption flex min-h-[12rem] items-center justify-center">
-            {commentsEmpty}
-          </p>
+          <div className="flex min-h-[min(42vh,16rem)] flex-col items-center justify-center gap-3 px-2 py-8 text-center">
+            <EmptyCommentsArt />
+            <p className="text-[13px] tracking-[-0.08px] text-[var(--muted)]">
+              {commentsEmpty}
+            </p>
+          </div>
         ) : (
           <ul className="divide-y divide-[var(--aw-hairline,var(--border))]">
             {comments.map((c) => (

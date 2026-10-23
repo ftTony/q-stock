@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { formatNumber, formatTime } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 
@@ -87,30 +88,32 @@ export function SymbolReviewRail({
 
   if (status === "loading") {
     return (
-      <div className="p-3 text-[12px] text-[var(--muted)]">{t("reviewLoading")}</div>
+      <div className="flex min-h-full flex-1 items-center justify-center p-3">
+        <p className="aw-caption">{t("reviewLoading")}</p>
+      </div>
     );
   }
 
   if (!session?.user) {
     return (
-      <div className="space-y-2 p-3">
-        <p className="aw-caption">
-          {t("planLogin")}{" "}
-          <Link href="/login" className="aw-text-link">
-            {t("planLoginLink")}
-          </Link>
-        </p>
+      <div className="flex min-h-full flex-1 flex-col items-center justify-center px-4 py-8">
+        <AuthLoginGate
+          compact
+          title={t("planLogin")}
+          body={t("reviewSubtitle")}
+          hint=""
+        />
       </div>
     );
   }
 
-  return (
-    <div className="space-y-3 p-3">
-      <p className="aw-caption">{t("reviewSubtitle")}</p>
+  const empty = !loading && filtered.length === 0;
 
+  return (
+    <div className="flex min-h-full flex-col px-3 pb-3 pt-2">
       <div
         role="tablist"
-        className="flex border-b border-[var(--aw-hairline,var(--border))]"
+        className="flex shrink-0 border-b border-[var(--aw-hairline,var(--border))]"
       >
         {(
           [
@@ -134,79 +137,85 @@ export function SymbolReviewRail({
       </div>
 
       {loading ? (
-        <p className="aw-caption">{t("reviewLoading")}</p>
-      ) : null}
-
-      {!loading && filtered.length === 0 ? (
-        <div className="space-y-2">
-          <p className="aw-caption">{t("reviewEmpty")}</p>
-          <button
-            type="button"
-            onClick={onOpenPlan}
-            className="aw-text-link text-[12px]"
-          >
-            {t("reviewGoPlan")}
-          </button>
+        <div className="flex flex-1 items-center justify-center py-10">
+          <p className="aw-caption">{t("reviewLoading")}</p>
         </div>
       ) : null}
 
-      <ul className="divide-y divide-[var(--border)]">
-        {filtered.map((o) => {
-          const chips = deviationChips(o, t);
-          const price = o.filledPrice;
-          const when = o.filledAt || o.createdAt;
-          return (
-            <li key={o.id} className="space-y-1.5 py-2.5">
-              <div className="flex items-baseline justify-between gap-2">
-                <span
-                  className={`text-[12px] font-medium ${
-                    o.side === "buy"
-                      ? "text-[var(--up)]"
-                      : "text-[var(--down)]"
-                  }`}
-                >
-                  {o.side === "buy" ? t("reviewBuy") : t("reviewSell")} ·{" "}
-                  <span className="tabular-nums text-[var(--foreground)]">
-                    {formatNumber(o.qty, { maximumFractionDigits: 4 })}
-                  </span>
-                  {price != null ? (
-                    <span className="tabular-nums text-[var(--muted)]">
-                      {" "}
-                      @ {formatNumber(price, { maximumFractionDigits: 2 })}
-                    </span>
-                  ) : null}
-                </span>
-                <span className="aw-caption shrink-0 tabular-nums">
-                  {formatTime(new Date(when))}
-                </span>
-              </div>
-              <div className="flex flex-wrap items-center gap-1.5">
-                {o.strategyId ? (
-                  <Link
-                    href={`/strategies/${o.strategyId}`}
-                    className="rounded border border-[var(--border)] px-1.5 py-0.5 text-[12px] text-[var(--brand-text)]"
-                  >
-                    {strategyNameById[o.strategyId] || t("reviewTagged")}
-                  </Link>
-                ) : null}
-                {chips.map((c) => (
-                  <span
-                    key={c}
-                    className="rounded border border-[var(--border)] px-1.5 py-0.5 text-[12px] text-[var(--muted)]"
-                  >
-                    {c}
-                  </span>
-                ))}
-              </div>
-            </li>
-          );
-        })}
-      </ul>
+      {empty ? (
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 px-2 py-10 text-center">
+          <p className="text-[13px] tracking-[-0.08px] text-[var(--muted)]">
+            {t("reviewEmpty")}
+          </p>
+          {onOpenPlan ? (
+            <button
+              type="button"
+              onClick={onOpenPlan}
+              className="aw-text-link text-[12px]"
+            >
+              {t("reviewGoPlan")}
+            </button>
+          ) : null}
+        </div>
+      ) : null}
 
-      <div className="space-y-1.5 border-t border-[var(--border)] pt-3">
-        <p className="aw-caption leading-snug">
-          {t("reviewFootnote")}
-        </p>
+      {!loading && filtered.length > 0 ? (
+        <ul className="min-h-0 flex-1 divide-y divide-[var(--aw-hairline,var(--border))]">
+          {filtered.map((o) => {
+            const chips = deviationChips(o, t);
+            const price = o.filledPrice;
+            const when = o.filledAt || o.createdAt;
+            return (
+              <li key={o.id} className="space-y-1.5 py-2.5">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span
+                    className={`text-[12px] font-medium ${
+                      o.side === "buy"
+                        ? "text-[var(--up)]"
+                        : "text-[var(--down)]"
+                    }`}
+                  >
+                    {o.side === "buy" ? t("reviewBuy") : t("reviewSell")} ·{" "}
+                    <span className="tabular-nums text-[var(--foreground)]">
+                      {formatNumber(o.qty, { maximumFractionDigits: 4 })}
+                    </span>
+                    {price != null ? (
+                      <span className="tabular-nums text-[var(--muted)]">
+                        {" "}
+                        @ {formatNumber(price, { maximumFractionDigits: 2 })}
+                      </span>
+                    ) : null}
+                  </span>
+                  <span className="aw-caption shrink-0 tabular-nums">
+                    {formatTime(new Date(when))}
+                  </span>
+                </div>
+                <div className="flex flex-wrap items-center gap-1.5">
+                  {o.strategyId ? (
+                    <Link
+                      href={`/strategies/${o.strategyId}`}
+                      className="rounded border border-[var(--aw-hairline,var(--border))] px-1.5 py-0.5 text-[12px] text-[var(--brand-text)]"
+                    >
+                      {strategyNameById[o.strategyId] || t("reviewTagged")}
+                    </Link>
+                  ) : null}
+                  {chips.map((c) => (
+                    <span
+                      key={c}
+                      className="rounded border border-[var(--aw-hairline,var(--border))] px-1.5 py-0.5 text-[12px] text-[var(--muted)]"
+                    >
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              </li>
+            );
+          })}
+        </ul>
+      ) : null}
+
+      <div className="mt-auto shrink-0 space-y-1.5 border-t border-[var(--aw-hairline,var(--border))] pt-3">
+        <p className="aw-caption leading-snug">{t("reviewFootnote")}</p>
         <div className="flex flex-wrap gap-x-3 gap-y-1">
           {onOpenPlan ? (
             <button

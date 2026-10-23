@@ -44,22 +44,16 @@ function Cell({
         : "";
   return (
     <div className="min-w-0 text-left">
-      <div className="text-[11px] leading-none tracking-[-0.08px] text-[var(--muted)]">
-        {label}
-      </div>
+      <div className="aw-metric-label">{label}</div>
       <div
-        className={`mt-1 truncate tabular-nums tracking-[-0.2px] ${
-          primary
-            ? "text-[14px] font-semibold text-[var(--foreground)]"
-            : "text-[13px] font-medium text-[var(--foreground)]"
+        className={`mt-1 truncate ${
+          primary ? "aw-metric-value" : "text-[13px] font-medium tabular-nums tracking-[-0.16px] text-[var(--foreground)]"
         } ${color}`}
       >
         {value}
       </div>
       {hint ? (
-        <div className="mt-0.5 truncate text-[10px] leading-tight text-[var(--muted)]">
-          {hint}
-        </div>
+        <div className="aw-caption mt-0.5 truncate">{hint}</div>
       ) : null}
     </div>
   );
@@ -147,8 +141,8 @@ export function SymbolPaperRiskBar({
   const nearCap = symbolPct >= maxPct * 0.8;
 
   return (
-    <div className="space-y-2.5 border-b border-[var(--aw-hairline,var(--border))] px-4 py-3">
-      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
+    <div className="border-b border-[var(--aw-hairline,var(--border))] px-4 py-2.5">
+      <div className="grid grid-cols-2 gap-x-5 gap-y-2">
         <Cell label={t("equity")} value={`$${money(equity)}`} primary />
         <Cell label={t("cash")} value={`$${money(cash)}`} primary />
         <Cell

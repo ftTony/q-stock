@@ -8,9 +8,10 @@ import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { ChangePct, PriceText } from "@/components/market/price";
 import {
   IconWatchlistCollapse,
-  IconWatchlistManage,
+  IconSettingsGear,
 } from "@/components/symbol/watchlist-toggle-icons";
 import { SymbolWatchlistSettingsModal } from "@/components/symbol/symbol-watchlist-settings-modal";
+import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
@@ -79,7 +80,7 @@ export function SymbolWatchlistPanel({
             aria-label={t("watchlistSettings")}
             onClick={() => setSettingsOpen(true)}
           >
-            <IconWatchlistManage className="h-[18px] w-[18px]" />
+            <IconSettingsGear className="h-4 w-4" />
           </button>
           {onCollapse ? (
             <button
@@ -89,7 +90,7 @@ export function SymbolWatchlistPanel({
               title={t("watchlistCollapse")}
               onClick={onCollapse}
             >
-              <IconWatchlistCollapse className="h-[18px] w-[18px]" />
+              <IconWatchlistCollapse className="h-4 w-4" />
             </button>
           ) : null}
         </div>
@@ -128,9 +129,7 @@ export function SymbolWatchlistPanel({
             {error}
           </p>
         ) : rows.length === 0 ? (
-          <p className="aw-caption flex flex-1 items-center justify-center px-3 py-8 text-center">
-            {tMarket("watchlistEmpty")}
-          </p>
+          <EmptyStateBlock art="watchlist" label={tMarket("watchlistEmpty")} />
         ) : (
           <ul>
             {rows.map((row) => {

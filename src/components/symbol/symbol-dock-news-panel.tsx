@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { PaginatedList } from "@/components/ui/paginated-list";
+import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
 import { formatDate } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 import type { NewsRow, PressRow } from "@/components/symbol/symbol-tabs-panel";
@@ -76,9 +77,10 @@ export function SymbolDockNewsPanel({
               pageSize={8}
               resetKey={`dock-news-${news.length}-${news[0]?.headline ?? ""}`}
               empty={
-                <p className="aw-caption flex min-h-[12rem] items-center justify-center">
-                  {degraded ? degradedLabel : errorLabel}
-                </p>
+                <EmptyStateBlock
+                  art="news"
+                  label={degraded ? degradedLabel : errorLabel}
+                />
               }
               renderItem={(n, i) => (
                 <li
@@ -124,9 +126,7 @@ export function SymbolDockNewsPanel({
             pageSize={8}
             resetKey={`dock-press-${press.length}-${press[0]?.headline ?? ""}`}
             empty={
-              <p className="aw-caption flex min-h-[12rem] items-center justify-center">
-                {degradedLabel}
-              </p>
+              <EmptyStateBlock art="news" label={degradedLabel} />
             }
             renderItem={(p, i) => (
               <li

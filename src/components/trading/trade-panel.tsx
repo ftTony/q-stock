@@ -303,8 +303,13 @@ export function TradePanel({
     );
   }
 
+  const fieldInput =
+    "qt-input h-9 w-full px-3 text-[13px] tabular-nums leading-none";
+  const fieldLabel = "aw-metric-label mb-1 block";
+  const selectTrigger = "h-9 px-3 text-[13px]";
+
   return (
-    <div className="space-y-3 px-4 py-3">
+    <div className="space-y-2.5 px-4 py-2.5">
       <TopToast
         key={msgKey}
         message={msg}
@@ -312,7 +317,7 @@ export function TradePanel({
         onDismiss={() => setMsg(null)}
       />
       <div className="flex items-center justify-between gap-2">
-        <span className="rounded-full bg-[var(--aw-parchment,var(--surface-2))] px-2 py-0.5 text-[11px] font-medium tracking-[-0.08px] text-[var(--muted)]">
+        <span className="rounded-full bg-[var(--aw-parchment,var(--surface-2))] px-2 py-0.5 text-[12px] font-medium tracking-[-0.08px] text-[var(--muted)]">
           {t("paperBadge")}
         </span>
         {loading ? <span className="aw-caption">{t("loading")}</span> : null}
@@ -346,12 +351,13 @@ export function TradePanel({
         ]}
       />
 
-      <form onSubmit={onSubmit} className="space-y-3">
+      <form onSubmit={onSubmit} className="space-y-2.5">
         <div>
-          <label className="aw-metric-label mb-1.5 block">{t("orderType")}</label>
+          <label className={fieldLabel}>{t("orderType")}</label>
           <QtSelect
             value={orderType}
             onChange={(v) => setOrderType(v as OrderType)}
+            triggerClassName={selectTrigger}
             options={[
               { value: "market", label: t("market") },
               { value: "limit", label: t("limit") },
@@ -361,7 +367,7 @@ export function TradePanel({
         </div>
 
         <div>
-          <label className="aw-metric-label mb-1.5 block">{t("qty")}</label>
+          <label className={fieldLabel}>{t("qty")}</label>
           <input
             type="number"
             min="0"
@@ -369,7 +375,7 @@ export function TradePanel({
             required
             value={qty}
             onChange={(e) => setQty(e.target.value)}
-            className="qt-input h-9 w-full px-3 text-[13px] tabular-nums leading-none"
+            className={fieldInput}
           />
         </div>
 
@@ -385,7 +391,7 @@ export function TradePanel({
 
         {orderType === "limit" && (
           <div>
-            <label className="aw-metric-label mb-1.5 block">{t("limitPrice")}</label>
+            <label className={fieldLabel}>{t("limitPrice")}</label>
             <input
               type="number"
               min="0"
@@ -393,14 +399,14 @@ export function TradePanel({
               required
               value={limitPrice}
               onChange={(e) => setLimitPrice(e.target.value)}
-              className="qt-input h-9 w-full px-3 text-[13px] tabular-nums leading-none"
+              className={fieldInput}
             />
           </div>
         )}
 
         {orderType === "stop" && (
           <div>
-            <label className="aw-metric-label mb-1.5 block">{t("stopPrice")}</label>
+            <label className={fieldLabel}>{t("stopPrice")}</label>
             <input
               type="number"
               min="0"
@@ -408,20 +414,18 @@ export function TradePanel({
               required
               value={stopPrice}
               onChange={(e) => setStopPrice(e.target.value)}
-              className="qt-input h-9 w-full px-3 text-[13px] tabular-nums leading-none"
+              className={fieldInput}
             />
           </div>
         )}
 
-        <div className="flex items-baseline justify-between gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-2.5">
+        <div className="flex items-baseline justify-between gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-2">
           <span className="aw-metric-label">{t("estimate")}</span>
-          <span className="text-[15px] font-semibold tabular-nums tracking-[-0.2px] text-[var(--foreground)]">
-            ${fmtMoney(estimate)}
-          </span>
+          <span className="aw-metric-value">${fmtMoney(estimate)}</span>
         </div>
 
         {aiDraft ? (
-          <div className="flex items-center justify-between gap-2 border-t border-[var(--border)] pt-2 text-[12px] text-[var(--brand-text)]">
+          <div className="flex items-center justify-between gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-2 text-[12px] text-[var(--brand-text)]">
             <span>{t("aiDraftBanner")}</span>
             <button
               type="button"
@@ -460,7 +464,7 @@ export function TradePanel({
           loading={busy}
           loadingLabel={t("loading")}
           disabled={!(qtyNum > 0)}
-          className={`mt-1 inline-flex h-10 w-full items-center justify-center !rounded-full !border-0 text-[14px] font-semibold !text-white hover:!opacity-100 ${
+          className={`mt-0.5 inline-flex h-9 w-full items-center justify-center !rounded-full !border-0 text-[13px] font-semibold !text-white hover:!opacity-100 ${
             side === "buy"
               ? "!bg-[var(--up)] hover:!brightness-110 hover:!bg-[var(--up)]"
               : "!bg-[var(--down)] hover:!brightness-110 hover:!bg-[var(--down)]"

@@ -14,9 +14,15 @@ type Props = {
   /** Compact dialog — no logo chrome; stay on current page after credentials login. */
   variant?: "page" | "modal";
   onSuccess?: () => void;
+  /** Modal: switch to register without navigation. */
+  onSwitchToRegister?: () => void;
 };
 
-export function LoginForm({ variant = "page", onSuccess }: Props) {
+export function LoginForm({
+  variant = "page",
+  onSuccess,
+  onSwitchToRegister,
+}: Props) {
   const t = useTranslations("auth");
   const tApp = useTranslations("app");
   const tCommon = useTranslations("common");
@@ -71,18 +77,19 @@ export function LoginForm({ variant = "page", onSuccess }: Props) {
   }
 
   const fieldClass = modal
-    ? "qt-input h-12 w-full rounded-none border-[var(--border)] bg-[color-mix(in_srgb,var(--brand)_5%,var(--panel))] px-3.5 text-[15px] leading-none"
+    ? "qt-input h-11 w-full px-3.5 text-[15px] leading-none"
     : "qt-input w-full px-3 py-2.5";
   const submitClass = modal
-    ? "qt-btn-primary mt-1 h-12 w-full rounded-none px-4 text-[15px] font-semibold tracking-[-0.2px]"
+    ? "qt-btn-primary mt-1 h-11 w-full px-4 text-[15px] font-semibold tracking-[-0.2px]"
     : "qt-btn-primary w-full px-3 py-2.5 text-sm";
+  const labelClass = modal
+    ? "block space-y-1.5 text-[13px]"
+    : "block space-y-1 text-sm";
 
   return (
     <div
       className={
-        modal
-          ? "w-full space-y-6 [&_.qt-btn]:rounded-none"
-          : "qt-panel w-full space-y-5 p-6 sm:p-8"
+        modal ? "w-full space-y-5" : "qt-panel w-full space-y-5 p-6 sm:p-8"
       }
     >
       {!modal ? (
@@ -100,8 +107,8 @@ export function LoginForm({ variant = "page", onSuccess }: Props) {
       {!modal && oauthError ? (
         <p className="text-sm text-[var(--danger)]">{t("oauthError")}</p>
       ) : null}
-      <form onSubmit={onSubmit} className={modal ? "space-y-5" : "space-y-3"}>
-        <label className={`block ${modal ? "space-y-2" : "space-y-1"} text-sm`}>
+      <form onSubmit={onSubmit} className={modal ? "space-y-4" : "space-y-3"}>
+        <label className={labelClass}>
           <span className="text-[var(--muted)]">{t("email")}</span>
           <input
             type="email"
@@ -113,14 +120,14 @@ export function LoginForm({ variant = "page", onSuccess }: Props) {
             disabled={formBusy}
           />
         </label>
-        <label className={`block ${modal ? "space-y-2" : "space-y-1"} text-sm`}>
+        <label className={labelClass}>
           <div className="flex items-center justify-between gap-2">
             <span className="text-[var(--muted)]">{t("password")}</span>
             <Link
               href="/forgot-password"
               className={
                 modal
-                  ? "text-[13px] text-[var(--brand-text)]"
+                  ? "text-[12px] text-[var(--muted)] hover:text-[var(--brand-text)]"
                   : "text-xs text-[var(--brand-text)]"
               }
               onClick={modal ? onSuccess : undefined}
@@ -160,18 +167,24 @@ export function LoginForm({ variant = "page", onSuccess }: Props) {
       <p
         className={
           modal
-            ? "pt-1 text-[14px] text-[var(--muted)]"
+            ? "text-center text-[13px] text-[var(--muted)]"
             : "text-sm text-[var(--muted)]"
         }
       >
         {t("noAccount")}{" "}
-        <Link
-          href="/register"
-          className="font-medium text-[var(--brand-text)]"
-          onClick={modal ? onSuccess : undefined}
-        >
-          {t("registerTitle")}
-        </Link>
+        {modal && onSwitchToRegister ? (
+          <button
+            type="button"
+            className="font-medium text-[var(--brand-text)]"
+            onClick={onSwitchToRegister}
+          >
+            {t("registerTitle")}
+          </button>
+        ) : (
+          <Link href="/register" className="font-medium text-[var(--brand-text)]">
+            {t("registerTitle")}
+          </Link>
+        )}
       </p>
     </div>
   );

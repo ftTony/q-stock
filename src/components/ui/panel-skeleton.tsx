@@ -6,7 +6,7 @@ type PanelSkeletonProps = {
   label?: string;
 };
 
-/** Shared loading placeholder for settings / form panels. */
+/** Flat loading placeholder — no card chrome (matches settings / dock panels). */
 export function PanelSkeleton({
   className = "",
   rows = 3,
@@ -17,21 +17,22 @@ export function PanelSkeleton({
       role="status"
       aria-busy="true"
       aria-label={label}
-      className={`qt-panel space-y-3 p-4 ${className}`}
+      className={`space-y-3 py-1 ${className}`}
     >
       <div className="space-y-2">
-        <div className="h-4 w-32 animate-pulse rounded bg-[var(--surface-2)]" />
-        <div className="h-3 w-full max-w-lg animate-pulse rounded bg-[var(--surface-2)]" />
+        <div className="h-3.5 w-28 animate-pulse rounded-sm bg-[var(--surface-2)]" />
+        <div className="h-3 w-full max-w-md animate-pulse rounded-sm bg-[var(--surface-2)]" />
       </div>
-      <div className="space-y-2.5 pt-1">
+      <div className="space-y-2 pt-0.5">
         {Array.from({ length: rows }, (_, i) => (
           <div
             key={i}
-            className="h-9 w-full animate-pulse rounded-lg bg-[var(--surface-2)]"
-            style={{ maxWidth: i === rows - 1 ? "40%" : "100%" }}
+            className="h-8 w-full animate-pulse rounded-sm bg-[var(--surface-2)]"
+            style={{ maxWidth: i === rows - 1 ? "42%" : "100%" }}
           />
         ))}
       </div>
+      {label ? <span className="sr-only">{label}</span> : null}
     </div>
   );
 }

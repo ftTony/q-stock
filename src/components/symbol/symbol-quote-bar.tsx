@@ -66,7 +66,7 @@ export function SymbolQuoteBar({
                 title={t("watchlistExpand")}
                 onClick={onExpandWatchlist}
               >
-                <IconWatchlistExpand className="h-[18px] w-[18px]" />
+                <IconWatchlistExpand className="h-4 w-4" />
               </button>
               <span
                 aria-hidden

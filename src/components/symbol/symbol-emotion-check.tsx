@@ -71,12 +71,10 @@ export function SymbolEmotionCheck({
 
   return (
     <div
-      className={`border-t border-[var(--aw-hairline,var(--border))] pt-3 ${className}`}
+      className={`border-t border-[var(--aw-hairline,var(--border))] pt-2.5 ${className}`}
     >
-      <p className="text-[11px] font-medium leading-none tracking-[-0.08px] text-[var(--muted)]">
-        {t("title")}
-      </p>
-      <div className="mt-2 flex flex-wrap gap-1.5">
+      <p className="aw-metric-label">{t("title")}</p>
+      <div className="mt-1.5 flex flex-wrap gap-1.5">
         {EMOTION_TAG_IDS.map((id) => {
           const on = selected.includes(id);
           const tone = TONE[id];
@@ -86,7 +84,7 @@ export function SymbolEmotionCheck({
               type="button"
               aria-pressed={on}
               onClick={() => toggle(id)}
-              className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[11px] font-medium leading-none tracking-[-0.08px] transition active:scale-95 ${
+              className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[12px] font-medium leading-none tracking-[-0.08px] transition active:scale-95 ${
                 on ? tone.on : `${tone.idle} hover:border-[var(--brand)]/35 hover:text-[var(--foreground)]`
               }`}
             >
@@ -95,9 +93,7 @@ export function SymbolEmotionCheck({
           );
         })}
       </div>
-      <p className="mt-2 text-[11px] leading-snug text-[var(--muted)]">
-        {t("hint")}
-      </p>
+      <p className="aw-caption mt-1.5">{t("hint")}</p>
     </div>
   );
 }

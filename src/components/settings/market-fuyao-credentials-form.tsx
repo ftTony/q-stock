@@ -112,7 +112,7 @@ export function MarketFuyaoCredentialsForm() {
   }
 
   return (
-    <div className="qt-panel w-full space-y-4 p-4">
+    <div className="w-full space-y-4 border-t border-[var(--aw-hairline,var(--border))] pt-5">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{t("credsFuyao")}</h3>
         <span className="text-[11px] text-[var(--muted)]">

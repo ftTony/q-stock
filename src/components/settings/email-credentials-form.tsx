@@ -144,10 +144,10 @@ export function EmailCredentialsForm() {
   }
 
   return (
-    <div className="qt-panel space-y-4 p-5 sm:p-6">
+    <div className="space-y-4">
       <div>
         <h2 className="text-lg font-semibold">{t("emailTitle")}</h2>
-        <p className="mt-3 rounded-lg border border-[var(--border)] bg-[var(--brand-soft)] px-3 py-2.5 text-sm text-[var(--foreground)]">
+        <p className="aw-caption mt-1.5 leading-relaxed">
           {t("credsTrustNote")}
         </p>
         <p className="mt-2 text-xs">

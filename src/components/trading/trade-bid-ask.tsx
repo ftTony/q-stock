@@ -28,7 +28,7 @@ export function TradeBidAsk({
   const askPx = ask ?? lastPrice;
 
   return (
-    <div className="grid grid-cols-2 gap-x-4 rounded-lg border border-[var(--aw-hairline,var(--border))] bg-[var(--aw-pearl,var(--surface-2))]/50 px-3 py-2.5">
+    <div className="grid grid-cols-2 gap-x-5 border border-[var(--aw-hairline,var(--border))] px-3 py-2">
       <button
         type="button"
         className="min-w-0 text-left"
@@ -36,10 +36,8 @@ export function TradeBidAsk({
           if (bidPx != null) onPick(bidPx);
         }}
       >
-        <div className="text-[11px] leading-none text-[var(--muted)]">
-          {t("bid")}
-        </div>
-        <div className="mt-1 truncate text-[14px] font-semibold tabular-nums tracking-[-0.2px] text-[var(--up)]">
+        <div className="aw-metric-label">{t("bid")}</div>
+        <div className="aw-metric-value mt-1 truncate text-[var(--up)]">
           {bidPx != null ? fmtMoney(bidPx) : "—"}
         </div>
       </button>
@@ -50,10 +48,8 @@ export function TradeBidAsk({
           if (askPx != null) onPick(askPx);
         }}
       >
-        <div className="text-[11px] leading-none text-[var(--muted)]">
-          {t("ask")}
-        </div>
-        <div className="mt-1 truncate text-[14px] font-semibold tabular-nums tracking-[-0.2px] text-[var(--down)]">
+        <div className="aw-metric-label">{t("ask")}</div>
+        <div className="aw-metric-value mt-1 truncate text-[var(--down)]">
           {askPx != null ? fmtMoney(askPx) : "—"}
         </div>
       </button>

@@ -25,15 +25,15 @@ function Row({
   step?: number;
 }) {
   return (
-    <div className="border-b border-[var(--border)] px-4 py-3 last:border-0">
+    <div className="border-b border-[var(--aw-hairline,var(--border))] py-3 last:border-0">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
-          <div className="text-[13px] font-medium">{label}</div>
-          <p className="mt-0.5 text-[11px] leading-relaxed text-[var(--muted)]">
-            {hint}
-          </p>
+          <div className="text-[13px] font-medium tracking-[-0.08px]">
+            {label}
+          </div>
+          <p className="aw-caption mt-0.5">{hint}</p>
         </div>
-        <div className="flex shrink-0 items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2.5">
           <input
             type="range"
             min={min}
@@ -43,7 +43,7 @@ function Row({
             onChange={(e) => onChange(Number(e.target.value))}
             className="h-1.5 w-28 accent-[var(--brand)] sm:w-36"
           />
-          <label className="inline-flex h-8 w-16 items-center justify-end gap-0.5 rounded-md border border-[var(--border)] px-1.5 text-[12px] tabular-nums">
+          <label className="inline-flex items-baseline gap-0.5 text-[13px] tabular-nums tracking-[-0.08px]">
             <input
               type="number"
               min={min}
@@ -51,7 +51,7 @@ function Row({
               step={step}
               value={value}
               onChange={(e) => onChange(Number(e.target.value))}
-              className="w-full bg-transparent text-right outline-none"
+              className="w-10 bg-transparent text-right outline-none"
             />
             <span className="text-[var(--muted)]">%</span>
           </label>
@@ -111,11 +111,7 @@ export function PaperRiskSettingsForm() {
   }
 
   if (!settings) {
-    return (
-      <section className="qt-panel p-4 text-sm text-[var(--muted)]">
-        {tCommon("loading")}
-      </section>
-    );
+    return <p className="aw-caption py-2">{tCommon("loading")}</p>;
   }
 
   const pnlLabel =
@@ -124,10 +120,12 @@ export function PaperRiskSettingsForm() {
       : `${t("dayPnl")} ${dayPnlPct >= 0 ? "+" : ""}${dayPnlPct.toFixed(1)}%`;
 
   return (
-    <section className="qt-panel overflow-hidden">
-      <div className="border-b border-[var(--border)] px-4 py-3">
-        <h2 className="text-[15px] font-semibold tracking-tight">{t("title")}</h2>
-        <p className="mt-0.5 text-[12px] text-[var(--muted)]">{t("subtitle")}</p>
+    <section className="space-y-1">
+      <div className="pb-3">
+        <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
+          {t("title")}
+        </h2>
+        <p className="aw-caption mt-1">{t("subtitle")}</p>
       </div>
 
       <form onSubmit={(e) => void save(e)}>
@@ -165,12 +163,12 @@ export function PaperRiskSettingsForm() {
           step={0.5}
         />
 
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--border)] px-4 py-3">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-[var(--aw-hairline,var(--border))] py-3">
           <div>
-            <div className="text-[13px] font-medium">{t("softOnly")}</div>
-            <p className="mt-0.5 text-[11px] text-[var(--muted)]">
-              {t("softOnlyHint")}
-            </p>
+            <div className="text-[13px] font-medium tracking-[-0.08px]">
+              {t("softOnly")}
+            </div>
+            <p className="aw-caption mt-0.5">{t("softOnlyHint")}</p>
           </div>
           <button
             type="button"
@@ -180,9 +178,7 @@ export function PaperRiskSettingsForm() {
               setSettings((s) => (s ? { ...s, softOnly: !s.softOnly } : s))
             }
             className={`relative h-6 w-11 rounded-full transition ${
-              settings.softOnly
-                ? "bg-[var(--up)]"
-                : "bg-[var(--border)]"
+              settings.softOnly ? "bg-[var(--up)]" : "bg-[var(--border)]"
             }`}
           >
             <span
@@ -193,7 +189,7 @@ export function PaperRiskSettingsForm() {
           </button>
         </div>
 
-        <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 text-[12px]">
+        <div className="flex flex-wrap items-center justify-between gap-3 py-2.5 text-[12px]">
           <span className="text-[var(--muted)]">
             {pnlLabel}
             {" · "}
@@ -209,7 +205,7 @@ export function PaperRiskSettingsForm() {
           </span>
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 border-t border-[var(--border)] px-4 py-3">
+        <div className="flex flex-wrap items-center gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-3">
           <SubmitButton
             loading={busy}
             loadingLabel={tCommon("loading")}
@@ -226,7 +222,7 @@ export function PaperRiskSettingsForm() {
           </button>
           <Link
             href="/portfolio"
-            className="ml-auto text-[12px] text-[var(--brand-text)] hover:underline"
+            className="ml-auto aw-text-link text-[12px]"
           >
             {t("toPortfolio")}
           </Link>
@@ -236,7 +232,7 @@ export function PaperRiskSettingsForm() {
         </div>
       </form>
 
-      <p className="border-t border-[var(--border)] bg-[var(--surface-2)] px-4 py-2 text-[11px] text-[var(--muted)]">
+      <p className="aw-caption border-t border-[var(--aw-hairline,var(--border))] pt-3">
         {t("disclaimer")}
       </p>
     </section>

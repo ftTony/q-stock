@@ -4,6 +4,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { StrategyRulesSummary } from "@/components/strategy/strategy-rules-summary";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
@@ -235,6 +236,19 @@ export function SymbolPlanPanel({
     );
   }
 
+  if (!session?.user) {
+    return (
+      <div className="flex min-h-[16rem] flex-1 flex-col items-center justify-center px-4 py-8">
+        <AuthLoginGate
+          compact
+          title={t("planLogin")}
+          body={t("planSubtitle")}
+          hint=""
+        />
+      </div>
+    );
+  }
+
   const result = replay?.status === "done" ? replay.result : null;
 
   return (
@@ -245,34 +259,23 @@ export function SymbolPlanPanel({
         <p className="text-[12px] text-[var(--down)]">{msg}</p>
       ) : null}
 
-      {!session?.user ? (
-        <p className="aw-caption">
-          {t("planLogin")}{" "}
-          <Link href="/login" className="aw-text-link">
-            {t("planLoginLink")}
-          </Link>
-        </p>
-      ) : null}
-
-      {session?.user ? (
-        <div>
-          <label className="aw-caption mb-1.5 block">{t("planBind")}</label>
-          <QtSelect
-            value={strategyId || "__none__"}
-            onChange={(v) => {
-              if (v === "__none__") {
-                bind(null);
-                setActive(null);
-                setReplay(null);
-                return;
-              }
-              const row = mine.find((s) => s.id === v);
-              bind(v, row?.name);
-            }}
-            options={selectOptions}
-          />
-        </div>
-      ) : null}
+      <div>
+        <label className="aw-caption mb-1.5 block">{t("planBind")}</label>
+        <QtSelect
+          value={strategyId || "__none__"}
+          onChange={(v) => {
+            if (v === "__none__") {
+              bind(null);
+              setActive(null);
+              setReplay(null);
+              return;
+            }
+            const row = mine.find((s) => s.id === v);
+            bind(v, row?.name);
+          }}
+          options={selectOptions}
+        />
+      </div>
 
       {!strategyId ? (
         <div className="space-y-2 border-t border-[var(--border)] pt-3">

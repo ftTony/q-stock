@@ -9,7 +9,6 @@ import {
   locales,
   languageLabels,
   localeCode,
-  localizedPath,
   type AppLocale,
 } from "@/i18n/config";
 import { useMounted } from "@/hooks/use-mounted";
@@ -415,7 +414,12 @@ export function TopBarActions({
               <button
                 type="button"
                 className="block w-full px-3 py-2 text-left text-sm text-[var(--down)] hover:bg-[var(--sidebar-hover)]"
-                onClick={() => signOut({ callbackUrl: localizedPath(locale) })}
+                onClick={() => {
+                  setMenuOpen(false);
+                  void signOut({ redirect: false }).then(() => {
+                    router.refresh();
+                  });
+                }}
               >
                 {t("logout")}
               </button>

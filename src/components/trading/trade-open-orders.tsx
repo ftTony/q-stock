@@ -32,21 +32,19 @@ export function TradeOpenOrders({
   if (orders.length === 0) return null;
 
   return (
-    <div className="border-t border-[var(--border)] pt-3">
-      <h3 className="aw-caption-strong mb-2 text-[13px]">
-        {t("openOrders")}
-      </h3>
-      <ul className="space-y-2 text-[13px]">
+    <div className="border-t border-[var(--aw-hairline,var(--border))] pt-2.5">
+      <h3 className="aw-metric-label mb-1.5">{t("openOrders")}</h3>
+      <ul className="divide-y divide-[var(--aw-hairline,var(--border))] text-[12px]">
         {orders.map((o) => (
           <li
             key={o.id}
-            className="flex items-start justify-between gap-2 border-b border-[var(--border)]/60 pb-2 last:border-0"
+            className="flex items-start justify-between gap-2 py-2 first:pt-0 last:pb-0"
           >
             <div>
-              <div className="font-medium">
+              <div className="font-medium tracking-[-0.08px]">
                 {t(o.side)} · {t(o.type)} · {o.qty}
               </div>
-              <div className="text-[var(--muted)] tabular-nums">
+              <div className="aw-caption mt-0.5 tabular-nums">
                 {o.type === "limit" && o.limitPrice != null
                   ? `@ ${fmtMoney(o.limitPrice)}`
                   : o.type === "stop" && o.stopPrice != null
@@ -58,7 +56,7 @@ export function TradeOpenOrders({
               type="button"
               disabled={busy}
               onClick={() => onCancel(o.id)}
-              className="shrink-0 text-[var(--brand-text)] hover:underline disabled:opacity-50"
+              className="aw-text-link shrink-0 text-[12px] disabled:opacity-50"
             >
               {t("cancel")}
             </button>

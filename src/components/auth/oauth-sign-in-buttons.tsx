@@ -78,7 +78,7 @@ export function OAuthSignInButtons({
                   callbackUrl ?? localizedPath(locale, "/auth/continue"),
               });
             }}
-            className="qt-btn flex h-12 w-12 items-center justify-center rounded-xl"
+            className="qt-btn flex h-11 w-11 items-center justify-center rounded-full border-[var(--border)] bg-[var(--panel)]"
           >
             {id === "google" ? <GoogleMark /> : <GitHubMark />}
           </button>

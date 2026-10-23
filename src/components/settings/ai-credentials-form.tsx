@@ -163,10 +163,12 @@ export function AiCredentialsForm() {
   }
 
   return (
-    <div className="qt-panel space-y-3 p-4">
+    <div className="space-y-3 border-t border-[var(--aw-hairline,var(--border))] pt-4">
       <div>
-        <h2 className="text-sm font-semibold">{t("aiTitle")}</h2>
-        <p className="mt-2 rounded-lg border border-[var(--border)] bg-[var(--brand-soft)] px-3 py-2 text-xs leading-relaxed text-[var(--foreground)]">
+        <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
+          {t("aiTitle")}
+        </h2>
+        <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--muted)]">
           {t("credsTrustNote")}
         </p>
         <p className="mt-2 text-[11px]">

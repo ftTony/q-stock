@@ -199,7 +199,7 @@ export function SettingsPanel({
 
   if (section === "trading") {
     return (
-      <div className="settings-ui space-y-4">
+      <div className="settings-ui">
         <PaperRiskSettingsForm />
       </div>
     );
@@ -207,7 +207,7 @@ export function SettingsPanel({
 
   if (section === "market") {
     return (
-      <div className="settings-ui space-y-4">
+      <div className="settings-ui space-y-5">
         <MarketVendorPrefs />
         <Suspense
           fallback={<PanelSkeleton rows={4} label={tCommon("loading")} />}
@@ -224,11 +224,8 @@ export function SettingsPanel({
 
   if (section === "account") {
     return (
-      <div className="settings-ui space-y-4">
-        <form
-          onSubmit={onSave}
-          className="space-y-3.5 rounded-none border border-[var(--aw-hairline,var(--border))] p-4"
-        >
+      <div className="settings-ui space-y-0">
+        <form onSubmit={onSave} className="space-y-3.5 pb-4">
           <label className="block space-y-1.5 text-sm">
             <span className="block text-[var(--muted)]">{t("name")}</span>
             <input

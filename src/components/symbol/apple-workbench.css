@@ -680,7 +680,7 @@ html.aw-rail-resizing {
 
 /* Trade dock buy/sell — compact, clear up/down contrast */
 .aw-trade-side {
-  height: 36px;
+  height: 34px;
   border-radius: 8px;
   border: 1px solid var(--aw-hairline);
   background: var(--aw-pearl, var(--surface-2));

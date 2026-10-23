@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { localizedPath } from "@/i18n/config";
 import { SiteLogo } from "@/components/brand/site-logo";
+import { IconSettingsGear } from "@/components/symbol/watchlist-toggle-icons";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
 
 /** Icon-rail width (product chrome — always compact). */
@@ -72,23 +73,6 @@ function IconLab({ className = "h-[18px] w-[18px]" }: { className?: string }) {
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
       <path d="M9 3v7.2L4.8 18.5A1.8 1.8 0 0 0 6.4 21h11.2a1.8 1.8 0 0 0 1.6-2.5L15 10.2V3" />
       <path d="M8.5 3h7" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconGear({ className = "h-[18px] w-[18px]" }: { className?: string }) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
     </svg>
   );
 }
@@ -244,7 +228,7 @@ export function AppSidebar({ onNavigate }: Props) {
       <div className="flex shrink-0 items-center justify-center border-t border-[var(--border)] px-1.5 py-1.5">
         <RailItem
           active={settingsModal?.open}
-          icon={<IconGear />}
+          icon={<IconSettingsGear className="h-[18px] w-[18px]" />}
           label={t("settings")}
           onNavigate={onNavigate}
           onClick={() => settingsModal?.openSettings()}

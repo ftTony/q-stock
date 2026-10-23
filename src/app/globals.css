@@ -199,6 +199,16 @@ select.qt-input::-ms-expand {
   line-height: 1.25;
 }
 
+/* Invite row actions stay compact (override settings-ui 14px). */
+.settings-ui .invite-action-btn {
+  height: 28px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  font-weight: 500;
+  line-height: 1 !important;
+  border-radius: 9999px;
+}
+
 /* Field captions not wrapped in <label> (e.g. next to QtSelect) */
 .settings-ui :is(.space-y-1, .space-y-1\.5) > span:first-child {
   font-size: 14px !important;
