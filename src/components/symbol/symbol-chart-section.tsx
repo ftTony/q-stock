@@ -12,6 +12,7 @@ import {
   type IndicatorFlags,
 } from "@/components/charts/candle-chart";
 import { INDICATOR_KEYS } from "@/components/charts/candle-chart-overlays";
+import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
 import {
   isIntradayResolution,
   type AssetType,
@@ -181,8 +182,8 @@ export function SymbolChartSection({
           />
         </div>
       ) : intradayEmpty ? (
-        <div className="aw-caption flex min-h-[280px] flex-1 items-center justify-center px-6 text-center text-[14px] lg:min-h-0">
-          {intradayUnavailableLabel}
+        <div className="flex min-h-[280px] flex-1 items-center justify-center lg:min-h-0">
+          <EmptyStateBlock art="chart" label={intradayUnavailableLabel} />
         </div>
       ) : (
         <div className="min-h-0 flex-1 [&_>div]:h-full [&_>div]:rounded-none [&_>div]:border-0">

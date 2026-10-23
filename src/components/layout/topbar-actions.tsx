@@ -15,6 +15,7 @@ import { useMounted } from "@/hooks/use-mounted";
 import { getEquitySession } from "@/lib/market/session";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
+import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
 
 type AlertItem = {
   id: string;
@@ -221,8 +222,8 @@ export function TopBarActions({
             )}
           </button>
           {notifOpen && (
-            <div className={`${pop} w-72 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl`}>
-              <div className="flex items-center justify-between border-b border-[var(--border)] px-3 py-2">
+            <div className={`${pop} w-72 overflow-hidden rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] shadow-xl`}>
+              <div className="flex items-center justify-between border-b border-[var(--aw-hairline,var(--border))] px-3 py-2">
                 <span className="text-sm font-semibold">{t("alerts")}</span>
                 <Link
                   href="/alerts"
@@ -233,9 +234,7 @@ export function TopBarActions({
                 </Link>
               </div>
               {recent.length === 0 ? (
-                <div className="px-3 py-6 text-center text-xs text-[var(--muted)]">
-                  {tAlerts("empty")}
-                </div>
+                <EmptyStateBlock art="history" label={tAlerts("empty")} compact />
               ) : (
                 <ul className="max-h-72 overflow-auto">
                   {recent.map((a) => (
@@ -300,7 +299,7 @@ export function TopBarActions({
         {langOpen && (
           <div
             role="listbox"
-            className={`${pop} w-52 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1 shadow-[0_8px_30px_rgba(15,23,42,0.12)]`}
+            className={`${pop} w-52 overflow-hidden rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] p-1 shadow-[0_8px_30px_rgba(15,23,42,0.12)]`}
           >
             {locales.map((l) => {
               const active = l === locale;
@@ -310,7 +309,7 @@ export function TopBarActions({
                   type="button"
                   role="option"
                   aria-selected={active}
-                  className={`flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition-colors hover:bg-[var(--sidebar-hover)] ${
+                  className={`flex w-full items-center gap-2 rounded-none px-2.5 py-2 text-left text-sm transition-colors hover:bg-[var(--sidebar-hover)] ${
                     active
                       ? "bg-[var(--brand-soft)] font-semibold text-[var(--brand-text)]"
                       : "text-[var(--foreground)]"
@@ -321,7 +320,7 @@ export function TopBarActions({
                   }}
                 >
                   <span
-                    className={`inline-flex w-7 items-center justify-center rounded border px-0.5 py-0.5 text-[10px] font-bold ${
+                    className={`inline-flex w-7 items-center justify-center rounded-none border px-0.5 py-0.5 text-[10px] font-bold ${
                       active
                         ? "border-[var(--brand-text)] text-[var(--brand-text)]"
                         : "border-[var(--border)] bg-[var(--sidebar-hover)] text-[var(--muted)]"
@@ -374,8 +373,8 @@ export function TopBarActions({
             ).toUpperCase()}
           </button>
           {menuOpen && (
-            <div className={`${pop} w-48 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl`}>
-              <div className="border-b border-[var(--border)] px-3 py-2.5">
+            <div className={`${pop} w-48 overflow-hidden rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] shadow-xl`}>
+              <div className="border-b border-[var(--aw-hairline,var(--border))] px-3 py-2.5">
                 <div className="truncate text-sm font-medium text-[var(--foreground)]">
                   {session.user.name?.trim() ||
                     session.user.email?.split("@")[0] ||

@@ -1,7 +1,6 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { PaginatedList } from "@/components/ui/paginated-list";
 import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
 import { formatDate } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
@@ -22,7 +21,7 @@ type Props = {
   loadingLabel: string;
 };
 
-/** Combined news + press drawer body with inner tabs (no grey band). */
+/** Combined news + press drawer — chip tabs, scrollable list, no divider lines. */
 export function SymbolDockNewsPanel({
   feedTab,
   onFeedTabChange,
@@ -40,14 +39,14 @@ export function SymbolDockNewsPanel({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div role="tablist" className="aw-dock-feed-tabs flex shrink-0 items-stretch px-2">
+      <div role="tablist" className="aw-dock-feed-tabs aw-dock-feed-tabs--nolines shrink-0">
         <button
           type="button"
           role="tab"
           aria-selected={feedTab === "news"}
           data-active={feedTab === "news"}
           onClick={() => onFeedTabChange("news")}
-          className="aw-tab"
+          className="aw-dock-chip"
         >
           {t("news")}
         </button>
@@ -58,59 +57,54 @@ export function SymbolDockNewsPanel({
             aria-selected={feedTab === "press"}
             data-active={feedTab === "press"}
             onClick={() => onFeedTabChange("press")}
-            className="aw-tab"
+            className="aw-dock-chip"
           >
             {t("press")}
           </button>
         ) : null}
       </div>
 
-      <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-1">
+      <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4 pt-0">
         {feedTab === "news" ? (
           tabLoading ? (
             <p className="aw-caption flex min-h-[12rem] items-center justify-center">
               {loadingLabel}
             </p>
+          ) : news.length === 0 ? (
+            <EmptyStateBlock
+              art="news"
+              label={degraded ? degradedLabel : errorLabel}
+            />
           ) : (
-            <PaginatedList
-              items={news}
-              pageSize={8}
-              resetKey={`dock-news-${news.length}-${news[0]?.headline ?? ""}`}
-              empty={
-                <EmptyStateBlock
-                  art="news"
-                  label={degraded ? degradedLabel : errorLabel}
-                />
-              }
-              renderItem={(n, i) => (
-                <li
-                  key={`${n.url || n.headline}-${i}`}
-                  className="space-y-1 border-b border-[var(--aw-hairline,var(--border))] py-3.5 last:border-0"
-                >
+            <ul className="space-y-2">
+              {news.map((n, i) => (
+                <li key={`${n.url || n.headline}-${i}`}>
                   <a
                     href={n.url || "#"}
                     target="_blank"
                     rel="noreferrer"
-                    className="block text-[14px] font-semibold leading-[1.35] tracking-[-0.2px] text-[var(--aw-ink)] hover:text-[var(--aw-primary)]"
+                    className="aw-dock-feed-item space-y-1"
                   >
-                    {n.headline}
+                    <span className="block text-[14px] font-semibold leading-[1.35] tracking-[-0.2px] text-[var(--aw-ink)]">
+                      {n.headline}
+                    </span>
+                    {n.summary ? (
+                      <p className="aw-caption line-clamp-2 leading-[1.45]">
+                        {n.summary}
+                      </p>
+                    ) : null}
+                    <div className="aw-caption pt-0.5">
+                      {n.source}
+                      {n.datetime
+                        ? ` · ${formatDate(
+                            n.datetime > 1e12 ? n.datetime : n.datetime * 1000,
+                          )}`
+                        : ""}
+                    </div>
                   </a>
-                  {n.summary ? (
-                    <p className="aw-caption line-clamp-2 leading-[1.45]">
-                      {n.summary}
-                    </p>
-                  ) : null}
-                  <div className="aw-caption pt-0.5">
-                    {n.source}
-                    {n.datetime
-                      ? ` · ${formatDate(
-                          n.datetime > 1e12 ? n.datetime : n.datetime * 1000,
-                        )}`
-                      : ""}
-                  </div>
                 </li>
-              )}
-            />
+              ))}
+            </ul>
           )
         ) : !showPress ? (
           <p className="aw-caption flex min-h-[12rem] items-center justify-center">
@@ -120,39 +114,34 @@ export function SymbolDockNewsPanel({
           <p className="aw-caption flex min-h-[12rem] items-center justify-center">
             {loadingLabel}
           </p>
+        ) : press.length === 0 ? (
+          <EmptyStateBlock art="news" label={degradedLabel} />
         ) : (
-          <PaginatedList
-            items={press}
-            pageSize={8}
-            resetKey={`dock-press-${press.length}-${press[0]?.headline ?? ""}`}
-            empty={
-              <EmptyStateBlock art="news" label={degradedLabel} />
-            }
-            renderItem={(p, i) => (
-              <li
-                key={`${p.url || p.headline}-${i}`}
-                className="space-y-1 border-b border-[var(--aw-hairline,var(--border))] py-3.5 last:border-0"
-              >
+          <ul className="space-y-2">
+            {press.map((p, i) => (
+              <li key={`${p.url || p.headline}-${i}`}>
                 <a
                   href={p.url || "#"}
                   target="_blank"
                   rel="noreferrer"
-                  className="block text-[14px] font-semibold leading-[1.35] tracking-[-0.2px] text-[var(--aw-ink)] hover:text-[var(--aw-primary)]"
+                  className="aw-dock-feed-item space-y-1"
                 >
-                  {p.headline || p.description || "Press release"}
+                  <span className="block text-[14px] font-semibold leading-[1.35] tracking-[-0.2px] text-[var(--aw-ink)]">
+                    {p.headline || p.description || "Press release"}
+                  </span>
+                  {p.description && p.headline ? (
+                    <p className="aw-caption line-clamp-2 leading-[1.45]">
+                      {p.description}
+                    </p>
+                  ) : null}
+                  <div className="aw-caption pt-0.5">
+                    {p.datetime ? formatDate(p.datetime) : ""}
+                    {p.source ? ` · ${p.source}` : ""}
+                  </div>
                 </a>
-                {p.description && p.headline ? (
-                  <p className="aw-caption line-clamp-2 leading-[1.45]">
-                    {p.description}
-                  </p>
-                ) : null}
-                <div className="aw-caption pt-0.5">
-                  {p.datetime ? formatDate(p.datetime) : ""}
-                  {p.source ? ` · ${p.source}` : ""}
-                </div>
               </li>
-            )}
-          />
+            ))}
+          </ul>
         )}
       </div>
     </div>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
 import { InlineLoading } from "@/components/ui/panel-skeleton";
 import type { AssetType } from "@/lib/types";
 
@@ -97,11 +98,7 @@ export function AiChatHistoryPanel(props: {
         )}
 
         {rows && rows.length === 0 && !error && (
-          <div className="flex min-h-[14rem] items-center justify-center px-6 text-center">
-            <p className="max-w-[18rem] text-[13px] leading-relaxed text-[var(--aw-ink-muted-48,var(--muted))]">
-              {t("historyEmpty")}
-            </p>
-          </div>
+          <EmptyStateBlock art="history" label={t("historyEmpty")} compact />
         )}
 
         {rows && rows.length > 0 && (

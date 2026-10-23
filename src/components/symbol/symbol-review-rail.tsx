@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
+import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
 import { formatNumber, formatTime } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 
@@ -113,7 +114,7 @@ export function SymbolReviewRail({
     <div className="flex min-h-full flex-col px-3 pb-3 pt-2">
       <div
         role="tablist"
-        className="flex shrink-0 border-b border-[var(--aw-hairline,var(--border))]"
+        className="aw-chip-tabs aw-chip-tabs--flush shrink-0"
       >
         {(
           [
@@ -129,7 +130,7 @@ export function SymbolReviewRail({
             aria-selected={filter === value}
             data-active={filter === value}
             onClick={() => setFilter(value)}
-            className="aw-tab"
+            className="aw-chip"
           >
             {label}
           </button>
@@ -143,10 +144,7 @@ export function SymbolReviewRail({
       ) : null}
 
       {empty ? (
-        <div className="flex flex-1 flex-col items-center justify-center gap-2 px-2 py-10 text-center">
-          <p className="text-[13px] tracking-[-0.08px] text-[var(--muted)]">
-            {t("reviewEmpty")}
-          </p>
+        <EmptyStateBlock art="review" label={t("reviewEmpty")} compact>
           {onOpenPlan ? (
             <button
               type="button"
@@ -156,7 +154,7 @@ export function SymbolReviewRail({
               {t("reviewGoPlan")}
             </button>
           ) : null}
-        </div>
+        </EmptyStateBlock>
       ) : null}
 
       {!loading && filtered.length > 0 ? (

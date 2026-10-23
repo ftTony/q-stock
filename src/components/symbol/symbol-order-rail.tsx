@@ -30,7 +30,7 @@ const SymbolRailMarket = dynamic(
   { ssr: false },
 );
 
-export type RailTab = "plan" | "review";
+export type RailTab = "market" | "plan" | "review";
 
 type Props = {
   symbol: string;
@@ -55,6 +55,10 @@ function RailScroll({ children }: { children: ReactNode }) {
   );
 }
 
+function defaultTab(showMarket: boolean): RailTab {
+  return showMarket ? "market" : "plan";
+}
+
 export function SymbolOrderRail({
   symbol,
   assetType,
@@ -64,25 +68,26 @@ export function SymbolOrderRail({
   onRequestOrder,
 }: Props) {
   const t = useTranslations("symbolRail");
-  const showDepth = assetType !== "crypto" && !isIndex;
-  const [tab, setTab] = useState<RailTab>("plan");
-  const [marketOpen, setMarketOpen] = useState(false);
+  const showMarket = assetType !== "crypto" && !isIndex;
+  const [tab, setTab] = useState<RailTab>(() => defaultTab(showMarket));
   const [strategyId, setStrategyId] = useState<string | null>(null);
   const [nameById, setNameById] = useState<Record<string, string>>({});
 
   useEffect(() => {
     if (focusPlanToken <= 0) return;
-    setMarketOpen(false);
     setTab("plan");
   }, [focusPlanToken]);
 
   useEffect(() => {
     setStrategyId(null);
-    setMarketOpen(false);
-    setTab("plan");
+    setTab(defaultTab(showMarket));
     onBoundStrategyChange?.(null, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reset on symbol switch only
   }, [symbol, assetType]);
+
+  useEffect(() => {
+    if (!showMarket && tab === "market") setTab("plan");
+  }, [showMarket, tab]);
 
   const handleStrategyIdChange = useCallback(
     (id: string | null, name?: string | null) => {
@@ -103,6 +108,9 @@ export function SymbolOrderRail({
   );
 
   const railOptions: { value: RailTab; label: string }[] = [
+    ...(showMarket
+      ? ([{ value: "market" as const, label: t("market") }] as const)
+      : []),
     { value: "plan", label: t("plan") },
     { value: "review", label: t("review") },
   ];
@@ -118,38 +126,23 @@ export function SymbolOrderRail({
             key={opt.value}
             type="button"
             role="tab"
-            aria-selected={!marketOpen && tab === opt.value}
-            data-active={!marketOpen && tab === opt.value}
-            onClick={() => {
-              setMarketOpen(false);
-              setTab(opt.value);
-            }}
+            aria-selected={tab === opt.value}
+            data-active={tab === opt.value}
+            onClick={() => setTab(opt.value)}
             className="aw-tab flex-1 justify-center"
           >
             {opt.label}
           </button>
         ))}
-        {showDepth ? (
-          <button
-            type="button"
-            role="tab"
-            aria-selected={marketOpen}
-            data-active={marketOpen}
-            onClick={() => setMarketOpen(true)}
-            className="aw-tab flex-1 justify-center"
-          >
-            {t("market")}
-          </button>
-        ) : null}
       </div>
 
-      {showDepth && marketOpen ? (
+      {tab === "market" && showMarket ? (
         <RailScroll>
           <SymbolRailMarket symbol={symbol} assetType={assetType} />
         </RailScroll>
       ) : null}
 
-      {!marketOpen && tab === "plan" ? (
+      {tab === "plan" ? (
         <RailScroll>
           <SymbolPlanPanel
             symbol={symbol}
@@ -161,7 +154,7 @@ export function SymbolOrderRail({
         </RailScroll>
       ) : null}
 
-      {!marketOpen && tab === "review" ? (
+      {tab === "review" ? (
         <RailScroll>
           <SymbolReviewRail
             symbol={symbol}

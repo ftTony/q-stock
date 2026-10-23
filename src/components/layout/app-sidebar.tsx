@@ -225,10 +225,10 @@ export function AppSidebar({ onNavigate }: Props) {
         />
       </nav>
 
-      <div className="flex shrink-0 items-center justify-center border-t border-[var(--border)] px-1.5 py-1.5">
+      <div className="flex shrink-0 items-center justify-center border-t border-[var(--border)] px-1.5 py-1">
         <RailItem
           active={settingsModal?.open}
-          icon={<IconSettingsGear className="h-[18px] w-[18px]" />}
+          icon={<IconSettingsGear className="h-3.5 w-3.5" />}
           label={t("settings")}
           onNavigate={onNavigate}
           onClick={() => settingsModal?.openSettings()}

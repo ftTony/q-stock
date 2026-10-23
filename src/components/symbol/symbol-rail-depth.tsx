@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
 import { useRailDepth } from "@/components/symbol/use-rail-depth";
 import { formatNumber, formatTime } from "@/lib/format-number";
 import type { DepthBook, TradeTick } from "@/lib/market/book-types";
@@ -65,9 +66,7 @@ function TicksList({
         {title}
       </p>
       {rows.length === 0 ? (
-        <p className="mt-2 text-[12px] leading-[1.47] tracking-[-0.12px] text-[var(--muted)]">
-          {empty}
-        </p>
+        <EmptyStateBlock art="depth" label={empty} compact />
       ) : (
         <div className="mt-1.5">
           <div className={`${grid} border-b border-[var(--aw-hairline,var(--border))] pb-1 ${head}`}>
@@ -126,9 +125,11 @@ function BookList({
 }) {
   if (!book) {
     return (
-      <div className="space-y-2 p-3">
-        <p className="text-[12px] font-medium text-[var(--muted)]">{labels.title}</p>
-        <p className="text-[12px] leading-relaxed text-[var(--muted)]">{empty}</p>
+      <div className="p-1">
+        <p className="px-2 pt-2 text-[12px] font-medium text-[var(--muted)]">
+          {labels.title}
+        </p>
+        <EmptyStateBlock art="depth" label={empty} compact />
       </div>
     );
   }
@@ -227,13 +228,11 @@ export function SymbolRailDepth({
 
   if (unavailable) {
     return (
-      <div className="flex min-h-[240px] flex-col items-center justify-center gap-2 px-3 py-8 text-center">
-        <p className="text-sm font-medium text-[var(--foreground)]">
-          {mode === "book" ? t("bookTitle") : t("ticksTitle")}
-        </p>
-        <p className="max-w-[16rem] text-[12px] leading-relaxed text-[var(--muted)]">
-          {mode === "book" ? t("bookEmpty") : t("ticksEmpty")}
-        </p>
+      <EmptyStateBlock
+        art="depth"
+        label={mode === "book" ? t("bookEmpty") : t("ticksEmpty")}
+        compact
+      >
         {detail ? (
           <p className="max-w-[18rem] break-all text-[11px] leading-relaxed text-[var(--muted)] opacity-80">
             {detail}
@@ -241,11 +240,11 @@ export function SymbolRailDepth({
         ) : null}
         <Link
           href="/advanced-quotes"
-          className="text-[12px] text-[var(--brand-text)] hover:underline"
+          className="aw-text-link text-[12px]"
         >
           {t("advancedQuotes")}
         </Link>
-      </div>
+      </EmptyStateBlock>
     );
   }
 
@@ -253,22 +252,16 @@ export function SymbolRailDepth({
     return (
       <div className="divide-y divide-[var(--border)]">
         {locked || (!book && !trades.length) ? (
-          <div className="space-y-1 px-3 py-3 text-center">
-            <p className="text-[12px] leading-relaxed text-[var(--muted)]">
-              {t("bookEmpty")}
-            </p>
+          <EmptyStateBlock art="depth" label={t("bookEmpty")} compact>
             {detail ? (
               <p className="break-all text-[11px] leading-relaxed text-[var(--muted)] opacity-80">
                 {detail}
               </p>
             ) : null}
-            <Link
-              href="/advanced-quotes"
-              className="inline-block text-[12px] text-[var(--brand-text)] hover:underline"
-            >
+            <Link href="/advanced-quotes" className="aw-text-link text-[12px]">
               {t("advancedQuotes")} →
             </Link>
-          </div>
+          </EmptyStateBlock>
         ) : null}
         {locked || (!book && !trades.length) ? null : (
           <>

@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
+import { EmptyReviewArt } from "@/components/symbol/symbol-empty-art";
 import { StrategyRulesSummary } from "@/components/strategy/strategy-rules-summary";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
@@ -278,8 +279,13 @@ export function SymbolPlanPanel({
       </div>
 
       {!strategyId ? (
-        <div className="space-y-2 border-t border-[var(--border)] pt-3">
-          <p className="text-[12px] text-[var(--muted)]">{t("planEmpty")}</p>
+        <div className="space-y-3 border-t border-[var(--aw-hairline,var(--border))] pt-3">
+          <div className="flex flex-col items-center gap-2 py-2 text-center">
+            <EmptyReviewArt />
+            <p className="text-[13px] tracking-[-0.08px] text-[var(--muted)]">
+              {t("planEmpty")}
+            </p>
+          </div>
           <ul className="divide-y divide-[var(--aw-hairline,var(--border))]">
             {templates.slice(0, 4).map((tpl) => (
               <li
@@ -294,7 +300,7 @@ export function SymbolPlanPanel({
                   loading={busy}
                   loadingLabel="…"
                   onClick={() => void copyTemplate(tpl.id)}
-                  className="!h-7 shrink-0 !rounded-full !border-0 !bg-[var(--brand)] !px-2.5 !py-0 !text-[12px] !font-normal !leading-none !text-white"
+                  className="!h-7 shrink-0 !rounded-none !border-0 !bg-[var(--brand)] !px-2.5 !py-0 !text-[12px] !font-normal !leading-none !text-white"
                 >
                   {t("planUseTemplate")}
                 </SubmitButton>
@@ -342,7 +348,7 @@ export function SymbolPlanPanel({
                 loading={busy}
                 loadingLabel={tSt("loading")}
                 onClick={() => void runReplay()}
-                className="min-w-0 flex-1 !h-9 !rounded-full !border !border-[var(--border)] !bg-[var(--panel)] !px-3 !py-0 !text-[13px] !font-normal !text-[var(--foreground)]"
+                className="min-w-0 flex-1 !h-9 !rounded-none !border !border-[var(--aw-hairline,var(--border))] !bg-[var(--panel)] !px-3 !py-0 !text-[13px] !font-normal !text-[var(--foreground)]"
               >
                 {t("planRunReplay")}
               </SubmitButton>
