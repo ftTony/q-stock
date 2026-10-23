@@ -44,7 +44,9 @@ export function TradeCalmFields({
   return (
     <>
       <div>
-        <label className="aw-metric-label mb-1 block">{t("invalidationPrice")}</label>
+        <label className="aw-metric-label mb-1.5 block">
+          {t("invalidationPrice")}
+        </label>
         <input
           type="number"
           min="0"
@@ -52,13 +54,13 @@ export function TradeCalmFields({
           value={invalidationPrice}
           onChange={(e) => onInvalidationPrice(e.target.value)}
           placeholder={t("invalidationPlaceholder")}
-          className="qt-input w-full px-2.5 py-2 tabular-nums"
+          className="qt-input h-9 w-full px-3 text-[13px] tabular-nums leading-none"
         />
       </div>
 
       {strategies.length > 0 || strategyId ? (
         <div>
-          <label className="aw-metric-label mb-1 block">{t("strategyTag")}</label>
+          <label className="aw-metric-label mb-1.5 block">{t("strategyTag")}</label>
           <QtSelect
             value={strategyId || "__none__"}
             onChange={(v) => onStrategyId(v === "__none__" ? "" : v)}

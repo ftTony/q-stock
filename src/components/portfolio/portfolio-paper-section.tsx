@@ -4,6 +4,7 @@ import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { fmtMoney } from "@/components/portfolio/format";
 import type { PaperOrder, PaperPosition } from "@/components/portfolio/types";
+import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
 
 type Props = {
   cash: number;
@@ -55,6 +56,10 @@ export function PortfolioPaperSection({
   onCancelOrder,
   labels,
 }: Props) {
+  const settingsModal = useSettingsModalOptional();
+  const riskBtnClass =
+    "qt-btn qt-btn-ghost h-8 border border-[var(--border)] px-3 text-[12px]";
+
   return (
     <section className="qt-panel space-y-4 p-4 sm:p-5">
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -63,12 +68,19 @@ export function PortfolioPaperSection({
           <p className="text-sm text-[var(--muted)]">{labels.accountDesc}</p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          <Link
-            href="/settings"
-            className="qt-btn qt-btn-ghost h-8 border border-[var(--border)] px-3 text-[12px]"
-          >
-            {labels.riskSettings}
-          </Link>
+          {settingsModal ? (
+            <button
+              type="button"
+              className={riskBtnClass}
+              onClick={() => settingsModal.openSettings()}
+            >
+              {labels.riskSettings}
+            </button>
+          ) : (
+            <Link href="/settings" className={riskBtnClass}>
+              {labels.riskSettings}
+            </Link>
+          )}
           <SubmitButton
             type="button"
             loading={resetting}

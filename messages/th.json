@@ -424,7 +424,13 @@
     "credsFuyaoHint": "ใส่ X-api-key ของ Fuyao สำหรับราคา ดัชนี และกลุ่มหุ้น A เก็บแบบเข้ารหัส",
     "credsFuyaoApiKey": "API Key (X-api-key)",
     "credsSaveFuyao": "บันทึก Fuyao",
-    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)"
+    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)",
+    "guestLockedHint": "After sign-in: copy invite codes, add market API keys, paper risk, and AI credentials.",
+    "navGeneral": "General",
+    "navTrading": "Trading",
+    "navMarket": "Market data",
+    "navAccount": "Account",
+    "loginToSection": "Sign in to manage this section"
   },
   "alerts": {
     "title": "การแจ้งเตือนราคา",
@@ -459,7 +465,10 @@
     "post": "โพสต์",
     "empty": "ยังไม่มีความคิดเห็น",
     "loginRequired": "เข้าสู่ระบบเพื่อแสดงความคิดเห็น",
-    "delete": "ลบ"
+    "delete": "ลบ",
+    "loginTitle": "Sign in to comment",
+    "loginBody": "Share your view on this symbol and join the discussion after you sign in.",
+    "loginHint": "Comments are tied to your account."
   },
   "earnings": {
     "empty": "ไม่มีข้อมูลผลประกอบการ",
@@ -505,6 +514,9 @@
   "trading": {
     "title": "เทรดจำลอง",
     "loginRequired": "เข้าสู่ระบบเพื่อเทรดจำลอง",
+    "loginTitle": "Sign in to paper trade",
+    "loginBody": "See paper account risk, place orders, and manage open orders for this symbol. Bind a rule in Plan first for cleaner review.",
+    "loginHint": "Paper trading is for practice only — not investment advice.",
     "login": "เข้าสู่ระบบ",
     "loading": "กำลังโหลด…",
     "cash": "กำลังซื้อ",

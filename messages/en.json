@@ -431,7 +431,13 @@
     "credsFuyao": "Tonghuashun Fuyao (A-shares)",
     "credsFuyaoHint": "Paste your Fuyao X-api-key for A-share quotes, indices, and sectors. Stored encrypted.",
     "credsFuyaoApiKey": "API Key (X-api-key)",
-    "credsSaveFuyao": "Save Fuyao"
+    "credsSaveFuyao": "Save Fuyao",
+    "guestLockedHint": "After sign-in: copy invite codes, add market API keys, paper risk, and AI credentials.",
+    "navGeneral": "General",
+    "navTrading": "Trading",
+    "navMarket": "Market data",
+    "navAccount": "Account",
+    "loginToSection": "Sign in to manage this section"
   },
   "alerts": {
     "title": "Price alerts",
@@ -466,7 +472,10 @@
     "post": "Post",
     "empty": "No comments yet",
     "loginRequired": "Sign in to comment",
-    "delete": "Delete"
+    "delete": "Delete",
+    "loginTitle": "Sign in to comment",
+    "loginBody": "Share your view on this symbol and join the discussion after you sign in.",
+    "loginHint": "Comments are tied to your account."
   },
   "earnings": {
     "empty": "No earnings data",
@@ -512,6 +521,9 @@
   "trading": {
     "title": "Paper trade",
     "loginRequired": "Sign in to paper trade",
+    "loginTitle": "Sign in to paper trade",
+    "loginBody": "See paper account risk, place orders, and manage open orders for this symbol. Bind a rule in Plan first for cleaner review.",
+    "loginHint": "Paper trading is for practice only — not investment advice.",
     "login": "Log in",
     "loading": "Loading…",
     "cash": "Buying power",

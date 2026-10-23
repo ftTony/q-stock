@@ -110,21 +110,25 @@ export function SymbolWatchlistPanel({
         <span className="text-right">{t("watchlistColChg")}</span>
       </div>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain qt-scroll">
+      <div className="qt-scroll flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
         {status === "loading" ? (
-          <p className="aw-caption px-3 py-8 text-center">{tCommon("loading")}</p>
+          <p className="aw-caption flex flex-1 items-center justify-center px-3 py-8 text-center">
+            {tCommon("loading")}
+          </p>
         ) : status === "unauthenticated" ? (
-          <div className="px-3 py-8">
-            <AuthLoginGate />
+          <div className="flex flex-1 flex-col items-center justify-center px-3 py-6">
+            <AuthLoginGate compact />
           </div>
         ) : loading && rows.length === 0 ? (
-          <p className="aw-caption px-3 py-8 text-center">{tCommon("loading")}</p>
+          <p className="aw-caption flex flex-1 items-center justify-center px-3 py-8 text-center">
+            {tCommon("loading")}
+          </p>
         ) : error ? (
-          <p className="aw-caption px-3 py-8 text-center text-[var(--down)]">
+          <p className="aw-caption flex flex-1 items-center justify-center px-3 py-8 text-center text-[var(--down)]">
             {error}
           </p>
         ) : rows.length === 0 ? (
-          <p className="aw-caption px-3 py-8 text-center">
+          <p className="aw-caption flex flex-1 items-center justify-center px-3 py-8 text-center">
             {tMarket("watchlistEmpty")}
           </p>
         ) : (

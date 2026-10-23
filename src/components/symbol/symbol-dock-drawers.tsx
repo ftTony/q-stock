@@ -2,7 +2,9 @@
 
 import dynamic from "next/dynamic";
 import { Suspense, type FormEvent } from "react";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { SideDrawer } from "@/components/ui/side-drawer";
 import type { AssetType } from "@/lib/types";
 import type {
@@ -60,7 +62,6 @@ type Props = {
   currentUserId?: string;
   commentsPlaceholder: string;
   commentsPost: string;
-  commentsLoginRequired: string;
   commentsEmpty: string;
   commentsDelete: string;
   tabLoading: boolean;
@@ -96,7 +97,6 @@ export function SymbolDockDrawers({
   currentUserId,
   commentsPlaceholder,
   commentsPost,
-  commentsLoginRequired,
   commentsEmpty,
   commentsDelete,
   tabLoading,
@@ -107,6 +107,9 @@ export function SymbolDockDrawers({
 }: Props) {
   const t = useTranslations("symbol");
   const tRail = useTranslations("symbolRail");
+  const tTrading = useTranslations("trading");
+  const { data: session, status: authStatus } = useSession();
+  const tradeAuthed = authStatus === "authenticated" && Boolean(session?.user);
 
   const title =
     dock === "trade"
@@ -127,57 +130,77 @@ export function SymbolDockDrawers({
     >
       {dock === "trade" ? (
         <div className="aw-dock-scroll flex min-h-0 flex-1 flex-col overflow-y-auto">
-          <SymbolPaperRiskBar
-            symbol={symbol}
-            assetType={assetType}
-            lastPrice={lastPrice}
-          />
-          {strategyName ? (
-            <div className="flex items-center justify-between gap-2 border-b border-[var(--border)] px-4 py-2">
-              <span className="aw-caption truncate">
-                {tRail("orderRuleTag")}:{" "}
-                <span className="text-[var(--foreground)]">{strategyName}</span>
-              </span>
-              <button
-                type="button"
-                className="aw-text-link shrink-0 text-[12px]"
-                onClick={() => {
-                  onClose();
-                  onOpenPlan();
-                }}
-              >
-                {tRail("orderChangeRule")}
-              </button>
+          {authStatus === "loading" ? (
+            <p className="aw-caption flex flex-1 items-center justify-center px-4 py-8 text-center">
+              {loadingLabel}
+            </p>
+          ) : !tradeAuthed ? (
+            <div className="flex flex-1 flex-col items-center justify-center px-4 py-8">
+              <AuthLoginGate
+                compact
+                title={tTrading("loginTitle")}
+                body={tTrading("loginBody")}
+                hint={tTrading("loginHint")}
+              />
             </div>
           ) : (
-            <div className="border-b border-[var(--border)] px-4 py-2">
-              <button
-                type="button"
-                className="aw-text-link text-[12px]"
-                onClick={() => {
-                  onClose();
-                  onOpenPlan();
-                }}
+            <>
+              <SymbolPaperRiskBar
+                symbol={symbol}
+                assetType={assetType}
+                lastPrice={lastPrice}
+              />
+              {strategyName ? (
+                <div className="flex h-9 items-center justify-between gap-2 border-b border-[var(--aw-hairline,var(--border))] px-4">
+                  <span className="min-w-0 truncate text-[12px] text-[var(--muted)]">
+                    {tRail("orderRuleTag")}
+                    <span className="mx-1 text-[var(--border)]">·</span>
+                    <span className="font-medium text-[var(--foreground)]">
+                      {strategyName}
+                    </span>
+                  </span>
+                  <button
+                    type="button"
+                    className="aw-text-link shrink-0 text-[12px]"
+                    onClick={() => {
+                      onClose();
+                      onOpenPlan();
+                    }}
+                  >
+                    {tRail("orderChangeRule")}
+                  </button>
+                </div>
+              ) : (
+                <div className="flex h-9 items-center border-b border-[var(--aw-hairline,var(--border))] px-4">
+                  <button
+                    type="button"
+                    className="aw-text-link text-[12px]"
+                    onClick={() => {
+                      onClose();
+                      onOpenPlan();
+                    }}
+                  >
+                    {tRail("orderSuggestRule")}
+                  </button>
+                </div>
+              )}
+              <Suspense
+                fallback={
+                  <p className="aw-caption p-4">{loadingLabel}</p>
+                }
               >
-                {tRail("orderSuggestRule")}
-              </button>
-            </div>
+                <TradePanel
+                  symbol={symbol}
+                  assetType={assetType}
+                  lastPrice={lastPrice}
+                  bid={bid}
+                  ask={ask}
+                  onOpenAi={onOpenAi}
+                  strategyId={strategyId ?? ""}
+                />
+              </Suspense>
+            </>
           )}
-          <Suspense
-            fallback={
-              <p className="aw-caption p-4">{loadingLabel}</p>
-            }
-          >
-            <TradePanel
-              symbol={symbol}
-              assetType={assetType}
-              lastPrice={lastPrice}
-              bid={bid}
-              ask={ask}
-              onOpenAi={onOpenAi}
-              strategyId={strategyId ?? ""}
-            />
-          </Suspense>
         </div>
       ) : null}
 
@@ -208,7 +231,6 @@ export function SymbolDockDrawers({
           currentUserId={currentUserId}
           commentsPlaceholder={commentsPlaceholder}
           commentsPost={commentsPost}
-          commentsLoginRequired={commentsLoginRequired}
           commentsEmpty={commentsEmpty}
           commentsDelete={commentsDelete}
           tabLoading={tabLoading}

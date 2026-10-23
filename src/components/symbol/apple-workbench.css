@@ -678,6 +678,30 @@ html.aw-rail-resizing {
   padding: 8px 6px;
 }
 
+/* Trade dock buy/sell — compact, clear up/down contrast */
+.aw-trade-side {
+  height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--aw-hairline);
+  background: var(--aw-pearl, var(--surface-2));
+  overflow: hidden;
+}
+
+.aw-trade-side [role="tab"] {
+  height: 100%;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.08px;
+  border-radius: 0;
+}
+
+.aw-trade-side .aw-trade-side-pill {
+  top: 2px;
+  bottom: 2px;
+  border-radius: 6px;
+}
+
 .aw-tab {
   display: inline-flex;
   align-items: center;

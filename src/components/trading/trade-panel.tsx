@@ -4,7 +4,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { SegmentedControl } from "@/components/ui/segmented-control";
@@ -292,25 +292,29 @@ export function TradePanel({
 
   if (!session?.user) {
     return (
-      <div className="space-y-3 p-3">
-        <p className="aw-caption">{t("loginRequired")}</p>
-        <Link href="/login" className="aw-btn-pill inline-flex">
-          {t("login")}
-        </Link>
+      <div className="flex min-h-[16rem] flex-1 flex-col items-center justify-center px-4 py-8">
+        <AuthLoginGate
+          compact
+          title={t("loginTitle")}
+          body={t("loginBody")}
+          hint={t("loginHint")}
+        />
       </div>
     );
   }
 
   return (
-    <div className="space-y-3 p-3">
+    <div className="space-y-3 px-4 py-3">
       <TopToast
         key={msgKey}
         message={msg}
         tone={msgTone}
         onDismiss={() => setMsg(null)}
       />
-      <div className="flex items-baseline justify-between gap-2">
-        <span className="aw-caption">{t("paperBadge")}</span>
+      <div className="flex items-center justify-between gap-2">
+        <span className="rounded-full bg-[var(--aw-parchment,var(--surface-2))] px-2 py-0.5 text-[11px] font-medium tracking-[-0.08px] text-[var(--muted)]">
+          {t("paperBadge")}
+        </span>
         {loading ? <span className="aw-caption">{t("loading")}</span> : null}
       </div>
 
@@ -322,29 +326,29 @@ export function TradePanel({
       <SegmentedControl
         value={side}
         onChange={setSide}
-        className="aw-side-seg border-b border-[var(--border)]"
+        className="aw-trade-side"
         buttonClassName="flex-1"
         options={[
           {
             value: "buy",
             label: t("buy"),
             indicatorClassName:
-              "bg-[color-mix(in_srgb,var(--up)_14%,transparent)]",
+              "bg-[color-mix(in_srgb,var(--up)_16%,var(--aw-canvas,#fff))]",
             activeTextClassName: "text-[var(--up)] font-semibold",
           },
           {
             value: "sell",
             label: t("sell"),
             indicatorClassName:
-              "bg-[color-mix(in_srgb,var(--down)_14%,transparent)]",
+              "bg-[color-mix(in_srgb,var(--down)_16%,var(--aw-canvas,#fff))]",
             activeTextClassName: "text-[var(--down)] font-semibold",
           },
         ]}
       />
 
-      <form onSubmit={onSubmit} className="space-y-2.5">
+      <form onSubmit={onSubmit} className="space-y-3">
         <div>
-          <label className="aw-metric-label mb-1 block">{t("orderType")}</label>
+          <label className="aw-metric-label mb-1.5 block">{t("orderType")}</label>
           <QtSelect
             value={orderType}
             onChange={(v) => setOrderType(v as OrderType)}
@@ -357,7 +361,7 @@ export function TradePanel({
         </div>
 
         <div>
-          <label className="aw-metric-label mb-1 block">{t("qty")}</label>
+          <label className="aw-metric-label mb-1.5 block">{t("qty")}</label>
           <input
             type="number"
             min="0"
@@ -365,7 +369,7 @@ export function TradePanel({
             required
             value={qty}
             onChange={(e) => setQty(e.target.value)}
-            className="qt-input w-full px-2.5 py-2 tabular-nums"
+            className="qt-input h-9 w-full px-3 text-[13px] tabular-nums leading-none"
           />
         </div>
 
@@ -381,7 +385,7 @@ export function TradePanel({
 
         {orderType === "limit" && (
           <div>
-            <label className="aw-metric-label mb-1 block">{t("limitPrice")}</label>
+            <label className="aw-metric-label mb-1.5 block">{t("limitPrice")}</label>
             <input
               type="number"
               min="0"
@@ -389,14 +393,14 @@ export function TradePanel({
               required
               value={limitPrice}
               onChange={(e) => setLimitPrice(e.target.value)}
-              className="qt-input w-full px-2.5 py-2 tabular-nums"
+              className="qt-input h-9 w-full px-3 text-[13px] tabular-nums leading-none"
             />
           </div>
         )}
 
         {orderType === "stop" && (
           <div>
-            <label className="aw-metric-label mb-1 block">{t("stopPrice")}</label>
+            <label className="aw-metric-label mb-1.5 block">{t("stopPrice")}</label>
             <input
               type="number"
               min="0"
@@ -404,14 +408,16 @@ export function TradePanel({
               required
               value={stopPrice}
               onChange={(e) => setStopPrice(e.target.value)}
-              className="qt-input w-full px-2.5 py-2 tabular-nums"
+              className="qt-input h-9 w-full px-3 text-[13px] tabular-nums leading-none"
             />
           </div>
         )}
 
-        <div className="flex items-baseline justify-between gap-2 border-t border-[var(--border)] pt-2">
+        <div className="flex items-baseline justify-between gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-2.5">
           <span className="aw-metric-label">{t("estimate")}</span>
-          <span className="aw-metric-value">${fmtMoney(estimate)}</span>
+          <span className="text-[15px] font-semibold tabular-nums tracking-[-0.2px] text-[var(--foreground)]">
+            ${fmtMoney(estimate)}
+          </span>
         </div>
 
         {aiDraft ? (
@@ -454,7 +460,7 @@ export function TradePanel({
           loading={busy}
           loadingLabel={t("loading")}
           disabled={!(qtyNum > 0)}
-          className={`w-full !rounded-full !border-0 py-2.5 text-[14px] font-semibold !text-white hover:!opacity-100 ${
+          className={`mt-1 inline-flex h-10 w-full items-center justify-center !rounded-full !border-0 text-[14px] font-semibold !text-white hover:!opacity-100 ${
             side === "buy"
               ? "!bg-[var(--up)] hover:!brightness-110 hover:!bg-[var(--up)]"
               : "!bg-[var(--down)] hover:!brightness-110 hover:!bg-[var(--down)]"

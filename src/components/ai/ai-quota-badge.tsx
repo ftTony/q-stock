@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AI_QUOTA_CHANGED } from "@/lib/ai/quota-events";
+import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
 
 type Quota = { used: number; limit: number; remaining: number };
 
@@ -15,6 +16,7 @@ export function AiQuotaBadge(props: {
 }) {
   const { status } = useSession();
   const t = useTranslations("ai");
+  const settingsModal = useSettingsModalOptional();
   const [quota, setQuota] = useState<Quota | null>(null);
 
   const load = useCallback(async () => {
@@ -59,9 +61,19 @@ export function AiQuotaBadge(props: {
       {quota.remaining === 0 ? (
         <>
           {" "}
-          <Link href="/settings" className="text-[var(--brand-text)] underline">
-            {t("inviteForMore")}
-          </Link>
+          {settingsModal ? (
+            <button
+              type="button"
+              className="text-[var(--brand-text)] underline"
+              onClick={() => settingsModal.openSettings()}
+            >
+              {t("inviteForMore")}
+            </button>
+          ) : (
+            <Link href="/settings" className="text-[var(--brand-text)] underline">
+              {t("inviteForMore")}
+            </Link>
+          )}
         </>
       ) : null}
     </p>

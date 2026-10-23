@@ -424,7 +424,13 @@
     "credsFuyaoHint": "Fuyao の X-api-key を登録すると A 株の気配・指数・業種が利用可能。暗号化保存。",
     "credsFuyaoApiKey": "API Key（X-api-key）",
     "credsSaveFuyao": "Fuyao を保存",
-    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)"
+    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)",
+    "guestLockedHint": "After sign-in: copy invite codes, add market API keys, paper risk, and AI credentials.",
+    "navGeneral": "General",
+    "navTrading": "Trading",
+    "navMarket": "Market data",
+    "navAccount": "Account",
+    "loginToSection": "Sign in to manage this section"
   },
   "alerts": {
     "title": "価格アラート",
@@ -459,7 +465,10 @@
     "post": "投稿",
     "empty": "コメントはまだありません",
     "loginRequired": "コメントするにはログインしてください",
-    "delete": "削除"
+    "delete": "削除",
+    "loginTitle": "Sign in to comment",
+    "loginBody": "Share your view on this symbol and join the discussion after you sign in.",
+    "loginHint": "Comments are tied to your account."
   },
   "earnings": {
     "empty": "決算データはありません",
@@ -505,6 +514,9 @@
   "trading": {
     "title": "ペーパートレード",
     "loginRequired": "ペーパートレードにはログインが必要です",
+    "loginTitle": "Sign in to paper trade",
+    "loginBody": "See paper account risk, place orders, and manage open orders for this symbol. Bind a rule in Plan first for cleaner review.",
+    "loginHint": "Paper trading is for practice only — not investment advice.",
     "login": "ログイン",
     "loading": "読み込み中…",
     "cash": "買付余力",

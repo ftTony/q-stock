@@ -424,7 +424,13 @@
     "credsFuyaoHint": "Masukkan X-api-key Fuyao untuk sebut harga, indeks dan sektor A. Disimpan disulitkan.",
     "credsFuyaoApiKey": "API Key (X-api-key)",
     "credsSaveFuyao": "Simpan Fuyao",
-    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)"
+    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)",
+    "guestLockedHint": "After sign-in: copy invite codes, add market API keys, paper risk, and AI credentials.",
+    "navGeneral": "General",
+    "navTrading": "Trading",
+    "navMarket": "Market data",
+    "navAccount": "Account",
+    "loginToSection": "Sign in to manage this section"
   },
   "alerts": {
     "title": "Amaran harga",
@@ -459,7 +465,10 @@
     "post": "Hantar",
     "empty": "Tiada komen lagi",
     "loginRequired": "Log masuk untuk memberi komen",
-    "delete": "Padam"
+    "delete": "Padam",
+    "loginTitle": "Sign in to comment",
+    "loginBody": "Share your view on this symbol and join the discussion after you sign in.",
+    "loginHint": "Comments are tied to your account."
   },
   "earnings": {
     "empty": "Tiada data pendapatan",
@@ -505,6 +514,9 @@
   "trading": {
     "title": "Dagangan simulasi",
     "loginRequired": "Log masuk untuk dagangan simulasi",
+    "loginTitle": "Sign in to paper trade",
+    "loginBody": "See paper account risk, place orders, and manage open orders for this symbol. Bind a rule in Plan first for cleaner review.",
+    "loginHint": "Paper trading is for practice only — not investment advice.",
     "login": "Log masuk",
     "loading": "Memuat…",
     "cash": "Kuasa beli",

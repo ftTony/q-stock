@@ -4,6 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { localizedPath } from "@/i18n/config";
 import { SiteLogo } from "@/components/brand/site-logo";
+import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
 
 /** Icon-rail width (product chrome — always compact). */
 export const SIDEBAR_WIDTH_EXPANDED = 56;
@@ -77,9 +78,17 @@ function IconLab({ className = "h-[18px] w-[18px]" }: { className?: string }) {
 
 function IconGear({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="12" r="3" />
-      <path d="M12 3.5v2.2M12 18.3v2.2M3.5 12h2.2M18.3 12h2.2M6.2 6.2l1.6 1.6M16.2 16.2l1.6 1.6M17.8 6.2l-1.6 1.6M7.8 16.2l-1.6 1.6" strokeLinecap="round" />
+      <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z" />
     </svg>
   );
 }
@@ -91,14 +100,17 @@ function RailItem({
   label,
   onNavigate,
   hard,
+  onClick,
 }: {
-  href: string;
+  href?: string;
   active?: boolean;
   icon: React.ReactNode;
   label: string;
   onNavigate?: () => void;
   /** Full page navigation (marketing/home). */
   hard?: boolean;
+  /** Prefer over href when set (e.g. settings modal). */
+  onClick?: () => void;
 }) {
   const className = `flex h-10 w-10 items-center justify-center rounded-lg transition ${
     active
@@ -106,7 +118,24 @@ function RailItem({
       : "text-[color-mix(in_srgb,var(--muted)_88%,transparent)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
   }`;
 
-  if (hard) {
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        title={label}
+        aria-label={label}
+        className={className}
+        onClick={() => {
+          onClick();
+          onNavigate?.();
+        }}
+      >
+        {icon}
+      </button>
+    );
+  }
+
+  if (hard && href) {
     return (
       <a href={href} title={label} aria-label={label} className={className}>
         {icon}
@@ -116,7 +145,7 @@ function RailItem({
 
   return (
     <Link
-      href={href}
+      href={href ?? "/"}
       title={label}
       aria-label={label}
       onClick={onNavigate}
@@ -148,7 +177,7 @@ export function AppSidebar({ onNavigate }: Props) {
   const isReview = pathname.startsWith("/review");
   const isStrategies = pathname.startsWith("/strategies");
   const isAlerts = pathname.startsWith("/alerts");
-  const isSettings = pathname.startsWith("/settings");
+  const settingsModal = useSettingsModalOptional();
 
   return (
     <aside className="flex h-full w-full flex-col border-r border-[var(--border)] bg-[var(--sidebar)]">
@@ -212,13 +241,13 @@ export function AppSidebar({ onNavigate }: Props) {
         />
       </nav>
 
-      <div className="flex flex-col items-center gap-1.5 border-t border-[var(--border)] px-1.5 py-3">
+      <div className="flex shrink-0 items-center justify-center border-t border-[var(--border)] px-1.5 py-1.5">
         <RailItem
-          href="/settings"
-          active={isSettings}
+          active={settingsModal?.open}
           icon={<IconGear />}
           label={t("settings")}
           onNavigate={onNavigate}
+          onClick={() => settingsModal?.openSettings()}
         />
       </div>
     </aside>

@@ -14,6 +14,8 @@ import {
 } from "@/i18n/config";
 import { useMounted } from "@/hooks/use-mounted";
 import { getEquitySession } from "@/lib/market/session";
+import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
+import { useLoginModalOptional } from "@/components/auth/login-modal-context";
 
 type AlertItem = {
   id: string;
@@ -111,6 +113,8 @@ export function TopBarActions({
   const menuRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
   const langRef = useRef<HTMLDivElement>(null);
+  const settingsModal = useSettingsModalOptional();
+  const loginModal = useLoginModalOptional();
 
   useEffect(() => {
     if (!showNotifications || !session?.user) {
@@ -384,13 +388,16 @@ export function TopBarActions({
                   </div>
                 )}
               </div>
-              <Link
-                href="/settings"
-                className="block px-3 py-2 text-sm hover:bg-[var(--sidebar-hover)]"
-                onClick={() => setMenuOpen(false)}
+              <button
+                type="button"
+                className="block w-full px-3 py-2 text-left text-sm hover:bg-[var(--sidebar-hover)]"
+                onClick={() => {
+                  setMenuOpen(false);
+                  settingsModal?.openSettings();
+                }}
               >
                 {t("settings")}
-              </Link>
+              </button>
               <Link
                 href="/portfolio"
                 className="block px-3 py-2 text-sm hover:bg-[var(--sidebar-hover)]"
@@ -417,9 +424,22 @@ export function TopBarActions({
         </div>
       ) : (
         <div className="flex items-center gap-2">
-          <Link href="/login" className="qt-btn qt-btn-primary h-9 px-3 text-xs">
-            {t("login")}
-          </Link>
+          {loginModal ? (
+            <button
+              type="button"
+              className="qt-btn-primary inline-flex h-7 items-center justify-center rounded-full px-3 text-[12px] font-semibold leading-none"
+              onClick={loginModal.openLogin}
+            >
+              {t("login")}
+            </button>
+          ) : (
+            <Link
+              href="/login"
+              className="qt-btn-primary inline-flex h-7 items-center justify-center rounded-full px-3 text-[12px] font-semibold leading-none no-underline"
+            >
+              {t("login")}
+            </Link>
+          )}
         </div>
       )}
     </div>

@@ -24,7 +24,7 @@ type Props = {
   officers: CompanyOfficer[];
 };
 
-/** Earnings + company profile (merged「基本面」tab). */
+/** Company profile then earnings (merged「基本面」tab). */
 export function SymbolFundamentalsPanel({
   earnings,
   earningsUpcoming,
@@ -38,20 +38,21 @@ export function SymbolFundamentalsPanel({
   const t = useTranslations("symbol");
 
   return (
-    <div className="space-y-8">
-      <section className="space-y-3">
-        <h3 className="text-[13px] font-semibold tracking-tight text-[var(--foreground)]">
+    <div className="space-y-7">
+      <section className="space-y-4">
+        <h3 className="text-[13px] font-semibold tracking-[-0.15px] text-[var(--foreground)]">
           {t("profile")}
         </h3>
         <CompanyProfilePanel profile={company} />
         {officers.length > 0 ? (
-          <div className="border-t border-[var(--aw-hairline,var(--border))] pt-5">
+          <div className="border-t border-[var(--aw-hairline,var(--border))] pt-4">
             <OfficersPanel officers={officers} title={t("officers")} />
           </div>
         ) : null}
       </section>
-      <section className="space-y-3 border-t border-[var(--aw-hairline,var(--border))] pt-6">
-        <h3 className="text-[13px] font-semibold tracking-tight text-[var(--foreground)]">
+
+      <section className="space-y-4 border-t border-[var(--aw-hairline,var(--border))] pt-6">
+        <h3 className="text-[13px] font-semibold tracking-[-0.15px] text-[var(--foreground)]">
           {t("earnings")}
         </h3>
         <EarningsPanel

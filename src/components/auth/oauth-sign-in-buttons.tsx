@@ -11,10 +11,16 @@ type Props = {
   disabled?: boolean;
   /** Fired when an OAuth redirect starts (or clears). */
   onBusyChange?: (busy: boolean) => void;
+  /** Override post-OAuth return URL (e.g. stay on symbol page from login modal). */
+  callbackUrl?: string;
 };
 
 /** Google / GitHub icon buttons in a row; only shows providers enabled on the server. */
-export function OAuthSignInButtons({ disabled, onBusyChange }: Props) {
+export function OAuthSignInButtons({
+  disabled,
+  onBusyChange,
+  callbackUrl,
+}: Props) {
   const t = useTranslations("auth");
   const locale = useLocale();
   const [providers, setProviders] = useState<OAuthId[]>([]);
@@ -68,7 +74,8 @@ export function OAuthSignInButtons({ disabled, onBusyChange }: Props) {
             onClick={() => {
               setBusy(id);
               void signIn(id, {
-                callbackUrl: localizedPath(locale, "/auth/continue"),
+                callbackUrl:
+                  callbackUrl ?? localizedPath(locale, "/auth/continue"),
               });
             }}
             className="qt-btn flex h-12 w-12 items-center justify-center rounded-xl"

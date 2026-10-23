@@ -84,6 +84,8 @@ export function SegmentedControl<T extends string>({
       <div
         aria-hidden
         className={`pointer-events-none absolute bottom-1 left-0 top-1 rounded-lg ${pillClass} ${
+          className.includes("aw-trade-side") ? "aw-trade-side-pill" : ""
+        } ${
           pill.ready
             ? "transition-[transform,width,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
             : "opacity-0"

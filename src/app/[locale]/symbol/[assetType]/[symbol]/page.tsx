@@ -51,16 +51,21 @@ export default async function SymbolPage({ params }: Props) {
           "aiScenario",
           "alerts",
           "comments",
+          "common",
           "company",
           "earnings",
+          "market",
+          "nav",
           "orderRisk",
           "paperRiskBar",
+          "settings",
           "symbol",
           "symbolEmotion",
           "symbolRail",
           "symbolShare",
           "strategies",
           "trading",
+          "watchlist",
         ]}
       >
         <SymbolPageClient

@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
 import { formatNumber } from "@/lib/format-number";
 import { DEFAULT_RISK_SETTINGS } from "@/lib/trading/risk-math";
 import type { AssetType } from "@/lib/types";
@@ -45,15 +44,23 @@ function Cell({
         : "";
   return (
     <div className="min-w-0 text-left">
-      <div className="aw-metric-label">{label}</div>
+      <div className="text-[11px] leading-none tracking-[-0.08px] text-[var(--muted)]">
+        {label}
+      </div>
       <div
-        className={`mt-0.5 truncate ${
-          primary ? "aw-metric-value" : "aw-caption tabular-nums"
+        className={`mt-1 truncate tabular-nums tracking-[-0.2px] ${
+          primary
+            ? "text-[14px] font-semibold text-[var(--foreground)]"
+            : "text-[13px] font-medium text-[var(--foreground)]"
         } ${color}`}
       >
         {value}
       </div>
-      {hint ? <div className="aw-metric-label truncate">{hint}</div> : null}
+      {hint ? (
+        <div className="mt-0.5 truncate text-[10px] leading-tight text-[var(--muted)]">
+          {hint}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -113,16 +120,8 @@ export function SymbolPaperRiskBar({
 
   if (status === "loading") return null;
 
-  if (!session?.user) {
-    return (
-      <div className="aw-caption border-b border-[var(--border)] px-3 py-2.5 text-left">
-        {t("loginHint")}{" "}
-        <Link href="/login" className="aw-text-link">
-          {t("login")}
-        </Link>
-      </div>
-    );
-  }
+  // Guest empty state lives in the trade dock (AuthLoginGate); stay quiet here.
+  if (!session?.user) return null;
 
   if (cash == null) return null;
 
@@ -148,12 +147,10 @@ export function SymbolPaperRiskBar({
   const nearCap = symbolPct >= maxPct * 0.8;
 
   return (
-    <div className="space-y-2 border-b border-[var(--border)] px-3 py-2.5">
-      <div className="grid grid-cols-2 gap-x-3">
+    <div className="space-y-2.5 border-b border-[var(--aw-hairline,var(--border))] px-4 py-3">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-2.5">
         <Cell label={t("equity")} value={`$${money(equity)}`} primary />
         <Cell label={t("cash")} value={`$${money(cash)}`} primary />
-      </div>
-      <div className="grid grid-cols-2 gap-x-3 border-t border-[var(--border)] pt-2">
         <Cell
           label={t("exposure")}
           value={`$${money(gross)} (${exposurePct.toFixed(2)}%)`}

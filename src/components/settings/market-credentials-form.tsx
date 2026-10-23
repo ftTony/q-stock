@@ -18,12 +18,19 @@ type Status = MarketCredsStatus;
 
 type FutuMode = "appkey" | "bearer";
 
-export function MarketCredentialsForm() {
+export function MarketCredentialsForm({
+  forceSetupKeys = false,
+  onSetupKeysDone,
+}: {
+  forceSetupKeys?: boolean;
+  onSetupKeysDone?: () => void;
+} = {}) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
   const searchParams = useSearchParams();
   const router = useRouter();
-  const setupKeys = searchParams.get("setupKeys") === "1";
+  const setupKeys =
+    forceSetupKeys || searchParams.get("setupKeys") === "1";
   const panelRef = useRef<HTMLDivElement>(null);
 
   const [status, setStatus] = useState<Status | null>(null);
@@ -115,7 +122,8 @@ export function MarketCredentialsForm() {
       /* ignore */
     }
     if (setupKeys && hasAnyBrokerCreds(next)) {
-      router.replace("/settings");
+      onSetupKeysDone?.();
+      if (!forceSetupKeys) router.replace("/settings");
     }
   }
 

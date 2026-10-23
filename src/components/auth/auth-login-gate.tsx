@@ -2,12 +2,17 @@
 
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { useLoginModalOptional } from "@/components/auth/login-modal-context";
 
-function AuthLoginArt() {
+function AuthLoginArt({ compact }: { compact?: boolean }) {
   return (
     <svg
       viewBox="0 0 160 120"
-      className="h-28 w-auto text-[var(--brand)]"
+      className={
+        compact
+          ? "h-16 w-auto text-[var(--brand)]"
+          : "h-28 w-auto text-[var(--brand)]"
+      }
       aria-hidden
     >
       <ellipse cx="80" cy="108" rx="44" ry="7" fill="currentColor" opacity="0.1" />
@@ -51,35 +56,71 @@ function AuthLoginArt() {
   );
 }
 
-/** Centered sign-in prompt for account-only pages (watchlist / alerts / portfolio). */
+/** Centered sign-in prompt for account-only surfaces. */
 export function AuthLoginGate(props: {
   className?: string;
-  title: string;
-  body: string;
+  title?: string;
+  body?: string;
   hint?: string;
+  /** Narrow column (e.g. symbol watchlist) — tighter art + full-width CTA. */
+  compact?: boolean;
 }) {
   const tNav = useTranslations("nav");
+  const tWatch = useTranslations("watchlist");
+  const loginModal = useLoginModalOptional();
+  const title = props.title ?? tWatch("loginTitle");
+  const body = props.body ?? tWatch("loginBody");
+  const hint = props.hint ?? tWatch("loginHint");
+  const compact = Boolean(props.compact);
+  const ctaClass = compact
+    ? "qt-btn-primary mt-4 inline-flex h-9 w-full max-w-[12rem] items-center justify-center rounded-full px-5 text-[13px] font-medium no-underline"
+    : "qt-btn-primary mt-5 inline-flex h-10 min-w-[7.5rem] items-center justify-center rounded-full px-6 text-[14px] font-medium no-underline";
 
   return (
     <div
-      className={`qt-panel flex min-h-[calc(100dvh-11rem)] w-full flex-col items-center justify-center px-6 py-10 text-center lg:min-h-[calc(100dvh-7rem)] ${props.className ?? ""}`}
+      className={
+        compact
+          ? `flex w-full flex-col items-center px-1 text-center ${props.className ?? ""}`
+          : `qt-panel flex min-h-[calc(100dvh-11rem)] w-full flex-col items-center justify-center px-6 py-10 text-center lg:min-h-[calc(100dvh-7rem)] ${props.className ?? ""}`
+      }
     >
-      <AuthLoginArt />
-      <h3 className="mt-4 text-base font-semibold tracking-tight">
-        {props.title}
-      </h3>
-      <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-[var(--muted)]">
-        {props.body}
-      </p>
-      <Link
-        href="/login"
-        className="qt-btn-primary mt-5 inline-flex h-10 items-center justify-center rounded-lg px-5 text-[14px] font-medium"
+      <AuthLoginArt compact={compact} />
+      <h3
+        className={
+          compact
+            ? "mt-3 text-[13px] font-semibold tracking-tight text-[var(--foreground)]"
+            : "mt-4 text-base font-semibold tracking-tight"
+        }
       >
-        {tNav("login")}
-      </Link>
-      {props.hint ? (
-        <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-[var(--muted)]">
-          {props.hint}
+        {title}
+      </h3>
+      <p
+        className={
+          compact
+            ? "mt-1.5 max-w-[16rem] text-[12px] leading-relaxed text-[var(--muted)]"
+            : "mt-2 max-w-2xl text-[14px] leading-relaxed text-[var(--muted)]"
+        }
+      >
+        {body}
+      </p>
+      {loginModal ? (
+        <button type="button" className={ctaClass} onClick={loginModal.openLogin}>
+          {tNav("login")}
+        </button>
+      ) : (
+        <Link href="/login" className={ctaClass}>
+          {tNav("login")}
+        </Link>
+      )}
+      {hint ? (
+        <p
+          className={
+            compact
+              ? "mt-2.5 max-w-[16rem] text-[11px] leading-relaxed text-[var(--muted)]"
+              : "mt-3 max-w-2xl text-[14px] leading-relaxed text-[var(--muted)]"
+          }
+        >
+          {hint}
         </p>
       ) : null}
     </div>

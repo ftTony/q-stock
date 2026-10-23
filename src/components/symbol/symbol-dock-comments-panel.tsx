@@ -1,6 +1,8 @@
 "use client";
 
 import type { FormEvent } from "react";
+import { useTranslations } from "next-intl";
+import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { formatDateTime } from "@/lib/format-number";
 import type { CommentRow } from "@/components/symbol/symbol-tabs-panel";
@@ -16,14 +18,13 @@ type Props = {
   currentUserId?: string;
   commentsPlaceholder: string;
   commentsPost: string;
-  commentsLoginRequired: string;
   commentsEmpty: string;
   commentsDelete: string;
   tabLoading: boolean;
   loadingLabel: string;
 };
 
-/** Comments dock — composer on top, list / centered empty below. */
+/** Comments dock — composer on top when signed in; guest uses AuthLoginGate. */
 export function SymbolDockCommentsPanel({
   comments,
   commentText,
@@ -35,35 +36,45 @@ export function SymbolDockCommentsPanel({
   currentUserId,
   commentsPlaceholder,
   commentsPost,
-  commentsLoginRequired,
   commentsEmpty,
   commentsDelete,
   tabLoading,
   loadingLabel,
 }: Props) {
+  const t = useTranslations("comments");
+
+  if (!canComment) {
+    return (
+      <div className="flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-8">
+        <AuthLoginGate
+          compact
+          title={t("loginTitle")}
+          body={t("loginBody")}
+          hint={t("loginHint")}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="shrink-0 border-b border-[var(--aw-hairline,var(--border))] px-5 py-3">
-        {canComment ? (
-          <form onSubmit={onPostComment} className="flex items-center gap-2">
-            <input
-              value={commentText}
-              onChange={(e) => onCommentTextChange(e.target.value)}
-              placeholder={commentsPlaceholder}
-              className="qt-input h-9 min-w-0 flex-1 px-3 text-[13px] leading-none"
-            />
-            <SubmitButton
-              type="submit"
-              loading={commentBusy}
-              loadingLabel={loadingLabel}
-              className="aw-btn-pill h-9 shrink-0 px-4 text-[13px]"
-            >
-              {commentsPost}
-            </SubmitButton>
-          </form>
-        ) : (
-          <p className="aw-caption py-1">{commentsLoginRequired}</p>
-        )}
+        <form onSubmit={onPostComment} className="flex items-center gap-2">
+          <input
+            value={commentText}
+            onChange={(e) => onCommentTextChange(e.target.value)}
+            placeholder={commentsPlaceholder}
+            className="qt-input h-9 min-w-0 flex-1 px-3 text-[13px] leading-none"
+          />
+          <SubmitButton
+            type="submit"
+            loading={commentBusy}
+            loadingLabel={loadingLabel}
+            className="aw-btn-pill h-9 shrink-0 px-4 text-[13px]"
+          >
+            {commentsPost}
+          </SubmitButton>
+        </form>
       </div>
 
       <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-3">

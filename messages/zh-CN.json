@@ -333,7 +333,7 @@
     "emailTaken": "该邮箱已注册"
   },
   "settings": {
-    "title": "用户设置",
+    "title": "设置",
     "name": "昵称",
     "language": "语言",
     "theme": "主题",
@@ -446,7 +446,13 @@
     "credsFuyao": "同花顺扶摇 Fuyao（A股）",
     "credsFuyaoHint": "填写扶摇 X-api-key 后可拉取 A 股行情、指数与板块；密钥加密存于本站。",
     "credsFuyaoApiKey": "API Key（X-api-key）",
-    "credsSaveFuyao": "保存扶摇"
+    "credsSaveFuyao": "保存扶摇",
+    "guestLockedHint": "登录后可：复制邀请码、配置行情 Key、模拟盘风控与 AI 密钥。",
+    "navGeneral": "通用",
+    "navTrading": "交易",
+    "navMarket": "行情",
+    "navAccount": "账号",
+    "loginToSection": "登录后可管理本页设置"
   },
   "alerts": {
     "title": "价格提醒",
@@ -481,7 +487,10 @@
     "post": "发布",
     "empty": "暂无评论",
     "loginRequired": "登录后可评论",
-    "delete": "删除"
+    "delete": "删除",
+    "loginTitle": "登录后发表评论",
+    "loginBody": "登录后可对本标的发表看法，并查看其他投资者的讨论。",
+    "loginHint": "评论与你的账户绑定。"
   },
   "earnings": {
     "empty": "暂无财报数据",
@@ -527,6 +536,9 @@
   "trading": {
     "title": "模拟交易",
     "loginRequired": "登录后可进行模拟交易",
+    "loginTitle": "登录后模拟交易",
+    "loginBody": "查看模拟账户风险、下单与本标的挂单。建议先在「计划」绑定规则，便于复盘。",
+    "loginHint": "模拟盘仅供练习，不构成投资建议。",
     "login": "去登录",
     "loading": "加载中…",
     "cash": "可用资金",

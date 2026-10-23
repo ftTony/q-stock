@@ -104,20 +104,22 @@ const SHELL_SETTINGS_KEYS = new Set(grabArray("SHELL_SETTINGS_KEYS"));
 const problems: string[] = [];
 const notes: string[] = [];
 
-// 1) 外壳里 settings 的实际用键，必须都在 SHELL_SETTINGS_KEYS 中
-const shellFiles = closure(join(SRC, "components", "layout", "app-shell.tsx"));
-for (const f of shellFiles) {
-  const src = read(f);
-  if (!isClient(src) || !/useTranslations\(\s*["']settings["']\s*\)/.test(src)) continue;
-  const used = new Set<string>();
-  for (const m of src.matchAll(/\bt\(\s*["']([^"']+)["']/g)) {
-    used.add(m[1].split(".")[0]);
-  }
-  for (const key of used) {
-    if (!SHELL_SETTINGS_KEYS.has(key)) {
-      problems.push(
-        `${relative(ROOT, f)} 用到 settings.${key}，但未列入 SHELL_SETTINGS_KEYS（src/i18n/client-messages.ts）`,
-      );
+// 1) 若未把 settings 整包进 SHELL_NAMESPACES，则外壳用到的 settings 键须列入 SHELL_SETTINGS_KEYS
+if (!SHELL.has("settings")) {
+  const shellFiles = closure(join(SRC, "components", "layout", "app-shell.tsx"));
+  for (const f of shellFiles) {
+    const src = read(f);
+    if (!isClient(src) || !/useTranslations\(\s*["']settings["']\s*\)/.test(src)) continue;
+    const used = new Set<string>();
+    for (const m of src.matchAll(/\bt\(\s*["']([^"']+)["']/g)) {
+      used.add(m[1].split(".")[0]);
+    }
+    for (const key of used) {
+      if (!SHELL_SETTINGS_KEYS.has(key)) {
+        problems.push(
+          `${relative(ROOT, f)} 用到 settings.${key}，但未列入 SHELL_SETTINGS_KEYS（src/i18n/client-messages.ts）`,
+        );
+      }
     }
   }
 }

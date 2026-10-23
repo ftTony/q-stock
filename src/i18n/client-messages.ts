@@ -15,20 +15,22 @@ import type { AbstractIntlMessages } from "next-intl";
  * 漏配会在脚本里直接报错，而不是等运行时 `MISSING_MESSAGE`。
  */
 
-/** AppShell 及其客户端子树（侧边栏、顶栏、底部导航、行情凭据提示）用到的命名空间。 */
-export const SHELL_NAMESPACES = ["app", "nav", "common", "market", "alerts"] as const;
+/** AppShell 及其客户端子树用到的命名空间（含设置弹窗）。 */
+export const SHELL_NAMESPACES = [
+  "app",
+  "nav",
+  "common",
+  "market",
+  "alerts",
+  "settings",
+  "paperRisk",
+  "auth",
+] as const;
 
 /**
- * 外壳里的 `MarketCredentialsPrompt` 只用到 settings 的这 4 个键。
- * 单独白名单化，避免为了 4 条文案把整个 settings（约 6 KB）发给浏览器。
- * 改动 `src/components/settings/market-credentials-prompt.tsx` 时请同步这里。
+ * @deprecated 设置已整包进 SHELL_NAMESPACES；保留空数组以兼容 check-i18n-scope。
  */
-export const SHELL_SETTINGS_KEYS = [
-  "credsPromptTitle",
-  "credsPromptBody",
-  "credsPromptAction",
-  "credsPromptLater",
-] as const;
+export const SHELL_SETTINGS_KEYS = [] as const;
 
 function pick(all: AbstractIntlMessages, keys: readonly string[]): AbstractIntlMessages {
   const out: AbstractIntlMessages = {};
@@ -39,21 +41,9 @@ function pick(all: AbstractIntlMessages, keys: readonly string[]): AbstractIntlM
   return out;
 }
 
-function shellSettings(all: AbstractIntlMessages): AbstractIntlMessages | undefined {
-  const settings = all.settings;
-  if (!settings || typeof settings !== "object") return undefined;
-  const source = settings as Record<string, unknown>;
-  const out: Record<string, unknown> = {};
-  for (const key of SHELL_SETTINGS_KEYS) {
-    if (key in source) out[key] = source[key];
-  }
-  return Object.keys(out).length > 0 ? (out as AbstractIntlMessages) : undefined;
-}
-
 /** 外壳需要的最小字典。`[locale]/layout.tsx` 用它替代全量 messages。 */
 export function shellMessages(all: AbstractIntlMessages): AbstractIntlMessages {
-  const settings = shellSettings(all);
-  return { ...pick(all, SHELL_NAMESPACES), ...(settings ? { settings } : {}) };
+  return pick(all, SHELL_NAMESPACES);
 }
 
 /**

@@ -424,7 +424,13 @@
     "credsFuyaoHint": "Fuyao X-api-key für A-Aktien-Kurse, Indizes und Sektoren. Verschlüsselt gespeichert.",
     "credsFuyaoApiKey": "API Key (X-api-key)",
     "credsSaveFuyao": "Fuyao speichern",
-    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)"
+    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)",
+    "guestLockedHint": "After sign-in: copy invite codes, add market API keys, paper risk, and AI credentials.",
+    "navGeneral": "General",
+    "navTrading": "Trading",
+    "navMarket": "Market data",
+    "navAccount": "Account",
+    "loginToSection": "Sign in to manage this section"
   },
   "alerts": {
     "title": "Kursalarme",
@@ -459,7 +465,10 @@
     "post": "Posten",
     "empty": "Noch keine Kommentare",
     "loginRequired": "Anmelden zum Kommentieren",
-    "delete": "Löschen"
+    "delete": "Löschen",
+    "loginTitle": "Sign in to comment",
+    "loginBody": "Share your view on this symbol and join the discussion after you sign in.",
+    "loginHint": "Comments are tied to your account."
   },
   "earnings": {
     "empty": "Keine Ergebnisdaten",
@@ -505,6 +514,9 @@
   "trading": {
     "title": "Paper Trading",
     "loginRequired": "Anmelden zum Paper Trading",
+    "loginTitle": "Sign in to paper trade",
+    "loginBody": "See paper account risk, place orders, and manage open orders for this symbol. Bind a rule in Plan first for cleaner review.",
+    "loginHint": "Paper trading is for practice only — not investment advice.",
     "login": "Anmelden",
     "loading": "Lädt…",
     "cash": "Kaufkraft",

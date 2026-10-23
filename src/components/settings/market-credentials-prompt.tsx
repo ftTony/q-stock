@@ -9,6 +9,7 @@ import {
   fetchMarketCredsStatus,
   hasAnyBrokerCreds,
 } from "@/lib/market/creds-status-client";
+import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
 
 /**
  * Broker OpenAPI key notice.
@@ -25,6 +26,7 @@ export function MarketCredentialsPrompt({
   const t = useTranslations("settings");
   const { status: sessionStatus } = useSession();
   const pathname = usePathname();
+  const settingsModal = useSettingsModalOptional();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -79,13 +81,9 @@ export function MarketCredentialsPrompt({
     setShow(false);
   }
 
-  const settingsHref =
-    sessionStatus === "authenticated"
-      ? "/settings?setupKeys=1"
-      : "/login?next=/settings%3FsetupKeys%3D1";
-
   const title = t("credsPromptTitle");
   const body = t("credsPromptBody");
+  const authed = sessionStatus === "authenticated";
 
   const marquee = (
     <div className="qt-marquee min-w-0 flex-1">
@@ -106,18 +104,35 @@ export function MarketCredentialsPrompt({
     </div>
   );
 
+  const actionClass =
+    "qt-btn-primary inline-flex h-7 items-center justify-center rounded-full px-3 text-[12px] font-semibold leading-none no-underline shadow-none";
+
   const actions = (
-    <div className="flex shrink-0 items-center gap-1">
-      <Link
-        href={settingsHref}
-        className="inline-flex h-6 items-center justify-center rounded-full bg-[var(--brand)] px-2.5 text-[12px] font-medium leading-none text-[var(--on-brand,white)] no-underline transition hover:opacity-90 active:scale-95"
-      >
-        {t("credsPromptAction")}
-      </Link>
+    <div className="flex shrink-0 items-center gap-1.5">
+      {authed && settingsModal ? (
+        <button
+          type="button"
+          className={actionClass}
+          onClick={() => settingsModal.openSettings({ setupKeys: true })}
+        >
+          {t("credsPromptAction")}
+        </button>
+      ) : (
+        <Link
+          href={
+            authed
+              ? "/settings?setupKeys=1"
+              : "/login?next=/settings%3FsetupKeys%3D1"
+          }
+          className={actionClass}
+        >
+          {t("credsPromptAction")}
+        </Link>
+      )}
       <button
         type="button"
         onClick={dismiss}
-        className="inline-flex h-6 items-center justify-center rounded-full px-1.5 text-[12px] font-medium leading-none text-[var(--muted)] hover:text-[var(--foreground)]"
+        className="inline-flex h-7 items-center justify-center rounded-full px-2.5 text-[12px] font-semibold leading-none tracking-[-0.12px] text-[var(--foreground)]/70 hover:bg-black/[0.04] hover:text-[var(--foreground)]"
       >
         {t("credsPromptLater")}
       </button>

@@ -12,6 +12,7 @@ import { TopBarActions } from "@/components/layout/topbar-actions";
 import { TopbarIndexTicker } from "@/components/layout/topbar-index-ticker";
 import { DataSourceBadge } from "@/components/layout/data-source-badge";
 import { MarketCredentialsPrompt } from "@/components/settings/market-credentials-prompt";
+import { SettingsModalHost } from "@/components/settings/settings-modal-host";
 import { SiteLogo } from "@/components/brand/site-logo";
 import { useMounted } from "@/hooks/use-mounted";
 
@@ -93,14 +94,15 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
   const sidebarWidth = SIDEBAR_WIDTH_COLLAPSED;
 
   return (
-    <div
-      className={
-        isSymbol
-          ? "min-h-dvh bg-[#e6edf6] lg:flex lg:h-dvh lg:overflow-hidden"
-          : "min-h-dvh lg:flex"
-      }
-      style={{ ["--sidebar-w" as string]: `${sidebarWidth}px` }}
-    >
+    <SettingsModalHost>
+      <div
+        className={
+          isSymbol
+            ? "min-h-dvh bg-[#e6edf6] lg:flex lg:h-dvh lg:overflow-hidden"
+            : "min-h-dvh lg:flex"
+        }
+        style={{ ["--sidebar-w" as string]: `${sidebarWidth}px` }}
+      >
       <div
         className="hidden shrink-0 lg:sticky lg:top-0 lg:flex lg:h-dvh lg:self-start"
         style={{ width: sidebarWidth }}
@@ -198,6 +200,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
           </div>
         </nav>
       </div>
-    </div>
+      </div>
+    </SettingsModalHost>
   );
 }

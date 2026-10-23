@@ -328,7 +328,7 @@
     "emailTaken": "此電子郵件已註冊"
   },
   "settings": {
-    "title": "用戶設定",
+    "title": "設定",
     "name": "暱稱",
     "language": "語言",
     "theme": "主題",
@@ -441,7 +441,13 @@
     "credsFuyaoHint": "填寫扶搖 X-api-key 後可拉取 A 股行情、指數與板塊；密鑰加密存於本站。",
     "credsFuyaoApiKey": "API Key（X-api-key）",
     "credsSaveFuyao": "儲存扶搖",
-    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)"
+    "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)",
+    "guestLockedHint": "登入後可：複製邀請碼、配置行情 Key、模擬盤風控與 AI 金鑰。",
+    "navGeneral": "通用",
+    "navTrading": "交易",
+    "navMarket": "行情",
+    "navAccount": "帳號",
+    "loginToSection": "登入後可管理本頁設定"
   },
   "alerts": {
     "title": "價格提醒",
@@ -476,7 +482,10 @@
     "post": "發布",
     "empty": "暫無評論",
     "loginRequired": "登入後可評論",
-    "delete": "刪除"
+    "delete": "刪除",
+    "loginTitle": "登入後發表評論",
+    "loginBody": "登入後可對本標的發表看法，並查看其他投資者的討論。",
+    "loginHint": "評論與你的帳戶綁定。"
   },
   "earnings": {
     "empty": "暫無財報資料",
@@ -522,6 +531,9 @@
   "trading": {
     "title": "模擬交易",
     "loginRequired": "登入後可進行模擬交易",
+    "loginTitle": "登入後模擬交易",
+    "loginBody": "查看模擬帳戶風險、下單與本標的掛單。建議先在「計劃」綁定規則，便於複盤。",
+    "loginHint": "模擬盤僅供練習，不構成投資建議。",
     "login": "去登入",
     "loading": "載入中…",
     "cash": "可用資金",

@@ -7,13 +7,14 @@
   --surface-2: #eef2f7;
   --border: #d7dee8;
   --muted: #64748b;
-  --brand: #5b7cfa;
-  --brand-soft: rgba(91, 124, 250, 0.12);
-  --brand-text: #3b5bdb;
+  /* Align with workbench --aw-primary so shell + symbol CTAs match */
+  --brand: #0066cc;
+  --brand-soft: rgba(0, 102, 204, 0.1);
+  --brand-text: #0066cc;
   --on-brand: #ffffff;
   --sidebar: #ffffff;
   --sidebar-hover: #f1f5f9;
-  --sidebar-active: rgba(91, 124, 250, 0.12);
+  --sidebar-active: rgba(0, 102, 204, 0.1);
   --panel: #ffffff;
   --input: #ffffff;
   --success: #16a34a;
@@ -43,13 +44,13 @@ html.dark {
   --surface-2: #121925;
   --border: #1c2433;
   --muted: #8b97ad;
-  --brand: #9eb6ff;
-  --brand-soft: rgba(158, 182, 255, 0.14);
-  --brand-text: #c4d2ff;
-  --on-brand: #0b1220;
+  --brand: #2997ff;
+  --brand-soft: rgba(41, 151, 255, 0.16);
+  --brand-text: #64b5ff;
+  --on-brand: #ffffff;
   --sidebar: #080c14;
   --sidebar-hover: #111827;
-  --sidebar-active: rgba(158, 182, 255, 0.12);
+  --sidebar-active: rgba(41, 151, 255, 0.14);
   --panel: #0f1520;
   --input: #0b1018;
   --success: #34d399;
@@ -110,11 +111,12 @@ button:not(:disabled):not([aria-busy="true"]) {
   cursor: pointer;
 }
 
+/* Inherit family only — `font: inherit` shorthand overrides Tailwind text-* on <button>. */
 input,
 select,
 textarea,
 button {
-  font: inherit;
+  font-family: inherit;
 }
 
 .qt-panel {

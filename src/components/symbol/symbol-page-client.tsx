@@ -390,7 +390,6 @@ export function SymbolPageClient({
           currentUserId={s.session?.user?.id}
           commentsPlaceholder={s.tComments("placeholder")}
           commentsPost={s.tComments("post")}
-          commentsLoginRequired={s.tComments("loginRequired")}
           commentsEmpty={s.tComments("empty")}
           commentsDelete={s.tComments("delete")}
           tabLoading={s.tabLoading}
