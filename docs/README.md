@@ -7,6 +7,7 @@
 | [产品现状盘点](./product-status.md) | 已上线能力、数据源、占位项与差异化（规划用） |
 | [产品机会头脑风暴](./product-opportunity-brainstorm.md) | 可做什么：漏斗、形态切法、组合拳与商业选项 |
 | [可落地路线图](./product-roadmap.md) | 短期切片、中期尖 fort、验收表与里程碑 |
+| [产品留存、品牌与推广计划](./product-brand-growth-plan.md) | 研究复盘留存闭环、品牌定位、推广渠道、会员验证与指标 |
 | [理财工具 PRD](./prd/README.md) | 仓位 / 定投 / 复利 / 期权各工具需求与验收 |
 | [个股高级盘口 + 富途模拟交易规划](./prd/symbol-advanced-and-futu-paper.md) | 美/港分时·盘口·分笔·资金·卖空·筹码；富途 sim-trade |
 | [个股专业交易台 UI](./prd/symbol-trading-ui.md) | 报价条+主图+右栏下单/冷静；次级含衍生品；AI 问股/贪婪恐惧/分享；完整示意稿 |
