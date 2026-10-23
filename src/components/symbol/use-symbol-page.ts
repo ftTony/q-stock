@@ -1,21 +1,10 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { type IndicatorFlags } from "@/components/charts/candle-chart";
-import {
-  type EarningsCalendarRow,
-  type EarningsMetric,
-  type EarningsSurprise,
-} from "@/components/market/earnings-panel";
-import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
-import {
-  type CommentRow,
-  type NewsRow,
-  type PressRow,
-  type SymbolTab,
-} from "@/components/symbol/symbol-tabs-panel";
+import type { SymbolTab } from "@/components/symbol/symbol-tabs-panel";
 import { useSymbolAiAnalysis } from "@/components/symbol/use-symbol-ai-analysis";
 import { useSymbolCandles } from "@/components/symbol/use-symbol-candles";
 import {
@@ -23,21 +12,13 @@ import {
   fallbackSymbolTab,
 } from "@/components/symbol/symbol-page-tabs";
 import { symbolPageMutations } from "@/components/symbol/use-symbol-page-mutations";
-import type { SymbolSentiment } from "@/components/symbol/symbol-sentiment-chip";
+import { useSymbolTabData } from "@/components/symbol/use-symbol-tab-data";
 import {
   quotePollIntervalMs,
   useQuoteChannels,
 } from "@/hooks/use-quote-socket";
 import type { ServerMessage } from "@/lib/market/stream/protocol";
 import type { AssetType, CandleResolution, Quote } from "@/lib/types";
-
-const TAB_LOADING: ReadonlySet<SymbolTab> = new Set([
-  "news",
-  "fundamentals",
-  "press",
-  "comments",
-  "officers",
-]);
 
 function quoteTimestamp(quote: Quote | null): Date | null {
   if (!quote?.timestamp) return null;
@@ -74,27 +55,13 @@ export function useSymbolPage(
   const [tab, setTab] = useState<SymbolTab>("chart");
   /** Trend AI tab removed from secondary; desk is QuoteBar / FAB drawer. */
   const ai = useSymbolAiAnalysis(symbol, assetType, false);
-  const [news, setNews] = useState<NewsRow[]>([]);
-  const [earnings, setEarnings] = useState<EarningsSurprise[]>([]);
-  const [earningsUpcoming, setEarningsUpcoming] = useState<EarningsCalendarRow[]>([]);
-  const [earningsRecent, setEarningsRecent] = useState<EarningsCalendarRow[]>([]);
-  const [earningsMetrics, setEarningsMetrics] = useState<EarningsMetric[]>([]);
-  const [earningsLoading, setEarningsLoading] = useState(false);
-  const [press, setPress] = useState<PressRow[]>([]);
-  const [comments, setComments] = useState<CommentRow[]>([]);
+  const tabData = useSymbolTabData({ symbol, assetType, isIndex, locale, tab });
   const [commentText, setCommentText] = useState("");
-  const [company, setCompany] = useState<CompanyProfile | null>(null);
-  const [officers, setOfficers] = useState<CompanyOfficer[]>([]);
-  const [tabLoading, setTabLoading] = useState(false);
-  const [sentiment, setSentiment] = useState<SymbolSentiment>(null);
-  const earningsLoadedRef = useRef(false);
-  const companyLoadedRef = useRef(false);
   const [alertPrice, setAlertPrice] = useState("");
   const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
   const [alertBusy, setAlertBusy] = useState(false);
   const [commentBusy, setCommentBusy] = useState(false);
-  const [degraded, setDegraded] = useState(false);
   const [inWatchlist, setInWatchlist] = useState(false);
   const [watchBusy, setWatchBusy] = useState(false);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(() =>
@@ -147,116 +114,6 @@ export function useSymbolPage(
     push: wsPush,
   } = useQuoteChannels([{ type: "symbol", assetType, symbol }], onWsMessage);
 
-  const loadEarningsMetrics = useCallback(async () => {
-    if (isIndex || (assetType !== "stock" && assetType !== "hk")) {
-      setEarningsMetrics([]);
-      earningsLoadedRef.current = false;
-      return;
-    }
-    try {
-      const res = await fetch(
-        `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-      );
-      const data = await res.json();
-      if (!res.ok) return;
-      setEarnings(data.surprises ?? data.earnings ?? []);
-      setEarningsUpcoming(data.calendar?.upcoming ?? []);
-      setEarningsRecent(data.calendar?.recent ?? []);
-      setEarningsMetrics(data.metrics ?? []);
-      earningsLoadedRef.current = true;
-      if (data.degraded) setDegraded(true);
-    } catch {
-      /* optional for quote panel */
-    }
-  }, [symbol, assetType, isIndex]);
-
-  const loadTab = useCallback(async () => {
-    setDegraded(false);
-    const fundamentalsCached =
-      tab === "fundamentals" &&
-      earningsLoadedRef.current &&
-      companyLoadedRef.current;
-    const showLoading = TAB_LOADING.has(tab) && !fundamentalsCached;
-    if (showLoading) setTabLoading(true);
-    try {
-      if (tab === "news") {
-        const res = await fetch(
-          `/api/news?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
-        );
-        const data = await res.json();
-        setNews(data.news ?? []);
-        if (!res.ok || data.degraded) setDegraded(true);
-      } else if (tab === "fundamentals") {
-        if (assetType === "crypto" || isIndex) {
-          setEarnings([]);
-          setEarningsUpcoming([]);
-          setEarningsRecent([]);
-          setEarningsMetrics([]);
-          setCompany(null);
-          setOfficers([]);
-          return;
-        }
-        if (fundamentalsCached) return;
-        const tasks: Promise<void>[] = [];
-        if (!earningsLoadedRef.current) {
-          tasks.push(
-            (async () => {
-              setEarningsLoading(true);
-              try {
-                const res = await fetch(
-                  `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-                );
-                const data = await res.json();
-                setEarnings(data.surprises ?? data.earnings ?? []);
-                setEarningsUpcoming(data.calendar?.upcoming ?? []);
-                setEarningsRecent(data.calendar?.recent ?? []);
-                setEarningsMetrics(data.metrics ?? []);
-                earningsLoadedRef.current = true;
-                if (data.degraded) setDegraded(true);
-              } finally {
-                setEarningsLoading(false);
-              }
-            })(),
-          );
-        }
-        if (!companyLoadedRef.current) {
-          tasks.push(
-            (async () => {
-              const res = await fetch(
-                `/api/company?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
-              );
-              const data = await res.json();
-              setCompany(data.profile ?? null);
-              setOfficers(data.officers ?? []);
-              companyLoadedRef.current = true;
-              if (!res.ok || data.degraded) setDegraded(true);
-            })(),
-          );
-        }
-        await Promise.all(tasks);
-      } else if (tab === "press") {
-        if (assetType === "crypto" || isIndex) {
-          setPress([]);
-          return;
-        }
-        const res = await fetch(
-          `/api/press?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
-        );
-        const data = await res.json();
-        setPress(data.press ?? []);
-        if (data.degraded) setDegraded(true);
-      } else if (tab === "comments") {
-        const res = await fetch(
-          `/api/comments?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-        );
-        const data = await res.json();
-        setComments(data.comments ?? []);
-      }
-    } finally {
-      setTabLoading(false);
-    }
-  }, [tab, symbol, assetType, locale, isIndex]);
-
   useEffect(() => {
     setQuote(initialQuote);
     setUpdatedAt(quoteTimestamp(initialQuote));
@@ -264,14 +121,6 @@ export function useSymbolPage(
       initialQuote?.price ? String(Number(initialQuote.price.toFixed(4))) : "",
     );
     setAlertMsg(null);
-    setEarnings([]);
-    setEarningsUpcoming([]);
-    setEarningsRecent([]);
-    setEarningsMetrics([]);
-    setCompany(null);
-    setOfficers([]);
-    earningsLoadedRef.current = false;
-    companyLoadedRef.current = false;
     setTab("chart");
   }, [symbol, assetType, initialQuote]);
 
@@ -301,57 +150,6 @@ export function useSymbolPage(
     wsDegraded,
     wsPush,
   ]);
-
-  // Rail market-cap can wait; chart + quote first. Idle or ~1.2s fallback.
-  useEffect(() => {
-    let cancelled = false;
-    const run = () => {
-      if (!cancelled) void loadEarningsMetrics();
-    };
-    let idleId: number | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(run, { timeout: 2500 });
-    } else {
-      timeoutId = setTimeout(run, 1200);
-    }
-    return () => {
-      cancelled = true;
-      if (idleId != null && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timeoutId != null) clearTimeout(timeoutId);
-    };
-  }, [loadEarningsMetrics]);
-
-  // Sentiment tab is not in the main tab bar — fetch only if selected.
-  useEffect(() => {
-    if (tab !== "sentiment") return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch(
-          `/api/sentiment?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-        );
-        const data = await res.json();
-        if (!cancelled) setSentiment(data.sentiment ?? null);
-      } catch {
-        if (!cancelled) setSentiment(null);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [tab, symbol, assetType]);
-
-  useEffect(() => {
-    if (!TAB_LOADING.has(tab)) return;
-    void loadTab();
-  }, [loadTab, tab]);
-
-  useEffect(() => {
-    if (ai.aiDegraded) setDegraded(true);
-  }, [ai.aiDegraded]);
 
   useEffect(() => {
     if (!session?.user) {
@@ -402,7 +200,7 @@ export function useSymbolPage(
       inWatchlist,
       setInWatchlist,
       setWatchBusy,
-      loadTab,
+      loadTab: tabData.loadTab,
       tAlerts,
       tCommon,
     });
@@ -423,20 +221,20 @@ export function useSymbolPage(
     tab,
     setTab,
     tabs,
-    news,
-    earnings,
-    earningsUpcoming,
-    earningsRecent,
-    earningsMetrics,
-    earningsLoading,
-    press,
-    comments,
+    news: tabData.news,
+    earnings: tabData.earnings,
+    earningsUpcoming: tabData.earningsUpcoming,
+    earningsRecent: tabData.earningsRecent,
+    earningsMetrics: tabData.earningsMetrics,
+    earningsLoading: tabData.earningsLoading,
+    press: tabData.press,
+    comments: tabData.comments,
     commentText,
     setCommentText,
-    company,
-    officers,
-    tabLoading,
-    sentiment,
+    company: tabData.company,
+    officers: tabData.officers,
+    tabLoading: tabData.tabLoading,
+    sentiment: tabData.sentiment,
     ...ai,
     loadingChart: candles.loadingChart,
     loadingMoreCandles: candles.loadingMoreCandles,
@@ -449,7 +247,7 @@ export function useSymbolPage(
     alertMsg,
     alertBusy,
     commentBusy,
-    degraded,
+    degraded: tabData.degraded || ai.aiDegraded,
     inWatchlist,
     watchBusy,
     updatedAt,
