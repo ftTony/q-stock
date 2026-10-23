@@ -1,11 +1,15 @@
 import type { LearnArticle } from "@/lib/learn/types";
 import { LEARN_ARTICLE_DAO_GREED_FEAR } from "@/lib/learn/articles-mindset-dao";
+import { LEARN_ARTICLE_ECONOMICS_RETAIL } from "@/lib/learn/articles-mindset-economics";
 import { LEARN_ARTICLE_FINANCIAL_FREEDOM } from "@/lib/learn/articles-mindset-freedom";
+import { LEARN_ARTICLE_LIFE_STAGE_PLAN } from "@/lib/learn/articles-mindset-life-stages";
 
 /** Mindset articles — depth aligned with kline-basics. */
 export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
   LEARN_ARTICLE_FINANCIAL_FREEDOM,
+  LEARN_ARTICLE_LIFE_STAGE_PLAN,
   LEARN_ARTICLE_DAO_GREED_FEAR,
+  LEARN_ARTICLE_ECONOMICS_RETAIL,
   {
     slug: "calm-watching",
     category: "mindset",

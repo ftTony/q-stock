@@ -1,6 +1,13 @@
 "use client";
 
 import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+} from "react";
+import {
   CandleChart,
   type IndicatorFlags,
 } from "@/components/charts/candle-chart";
@@ -31,6 +38,71 @@ type Props = {
   loadingMore: boolean;
   hasMore: boolean;
 };
+
+const PERIODS = ["D", "Q", "Y"] as const;
+
+function ResolutionTabs({
+  resolution,
+  onResolutionChange,
+  resolutionLabels,
+}: {
+  resolution: CandleResolution;
+  onResolutionChange: (r: CandleResolution) => void;
+  resolutionLabels: { D: string; Q: string; Y: string };
+}) {
+  const listRef = useRef<HTMLDivElement>(null);
+  const btnRefs = useRef(new Map<string, HTMLButtonElement>());
+  const [indicator, setIndicator] = useState({ left: 0, width: 0 });
+
+  const syncIndicator = useCallback(() => {
+    const list = listRef.current;
+    const btn = btnRefs.current.get(resolution);
+    if (!list || !btn) return;
+    setIndicator({
+      left: btn.offsetLeft,
+      width: btn.offsetWidth,
+    });
+  }, [resolution]);
+
+  useLayoutEffect(() => {
+    syncIndicator();
+  }, [syncIndicator, resolutionLabels]);
+
+  useEffect(() => {
+    window.addEventListener("resize", syncIndicator);
+    return () => window.removeEventListener("resize", syncIndicator);
+  }, [syncIndicator]);
+
+  return (
+    <div
+      ref={listRef}
+      className="relative -mb-px flex items-center gap-0.5 pb-px"
+    >
+      {PERIODS.map((key) => (
+        <button
+          key={key}
+          type="button"
+          ref={(el) => {
+            if (el) btnRefs.current.set(key, el);
+            else btnRefs.current.delete(key);
+          }}
+          onClick={() => onResolutionChange(key)}
+          className={`relative z-[1] h-8 px-2.5 text-[12px] leading-none font-medium transition-colors ${resolution === key
+            ? "text-[var(--foreground)]"
+            : "text-[var(--muted)] hover:text-[var(--foreground)]"
+            }`}
+        >
+          {resolutionLabels[key]}
+        </button>
+      ))}
+      <span
+        aria-hidden
+        className="pointer-events-none absolute bottom-0 z-[2] h-0.5 rounded-full bg-[var(--brand)] transition-[left,width] duration-200 ease-out"
+        style={{ left: indicator.left, width: Math.max(indicator.width, 0) }}
+      />
+    </div>
+  );
+}
 
 export function SymbolChartSection({
   resolution,

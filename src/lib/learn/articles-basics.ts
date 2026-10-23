@@ -1,12 +1,22 @@
 import { LEARN_ARTICLE_FUNDAMENTALS } from "@/lib/learn/articles-basics-fundamentals";
+import { LEARN_ARTICLE_FINANCIALS_BALANCE } from "@/lib/learn/articles-basics-financials-balance";
+import { LEARN_ARTICLE_FINANCIALS_CASHFLOW } from "@/lib/learn/articles-basics-financials-cashflow";
+import { LEARN_ARTICLE_FINANCIALS_INCOME } from "@/lib/learn/articles-basics-financials-income";
+import { LEARN_ARTICLE_FINANCIALS_OVERVIEW } from "@/lib/learn/articles-basics-financials-overview";
 import { LEARN_ARTICLE_INDICATORS } from "@/lib/learn/articles-basics-indicators";
 import { LEARN_ARTICLE_PICKING } from "@/lib/learn/articles-basics-picking";
+import { LEARN_ARTICLE_RETAIL_FOCUS } from "@/lib/learn/articles-basics-retail-focus";
 import type { LearnArticle } from "@/lib/learn/types";
 
 /** Basics articles — depth aligned with kline-basics. */
 export const LEARN_ARTICLES_BASICS: LearnArticle[] = [
+  LEARN_ARTICLE_RETAIL_FOCUS,
   LEARN_ARTICLE_PICKING,
   LEARN_ARTICLE_FUNDAMENTALS,
+  LEARN_ARTICLE_FINANCIALS_OVERVIEW,
+  LEARN_ARTICLE_FINANCIALS_INCOME,
+  LEARN_ARTICLE_FINANCIALS_BALANCE,
+  LEARN_ARTICLE_FINANCIALS_CASHFLOW,
   LEARN_ARTICLE_INDICATORS,
   {
     slug: "paper-review",
