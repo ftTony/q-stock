@@ -110,10 +110,12 @@ docs/
 
 资产类型：`stock` | `hk` | `cn` | `crypto`。
 
-## 7. 模拟交易与提醒
+## 7. 模拟交易、提醒与任务队列
 
 - 账户 / 持仓 / 订单：`@/lib/trading/*` + `/api/trading/*`
-- Worker：同进程处理提醒发信与 pending 限价/止损成交
+- 规则实验室：`@/lib/strategy/*`；回放结果落 `StrategyReplay`
+- Worker：同进程处理提醒发信、pending 限价/止损成交、以及 `tickJobs()`（`@/lib/jobs/queue`）
+- 任务队列雏形：DB 行状态机（`pending` → 原子 `claim` → `running` → `done`/`failed`），不依赖 Redis；超时 `running` 会重新入队
 
 ## 8. 缓存与安全
 

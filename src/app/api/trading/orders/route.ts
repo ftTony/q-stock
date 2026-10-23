@@ -45,10 +45,14 @@ export async function GET(req: Request) {
     },
     orderBy: { createdAt: "desc" },
     take: 100,
+    include: { strategy: { select: { id: true, name: true } } },
   });
 
   return NextResponse.json({
-    orders: orders.map(serializeOrder),
+    orders: orders.map((o) => ({
+      ...serializeOrder(o),
+      strategyName: o.strategy?.name ?? null,
+    })),
   });
 }
 

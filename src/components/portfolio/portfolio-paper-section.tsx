@@ -208,6 +208,16 @@ export function PortfolioPaperSection({
                       {o.stopPrice != null &&
                         ` stop $${fmtMoney(o.stopPrice)}`}
                     </span>
+                    {o.strategyId ? (
+                      <div className="mt-0.5">
+                        <Link
+                          href={`/strategies/${o.strategyId}`}
+                          className="text-[11px] text-[var(--brand-text)] hover:underline"
+                        >
+                          {o.strategyName || o.strategyId.slice(0, 8)}
+                        </Link>
+                      </div>
+                    ) : null}
                   </div>
                   <button
                     type="button"
@@ -243,6 +253,17 @@ export function PortfolioPaperSection({
                       {" "}
                       · {labels.side(o.side)} · {o.qty}
                     </span>
+                    {o.strategyId ? (
+                      <span className="ml-1 text-[11px] text-[var(--brand-text)]">
+                        ·{" "}
+                        <Link
+                          href={`/strategies/${o.strategyId}`}
+                          className="hover:underline"
+                        >
+                          {o.strategyName || o.strategyId.slice(0, 8)}
+                        </Link>
+                      </span>
+                    ) : null}
                   </span>
                   <span className="tabular-nums text-[var(--muted)]">
                     {o.filledPrice != null

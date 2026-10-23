@@ -1352,7 +1352,9 @@
     "marketEtf": "ETF",
     "marketFutures": "Futures",
     "marketCrypto": "Crypto",
-    "marketFund": "Funds"
+    "marketFund": "Funds",
+    "replayDailyLimit": "本日の回放上限に達しました（{used}/{limit}）。明日再度お試しください。",
+    "replayQueued": "回放が既にキュー内です。完了をお待ちください。"
   },
   "symbolShare": {
     "title": "Share",

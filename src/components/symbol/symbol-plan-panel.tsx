@@ -15,6 +15,7 @@ import {
   getBoundStrategyId,
   setBoundStrategyId,
 } from "@/components/symbol/symbol-plan-binding";
+import { replayErrorMessage } from "@/lib/strategy/replay-errors";
 
 type StrategyRow = {
   id: string;
@@ -212,7 +213,7 @@ export function SymbolPlanPanel({
       });
       const data = await res.json();
       if (!res.ok) {
-        setMsg(data.error || tSt("replayFailed"));
+        setMsg(replayErrorMessage(data, tSt));
         return;
       }
       setReplay(data.replay);

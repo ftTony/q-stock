@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -12,6 +13,7 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const mine = url.searchParams.get("mine") === "1";
   const session = await auth();
+  const locale = await getLocale();
 
   if (mine) {
     if (!session?.user?.id) {
@@ -23,7 +25,7 @@ export async function GET(req: Request) {
       take: 50,
     });
     return NextResponse.json({
-      strategies: strategies.map(serializeStrategy),
+      strategies: strategies.map((s) => serializeStrategy(s, locale)),
     });
   }
 
@@ -43,8 +45,8 @@ export async function GET(req: Request) {
   }
 
   return NextResponse.json({
-    templates: templates.map(serializeStrategy),
-    strategies: mineList.map(serializeStrategy),
+    templates: templates.map((s) => serializeStrategy(s, locale)),
+    strategies: mineList.map((s) => serializeStrategy(s, locale)),
   });
 }
 

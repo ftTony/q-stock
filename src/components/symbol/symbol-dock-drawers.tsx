@@ -46,6 +46,7 @@ type Props = {
   ask: number | null;
   strategyId: string | null;
   strategyName: string | null;
+  onStrategyIdChange?: (id: string, name?: string) => void;
   onOpenAi: () => void;
   onOpenPlan: () => void;
   newsFeedTab: NewsFeedTab;
@@ -81,6 +82,7 @@ export function SymbolDockDrawers({
   ask,
   strategyId,
   strategyName,
+  onStrategyIdChange,
   onOpenAi,
   onOpenPlan,
   newsFeedTab,
@@ -197,6 +199,7 @@ export function SymbolDockDrawers({
                   ask={ask}
                   onOpenAi={onOpenAi}
                   strategyId={strategyId ?? ""}
+                  onStrategyIdChange={onStrategyIdChange}
                 />
               </Suspense>
             </>

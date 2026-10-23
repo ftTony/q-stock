@@ -2,7 +2,6 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { runStrategyReplayJob } from "@/lib/strategy/run-replay-job";
 import { serializeReplay } from "@/lib/strategy/serialize";
 
 type Ctx = { params: Promise<{ id: string }> };
@@ -19,6 +18,12 @@ const bodySchema = z.object({
   initialCash: z.number().min(1000).max(1_000_000).optional(),
 });
 
+function shouldRunInline(): boolean {
+  if (process.env.STRATEGY_REPLAY_INLINE === "0") return false;
+  if (process.env.STRATEGY_REPLAY_INLINE === "1") return true;
+  return process.env.NODE_ENV === "development";
+}
+
 export async function GET(req: Request, ctx: Ctx) {
   const session = await auth();
   if (!session?.user?.id) {
@@ -29,6 +34,13 @@ export async function GET(req: Request, ctx: Ctx) {
   const url = new URL(req.url);
   const replayId = url.searchParams.get("replayId");
 
+  const dayStart = new Date();
+  dayStart.setUTCHours(0, 0, 0, 0);
+  const todayCount = await prisma.strategyReplay.count({
+    where: { userId: session.user.id, createdAt: { gte: dayStart } },
+  });
+  const quota = { used: todayCount, limit: DAILY_LIMIT };
+
   if (replayId) {
     const replay = await prisma.strategyReplay.findFirst({
       where: { id: replayId, userId: session.user.id, strategyId },
@@ -36,7 +48,7 @@ export async function GET(req: Request, ctx: Ctx) {
     if (!replay) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    return NextResponse.json({ replay: serializeReplay(replay) });
+    return NextResponse.json({ replay: serializeReplay(replay), quota });
   }
 
   const replays = await prisma.strategyReplay.findMany({
@@ -44,7 +56,10 @@ export async function GET(req: Request, ctx: Ctx) {
     orderBy: { createdAt: "desc" },
     take: 20,
   });
-  return NextResponse.json({ replays: replays.map(serializeReplay) });
+  return NextResponse.json({
+    replays: replays.map(serializeReplay),
+    quota,
+  });
 }
 
 export async function POST(req: Request, ctx: Ctx) {
@@ -99,7 +114,12 @@ export async function POST(req: Request, ctx: Ctx) {
   });
   if (todayCount >= DAILY_LIMIT) {
     return NextResponse.json(
-      { error: "Daily replay limit reached" },
+      {
+        code: "daily_limit",
+        error: "Daily replay limit reached",
+        used: todayCount,
+        limit: DAILY_LIMIT,
+      },
       { status: 429 },
     );
   }
@@ -112,7 +132,7 @@ export async function POST(req: Request, ctx: Ctx) {
   });
   if (running >= 1) {
     return NextResponse.json(
-      { error: "A replay is already queued" },
+      { code: "queued", error: "A replay is already queued" },
       { status: 429 },
     );
   }
@@ -134,10 +154,21 @@ export async function POST(req: Request, ctx: Ctx) {
     },
   });
 
-  // Best-effort kickoff; Worker also drains pending jobs.
-  void runStrategyReplayJob(replay.id).catch((err) => {
-    console.error("[strategy-replay] kickoff failed", err);
-  });
+  // Prefer Worker drain; in development, run inline so local UX is not stuck pending.
+  if (shouldRunInline()) {
+    const { runStrategyReplayJob } = await import(
+      "@/lib/strategy/run-replay-job"
+    );
+    void runStrategyReplayJob(replay.id).catch((err) => {
+      console.error("[strategy-replay] inline kickoff failed", err);
+    });
+  }
 
-  return NextResponse.json({ replay: serializeReplay(replay) }, { status: 201 });
+  return NextResponse.json(
+    {
+      replay: serializeReplay(replay),
+      quota: { used: todayCount + 1, limit: DAILY_LIMIT },
+    },
+    { status: 201 },
+  );
 }

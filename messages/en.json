@@ -1358,7 +1358,9 @@
     "marketEtf": "ETF",
     "marketFutures": "Futures",
     "marketCrypto": "Crypto",
-    "marketFund": "Funds"
+    "marketFund": "Funds",
+    "replayDailyLimit": "Daily replay limit reached ({used}/{limit}). Try again tomorrow.",
+    "replayQueued": "A replay is already queued. Wait for it to finish."
   },
   "symbolShare": {
     "title": "Share",

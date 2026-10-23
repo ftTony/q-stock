@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getLocale } from "next-intl/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
@@ -10,6 +11,7 @@ type Ctx = { params: Promise<{ id: string }> };
 export async function GET(_req: Request, ctx: Ctx) {
   const { id } = await ctx.params;
   const session = await auth();
+  const locale = await getLocale();
 
   const strategy = await prisma.strategy.findUnique({ where: { id } });
   if (!strategy) {
@@ -22,7 +24,9 @@ export async function GET(_req: Request, ctx: Ctx) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  return NextResponse.json({ strategy: serializeStrategy(strategy) });
+  return NextResponse.json({
+    strategy: serializeStrategy(strategy, locale),
+  });
 }
 
 const patchSchema = z.object({

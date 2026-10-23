@@ -1416,7 +1416,9 @@
     "marketEtf": "ETF",
     "marketFutures": "期貨",
     "marketCrypto": "加密貨幣",
-    "marketFund": "基金"
+    "marketFund": "基金",
+    "replayDailyLimit": "今日回放次數已達上限（{used}/{limit}），請明天再試。",
+    "replayQueued": "已有回放在排隊中，請等待完成後再試。"
   },
   "symbolShare": {
     "title": "分享",

@@ -15,8 +15,7 @@ export async function ensureStrategyTemplates() {
         userId: null,
       },
       update: {
-        name: t.nameZh,
-        description: t.descriptionZh,
+        // Keep rules in sync; display name/description localized at serialize time.
         rules: t.rules,
         isTemplate: true,
       },

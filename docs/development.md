@@ -27,10 +27,14 @@ npm run worker
 | `npm run dev` | 开发热更新 |
 | `npm run build` | 生产构建校验 |
 | `npm run lint` | ESLint |
+| `npm run typecheck` | `tsc --noEmit` |
+| `npm test` | Vitest 单测（回放引擎 / 任务认领等） |
 | `npm run db:migrate:dev` | 改 Prisma schema 后生成迁移 |
-| `npm run worker` | 本地提醒 Worker |
+| `npm run worker` | 本地 Worker（提醒 + 模拟撮合 + `tickJobs` 回放队列） |
 
-提交前建议至少跑通：`npm run lint` + `npm run build`。
+提交前建议至少跑通：`npm run lint` + `npm run typecheck` + `npm test`。CI 见 `.github/workflows/ci.yml`。
+
+规则回放：`POST /api/strategies/[id]/replay` 只入队（`StrategyReplay` status=`pending`）；Worker 经 `@/lib/jobs/queue` 原子认领执行。无 Worker 的本地调试可设 `STRATEGY_REPLAY_INLINE=1`。
 
 ## 3. 扩展功能速查
 

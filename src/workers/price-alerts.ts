@@ -225,12 +225,15 @@ async function tick() {
   await tickAlerts();
   await tickPaperOrders();
   try {
-    const { tickStrategyReplays } = await import(
-      "@/lib/strategy/run-replay-job"
-    );
-    await tickStrategyReplays(2);
+    const { tickJobs } = await import("@/lib/jobs/queue");
+    const drained = await tickJobs({ strategyReplayLimit: 2 });
+    if (drained.strategyReplay > 0) {
+      console.info(
+        `[jobs] strategy_replay drained=${drained.strategyReplay}`,
+      );
+    }
   } catch (err) {
-    console.error("[strategy-replay] tick failed", err);
+    console.error("[jobs] tick failed", err);
   }
   await tickWatchlistDigest(prisma);
   await tickSeoSitemap();

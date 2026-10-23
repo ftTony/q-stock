@@ -14,6 +14,7 @@ import { SymbolTabsPanel } from "@/components/symbol/symbol-tabs-panel";
 import { useSymbolPage } from "@/components/symbol/use-symbol-page";
 import { useRailResize } from "@/components/symbol/use-rail-resize";
 import { useWatchlistResize } from "@/components/symbol/use-watchlist-resize";
+import { setBoundStrategyId as persistBoundStrategyId } from "@/components/symbol/symbol-plan-binding";
 import { isMarketIndexSymbol } from "@/lib/market/indices";
 import type { AssetType, CandleResolution, Quote } from "@/lib/types";
 import "./apple-workbench.css";
@@ -368,6 +369,12 @@ export function SymbolPageClient({
           ask={s.quote?.ask ?? null}
           strategyId={boundStrategyId}
           strategyName={boundRuleName}
+          onStrategyIdChange={(id, name) => {
+            const next = id || null;
+            persistBoundStrategyId(assetType, symbol, next);
+            setBoundStrategyId(next);
+            setBoundRuleName(name || null);
+          }}
           onOpenAi={() => {
             setDock(null);
             setAiOpen(true);

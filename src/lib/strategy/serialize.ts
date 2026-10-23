@@ -1,12 +1,23 @@
 import type { Strategy, StrategyReplay } from "@prisma/client";
+import { STRATEGY_TEMPLATES } from "@/lib/strategy/templates";
 
-export function serializeStrategy(s: Strategy) {
+export function serializeStrategy(s: Strategy, locale?: string) {
+  let name = s.name;
+  let description = s.description;
+  if (s.isTemplate && s.slug) {
+    const def = STRATEGY_TEMPLATES.find((t) => t.slug === s.slug);
+    if (def) {
+      const en = !(locale ?? "en").toLowerCase().startsWith("zh");
+      name = en ? def.nameEn : def.nameZh;
+      description = en ? def.descriptionEn : def.descriptionZh;
+    }
+  }
   return {
     id: s.id,
     userId: s.userId,
     slug: s.slug,
-    name: s.name,
-    description: s.description,
+    name,
+    description,
     rules: s.rules,
     isTemplate: s.isTemplate,
     createdAt: s.createdAt,

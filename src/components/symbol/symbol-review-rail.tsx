@@ -19,6 +19,7 @@ type OrderRow = {
   emotionTags: string[];
   invalidationNote: string | null;
   strategyId: string | null;
+  strategyName?: string | null;
   createdAt: string;
   filledAt: string | null;
 };
@@ -59,20 +60,44 @@ export function SymbolReviewRail({
   const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
 
+  const [resolvedNames, setResolvedNames] = useState<Record<string, string>>(
+    {},
+  );
+
   const load = useCallback(async () => {
     if (!session?.user) return;
     setLoading(true);
     try {
-      const res = await fetch(
-        `/api/trading/orders?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-      );
-      if (!res.ok) return;
-      const data = await res.json();
-      setOrders(data.orders ?? []);
+      const [ordRes, stRes] = await Promise.all([
+        fetch(
+          `/api/trading/orders?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+        ),
+        fetch("/api/strategies"),
+      ]);
+      if (ordRes.ok) {
+        const data = await ordRes.json();
+        setOrders(data.orders ?? []);
+      }
+      if (stRes.ok) {
+        const sj = await stRes.json();
+        const map: Record<string, string> = {};
+        for (const s of [
+          ...(sj.templates ?? []),
+          ...(sj.strategies ?? []),
+        ] as Array<{ id: string; name: string }>) {
+          map[s.id] = s.name;
+        }
+        setResolvedNames(map);
+      }
     } finally {
       setLoading(false);
     }
   }, [session?.user, symbol, assetType]);
+
+  const nameById = useMemo(
+    () => ({ ...resolvedNames, ...strategyNameById }),
+    [resolvedNames, strategyNameById],
+  );
 
   useEffect(() => {
     void load();
@@ -194,7 +219,9 @@ export function SymbolReviewRail({
                       href={`/strategies/${o.strategyId}`}
                       className="rounded border border-[var(--aw-hairline,var(--border))] px-1.5 py-0.5 text-[12px] text-[var(--brand-text)]"
                     >
-                      {strategyNameById[o.strategyId] || t("reviewTagged")}
+                      {o.strategyName ||
+                        nameById[o.strategyId] ||
+                        t("reviewTagged")}
                     </Link>
                   ) : null}
                   {chips.map((c) => (

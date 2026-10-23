@@ -11,6 +11,7 @@ import {
   StrategyReplayPanel,
   type ReplayResultView,
 } from "@/components/strategy/strategy-replay-panel";
+import { replayErrorMessage } from "@/lib/strategy/replay-errors";
 
 type Strategy = {
   id: string;
@@ -143,7 +144,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
       });
       const data = await res.json();
       if (!res.ok) {
-        setMsg(data.error || t("replayFailed"));
+        setMsg(replayErrorMessage(data, t));
         return;
       }
       setActive(data.replay);

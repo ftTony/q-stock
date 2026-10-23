@@ -1352,7 +1352,9 @@
     "marketEtf": "ETF",
     "marketFutures": "Futures",
     "marketCrypto": "Crypto",
-    "marketFund": "Funds"
+    "marketFund": "Funds",
+    "replayDailyLimit": "오늘 재생 한도에 도달했습니다 ({used}/{limit}). 내일 다시 시도하세요.",
+    "replayQueued": "재생이 이미 대기 중입니다. 완료될 때까지 기다려 주세요."
   },
   "symbolShare": {
     "title": "Share",

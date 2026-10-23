@@ -41,6 +41,8 @@ export type PaperOrder = {
   filledPrice: number | null;
   filledAt: string | null;
   createdAt: string;
+  strategyId?: string | null;
+  strategyName?: string | null;
 };
 
 export type MarketSentiment = {

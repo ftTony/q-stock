@@ -1,26 +1,60 @@
 import { prisma } from "@/lib/db";
+import { claimByIds } from "@/lib/jobs/claim";
 import { getDailyCandles } from "@/lib/market";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import { runReplay, type ReplayBar } from "@/lib/strategy/replay-engine";
 import type { AssetType } from "@/lib/types";
 
 const MAX_BARS = 800;
+/** Re-queue jobs stuck in `running` (crash / OOM mid-job). */
+const STALE_RUNNING_MS = 10 * 60 * 1000;
 
 /**
- * Process one pending StrategyReplay (Worker / optional sync).
- * Caps candle count for 1GB host safety.
+ * Atomically claim a pending replay (pending → running).
+ * Returns false if another worker already claimed it.
+ */
+export async function claimStrategyReplay(replayId: string): Promise<boolean> {
+  const updated = await prisma.strategyReplay.updateMany({
+    where: { id: replayId, status: "pending" },
+    data: { status: "running", error: null },
+  });
+  return updated.count === 1;
+}
+
+async function requeueStaleRunning() {
+  const cutoff = new Date(Date.now() - STALE_RUNNING_MS);
+  const result = await prisma.strategyReplay.updateMany({
+    where: {
+      status: "running",
+      updatedAt: { lt: cutoff },
+    },
+    data: {
+      status: "pending",
+      error: "Requeued after stale running lock",
+    },
+  });
+  if (result.count > 0) {
+    console.warn(`[strategy-replay] requeued ${result.count} stale job(s)`);
+  }
+}
+
+/**
+ * Run a replay that is already claimed (`running`) or still `pending`
+ * (will claim first). Caps candle count for 1GB host safety.
  */
 export async function runStrategyReplayJob(replayId: string) {
   const job = await prisma.strategyReplay.findUnique({
     where: { id: replayId },
     include: { strategy: true },
   });
-  if (!job || job.status !== "pending") return null;
+  if (!job) return null;
 
-  await prisma.strategyReplay.update({
-    where: { id: replayId },
-    data: { status: "running", error: null },
-  });
+  if (job.status === "pending") {
+    const claimed = await claimStrategyReplay(replayId);
+    if (!claimed) return null;
+  } else if (job.status !== "running") {
+    return null;
+  }
 
   try {
     const assumptions = (job.assumptions ?? {}) as {
@@ -92,16 +126,23 @@ export async function runStrategyReplayJob(replayId: string) {
   }
 }
 
-/** Drain a small batch of pending replays (Worker tick). */
+/**
+ * Drain a small batch of pending replays (Worker tick).
+ * Uses atomic claim so web kickoff and worker cannot double-run the same id.
+ */
 export async function tickStrategyReplays(limit = 2) {
+  await requeueStaleRunning();
+
   const pending = await prisma.strategyReplay.findMany({
     where: { status: "pending" },
     orderBy: { createdAt: "asc" },
-    take: limit,
+    take: Math.max(1, Math.min(10, limit)),
     select: { id: true },
   });
-  for (const p of pending) {
-    await runStrategyReplayJob(p.id);
+
+  const claimed = await claimByIds(pending, claimStrategyReplay);
+  for (const id of claimed) {
+    await runStrategyReplayJob(id);
   }
-  return pending.length;
+  return claimed.length;
 }

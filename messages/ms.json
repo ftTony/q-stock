@@ -1352,7 +1352,9 @@
     "marketEtf": "ETF",
     "marketFutures": "Futures",
     "marketCrypto": "Crypto",
-    "marketFund": "Funds"
+    "marketFund": "Funds",
+    "replayDailyLimit": "Had harian dicapai ({used}/{limit}). Cuba lagi esok.",
+    "replayQueued": "Main semula sudah dalam giliran. Tunggu sehingga selesai."
   },
   "symbolShare": {
     "title": "Share",
