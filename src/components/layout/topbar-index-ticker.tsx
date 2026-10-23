@@ -41,21 +41,21 @@ function IndexChip({ item }: { item: IndexQuote }) {
   return (
     <Link
       href={`/symbol/${item.assetType}/${item.symbol}`}
-      className="flex shrink-0 items-baseline gap-1 rounded-md px-1 py-0.5 transition hover:bg-[var(--sidebar-hover)] sm:gap-1.5 sm:px-1.5"
+      className="flex shrink-0 items-center gap-1.5 rounded-md px-1.5 py-1 transition hover:bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)] sm:gap-2 sm:px-2"
     >
-      <span className="max-w-[3.25rem] truncate text-[11px] text-[var(--muted)] sm:max-w-[6.5rem] sm:text-xs">
+      <span className="max-w-[4rem] truncate text-[12px] leading-none tracking-[-0.08px] text-[var(--muted)] sm:max-w-[7rem]">
         {name}
       </span>
       {item.price != null ? (
         <>
-          <span className="hidden text-xs font-semibold tabular-nums sm:inline sm:text-sm">
+          <span className="hidden text-[13px] font-semibold leading-none tabular-nums tracking-[-0.12px] text-[var(--foreground)] sm:inline">
             {formatNumber(item.price, {
               minimumFractionDigits: 2,
               maximumFractionDigits: 2,
             })}
           </span>
           <span
-            className={`text-[11px] font-medium tabular-nums sm:text-xs ${
+            className={`text-[12px] font-medium leading-none tabular-nums ${
               up ? "text-[var(--up)]" : "text-[var(--down)]"
             }`}
           >
@@ -63,7 +63,7 @@ function IndexChip({ item }: { item: IndexQuote }) {
           </span>
         </>
       ) : (
-        <span className="h-3 w-8 animate-pulse rounded bg-[var(--surface-2)] sm:w-14" />
+        <span className="h-3.5 w-10 animate-pulse rounded bg-[var(--surface-2)] sm:w-14" />
       )}
     </Link>
   );
@@ -182,12 +182,14 @@ export function TopbarIndexTicker() {
   return (
     <div
       key={page}
-      className="flex min-w-0 flex-1 items-center gap-0.5 overflow-hidden animate-[qtFade_0.35s_ease]"
+      className="flex min-w-0 items-center gap-1 overflow-hidden animate-[qtFade_0.35s_ease] sm:gap-1.5"
     >
       {slots.map((item, i) => (
         <div
           key={item.id}
-          className={i === 0 ? "min-w-0 shrink" : "hidden min-w-0 shrink md:block"}
+          className={
+            i === 0 ? "min-w-0 shrink" : "hidden min-w-0 shrink md:block"
+          }
         >
           <IndexChip item={item} />
         </div>

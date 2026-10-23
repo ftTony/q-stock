@@ -125,7 +125,9 @@
     "chart": "Carta",
     "news": "Berita",
     "earnings": "Pendapatan",
+    "fundamentals": "Asas",
     "press": "Media",
+    "newsPress": "Berita & media",
     "comments": "Komen",
     "sentiment": "Sentimen",
     "sentimentNews": "Berita",
@@ -185,7 +187,7 @@
     "chartTab": "Chart",
     "overview": "Overview",
     "derivatives": "Derivatives",
-    "overviewHint": "Key quote stats are in the bar above. Use News / Earnings / Profile for deeper context. AI ask lives in the quote bar.",
+    "overviewHint": "Key quote stats are in the bar above. Use News / Fundamentals for deeper context. AI ask lives in the quote bar.",
     "derivativesTitle": "Options chain",
     "derivativesEmpty": "Derivatives chain UI is reserved for US/HK. Live chain data ships with advanced quotes — no fabricated contracts.",
     "intraday": "Intraday",
@@ -234,7 +236,8 @@
     "shortDate": "Date",
     "shortRate": "Short %",
     "shortClose": "Close",
-    "shortAmount": "Short vol"
+    "shortAmount": "Short vol",
+    "watchlistSettings": "Tetapan senarai pantau"
   },
   "company": {
     "na": "Tiada profil syarikat untuk aset ini",

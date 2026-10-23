@@ -62,9 +62,9 @@ export function SymbolAlertStrip({
         aria-haspopup="dialog"
         title={t("setAlert")}
         aria-label={t("setAlert")}
-        className="aw-btn-icon aw-btn-icon-muted"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--aw-parchment,#eef2f7)] hover:text-[var(--foreground)]"
       >
-        <IconBell className="h-3.5 w-3.5" />
+        <IconBell className="h-5 w-5" />
       </button>
 
       {open ? (
@@ -73,7 +73,7 @@ export function SymbolAlertStrip({
           aria-label={t("setAlert")}
           className="aw-alert-popover absolute right-0 top-full z-40 mt-1 w-[min(18rem,calc(100vw-2rem))] border border-[var(--border)] bg-[var(--panel)] p-3 shadow-lg"
         >
-          <p className="aw-caption-strong mb-2.5 text-[13px]">{t("setAlert")}</p>
+          <p className="aw-caption mb-2.5">{t("setAlert")}</p>
           <form onSubmit={onSubmit} className="flex flex-col gap-2.5">
             <div className="flex items-center gap-2">
               <QtSelect

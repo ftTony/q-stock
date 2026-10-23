@@ -209,26 +209,256 @@
   background: var(--aw-canvas);
 }
 
+.aw-workbench-resizer {
+  display: none;
+}
+
+/* Futu fig.2 — desktop: last workbench column; mobile: fixed edge strip */
+.aw-side-icon-rail {
+  --aw-side-dock-w: 44px;
+  position: fixed;
+  top: 2.5rem;
+  right: max(0px, env(safe-area-inset-right, 0px));
+  bottom: 0;
+  z-index: 40;
+  display: flex;
+  width: var(--aw-side-dock-w);
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 0 12px;
+  border: none;
+  border-radius: 0;
+  border-left: 1px solid var(--aw-hairline, var(--border));
+  background: var(--aw-canvas, #fff);
+  box-shadow: none;
+  min-height: 0;
+}
+
+.aw-side-icon-rule {
+  display: block;
+  flex-shrink: 0;
+  margin: 6px 0 8px;
+  height: 1px;
+  width: 20px;
+  background: var(--aw-hairline, var(--border));
+}
+
+.aw-side-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  color: #333;
+  background: transparent;
+  border: none;
+  opacity: 0.9;
+  transition:
+    opacity 0.12s ease,
+    color 0.12s ease,
+    background 0.12s ease;
+}
+
+.aw-side-icon-btn:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--aw-ink) 5%, transparent);
+}
+
+.aw-side-icon-btn[data-active="true"] {
+  opacity: 1;
+  color: var(--aw-primary);
+  background: color-mix(in srgb, var(--aw-primary) 10%, transparent);
+}
+
+
+/* Global while dragging: keep col-resize even over chart/canvas. */
+html.aw-rail-resizing,
+html.aw-rail-resizing * {
+  cursor: col-resize !important;
+}
+html.aw-rail-resizing {
+  user-select: none !important;
+}
+
+/* Watchlist columns */
+.aw-watchlist-cols,
+.aw-watchlist-row {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr) minmax(0, 0.85fr);
+}
+
+/* Full-height left watchlist (sibling of quote+workbench, not under quote bar) */
+.aw-symbol-shell > .aw-watchlist-pane {
+  display: none;
+}
+
+.aw-watchlist-resizer {
+  display: none;
+}
+
+/* Shared 40px header strip with QuoteBar */
+.aw-watchlist-head,
+.aw-quote-bar {
+  box-sizing: border-box;
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+}
+
+.aw-watchlist-collapse-btn,
+.aw-watchlist-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--aw-ink, var(--foreground));
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.aw-watchlist-expand-btn {
+  display: none;
+  background: color-mix(in srgb, var(--aw-ink) 6%, transparent);
+}
+
+.aw-watchlist-collapse-btn:hover,
+.aw-watchlist-expand-btn:hover {
+  background: color-mix(in srgb, var(--aw-ink) 10%, transparent);
+}
+
 @media (min-width: 1024px) {
+  .aw-symbol-shell {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .aw-symbol-shell > .aw-watchlist-pane {
+    display: flex;
+    flex: 0 0 var(--aw-watchlist-width, 260px);
+    width: var(--aw-watchlist-width, 260px);
+    min-width: 180px;
+    max-width: min(420px, 36vw);
+    border-right: none;
+    min-height: 0;
+    align-self: stretch;
+  }
+
+  .aw-watchlist-resizer {
+    display: block;
+    flex: 0 0 8px;
+    width: 8px;
+    margin-left: -4px;
+    margin-right: -4px;
+    position: relative;
+    z-index: 5;
+    cursor: col-resize;
+    touch-action: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    align-self: stretch;
+  }
+  .aw-watchlist-resizer::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+    background: var(--aw-hairline);
+    transition: background 0.12s ease, width 0.12s ease;
+  }
+  .aw-watchlist-resizer:hover::after,
+  .aw-watchlist-resizer:focus-visible::after,
+  .aw-watchlist-resizer[data-dragging="true"]::after {
+    width: 2px;
+    background: var(--aw-primary);
+  }
+
+  .aw-watchlist-expand-btn {
+    display: inline-flex;
+  }
+
   .aw-workbench-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 360px;
+    display: flex;
+    flex-direction: row;
     align-items: stretch;
     min-height: 0;
   }
-  .aw-workbench-rail {
-    border-top: none;
-    border-left: 1px solid var(--aw-hairline);
-  }
-  .aw-workbench-rail,
   .aw-workbench-grid > .aw-stack-y {
+    flex: 1 1 0;
+    min-width: 0;
     min-height: 0;
   }
-}
-
-@media (min-width: 1280px) {
-  .aw-workbench-grid {
-    grid-template-columns: minmax(0, 1fr) 380px;
+  .aw-workbench-grid > .aw-side-icon-rail {
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    z-index: auto;
+    flex: 0 0 var(--aw-side-dock-w, 44px);
+    width: var(--aw-side-dock-w, 44px);
+    align-self: stretch;
+  }
+  .aw-workbench-resizer {
+    display: block;
+    flex: 0 0 8px;
+    width: 8px;
+    margin-left: -4px;
+    margin-right: -4px;
+    position: relative;
+    z-index: 5;
+    cursor: col-resize;
+    touch-action: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+  .aw-workbench-resizer::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+    background: var(--aw-hairline);
+    transition: background 0.12s ease, width 0.12s ease;
+  }
+  .aw-workbench-resizer:hover::after,
+  .aw-workbench-resizer:focus-visible::after,
+  .aw-workbench-resizer[data-dragging="true"]::after {
+    width: 2px;
+    background: var(--aw-primary);
+  }
+  .aw-workbench-rail {
+    flex: 0 0 var(--aw-rail-width, 360px);
+    width: var(--aw-rail-width, 360px);
+    max-width: min(560px, 48vw);
+    min-width: 300px;
+    border-top: none;
+    border-left: 1px solid var(--aw-hairline);
+    min-height: 0;
+  }
+  .aw-workbench-grid[data-resizing="true"] {
+    user-select: none;
+    cursor: col-resize;
+  }
+  .aw-workbench-grid[data-resizing="true"] *,
+  .aw-workbench-grid[data-resizing="true"] iframe,
+  .aw-workbench-grid[data-resizing="true"] canvas {
+    pointer-events: none;
+    cursor: col-resize !important;
+  }
+  .aw-workbench-grid[data-resizing="true"] .aw-workbench-resizer {
+    pointer-events: auto;
   }
 }
 
@@ -281,10 +511,10 @@
 }
 
 .aw-metric-label {
-  font-size: 10px;
+  font-size: 12px;
   font-weight: 400;
   line-height: 1.3;
-  letter-spacing: -0.08px;
+  letter-spacing: -0.12px;
   color: var(--aw-ink-muted-48);
 }
 
@@ -451,12 +681,12 @@
 .aw-tab {
   display: inline-flex;
   align-items: center;
-  height: 32px;
-  font-size: 12px;
+  height: 34px;
+  font-size: 13px;
   font-weight: 400;
   letter-spacing: -0.12px;
   color: var(--aw-ink-muted-48);
-  padding: 0 10px;
+  padding: 0 11px;
   border-bottom: 2px solid transparent;
   border-radius: 0;
 }
@@ -467,8 +697,67 @@
   border-bottom-color: var(--aw-primary);
 }
 
+/* QuoteBar secondary tabs: full row height so active mark sits on bar bottom edge */
+.aw-tab-quote {
+  height: 100%;
+  min-height: 40px;
+  box-sizing: border-box;
+  margin-bottom: -1px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
 .aw-hairline {
   border-color: var(--aw-hairline);
+}
+
+/* Dock drawers: one canvas surface, body does not scroll — panels own scroll. */
+.aw-dock-drawer {
+  box-shadow: none !important;
+  border-left-color: var(--aw-hairline) !important;
+  background: var(--aw-canvas) !important;
+}
+
+.aw-dock-drawer .aw-drawer-header {
+  align-items: center;
+  background: var(--aw-canvas);
+  border-bottom-color: var(--aw-hairline) !important;
+  padding: 12px 20px !important;
+}
+
+.aw-dock-drawer .aw-drawer-title {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  color: var(--aw-ink);
+}
+
+.aw-dock-drawer > .aw-drawer-body {
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden !important;
+  padding: 0 !important;
+  background: var(--aw-canvas);
+}
+
+.aw-dock-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.aw-dock-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.aw-dock-feed-tabs {
+  background: var(--aw-canvas);
+  border-bottom: 1px solid var(--aw-hairline);
+}
+
+.aw-dock-feed-tabs .aw-tab {
+  height: 36px;
+  flex: 1;
+  justify-content: center;
 }
 
 .aw .qt-panel {

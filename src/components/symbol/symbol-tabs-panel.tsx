@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { FormEvent, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
@@ -7,23 +8,33 @@ import {
   AiAnalysisPanel,
   type AiTrendAnalysis,
 } from "@/components/market/ai-analysis-panel";
-import {
-  EarningsPanel,
-  type EarningsCalendarRow,
-  type EarningsMetric,
-  type EarningsSurprise,
+import type {
+  EarningsCalendarRow,
+  EarningsMetric,
+  EarningsSurprise,
 } from "@/components/market/earnings-panel";
-import {
-  CompanyProfilePanel,
-  OfficersPanel,
-} from "@/components/market/company-panel";
-import { SymbolDerivativesPanel } from "@/components/symbol/symbol-derivatives-panel";
 import { PaginatedList } from "@/components/ui/paginated-list";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { TopToast } from "@/components/ui/top-toast";
 import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
 import { formatDate, formatDateTime } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
+
+const SymbolDerivativesPanel = dynamic(
+  () =>
+    import("@/components/symbol/symbol-derivatives-panel").then((m) => ({
+      default: m.SymbolDerivativesPanel,
+    })),
+  { ssr: false },
+);
+
+const SymbolFundamentalsPanel = dynamic(
+  () =>
+    import("@/components/symbol/symbol-fundamentals-panel").then((m) => ({
+      default: m.SymbolFundamentalsPanel,
+    })),
+  { ssr: false },
+);
 
 export type SymbolTab =
   | "chart"
@@ -36,6 +47,7 @@ export type SymbolTab =
   | "earnings"
   | "press"
   | "profile"
+  | "fundamentals"
   | "officers"
   | "comments"
   | "sentiment"
@@ -65,12 +77,8 @@ export type CommentRow = {
   createdAt: string;
 };
 
-type TabItem = { id: SymbolTab; label: string };
-
 type Props = {
-  tabs: TabItem[];
   tab: SymbolTab;
-  onTabChange: (id: SymbolTab) => void;
   /** Rendered when active tab is `chart` (main workbench chart). */
   chartSlot?: ReactNode;
   degraded: boolean;
@@ -125,9 +133,7 @@ type Props = {
 };
 
 export function SymbolTabsPanel({
-  tabs,
   tab,
-  onTabChange,
   chartSlot,
   degraded,
   degradedLabel,
@@ -177,34 +183,22 @@ export function SymbolTabsPanel({
 }: Props) {
   const tAi = useTranslations("ai");
 
-  const t = useTranslations("symbol");
-
   return (
-    <div className="aw-surface-flush flex min-h-0 min-w-0 flex-1 flex-col bg-white">
-      <div className="shrink-0 overflow-x-auto">
-        <div className="flex min-w-max gap-0.5 border-b border-[var(--border)] bg-[#edf2f8]">
-          {tabs.map((item) => (
-            <button
-              key={item.id}
-              type="button"
-              onClick={() => onTabChange(item.id)}
-              data-active={tab === item.id}
-              className="aw-tab"
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-      </div>
-
+    <div className="aw-surface-flush flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--aw-canvas,#fff)]">
       {degraded && tab !== "chart" ? (
-        <p className="aw-caption px-4 pt-3 sm:px-5">{degradedLabel}</p>
+        <p className="aw-caption shrink-0 px-4 pt-3 sm:px-5">{degradedLabel}</p>
       ) : null}
 
       {tab === "chart" && chartSlot ? (
         <div className="aw-tab-chart min-h-0 flex-1 overflow-hidden">{chartSlot}</div>
       ) : (
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 qt-scroll sm:p-5">
+      <div
+        className={
+          tab === "news"
+            ? "min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 [-ms-overflow-style:none] [scrollbar-width:none] sm:p-5 [&::-webkit-scrollbar]:hidden"
+            : "min-h-0 flex-1 overflow-y-auto overscroll-contain p-4 qt-scroll sm:p-5"
+        }
+      >
         {tabLoading ? (
           <div className="flex h-40 items-center justify-center text-[12px] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
             {loadingLabel}
@@ -259,19 +253,21 @@ export function SymbolTabsPanel({
               />
             )}
 
-            {tab === "earnings" &&
+            {tab === "fundamentals" &&
               (assetType === "crypto" || isIndex ? (
                 <p className="text-[12px] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
                   {earningsCryptoNa}
                 </p>
               ) : (
-                <EarningsPanel
-                  surprises={earnings}
-                  upcoming={earningsUpcoming}
-                  recent={earningsRecent}
-                  metrics={earningsMetrics}
+                <SymbolFundamentalsPanel
+                  earnings={earnings}
+                  earningsUpcoming={earningsUpcoming}
+                  earningsRecent={earningsRecent}
+                  earningsMetrics={earningsMetrics}
+                  earningsLoading={earningsLoading}
                   degraded={degraded}
-                  loading={earningsLoading}
+                  company={company}
+                  officers={officers}
                 />
               ))}
 
@@ -316,17 +312,6 @@ export function SymbolTabsPanel({
                   )}
                 />
               ))}
-
-            {tab === "profile" && (
-              <div className="space-y-6">
-                <CompanyProfilePanel profile={company} />
-                {officers.length > 0 ? (
-                  <div className="border-t border-[var(--aw-hairline,var(--border))] pt-5">
-                    <OfficersPanel officers={officers} title={t("officers")} />
-                  </div>
-                ) : null}
-              </div>
-            )}
 
             {tab === "comments" && (
               <div className="space-y-3">
@@ -421,7 +406,7 @@ export function SymbolTabsPanel({
                       ) : (
                         <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
                           <div className="space-y-1">
-                            <dt className="text-[10px] leading-[1.3] tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                            <dt className="aw-metric-label">
                               Buzz
                             </dt>
                             <dd className="text-[13px] font-medium tabular-nums tracking-[-0.08px]">
@@ -429,7 +414,7 @@ export function SymbolTabsPanel({
                             </dd>
                           </div>
                           <div className="space-y-1">
-                            <dt className="text-[10px] leading-[1.3] tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                            <dt className="aw-metric-label">
                               Score
                             </dt>
                             <dd className="text-[13px] font-medium tabular-nums tracking-[-0.08px]">
@@ -437,7 +422,7 @@ export function SymbolTabsPanel({
                             </dd>
                           </div>
                           <div className="space-y-1">
-                            <dt className="text-[10px] leading-[1.3] tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                            <dt className="aw-metric-label">
                               Bullish %
                             </dt>
                             <dd className="text-[13px] font-medium tabular-nums tracking-[-0.08px]">
@@ -445,7 +430,7 @@ export function SymbolTabsPanel({
                             </dd>
                           </div>
                           <div className="space-y-1">
-                            <dt className="text-[10px] leading-[1.3] tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]">
+                            <dt className="aw-metric-label">
                               Trend
                             </dt>
                             <dd className="text-[13px] font-medium tracking-[-0.08px]">

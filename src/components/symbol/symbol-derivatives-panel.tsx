@@ -28,10 +28,10 @@ function OptionTable({
         flush ? "" : "rounded-md border border-[var(--border)]"
       }`}
     >
-      <div className="border-b border-[var(--border)] bg-[var(--surface-2)] px-2 py-1.5 text-[12px] font-medium">
+      <div className="border-b border-[var(--aw-hairline,var(--border))] px-2 py-1.5 text-[13px] font-medium tracking-[-0.08px]">
         {title}
       </div>
-      <table className="w-full min-w-[28rem] border-collapse text-left text-[11px]">
+      <table className="w-full min-w-[28rem] border-collapse text-left text-[12px]">
         <thead>
           <tr className="text-[var(--muted)]">
             {COLS.map((c) => (
@@ -251,7 +251,7 @@ export function SymbolDerivativesPanel({
             {t("derivativesEmpty")}
           </p>
           {chainError ? (
-            <p className="mx-auto max-w-lg break-all text-[11px] text-[var(--muted)] opacity-80">
+            <p className="aw-caption mx-auto max-w-lg break-all opacity-80">
               {chainError}
             </p>
           ) : null}
@@ -279,7 +279,7 @@ export function SymbolDerivativesPanel({
         </div>
       )}
 
-      <p className="text-[11px] leading-relaxed text-[var(--muted)]">
+      <p className="aw-caption leading-relaxed">
         {t("derivativesDisclaimer")}
       </p>
     </div>

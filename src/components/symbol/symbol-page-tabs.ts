@@ -16,8 +16,7 @@ export function buildSymbolTabs(
   const rest: TabItem[] = [
     { id: "derivatives", label: t("derivatives") },
     { id: "news", label: t("news") },
-    { id: "earnings", label: t("earnings") },
-    { id: "profile", label: t("profile") },
+    { id: "fundamentals", label: t("fundamentals") },
     ...(SYMBOL_COMMENTS_ENABLED
       ? ([{ id: "comments", label: t("comments") }] as TabItem[])
       : []),
@@ -31,14 +30,14 @@ export function buildSymbolTabs(
     ];
   }
   if (assetType === "cn") {
-    // Comments were the only extra tab for CN; keep news + profile while comments are off.
+    // CN: chart + news + fundamentals (profile/earnings merged); comments optional.
     return [
       chart,
       ...rest.filter(
         (x) =>
           x.id === "comments" ||
           x.id === "news" ||
-          x.id === "profile",
+          x.id === "fundamentals",
       ),
     ];
   }

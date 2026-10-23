@@ -34,9 +34,11 @@
 }
 
 .aw-quote-actions .aw-btn-pill {
-  height: 36px;
-  padding: 0 16px;
+  height: 32px;
+  padding: 0 14px;
   gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
 }
 
 .aw-quote-actions .aw-caption {

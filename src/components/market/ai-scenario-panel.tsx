@@ -43,6 +43,8 @@ export function AiScenarioPanel(props: {
   assetType: AssetType;
   cashBalance?: number | null;
   onApplyDraft?: (draft: ApplyDraftPayload) => void;
+  /** Under order rail: skip repeating a big title */
+  embed?: boolean;
 }) {
   const t = useTranslations("aiScenario");
   const tAi = useTranslations("ai");
@@ -138,8 +140,14 @@ export function AiScenarioPanel(props: {
       />
       <div className="flex items-start justify-between gap-3 pb-3">
         <div className="min-w-0">
-          <h3 className="aw-caption-strong">{t("title")}</h3>
-          <p className="aw-caption mt-1">{t("subtitle")}</p>
+          {props.embed ? (
+            <p className="aw-caption">{t("subtitle")}</p>
+          ) : (
+            <>
+              <h3 className="aw-caption-strong">{t("title")}</h3>
+              <p className="aw-caption mt-1">{t("subtitle")}</p>
+            </>
+          )}
         </div>
         <SubmitButton
           type="button"
@@ -225,7 +233,7 @@ export function AiScenarioPanel(props: {
                 </dd>
               </dl>
               {draft.rationale ? (
-                <p className="border-t border-[var(--border)] pt-2 text-[11px] leading-snug text-[var(--muted)]">
+                <p className="aw-caption border-t border-[var(--border)] pt-2 leading-snug">
                   {draft.rationale}
                 </p>
               ) : null}

@@ -57,14 +57,6 @@ function IconDoc({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   );
 }
 
-function IconStar({ className = "h-[18px] w-[18px]" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <path d="M12 3.5l2.4 5 5.5.8-4 3.9.9 5.5L12 16.5 7.2 18.7l.9-5.5-4-3.9 5.5-.8L12 3.5z" strokeLinejoin="round" />
-    </svg>
-  );
-}
-
 function IconBell({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -152,7 +144,6 @@ export function AppSidebar({ onNavigate }: Props) {
   const isHome = pathname === "/";
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isAnalysis = pathname.startsWith("/analysis") || pathname.startsWith("/symbol");
-  const isWatchlist = pathname.startsWith("/watchlist");
   const isPortfolio = pathname.startsWith("/portfolio");
   const isReview = pathname.startsWith("/review");
   const isStrategies = pathname.startsWith("/strategies");
@@ -161,9 +152,10 @@ export function AppSidebar({ onNavigate }: Props) {
 
   return (
     <aside className="flex h-full w-full flex-col border-r border-[var(--border)] bg-[var(--sidebar)]">
-      <div className="flex items-center justify-center border-b border-[var(--border)] py-3">
+      {/* Match main topbar h-10 so the hairline aligns across the shell. */}
+      <div className="flex h-10 shrink-0 items-center justify-center border-b border-[var(--border)]">
         <a href={homeHref} className="relative z-10" aria-label={t("markets")}>
-          <SiteLogo height={28} priority variant="mark" />
+          <SiteLogo height={22} priority variant="mark" />
         </a>
       </div>
 
@@ -202,13 +194,6 @@ export function AppSidebar({ onNavigate }: Props) {
           active={isReview}
           icon={<IconDoc />}
           label={t("review")}
-          onNavigate={onNavigate}
-        />
-        <RailItem
-          href="/watchlist"
-          active={isWatchlist}
-          icon={<IconStar />}
-          label={t("watchlist")}
           onNavigate={onNavigate}
         />
         <RailItem

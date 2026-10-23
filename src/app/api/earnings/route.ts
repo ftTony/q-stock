@@ -71,6 +71,10 @@ async function finnhubBasicMetrics(sym: string): Promise<MetricRow[]> {
     const series = basic?.series;
     const sharesMil = profile?.shareOutstanding; // Finnhub: millions of shares
 
+    if (sharesMil != null && sharesMil > 0) {
+      rows.push({ key: "shareOutstanding", value: sharesMil });
+    }
+
     const salesQ = latestSeriesValue(series, "salesPerShare", "quarterly");
     const salesA = latestSeriesValue(series, "salesPerShare", "annual");
     const turnover =

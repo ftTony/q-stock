@@ -65,67 +65,87 @@ export function AiChatHistoryPanel(props: {
   }
 
   return (
-    <div className="space-y-3">
-      <div className="flex items-center justify-between gap-2">
-        <h3 className="text-base font-semibold">{t("historyTitle")}</h3>
-        <button
-          type="button"
-          onClick={props.onClose}
-          className="qt-btn-ghost rounded-md px-2 py-1 text-[14px] text-[var(--muted)]"
+    <div className="flex min-h-0 flex-1 flex-col px-5 pb-5 pt-3">
+      <button
+        type="button"
+        onClick={props.onClose}
+        className="mb-4 inline-flex w-fit items-center gap-0.5 self-start text-[13px] font-medium text-[var(--aw-primary)] transition hover:opacity-80"
+      >
+        <svg
+          className="h-3.5 w-3.5"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.2"
+          aria-hidden
         >
-          {t("historyBack")}
-        </button>
+          <path
+            d="M15 18l-6-6 6-6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {t("historyBack")}
+      </button>
+
+      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {rows === null && <InlineLoading label={tCommon("loading")} />}
+        {error && (
+          <p className="py-8 text-center text-[13px] text-[var(--down)]">
+            {error}
+          </p>
+        )}
+
+        {rows && rows.length === 0 && !error && (
+          <div className="flex min-h-[14rem] items-center justify-center px-6 text-center">
+            <p className="max-w-[18rem] text-[13px] leading-relaxed text-[var(--aw-ink-muted-48,var(--muted))]">
+              {t("historyEmpty")}
+            </p>
+          </div>
+        )}
+
+        {rows && rows.length > 0 && (
+          <ul>
+            {rows.map((row) => {
+              const active = row.id === props.activeSessionId;
+              return (
+                <li
+                  key={row.id}
+                  className={`-mx-2 flex items-start gap-2 rounded-lg px-2 py-3 ${
+                    active
+                      ? "bg-[color-mix(in_srgb,var(--aw-primary)_6%,transparent)]"
+                      : ""
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => props.onSelect(row.id)}
+                    className="min-w-0 flex-1 text-left"
+                  >
+                    <p className="truncate text-[14px] font-medium tracking-[-0.12px] text-[var(--aw-ink)]">
+                      {row.title}
+                    </p>
+                    <p className="mt-1 text-[12px] tabular-nums text-[var(--aw-ink-muted-48,var(--muted))]">
+                      {t("historyMeta", {
+                        count: row.messageCount,
+                        time: formatShort(row.updatedAt),
+                      })}
+                    </p>
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busyId === row.id}
+                    onClick={() => void onDelete(row.id)}
+                    className="shrink-0 rounded-md px-2 py-1 text-[12px] text-[var(--aw-ink-muted-48,var(--muted))] hover:text-[var(--down)] disabled:opacity-50"
+                  >
+                    {t("historyDelete")}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )}
       </div>
-      <p className="text-sm text-[var(--muted)]">
-        {t("historySubtitle", { symbol: props.symbol })}
-      </p>
-
-      {rows === null && <InlineLoading label={tCommon("loading")} />}
-      {error && <p className="text-sm text-[var(--down)]">{error}</p>}
-
-      {rows && rows.length === 0 && !error && (
-        <p className="rounded-xl border border-dashed border-[var(--border)] px-4 py-8 text-center text-sm text-[var(--muted)]">
-          {t("historyEmpty")}
-        </p>
-      )}
-
-      {rows && rows.length > 0 && (
-        <ul className="divide-y divide-[var(--border)] rounded-xl border border-[var(--border)]">
-          {rows.map((row) => {
-            const active = row.id === props.activeSessionId;
-            return (
-              <li
-                key={row.id}
-                className={`flex items-start gap-2 px-3 py-2.5 ${
-                  active ? "bg-[var(--brand-soft)]/50" : ""
-                }`}
-              >
-                <button
-                  type="button"
-                  onClick={() => props.onSelect(row.id)}
-                  className="min-w-0 flex-1 text-left"
-                >
-                  <p className="truncate text-[14px] font-medium">{row.title}</p>
-                  <p className="mt-0.5 text-xs text-[var(--muted)]">
-                    {t("historyMeta", {
-                      count: row.messageCount,
-                      time: formatShort(row.updatedAt),
-                    })}
-                  </p>
-                </button>
-                <button
-                  type="button"
-                  disabled={busyId === row.id}
-                  onClick={() => void onDelete(row.id)}
-                  className="qt-btn-ghost shrink-0 rounded-md px-2 py-1 text-xs text-[var(--muted)] hover:text-[var(--down)] disabled:opacity-50"
-                >
-                  {t("historyDelete")}
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      )}
     </div>
   );
 }

@@ -1,40 +1,52 @@
 "use client";
 
-import { Suspense, useCallback, useState, type ReactNode } from "react";
+import dynamic from "next/dynamic";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
-import { TradePanel } from "@/components/trading/trade-panel";
-import { AiScenarioPanel } from "@/components/market/ai-scenario-panel";
-import { SymbolRailMarket } from "@/components/symbol/symbol-rail-market";
-import { SymbolPaperRiskBar } from "@/components/symbol/symbol-paper-risk-bar";
+import { setBoundStrategyId } from "@/components/symbol/symbol-plan-binding";
 import type { AssetType } from "@/lib/types";
 
-export type AiOrderDraft = {
-  side: "buy" | "sell";
-  type: "limit" | "stop";
-  price: number;
-  qtyHint?: number;
-  invalidationNote?: string;
-  nonce: number;
-};
+const SymbolPlanPanel = dynamic(
+  () =>
+    import("@/components/symbol/symbol-plan-panel").then((m) => ({
+      default: m.SymbolPlanPanel,
+    })),
+  { ssr: false },
+);
 
-export type RailTab = "market" | "order" | "calm";
+const SymbolReviewRail = dynamic(
+  () =>
+    import("@/components/symbol/symbol-review-rail").then((m) => ({
+      default: m.SymbolReviewRail,
+    })),
+  { ssr: false },
+);
+
+const SymbolRailMarket = dynamic(
+  () =>
+    import("@/components/symbol/symbol-rail-market").then((m) => ({
+      default: m.SymbolRailMarket,
+    })),
+  { ssr: false },
+);
+
+export type RailTab = "plan" | "review";
 
 type Props = {
   symbol: string;
   assetType: AssetType;
-  lastPrice: number | null;
-  bid?: number | null;
-  ask?: number | null;
-  onOpenAi?: () => void;
-  /** Fired when paper cash/positions reload (e.g. after fill). */
-  onAccountChange?: () => void;
-  /** Index / crypto: hide L2 book & ticks tabs. */
   isIndex?: boolean;
-  /** Mobile: hide depth tabs into "more" handled by parent — keep 4 here for desktop. */
-  compact?: boolean;
+  /** Notify quote bar of bound strategy name (+ id for trade drawer). */
+  onBoundStrategyChange?: (
+    name: string | null,
+    id?: string | null,
+  ) => void;
+  /** Increment to force Plan tab (e.g. quote bar rule badge). */
+  focusPlanToken?: number;
+  /** Open trade in parent drawer (side icon / plan CTA). */
+  onRequestOrder?: () => void;
 };
 
-/** Only 行情 / 交易 scroll; 冷静 follows natural height. */
 function RailScroll({ children }: { children: ReactNode }) {
   return (
     <div className="aw-rail-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain qt-scroll">
@@ -46,107 +58,118 @@ function RailScroll({ children }: { children: ReactNode }) {
 export function SymbolOrderRail({
   symbol,
   assetType,
-  lastPrice,
-  bid = null,
-  ask = null,
-  onOpenAi,
-  onAccountChange,
   isIndex = false,
+  onBoundStrategyChange,
+  focusPlanToken = 0,
+  onRequestOrder,
 }: Props) {
   const t = useTranslations("symbolRail");
   const showDepth = assetType !== "crypto" && !isIndex;
-  const [tab, setTab] = useState<RailTab>(showDepth ? "market" : "order");
-  const [cashBalance, setCashBalance] = useState<number | null>(null);
-  const [accountTick, setAccountTick] = useState(0);
-  const [aiDraft, setAiDraft] = useState<AiOrderDraft | null>(null);
+  const [tab, setTab] = useState<RailTab>("plan");
+  const [marketOpen, setMarketOpen] = useState(false);
+  const [strategyId, setStrategyId] = useState<string | null>(null);
+  const [nameById, setNameById] = useState<Record<string, string>>({});
 
-  const handleCashBalance = useCallback(
-    (cash: number | null) => {
-      setCashBalance(cash);
-      setAccountTick((n) => n + 1);
-      onAccountChange?.();
+  useEffect(() => {
+    if (focusPlanToken <= 0) return;
+    setMarketOpen(false);
+    setTab("plan");
+  }, [focusPlanToken]);
+
+  useEffect(() => {
+    setStrategyId(null);
+    setMarketOpen(false);
+    setTab("plan");
+    onBoundStrategyChange?.(null, null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset on symbol switch only
+  }, [symbol, assetType]);
+
+  const handleStrategyIdChange = useCallback(
+    (id: string | null, name?: string | null) => {
+      setBoundStrategyId(assetType, symbol, id);
+      setStrategyId(id);
+      if (!id) {
+        onBoundStrategyChange?.(null, null);
+        return;
+      }
+      if (name) {
+        setNameById((m) => ({ ...m, [id]: name }));
+        onBoundStrategyChange?.(name, id);
+      } else {
+        onBoundStrategyChange?.(null, id);
+      }
     },
-    [onAccountChange],
+    [onBoundStrategyChange, assetType, symbol],
   );
 
   const railOptions: { value: RailTab; label: string }[] = [
-    ...(showDepth ? [{ value: "market" as const, label: t("market") }] : []),
-    { value: "order", label: t("order") },
-    { value: "calm", label: t("calm") },
+    { value: "plan", label: t("plan") },
+    { value: "review", label: t("review") },
   ];
-
-  const activeTab = !showDepth && tab === "market" ? "order" : tab;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--aw-canvas)]">
       <div
         role="tablist"
-        className="flex shrink-0 border-b border-[var(--border)]"
+        className="flex shrink-0 items-stretch border-b border-[var(--border)]"
       >
         {railOptions.map((opt) => (
           <button
             key={opt.value}
             type="button"
             role="tab"
-            aria-selected={activeTab === opt.value}
-            data-active={activeTab === opt.value}
-            onClick={() => setTab(opt.value)}
+            aria-selected={!marketOpen && tab === opt.value}
+            data-active={!marketOpen && tab === opt.value}
+            onClick={() => {
+              setMarketOpen(false);
+              setTab(opt.value);
+            }}
             className="aw-tab flex-1 justify-center"
           >
             {opt.label}
           </button>
         ))}
+        {showDepth ? (
+          <button
+            type="button"
+            role="tab"
+            aria-selected={marketOpen}
+            data-active={marketOpen}
+            onClick={() => setMarketOpen(true)}
+            className="aw-tab flex-1 justify-center"
+          >
+            {t("market")}
+          </button>
+        ) : null}
       </div>
 
-      {showDepth && activeTab === "market" ? (
+      {showDepth && marketOpen ? (
         <RailScroll>
           <SymbolRailMarket symbol={symbol} assetType={assetType} />
         </RailScroll>
       ) : null}
 
-      {activeTab === "order" ? (
+      {!marketOpen && tab === "plan" ? (
         <RailScroll>
-          <SymbolPaperRiskBar
+          <SymbolPlanPanel
             symbol={symbol}
             assetType={assetType}
-            lastPrice={lastPrice}
-            refreshKey={accountTick}
+            strategyId={strategyId}
+            onStrategyIdChange={handleStrategyIdChange}
+            onGoOrder={() => onRequestOrder?.()}
           />
-          <Suspense
-            fallback={
-              <div className="p-4 text-[12px] tracking-[-0.12px] text-[var(--muted)]">
-                {t("order")}…
-              </div>
-            }
-          >
-            <TradePanel
-              symbol={symbol}
-              assetType={assetType}
-              lastPrice={lastPrice}
-              bid={bid}
-              ask={ask}
-              aiDraft={aiDraft}
-              onDismissAiDraft={() => setAiDraft(null)}
-              onCashBalance={handleCashBalance}
-              onOpenCalm={() => setTab("calm")}
-              onOpenAi={onOpenAi}
-            />
-          </Suspense>
         </RailScroll>
       ) : null}
 
-      {activeTab === "calm" ? (
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain qt-scroll">
-          <AiScenarioPanel
+      {!marketOpen && tab === "review" ? (
+        <RailScroll>
+          <SymbolReviewRail
             symbol={symbol}
             assetType={assetType}
-            cashBalance={cashBalance}
-            onApplyDraft={(draft) => {
-              setAiDraft({ ...draft, nonce: Date.now() });
-              setTab("order");
-            }}
+            strategyNameById={nameById}
+            onOpenPlan={() => setTab("plan")}
           />
-        </div>
+        </RailScroll>
       ) : null}
     </div>
   );

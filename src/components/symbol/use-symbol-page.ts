@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { type IndicatorFlags } from "@/components/charts/candle-chart";
@@ -19,10 +19,10 @@ import {
 import { useSymbolAiAnalysis } from "@/components/symbol/use-symbol-ai-analysis";
 import { useSymbolCandles } from "@/components/symbol/use-symbol-candles";
 import {
-  SYMBOL_COMMENTS_ENABLED,
   buildSymbolTabs,
   fallbackSymbolTab,
 } from "@/components/symbol/symbol-page-tabs";
+import { symbolPageMutations } from "@/components/symbol/use-symbol-page-mutations";
 import type { SymbolSentiment } from "@/components/symbol/symbol-sentiment-chip";
 import {
   quotePollIntervalMs,
@@ -33,9 +33,9 @@ import type { AssetType, CandleResolution, Quote } from "@/lib/types";
 
 const TAB_LOADING: ReadonlySet<SymbolTab> = new Set([
   "news",
-  "earnings",
+  "fundamentals",
   "press",
-  "profile",
+  "comments",
   "officers",
 ]);
 
@@ -88,6 +88,7 @@ export function useSymbolPage(
   const [tabLoading, setTabLoading] = useState(false);
   const [sentiment, setSentiment] = useState<SymbolSentiment>(null);
   const earningsLoadedRef = useRef(false);
+  const companyLoadedRef = useRef(false);
   const [alertPrice, setAlertPrice] = useState("");
   const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
@@ -171,8 +172,11 @@ export function useSymbolPage(
 
   const loadTab = useCallback(async () => {
     setDegraded(false);
-    const showLoading =
-      TAB_LOADING.has(tab) && !(tab === "earnings" && earningsLoadedRef.current);
+    const fundamentalsCached =
+      tab === "fundamentals" &&
+      earningsLoadedRef.current &&
+      companyLoadedRef.current;
+    const showLoading = TAB_LOADING.has(tab) && !fundamentalsCached;
     if (showLoading) setTabLoading(true);
     try {
       if (tab === "news") {
@@ -182,30 +186,54 @@ export function useSymbolPage(
         const data = await res.json();
         setNews(data.news ?? []);
         if (!res.ok || data.degraded) setDegraded(true);
-      } else if (tab === "earnings") {
+      } else if (tab === "fundamentals") {
         if (assetType === "crypto" || isIndex) {
           setEarnings([]);
           setEarningsUpcoming([]);
           setEarningsRecent([]);
           setEarningsMetrics([]);
+          setCompany(null);
+          setOfficers([]);
           return;
         }
-        if (earningsLoadedRef.current) return;
-        setEarningsLoading(true);
-        try {
-          const res = await fetch(
-            `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+        if (fundamentalsCached) return;
+        const tasks: Promise<void>[] = [];
+        if (!earningsLoadedRef.current) {
+          tasks.push(
+            (async () => {
+              setEarningsLoading(true);
+              try {
+                const res = await fetch(
+                  `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+                );
+                const data = await res.json();
+                setEarnings(data.surprises ?? data.earnings ?? []);
+                setEarningsUpcoming(data.calendar?.upcoming ?? []);
+                setEarningsRecent(data.calendar?.recent ?? []);
+                setEarningsMetrics(data.metrics ?? []);
+                earningsLoadedRef.current = true;
+                if (data.degraded) setDegraded(true);
+              } finally {
+                setEarningsLoading(false);
+              }
+            })(),
           );
-          const data = await res.json();
-          setEarnings(data.surprises ?? data.earnings ?? []);
-          setEarningsUpcoming(data.calendar?.upcoming ?? []);
-          setEarningsRecent(data.calendar?.recent ?? []);
-          setEarningsMetrics(data.metrics ?? []);
-          earningsLoadedRef.current = true;
-          if (data.degraded) setDegraded(true);
-        } finally {
-          setEarningsLoading(false);
         }
+        if (!companyLoadedRef.current) {
+          tasks.push(
+            (async () => {
+              const res = await fetch(
+                `/api/company?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
+              );
+              const data = await res.json();
+              setCompany(data.profile ?? null);
+              setOfficers(data.officers ?? []);
+              companyLoadedRef.current = true;
+              if (!res.ok || data.degraded) setDegraded(true);
+            })(),
+          );
+        }
+        await Promise.all(tasks);
       } else if (tab === "press") {
         if (assetType === "crypto" || isIndex) {
           setPress([]);
@@ -217,21 +245,10 @@ export function useSymbolPage(
         const data = await res.json();
         setPress(data.press ?? []);
         if (data.degraded) setDegraded(true);
-      } else if (tab === "profile") {
-        if (assetType === "crypto" || isIndex) {
-          setCompany(null);
-          setOfficers([]);
-          return;
-        }
+      } else if (tab === "comments") {
         const res = await fetch(
-          `/api/company?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
+          `/api/comments?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
         );
-        const data = await res.json();
-        setCompany(data.profile ?? null);
-        setOfficers(data.officers ?? []);
-        if (!res.ok || data.degraded) setDegraded(true);
-      } else if (tab === "comments" && SYMBOL_COMMENTS_ENABLED) {
-        const res = await fetch(`/api/comments?symbol=${symbol}&assetType=${assetType}`);
         const data = await res.json();
         setComments(data.comments ?? []);
       }
@@ -254,13 +271,16 @@ export function useSymbolPage(
     setCompany(null);
     setOfficers([]);
     earningsLoadedRef.current = false;
-    setTab("news");
+    companyLoadedRef.current = false;
+    setTab("chart");
   }, [symbol, assetType, initialQuote]);
 
   const hasQuotePrice = quote != null && quote.price > 0;
 
   useEffect(() => {
-    void loadQuote();
+    // SSR already painted a quote — skip the duplicate REST kickoff; poll/WS refresh.
+    const ssrOk = initialQuote != null && initialQuote.price > 0;
+    if (!ssrOk) void loadQuote();
     const ms =
       !hasQuotePrice || !wsPush || wsDegraded
         ? 3_000
@@ -274,6 +294,7 @@ export function useSymbolPage(
     return () => clearInterval(timer);
   }, [
     loadQuote,
+    initialQuote,
     hasQuotePrice,
     wsEnabled,
     wsConnected,
@@ -281,11 +302,31 @@ export function useSymbolPage(
     wsPush,
   ]);
 
+  // Rail market-cap can wait; chart + quote first. Idle or ~1.2s fallback.
   useEffect(() => {
-    void loadEarningsMetrics();
+    let cancelled = false;
+    const run = () => {
+      if (!cancelled) void loadEarningsMetrics();
+    };
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(run, { timeout: 2500 });
+    } else {
+      timeoutId = setTimeout(run, 1200);
+    }
+    return () => {
+      cancelled = true;
+      if (idleId != null && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId != null) clearTimeout(timeoutId);
+    };
   }, [loadEarningsMetrics]);
 
+  // Sentiment tab is not in the main tab bar — fetch only if selected.
   useEffect(() => {
+    if (tab !== "sentiment") return;
     let cancelled = false;
     (async () => {
       try {
@@ -301,11 +342,12 @@ export function useSymbolPage(
     return () => {
       cancelled = true;
     };
-  }, [symbol, assetType]);
+  }, [tab, symbol, assetType]);
 
   useEffect(() => {
+    if (!TAB_LOADING.has(tab)) return;
     void loadTab();
-  }, [loadTab]);
+  }, [loadTab, tab]);
 
   useEffect(() => {
     if (ai.aiDegraded) setDegraded(true);
@@ -342,86 +384,28 @@ export function useSymbolPage(
     if (next !== tab) setTab(next);
   }, [assetType, isIndex, tab, tabs]);
 
-  async function postComment(e: FormEvent) {
-    e.preventDefault();
-    if (!commentText.trim() || commentBusy) return;
-    setCommentBusy(true);
-    try {
-      const res = await fetch("/api/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ symbol, assetType, content: commentText }),
-      });
-      if (res.ok) {
-        setCommentText("");
-        await loadTab();
-      }
-    } finally {
-      setCommentBusy(false);
-    }
-  }
-
-  async function deleteComment(id: string) {
-    await fetch(`/api/comments?id=${id}`, { method: "DELETE" });
-    await loadTab();
-  }
-
-  async function createAlert(e: FormEvent) {
-    e.preventDefault();
-    setAlertMsg(null);
-    if (!session?.user) {
-      setAlertMsg(tAlerts("loginRequired"));
-      return;
-    }
-    if (alertBusy) return;
-    setAlertBusy(true);
-    try {
-      const res = await fetch("/api/alerts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          symbol,
-          assetType,
-          condition: alertCondition,
-          triggerPrice: Number(alertPrice),
-        }),
-      });
-      if (!res.ok) {
-        setAlertMsg(tCommon("error"));
-        return;
-      }
-      setAlertMsg("OK");
-      setAlertPrice("");
-    } finally {
-      setAlertBusy(false);
-    }
-  }
-
-  async function toggleWatchlist() {
-    if (!session?.user) {
-      setAlertMsg(tAlerts("loginRequired"));
-      return;
-    }
-    setWatchBusy(true);
-    try {
-      if (inWatchlist) {
-        await fetch(
-          `/api/watchlist?symbol=${symbol}&assetType=${assetType}`,
-          { method: "DELETE" },
-        );
-        setInWatchlist(false);
-      } else {
-        const res = await fetch("/api/watchlist", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ symbol, assetType }),
-        });
-        if (res.ok) setInWatchlist(true);
-      }
-    } finally {
-      setWatchBusy(false);
-    }
-  }
+  const { postComment, deleteComment, createAlert, toggleWatchlist } =
+    symbolPageMutations({
+      session: session ?? null,
+      symbol,
+      assetType,
+      commentText,
+      commentBusy,
+      setCommentBusy,
+      setCommentText,
+      alertPrice,
+      alertCondition,
+      alertBusy,
+      setAlertBusy,
+      setAlertMsg,
+      setAlertPrice,
+      inWatchlist,
+      setInWatchlist,
+      setWatchBusy,
+      loadTab,
+      tAlerts,
+      tCommon,
+    });
 
   return {
     session,

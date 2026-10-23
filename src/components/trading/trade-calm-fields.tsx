@@ -56,7 +56,7 @@ export function TradeCalmFields({
         />
       </div>
 
-      {strategies.length > 0 ? (
+      {strategies.length > 0 || strategyId ? (
         <div>
           <label className="aw-metric-label mb-1 block">{t("strategyTag")}</label>
           <QtSelect
@@ -65,6 +65,9 @@ export function TradeCalmFields({
             options={[
               { value: "__none__", label: t("strategyNone") },
               ...strategies.map((s) => ({ value: s.id, label: s.name })),
+              ...(strategyId && !strategies.some((s) => s.id === strategyId)
+                ? [{ value: strategyId, label: strategyId.slice(0, 8) }]
+                : []),
             ]}
           />
         </div>

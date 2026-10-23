@@ -116,29 +116,32 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
         }
       >
         <header
-          className={`sticky top-0 z-40 shrink-0 border-b border-[var(--border)] backdrop-blur-xl ${
+          className={`sticky top-0 z-40 shrink-0 border-b border-[var(--aw-hairline,var(--border))] backdrop-blur-xl ${
             isSymbol
               ? "bg-[#e6edf6]/90"
               : "bg-[var(--background)]/85"
           }`}
         >
-          <div className="flex h-14 items-center justify-between gap-2 px-3 sm:gap-3 sm:px-4 lg:px-6">
-            <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-3">
+          <div className="flex h-10 items-center gap-2 px-3 sm:gap-3 sm:px-5 lg:px-6">
+            <div className="flex min-w-0 shrink-0 items-center gap-2 sm:max-w-[min(42%,28rem)] sm:gap-3">
               <a
                 href={homeHref}
                 className="relative z-10 flex shrink-0 items-center lg:hidden"
               >
-                <SiteLogo height={28} variant="compact" />
+                <SiteLogo height={24} variant="compact" />
               </a>
               <TopbarIndexTicker />
             </div>
-            <div className="flex shrink-0 items-center">
-              <TopBarActions showMarketStatus={false} />
+            <MarketCredentialsPrompt inline />
+            <div className="ml-auto flex shrink-0 items-center">
+              <TopBarActions
+                showMarketStatus={false}
+                showTheme={false}
+                showLanguage={false}
+              />
             </div>
           </div>
         </header>
-
-        <MarketCredentialsPrompt fluid={isFluidMain} />
 
         <main
           className={

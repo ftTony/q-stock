@@ -63,6 +63,8 @@ export function TradePanel({
   onCashBalance,
   onOpenCalm,
   onOpenAi,
+  strategyId: strategyIdProp,
+  onStrategyIdChange,
 }: {
   symbol: string;
   assetType: AssetType;
@@ -74,6 +76,9 @@ export function TradePanel({
   onCashBalance?: (cash: number | null) => void;
   onOpenCalm?: () => void;
   onOpenAi?: () => void;
+  /** Controlled strategy tag from Plan rail. */
+  strategyId?: string;
+  onStrategyIdChange?: (id: string, name?: string) => void;
 }) {
   const t = useTranslations("trading");
   const { data: session, status } = useSession();
@@ -86,10 +91,17 @@ export function TradePanel({
   const [stopPrice, setStopPrice] = useState("");
   const [invalidationPrice, setInvalidationPrice] = useState("");
   const [emotionTags, setEmotionTags] = useState<EmotionTagId[]>([]);
-  const [strategyId, setStrategyId] = useState<string>("");
+  const [strategyIdInner, setStrategyIdInner] = useState<string>("");
   const [strategies, setStrategies] = useState<
     Array<{ id: string; name: string }>
   >([]);
+  const strategyId =
+    strategyIdProp !== undefined ? strategyIdProp : strategyIdInner;
+  const setStrategyId = (id: string) => {
+    const name = strategies.find((s) => s.id === id)?.name;
+    if (onStrategyIdChange) onStrategyIdChange(id, name);
+    else setStrategyIdInner(id);
+  };
   const [account, setAccount] = useState<Account | null>(null);
   const [position, setPosition] = useState<Position | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -281,7 +293,6 @@ export function TradePanel({
   if (!session?.user) {
     return (
       <div className="space-y-3 p-3">
-        <p className="aw-caption-strong">{t("title")}</p>
         <p className="aw-caption">{t("loginRequired")}</p>
         <Link href="/login" className="aw-btn-pill inline-flex">
           {t("login")}
@@ -299,10 +310,7 @@ export function TradePanel({
         onDismiss={() => setMsg(null)}
       />
       <div className="flex items-baseline justify-between gap-2">
-        <div className="flex items-baseline gap-2">
-          <p className="aw-caption-strong">{t("title")}</p>
-          <span className="aw-caption">{t("paperBadge")}</span>
-        </div>
+        <span className="aw-caption">{t("paperBadge")}</span>
         {loading ? <span className="aw-caption">{t("loading")}</span> : null}
       </div>
 

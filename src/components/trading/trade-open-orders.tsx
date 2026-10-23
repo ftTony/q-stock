@@ -33,10 +33,10 @@ export function TradeOpenOrders({
 
   return (
     <div className="border-t border-[var(--border)] pt-3">
-      <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-[var(--muted)]">
+      <h3 className="aw-caption-strong mb-2 text-[13px]">
         {t("openOrders")}
       </h3>
-      <ul className="space-y-2 text-xs">
+      <ul className="space-y-2 text-[13px]">
         {orders.map((o) => (
           <li
             key={o.id}

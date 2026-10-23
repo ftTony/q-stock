@@ -82,7 +82,7 @@ export function SymbolEmotionCheck({
               type="button"
               aria-pressed={on}
               onClick={() => toggle(id)}
-              className={`inline-flex h-6 items-center rounded-[6px] border px-2 text-[11px] font-normal leading-none tracking-[-0.12px] transition active:scale-95 ${
+              className={`inline-flex h-8 items-center rounded-[6px] border px-2.5 text-[12px] font-normal leading-none tracking-[-0.12px] transition active:scale-95 ${
                 on ? tone.on : `${tone.idle} hover:border-[var(--brand)]/40`
               }`}
             >
@@ -91,7 +91,7 @@ export function SymbolEmotionCheck({
           );
         })}
       </div>
-      <p className="mt-1 text-[11px] leading-snug text-[var(--muted)]">
+      <p className="aw-caption mt-1 leading-snug">
         {t("hint")}
       </p>
     </div>

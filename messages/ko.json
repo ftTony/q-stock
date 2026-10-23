@@ -125,7 +125,9 @@
     "chart": "차트",
     "news": "뉴스",
     "earnings": "실적",
+    "fundamentals": "펀더멘털",
     "press": "보도자료",
+    "newsPress": "뉴스·공시",
     "comments": "댓글",
     "sentiment": "시장 심리",
     "sentimentNews": "뉴스",
@@ -185,7 +187,7 @@
     "chartTab": "차트",
     "overview": "Overview",
     "derivatives": "Derivatives",
-    "overviewHint": "Key quote stats are in the bar above. Use News / Earnings / Profile for deeper context. AI ask lives in the quote bar.",
+    "overviewHint": "Key quote stats are in the bar above. Use News / Fundamentals for deeper context. AI ask lives in the quote bar.",
     "derivativesTitle": "Options chain",
     "derivativesEmpty": "Derivatives chain UI is reserved for US/HK. Live chain data ships with advanced quotes — no fabricated contracts.",
     "intraday": "Intraday",
@@ -234,7 +236,8 @@
     "shortDate": "Date",
     "shortRate": "Short %",
     "shortClose": "Close",
-    "shortAmount": "Short vol"
+    "shortAmount": "Short vol",
+    "watchlistSettings": "관심 목록 설정"
   },
   "company": {
     "na": "이 자산에 대한 기업 정보가 없습니다",

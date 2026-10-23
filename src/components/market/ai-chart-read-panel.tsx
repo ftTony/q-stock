@@ -84,7 +84,7 @@ export function AiChartReadPanel(props: {
     <section
       className={
         page
-          ? "aw-ai-section space-y-3"
+          ? "aw-ai-section aw-ai-chart space-y-2.5"
           : "mt-6 space-y-3 border-t border-[var(--border)] pt-4"
       }
     >
@@ -97,20 +97,16 @@ export function AiChartReadPanel(props: {
 
       <div className="flex items-start justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h3 className={page ? "aw-ai-section-title" : "text-base font-semibold"}>
-            {t("title")}
-          </h3>
-          <p
-            className={
-              page
-                ? "aw-ai-section-sub mt-1"
-                : "mt-0.5 text-sm leading-snug text-[var(--muted)]"
-            }
-          >
-            {t("subtitle")}
-          </p>
+          {!page ? (
+            <>
+              <h3 className="text-base font-semibold">{t("title")}</h3>
+              <p className="mt-0.5 text-sm leading-snug text-[var(--muted)]">
+                {t("subtitle")}
+              </p>
+            </>
+          ) : null}
           {fromHistory && data ? (
-            <p className="mt-1 text-xs text-[var(--muted)]">{t("historyHint")}</p>
+            <p className="aw-caption mt-1">{t("historyHint")}</p>
           ) : null}
         </div>
         <div className="flex shrink-0 items-center gap-1.5 pt-0.5">

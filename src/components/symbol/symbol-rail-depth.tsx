@@ -140,7 +140,7 @@ function BookList({
   return (
     <div className="space-y-2 p-3">
       <p className="text-[12px] font-medium text-[var(--muted)]">{labels.title}</p>
-      <div className="grid grid-cols-[1fr_auto_1fr] gap-x-2 text-[11px]">
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-x-2 text-[12px]">
         <div className="text-[var(--muted)]">{labels.bid}</div>
         <div className="text-center text-[var(--muted)]">{labels.price}</div>
         <div className="text-right text-[var(--muted)]">{labels.ask}</div>

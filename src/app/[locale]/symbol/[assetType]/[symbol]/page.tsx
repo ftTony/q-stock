@@ -59,6 +59,7 @@ export default async function SymbolPage({ params }: Props) {
           "symbolEmotion",
           "symbolRail",
           "symbolShare",
+          "strategies",
           "trading",
         ]}
       >

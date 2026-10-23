@@ -50,7 +50,7 @@ export function AiAnalysisPanel(props: {
       <div className="space-y-2 text-sm">
         <p className="text-[var(--muted)]">{message || t("unavailable")}</p>
         {disclaimer && (
-          <p className="text-xs text-[var(--muted)]">{disclaimer}</p>
+          <p className="aw-metric-label">{disclaimer}</p>
         )}
       </div>
     );
@@ -89,19 +89,19 @@ export function AiAnalysisPanel(props: {
     <div className="space-y-4 text-sm">
       <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1">
         <div>
-          <span className="text-xs text-[var(--muted)]">{t("bias")}</span>
+          <span className="aw-metric-label">{t("bias")}</span>
           <p className={`text-lg font-semibold ${biasClass}`}>{biasLabel}</p>
         </div>
         <div>
-          <span className="text-xs text-[var(--muted)]">{t("confidence")}</span>
+          <span className="aw-metric-label">{t("confidence")}</span>
           <p className="font-medium">{confPct}%</p>
         </div>
         <div>
-          <span className="text-xs text-[var(--muted)]">{t("horizon")}</span>
+          <span className="aw-metric-label">{t("horizon")}</span>
           <p className="font-medium">{horizonLabel}</p>
         </div>
         {(cached || degraded) && (
-          <div className="text-xs text-[var(--muted)]">
+          <div className="aw-metric-label">
             {cached ? t("cached") : null}
             {cached && degraded ? " · " : null}
             {degraded ? tCommon("degraded") : null}
@@ -110,7 +110,7 @@ export function AiAnalysisPanel(props: {
       </div>
 
       <div>
-        <h3 className="mb-1 text-xs font-medium text-[var(--muted)]">
+        <h3 className="mb-1 aw-metric-label font-medium">
           {t("summary")}
         </h3>
         <p className="leading-relaxed whitespace-pre-wrap">{analysis.summary}</p>
@@ -118,7 +118,7 @@ export function AiAnalysisPanel(props: {
 
       {analysis.drivers.length > 0 && (
         <div>
-          <h3 className="mb-1 text-xs font-medium text-[var(--muted)]">
+          <h3 className="mb-1 aw-metric-label font-medium">
             {t("drivers")}
           </h3>
           <ul className="list-disc space-y-1 pl-5">
@@ -131,7 +131,7 @@ export function AiAnalysisPanel(props: {
 
       {analysis.risks.length > 0 && (
         <div>
-          <h3 className="mb-1 text-xs font-medium text-[var(--muted)]">
+          <h3 className="mb-1 aw-metric-label font-medium">
             {t("risks")}
           </h3>
           <ul className="list-disc space-y-1 pl-5">
@@ -143,7 +143,7 @@ export function AiAnalysisPanel(props: {
       )}
 
       {src && (
-        <p className="text-xs text-[var(--muted)]">
+        <p className="aw-metric-label">
           {t("sources", {
             news: src.news,
             earnings: src.earnings,
@@ -153,7 +153,7 @@ export function AiAnalysisPanel(props: {
         </p>
       )}
 
-      <p className="text-xs text-[var(--muted)] border-t border-[var(--border)] pt-3">
+      <p className="aw-metric-label border-t border-[var(--border)] pt-3">
         {disclaimer || t("disclaimer")}
       </p>
     </div>

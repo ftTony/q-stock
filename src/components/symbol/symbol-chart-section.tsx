@@ -176,7 +176,7 @@ export function SymbolChartSection({
       {loadingChart ? (
         <div className="flex min-h-[280px] flex-1 items-center justify-center lg:min-h-0">
           <div
-            className="h-full min-h-[280px] w-full animate-pulse bg-[var(--surface-2)]/60 lg:min-h-0"
+            className="h-full min-h-[280px] w-full animate-pulse bg-[color-mix(in_srgb,var(--aw-hairline,var(--border))_35%,transparent)] lg:min-h-0"
             aria-label={loadingLabel}
           />
         </div>

@@ -49,12 +49,16 @@ export function SymbolAiFab({
   const close = useCallback(() => setOpen(false), [setOpen]);
 
   // Reset only when the symbol changes (not when opening/closing).
+  // Do not depend on setOpen — parent often passes an inline onOpenChange,
+  // which would re-run this effect and immediately close the drawer.
   useEffect(() => {
-    setOpen(false);
+    onOpenChange?.(false);
+    if (!controlled) setInnerOpen(false);
     setView("desk");
     setLoadSessionId(null);
     setActiveSessionId(null);
-  }, [symbol, assetType, setOpen]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- symbol switch only
+  }, [symbol, assetType]);
 
   return (
     <>
@@ -80,6 +84,7 @@ export function SymbolAiFab({
         open={open}
         onClose={close}
         className="aw aw-ai-desk"
+        edgeOffsetPx={0}
         title={
           view === "history"
             ? t("aiHistoryTitle", { symbol })
@@ -94,7 +99,7 @@ export function SymbolAiFab({
         ) : status === "unauthenticated" ? (
           <AiLoginGate className="min-h-full py-16" />
         ) : view === "history" ? (
-          <div className="aw-ai-desk-body">
+          <div className="aw-ai-desk-body min-h-0 flex-1">
             <AiChatHistoryPanel
               symbol={symbol}
               assetType={assetType}
@@ -114,8 +119,8 @@ export function SymbolAiFab({
             />
           </div>
         ) : (
-          <div className="aw-ai-desk-body">
-            <AiQuotaBadge className="aw-ai-quota" />
+          <div className="aw-ai-desk-body min-h-0 flex-1">
+            <AiQuotaBadge className="aw-ai-quota shrink-0" />
             <AiChartReadPanel
               key={`chart-${assetType}-${symbol}`}
               symbol={symbol}

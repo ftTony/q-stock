@@ -50,16 +50,14 @@ export function StrategyRulesSummary({ rules }: { rules: unknown }) {
   };
 
   return (
-    <div className="space-y-3 text-sm">
+    <div className="space-y-3">
       <div>
-        <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]">
-          {t("entryRules")}
-        </p>
+        <p className="aw-caption">{t("entryRules")}</p>
         <ul className="mt-1.5 space-y-1">
           {(r.entry ?? []).map((c, i) => (
             <li
               key={i}
-              className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/40 px-2.5 py-1.5 text-[12px] leading-snug"
+              className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/40 px-2.5 py-1.5 text-[13px] leading-snug tracking-[-0.08px] text-[var(--aw-ink,var(--foreground))]"
             >
               {clauseLine(c, t)}
             </li>
@@ -67,14 +65,12 @@ export function StrategyRulesSummary({ rules }: { rules: unknown }) {
         </ul>
       </div>
       <div>
-        <p className="text-[11px] font-medium uppercase tracking-wide text-[var(--muted)]">
-          {t("exitRules")}
-        </p>
+        <p className="aw-caption">{t("exitRules")}</p>
         <ul className="mt-1.5 space-y-1">
           {(r.exit ?? []).map((c, i) => (
             <li
               key={i}
-              className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/40 px-2.5 py-1.5 text-[12px] leading-snug"
+              className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/40 px-2.5 py-1.5 text-[13px] leading-snug tracking-[-0.08px] text-[var(--aw-ink,var(--foreground))]"
             >
               {clauseLine(c, t)}
             </li>
@@ -82,7 +78,7 @@ export function StrategyRulesSummary({ rules }: { rules: unknown }) {
         </ul>
       </div>
       {r.sizing ? (
-        <p className="text-[12px] text-[var(--muted)]">
+        <p className="aw-caption">
           {t("sizingLine", {
             mode: r.sizing.mode ?? "—",
             detail:

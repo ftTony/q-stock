@@ -36,7 +36,10 @@ export async function GET(req: Request) {
           }
         : {}),
       ...(symbol ? { symbol: symbol.toUpperCase() } : {}),
-      ...(assetType === "stock" || assetType === "hk" || assetType === "crypto"
+      ...(assetType === "stock" ||
+      assetType === "hk" ||
+      assetType === "crypto" ||
+      assetType === "cn"
         ? { assetType }
         : {}),
     },

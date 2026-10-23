@@ -225,7 +225,7 @@ export function AiChatPanel(props: {
     <section
       className={
         page
-          ? "aw-ai-section aw-ai-chat space-y-3"
+          ? "aw-ai-section aw-ai-chat"
           : "mt-6 space-y-3 border-t border-[var(--border)] pt-4"
       }
     >
@@ -236,27 +236,21 @@ export function AiChatPanel(props: {
         onDismiss={access.dismissToast}
       />
 
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <h3
-            className={
-              page ? "aw-ai-section-title" : "text-sm font-semibold"
-            }
-          >
-            {t("title")}
-          </h3>
-          <p
-            className={
-              page
-                ? "aw-ai-section-sub mt-1"
-                : "text-xs text-[var(--muted)]"
-            }
-          >
-            {t("subtitle", { symbol: props.symbol })}
-          </p>
-        </div>
+      <div
+        className={`flex shrink-0 gap-3 ${
+          page ? "items-center justify-end" : "items-start justify-between"
+        }`}
+      >
+        {!page ? (
+          <div className="min-w-0">
+            <h3 className="text-sm font-semibold">{t("title")}</h3>
+            <p className="text-xs text-[var(--muted)]">
+              {t("subtitle", { symbol: props.symbol })}
+            </p>
+          </div>
+        ) : null}
         {access.loggedIn ? (
-          <div className="flex shrink-0 items-center gap-1.5 pt-0.5">
+          <div className="flex shrink-0 items-center gap-1.5">
             {props.onOpenHistory ? (
               <button
                 type="button"
@@ -294,7 +288,7 @@ export function AiChatPanel(props: {
       <div
         className={
           page
-            ? "aw-ai-thread max-h-[min(24rem,46dvh)] min-h-[11rem] space-y-2 overflow-y-auto p-4 text-[15px] leading-relaxed qt-scroll"
+            ? "aw-ai-thread space-y-2.5 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             : "max-h-64 space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 p-3 text-sm qt-scroll"
         }
       >
@@ -302,23 +296,28 @@ export function AiChatPanel(props: {
           <p className="text-[var(--muted)]">{tCommon("loading")}</p>
         )}
         {!hydrating && messages.length === 0 && (
-          <p
-            className={
-              page
-                ? "flex h-full min-h-[8rem] items-center justify-center text-center text-[14px] text-[var(--muted)]"
-                : "text-[var(--muted)]"
-            }
-          >
-            {t("empty")}
-          </p>
+          page ? (
+            <div className="aw-ai-thread-empty">
+              <p className="aw-ai-thread-empty-title">{t("empty")}</p>
+              <p className="aw-ai-thread-empty-hint">
+                {t("subtitle", { symbol: props.symbol })}
+              </p>
+            </div>
+          ) : (
+            <p className="text-[var(--muted)]">{t("empty")}</p>
+          )
         )}
         {messages.map((m, i) => (
           <div
             key={`${m.role}-${i}-${m.content.slice(0, 12)}`}
             className={
-              m.role === "user"
-                ? `ml-6 rounded-[11px] bg-[var(--brand-soft)] px-3 text-[var(--brand-text)] ${page ? "py-2.5" : "py-2"}`
-                : `mr-4 rounded-[11px] border border-[var(--border)] bg-[var(--panel)] px-3 whitespace-pre-wrap ${page ? "py-2.5" : "py-2"}`
+              page
+                ? m.role === "user"
+                  ? "aw-ai-msg-user"
+                  : "aw-ai-msg-assistant"
+                : m.role === "user"
+                  ? "ml-6 rounded-[11px] bg-[var(--brand-soft)] px-3 py-2 text-[var(--brand-text)]"
+                  : "mr-4 rounded-[11px] border border-[var(--border)] bg-[var(--panel)] px-3 py-2 whitespace-pre-wrap"
             }
           >
             {m.content || (busy && i === messages.length - 1 ? "…" : "")}
@@ -330,14 +329,19 @@ export function AiChatPanel(props: {
       {error && (
         <p
           className={
-            page ? "text-sm text-[var(--down)]" : "text-xs text-[var(--down)]"
+            page
+              ? "shrink-0 text-sm text-[var(--down)]"
+              : "text-xs text-[var(--down)]"
           }
         >
           {error}
         </p>
       )}
 
-      <form onSubmit={onSend} className="flex items-center gap-2">
+      <form
+        onSubmit={onSend}
+        className={page ? "aw-ai-composer shrink-0" : "flex items-center gap-2"}
+      >
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
@@ -372,7 +376,7 @@ export function AiChatPanel(props: {
           />
         )}
       </form>
-      <p className={page ? "aw-ai-legal" : "text-[11px] text-[var(--muted)]"}>
+      <p className={page ? "aw-ai-legal shrink-0" : "aw-caption"}>
         {tAi("disclaimer")}
       </p>
     </section>
