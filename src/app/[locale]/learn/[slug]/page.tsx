@@ -79,6 +79,8 @@ export default async function LearnArticlePage({ params }: Props) {
             summary={summary}
             categoryLabel={t(`categories.${article.category}`)}
             paragraphs={paragraphs}
+            illustrationSlug={slug}
+            locale={locale}
             ctaHref={article.ctaHref}
             related={relatedFallback}
           />

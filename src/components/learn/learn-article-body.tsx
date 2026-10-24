@@ -1,3 +1,5 @@
+import { LearnIndicatorIllustration } from "@/components/learn/learn-indicator-illustration";
+
 type Block =
   | { type: "lead"; text: string }
   | { type: "p"; text: string }
@@ -77,7 +79,15 @@ function toBlocks(paragraphs: string[]): Block[] {
   return blocks;
 }
 
-export function LearnArticleBody({ paragraphs }: { paragraphs: string[] }) {
+export function LearnArticleBody({
+  paragraphs,
+  illustrationSlug,
+  locale,
+}: {
+  paragraphs: string[];
+  illustrationSlug?: string;
+  locale: string;
+}) {
   const blocks = toBlocks(paragraphs);
 
   return (
@@ -85,12 +95,17 @@ export function LearnArticleBody({ paragraphs }: { paragraphs: string[] }) {
       {blocks.map((block, i) => {
         if (block.type === "lead") {
           return (
-            <p
-              key={i}
-              className="border-l-[3px] border-[var(--brand-text)] pl-4 text-base font-medium leading-8 text-[var(--foreground)] sm:text-[17px] sm:leading-8"
-            >
-              {block.text}
-            </p>
+            <div key={i}>
+              <p className="border-l-[3px] border-[var(--brand-text)] pl-4 text-base font-medium leading-8 text-[var(--foreground)] sm:text-[17px] sm:leading-8">
+                {block.text}
+              </p>
+              {illustrationSlug ? (
+                <LearnIndicatorIllustration
+                  slug={illustrationSlug}
+                  locale={locale}
+                />
+              ) : null}
+            </div>
           );
         }
 

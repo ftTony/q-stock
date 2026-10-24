@@ -3,10 +3,12 @@ import { LEARN_ARTICLE_DAO_GREED_FEAR } from "@/lib/learn/articles-mindset-dao";
 import { LEARN_ARTICLE_ECONOMICS_RETAIL } from "@/lib/learn/articles-mindset-economics";
 import { LEARN_ARTICLE_FINANCIAL_FREEDOM } from "@/lib/learn/articles-mindset-freedom";
 import { LEARN_ARTICLE_LIFE_STAGE_PLAN } from "@/lib/learn/articles-mindset-life-stages";
+import { LEARN_ARTICLE_WEALTH_BUILDING } from "@/lib/learn/articles-mindset-wealth-building";
 
 /** Mindset articles — depth aligned with kline-basics. */
 export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
   LEARN_ARTICLE_FINANCIAL_FREEDOM,
+  LEARN_ARTICLE_WEALTH_BUILDING,
   LEARN_ARTICLE_LIFE_STAGE_PLAN,
   LEARN_ARTICLE_DAO_GREED_FEAR,
   LEARN_ARTICLE_ECONOMICS_RETAIL,

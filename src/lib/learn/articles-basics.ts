@@ -3,6 +3,12 @@ import { LEARN_ARTICLE_FINANCIALS_BALANCE } from "@/lib/learn/articles-basics-fi
 import { LEARN_ARTICLE_FINANCIALS_CASHFLOW } from "@/lib/learn/articles-basics-financials-cashflow";
 import { LEARN_ARTICLE_FINANCIALS_INCOME } from "@/lib/learn/articles-basics-financials-income";
 import { LEARN_ARTICLE_FINANCIALS_OVERVIEW } from "@/lib/learn/articles-basics-financials-overview";
+import { LEARN_ARTICLE_CANDLE_ENGULFING } from "@/lib/learn/articles-basics-candle-engulfing";
+import { LEARN_ARTICLE_CANDLE_HAMMER } from "@/lib/learn/articles-basics-candle-hammer";
+import { LEARN_ARTICLE_CANDLE_PIERCING } from "@/lib/learn/articles-basics-candle-piercing";
+import { LEARN_ARTICLE_CANDLE_STARS } from "@/lib/learn/articles-basics-candle-stars";
+import { LEARN_ARTICLE_CANDLE_TWEEZER } from "@/lib/learn/articles-basics-candle-tweezer";
+import { LEARN_ARTICLES_INDICATOR_SERIES } from "@/lib/learn/articles-basics-indicator-series";
 import { LEARN_ARTICLE_INDICATORS } from "@/lib/learn/articles-basics-indicators";
 import { LEARN_ARTICLE_PICKING } from "@/lib/learn/articles-basics-picking";
 import { LEARN_ARTICLE_RETAIL_FOCUS } from "@/lib/learn/articles-basics-retail-focus";
@@ -18,6 +24,12 @@ export const LEARN_ARTICLES_BASICS: LearnArticle[] = [
   LEARN_ARTICLE_FINANCIALS_BALANCE,
   LEARN_ARTICLE_FINANCIALS_CASHFLOW,
   LEARN_ARTICLE_INDICATORS,
+  LEARN_ARTICLE_CANDLE_HAMMER,
+  LEARN_ARTICLE_CANDLE_ENGULFING,
+  LEARN_ARTICLE_CANDLE_PIERCING,
+  LEARN_ARTICLE_CANDLE_TWEEZER,
+  LEARN_ARTICLE_CANDLE_STARS,
+  ...LEARN_ARTICLES_INDICATOR_SERIES,
   {
     slug: "paper-review",
     category: "basics",
