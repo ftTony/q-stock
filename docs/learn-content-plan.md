@@ -82,6 +82,16 @@
 | `paper-review` | 模拟交易与复盘笔记 | 流程 > 虚荣收益；每周复盘三问 | 模拟 / 复盘 | P0 | drafted |
 | `kline-basics` | K 线怎么读：影线、实体与别过度解读 | OHLC、常见误读；指标不预测未来 | 个股 K 线页 | P0 | drafted |
 | `indicators-lite` | MA / MACD / RSI：辅助而非圣杯 | 各一句话用途 + 失效时看什么 | 个股指标 | P0 | planned |
+| `candle-hammer-hanging-man` | 锤头线与上吊线：同一副外形，不同的上下文 | 形态位置、后续验证、失败样本；非单根抄底信号 | `/markets` | P1 | drafted |
+| `candle-engulfing` | 吞没形态：被覆盖的是实体，不是未来 | 实体关系、市场差异、背景和失效条件 | `/markets` | P1 | drafted |
+| `candle-piercing-dark-cloud` | 刺透线与乌云盖顶：看收盘位置，不猜转折 | 实体中点、跳空口径、后视镜偏差 | `/markets` | P1 | drafted |
+| `candle-tweezer-top-bottom` | 平头顶与平头底：相近高低点，不等于市场承诺 | 容差、极值、支撑阻力与失败案例 | `/markets` | P1 | drafted |
+| `candle-morning-evening-star` | 早晨之星与黄昏之星：三根 K 线也需要上下文 | 三根结构、市场跳空差异、事前定义和复盘 | `/markets` | P1 | drafted |
+| `indicator-moving-averages` | 移动平均线：读节奏，不追交叉 | SMA / EMA、滞后与震荡假交叉 | `/markets` | P1 | drafted |
+| `indicator-macd` | MACD：动能变化，不是买卖按钮 | DIF / 信号线 / 柱体、背离与震荡噪声 | `/markets` | P1 | drafted |
+| `indicator-rsi` | RSI：超买超卖是状态描述，不是反转预告 | 区间、趋势钝化、背离与参数口径 | `/markets` | P1 | drafted |
+| `indicator-bollinger-bands` | 布林带：波动区间，不是自动支撑压力 | 轨道、收口、趋势沿轨与失效条件 | `/markets` | P1 | drafted |
+| `indicator-atr` | ATR：衡量波动幅度，不判断涨跌方向 | 真实波幅、ATR% 与仓位风险的边界 | `/tools/position` | P1 | drafted |
 | `multi-market-101` | 一个终端里的美股、港股、A 股与加密 | 时段、代码习惯、合规「先问能不能」 | `/markets` | P0 | drafted |
 | `risk-before-size` | 风险预算：先定亏得起，再谈仓位 | 与仓位工具同一套语言 | `/tools/position` | P1 | planned |
 | `orders-and-slippage` | 限价、市价与滑点（学习向） | 模拟盘里如何体会；真盘以券商为准 | 模拟下单 | P1 | planned |
@@ -112,6 +122,7 @@
 | `review-emotions` | 复盘里的情绪标签 | 冲动、报复单、计划外；改流程不改「报复市场」 | `/review` | P1 | planned |
 | `less-is-more` | 少交易、多等待 | 与模拟「少而认真」呼应 | 复盘 | P2 | planned |
 | `invalidation-habit` | 把失效条件写成习惯 | 提醒 + 笔记模板 | 提醒 | P2 | planned |
+| `wealth-building-process` | 财富积累的过程：从收入能力到长期资本 | 收入能力、现金流结余、缓冲、债务、风险与长期投资；不承诺收益 | `/tools/compound` | P1 | drafted |
 
 ### 5.4 词条 / SEO 短页（P2 池，可后置格式）
 

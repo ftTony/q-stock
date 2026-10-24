@@ -13,6 +13,8 @@ type Props = {
   summary: string;
   categoryLabel: string;
   paragraphs: string[];
+  illustrationSlug?: string;
+  locale: string;
   ctaHref?: string;
   related: LearnRelatedArticle[];
 };
@@ -22,6 +24,8 @@ export async function LearnArticleView({
   summary,
   categoryLabel,
   paragraphs,
+  illustrationSlug,
+  locale,
   ctaHref,
   related,
 }: Props) {
@@ -80,7 +84,11 @@ export async function LearnArticleView({
           </div>
 
           <div className="px-5 py-6 sm:px-8 sm:py-8">
-            <LearnArticleBody paragraphs={paragraphs} />
+            <LearnArticleBody
+              paragraphs={paragraphs}
+              illustrationSlug={illustrationSlug}
+              locale={locale}
+            />
           </div>
 
           <div

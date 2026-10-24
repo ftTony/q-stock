@@ -1,0 +1,73 @@
+import type { LearnArticle } from "@/lib/learn/types";
+
+/** A practical, risk-aware framework for building wealth over time. */
+export const LEARN_ARTICLE_WEALTH_BUILDING: LearnArticle = {
+  slug: "wealth-building-process",
+  category: "mindset",
+  ctaHref: "/tools/compound",
+  title: {
+    "zh-CN": "财富积累的过程：从收入能力到长期资本",
+    "zh-TW": "財富累積的過程：從收入能力到長期資本",
+    en: "Building wealth: from earning power to long-term capital",
+  },
+  summary: {
+    "zh-CN":
+      "财富积累不是押中一次机会，而是提高创造收入的能力、留下可持续的结余、管理风险，再让长期资本有时间增长。",
+    "zh-TW":
+      "財富累積不是押中一次機會，而是提高創造收入的能力、留下可持續的結餘、管理風險，再讓長期資本有時間增長。",
+    en: "Wealth is built less by one lucky bet than by earning, saving, managing risk, and giving capital time.",
+  },
+  paragraphs: {
+    "zh-CN": [
+      "谈财富积累，最容易被传播的往往是最后一步：买什么、收益率多少、几年翻倍。可一个人最终留下多少财富，通常先由更朴素的事情决定：能否持续创造收入，收入里有多少真正留下来，遇到意外时会不会被迫卖出长期资产，以及能否把计划坚持足够久。投资很重要，但它不是整台机器；它更像机器中负责让结余增长的一部分。",
+      "所谓「正确过程」，不是一条适合所有人的路线，也不是承诺结果的公式。年龄、家庭责任、收入稳定性、税制、居住地和风险承受能力都不同。比较可迁移的，是先后顺序：建立现金流余量，保护财务底盘，处理高成本负债，再按目标配置长期资金，并定期检查自己是否仍能承受这套安排。",
+      "一、先积累创造收入的能力。职业技能、经验、信誉、健康和协作能力，都是未来收入的来源。对积累初期的人来说，提升收入能力可能比在有限本金上多追几个百分点更有影响。但提高收入不等于盲目追求高薪：如果收入增长完全依赖长期透支健康、承担无法理解的风险，账面收入上升，生活的韧性却可能下降。可执行的问题是：未来一年，哪项能力能提高收入的稳定性或选择权？",
+      "二、把收入转成结余，而不是只盯收入数字。财富的起点不是赚得多，而是收入减去支出后，能否留下可持续的差额。记录几个月的现金流，区分必要支出、可调整支出和偶发支出，再设一个现实的储蓄目标。目标不必极端；如果储蓄率高到无法长期坚持，几个月后反弹消费，反而不如一个能执行数年的比例。随着收入变化，再逐步调整。",
+      "储蓄率比单纯的收益率更早进入个人控制范围。提高储蓄率可以来自收入增加，也可以来自减少低价值支出；不是所有消费都该削减。教育、健康、照护和让生活保持可持续的花费，不能简单归类为「浪费」。这一步追求的不是苦行，而是把钱花在自己真正重视的地方，同时留下未来的选择空间。",
+      "三、先做缓冲，再谈长期投资。应急资金不是拖累收益的闲置物，而是避免在失业、医疗、家庭责任或市场大幅下跌时，被迫借高息债或卖出长期资产的缓冲。需要准备多少，取决于收入稳定程度、家庭责任、保险保障和重新就业时间；不宜机械地照抄一个月数。还要区分短期要用的钱和长期资金：几个月内可能要支付的房租、学费或首付，不应仅因市场上涨就全部放进高波动资产。",
+      "四、处理会吞噬现金流的债务，并检查主要风险。高利率消费债务的成本往往确定，而投资收益不确定；如果一边承担高息负债，一边期待投资稳定跑赢利息，计划的风险很容易被低估。与此同时，保险和债务管理属于个人财务底盘的一部分：保险用于转移少数可能造成重大损失、自己难以承受的风险，不是投资收益工具；具体保障应根据家庭情况和当地规则判断。",
+      "五、为不同目标安排不同的时间与风险。短期目标更看重资金可用和本金波动；长期目标才可能承受更大的市场起伏。先写目标、期限、资金用途和可承受损失，再考虑资产配置。分散、控制成本、理解产品规则和避免过度集中，通常比频繁预测短期涨跌更可控。任何配置都可能亏损；分散不能消除系统性风险，也不能保证盈利。",
+      "长期复利常被描述成「钱生钱」，但现实里还要加入持续投入、费用、税务、通胀和波动。举个纯假设的例子：每月投入 3000 元，连续 20 年，假设年化收益 5%、按月复利，且忽略费用和税费，期末金额大约 123 万元；累计投入是 72 万元。如果同一时期通胀年均 3%，这笔名义金额折算成起点购买力，大约相当于 68 万元。这个演算只是展示时间、投入和通胀如何影响结果，不代表任何市场能实现 5% 回报。真实回报不会平滑，开始投资的时间、市场路径和中途是否需要取钱都会改变结果。",
+      "因此，复利不是「越早押中高收益品种越好」，而是让可持续投入有机会在时间里累积，同时避免被费用、恐慌、杠杆和短期资金需求打断。收益率越高，常常伴随更高的不确定性；如果计划必须依赖某个乐观收益率才能成立，应该先降低目标、延长时间、增加储蓄或调整支出，而不是用借款和集中押注去填缺口。",
+      "六、建立自动化，但保留检查。工资到账后按预先制定的比例转入储蓄或投资账户，可以减少每个月重新做决定的摩擦；但自动化不等于闭眼执行。收入、家庭责任、目标期限或风险承受力改变时，计划也应更新。可以每月检查现金流，每季度或半年回顾目标与配置；不必因市场每天波动就频繁改长期安排。",
+      "七、把风险控制当作财富积累的一部分。积累不仅看上涨时能赚多少，也看下跌时是否还能留在场内、维持生活并按计划行动。避免单一资产、单一雇主、单一收入来源和高杠杆叠加；保留流动性；在做投资决定前写清资金用途、可能损失和什么情况会让自己重新评估。判断错了并不可耻，无法承受判断错误才会把一次失误变成长期财务危机。",
+      "常见的绕路包括：收入稍涨就同步升级全部消费；借钱投资并把牛市当作偿债计划；追逐自己说不清楚的高收益产品；为了短期回报频繁交易；看到别人晒收益就改掉原本适合自己的长期计划。它们看起来方向不同，底层却常是同一件事：把未验证的乐观当成确定收入，把风险留给未来的自己。",
+      "可以把积累过程压缩成每年复查的五个问题：我的收入能力是否在增强？收入中留下了多少？应急缓冲能否覆盖家庭的现实风险？投资资金是否与目标期限匹配？如果市场下跌或收入中断，我是否仍能照常生活而不被迫卖出？答案不必漂亮，但应诚实，并转成下一步行动。",
+      "在钱力股，可以用复利工具比较不同投入、期限和收益假设，再把模拟结果与自己的现金流计划对照。输入的收益率只是情景参数，不是预测；工具不会替你判断某项投资是否适合。财富积累最可靠的部分，通常不是对未来收益的确信，而是把自己能控制的事做好：持续创造价值、保持合理结余、理解承担的风险，并让长期计划留有修正空间。",
+    ],
+    "zh-TW": [
+      "談財富累積，最容易被傳播的往往是最後一步：買什麼、報酬率多少、幾年翻倍。可一個人最終留下多少財富，通常先由更樸素的事情決定：能否持續創造收入，收入中有多少真正留下來，遇到意外時會不會被迫賣出長期資產，以及能否把計畫堅持足夠久。投資很重要，但它不是整台機器；它更像是讓結餘增長的一部分。",
+      "所謂「正確過程」，不是適合所有人的路線，也不是承諾結果的公式。年齡、家庭責任、收入穩定性、稅制、居住地和風險承受能力都不同。較能參考的是先後順序：建立現金流餘裕，保護財務底盤，處理高成本負債，再按目標配置長期資金，並定期檢查自己是否仍能承受這套安排。",
+      "一、先累積創造收入的能力。職業技能、經驗、信譽、健康和協作能力，都是未來收入的來源。對累積初期的人來說，提高收入能力可能比在有限本金上多追幾個百分點更有影響。但提高收入不等於盲目追求高薪：如果收入完全依賴長期透支健康、承擔無法理解的風險，生活韌性可能反而下降。可以問自己：未來一年，哪項能力能提高收入穩定性或選擇權？",
+      "二、把收入轉成結餘，而不只看收入數字。財富的起點不是賺得多，而是收入減支出後能否留下可持續的差額。記錄幾個月現金流，區分必要、可調整和偶發支出，再設定現實的儲蓄目標。目標不必極端；若儲蓄率高到無法長期堅持，幾個月後反彈消費，反而不如一個能執行數年的比例。這一步不是苦行，而是把錢用在重視的地方，同時留住未來的選擇空間。",
+      "儲蓄率比單純報酬率更早進入個人控制範圍。提高儲蓄率可以來自收入增加，也可以來自減少低價值支出；教育、健康、照護和維持生活可持續性的花費，不能簡單歸類為浪費。",
+      "三、先做緩衝，再談長期投資。緊急預備金不是拖累報酬的閒置物，而是避免失業、醫療、家庭責任或市場下跌時，被迫借高息債或賣出長期資產的緩衝。準備多少取決於收入穩定、家庭責任、保險保障和重新就業時間，不宜機械照抄一個月數。短期可能要用的錢，也不應只因市場上漲就全放進高波動資產。",
+      "四、處理會吞噬現金流的債務，並檢查主要風險。高利率消費債務的成本往往確定，而投資收益不確定；一邊承擔高息負債、一邊期待投資穩定跑贏利息，容易低估風險。保險用於轉移少數重大且自己難以承受的風險，不是投資收益工具；保障要依家庭情況與所在地規則判斷。",
+      "五、為不同目標安排不同的時間與風險。短期目標更看重資金可用和本金波動；長期目標才可能承受更大的市場起伏。先寫下目標、期限、用途和可承受損失，再考慮配置。分散、控制成本、理解產品規則和避免過度集中，通常比頻繁預測短期漲跌更可控。但分散不能消除所有風險，也不保證獲利。",
+      "長期複利常被說成「錢生錢」，現實裡還要加入持續投入、費用、稅務、通膨和波動。純假設每月投入 3000 元、連續 20 年，假設年化報酬 5%、按月複利，忽略費用和稅費，期末約 123 萬元，累計投入 72 萬元。若通膨年均 3%，名義金額折算成起點購買力約相當於 68 萬元。這只是展示時間、投入和通膨的影響，不代表市場能實現 5% 報酬；真實報酬不平滑，投資時點與中途提領都會改變結果。",
+      "因此，複利不是越早押中高報酬品種越好，而是讓可持續投入有機會在時間中累積，同時避免費用、恐慌、槓桿和短期資金需求打斷計畫。若計畫必須依賴樂觀報酬率才成立，先考慮降低目標、延長時間、增加儲蓄或調整支出，不要急著借款或集中押注。",
+      "六、建立自動化，但保留檢查。收入入帳後按預先制定的比例轉入儲蓄或投資帳戶，可以減少每月重新決策的摩擦；但自動化不等於閉眼執行。收入、家庭責任、目標期限或風險承受力改變時，計畫也應更新。可以每月檢查現金流，每季或半年回顧目標與配置，不必因市場每天波動就頻繁改變長期安排。",
+      "七、把風險控制當作財富累積的一部分。積累不只看上漲時能賺多少，也看下跌時是否仍能維持生活並按計畫行動。避免單一資產、雇主、收入來源和高槓桿疊加；保留流動性；決策前寫清資金用途、可能損失及何時重新評估。判斷錯了並不可恥，無法承受判斷錯誤才可能把失誤變成財務危機。",
+      "常見繞路包括：收入稍漲就同步升級所有消費；借錢投資並把牛市當成還款計畫；追逐說不清楚的高報酬產品；為短期回報頻繁交易；看到別人曬收益就改掉適合自己的長期計畫。它們的共同點，是把未驗證的樂觀當成確定收入，把風險留給未來的自己。",
+      "每年可以誠實地問五件事：收入能力是否增強？收入中留下多少？緊急緩衝能否應付家庭現實風險？投資資金是否符合目標期限？若市場下跌或收入中斷，我是否仍能生活而不被迫賣出？答案不必漂亮，但應轉成下一步行動。",
+      "在錢力股，可以用複利工具比較不同投入、期限和報酬假設，再把模擬結果與現金流計畫對照。輸入的報酬率只是情境參數，不是預測；工具不會替你判斷投資是否適合。較可靠的部分，通常不是對未來收益的確信，而是持續創造價值、保持合理結餘、理解承擔的風險，並讓長期計畫保留修正空間。",
+    ],
+    en: [
+      "Wealth advice often jumps straight to the final step: what to buy, what return to expect, and how quickly money might double. But the amount a person can build usually depends first on less exciting questions: Can they keep earning? How much of that income remains? Would an emergency force them to sell long-term assets? Can they stay with a plan through uncertainty? Investing matters, but it is one part of a larger system.",
+      "There is no single “right” path for every household. Age, dependents, income stability, taxes, location, and risk capacity all matter. A more transferable sequence is to create room in cash flow, protect the financial base, address expensive debt, invest according to goals and time horizon, and revisit the plan when circumstances change.",
+      "1. Build earning power. Skills, experience, health, reliability, and the ability to work with others support future income. Early in the process, improving earning capacity may matter more than trying to squeeze a few extra percentage points from a small portfolio. Higher pay is not automatically progress if it depends on unsustainable hours or risks the person does not understand. Ask: which capability could improve the stability or flexibility of my income over the next year?",
+      "2. Turn income into a sustainable surplus. Wealth does not begin with a large salary; it begins with a gap between income and spending that can persist. Track cash flow for a few months, separate essential, adjustable, and irregular costs, and choose a savings target that can survive ordinary life. The aim is not deprivation. It is to spend deliberately while preserving future choices.",
+      "A savings rate is often more directly controllable than an investment return. It can improve through higher income, lower low-value spending, or both. Health, education, care, and the expenses that make a plan sustainable should not automatically be labeled waste.",
+      "3. Build a buffer before investing money needed soon. Emergency savings can prevent unemployment, medical costs, family obligations, or a market downturn from forcing high-interest borrowing or a sale at a bad time. The right amount depends on income stability, dependents, insurance, and how quickly income could be replaced—not on a universal rule. Money needed in the near term should not be moved into volatile assets merely because markets have recently risen.",
+      "4. Address costly debt and major risks. The cost of high-interest consumer debt is comparatively certain; investment returns are not. Carrying expensive debt while assuming investments will reliably outrun it can understate risk. Insurance is meant to transfer selected losses that would be difficult to bear, not to promise investment returns. Specific coverage depends on the household and local rules.",
+      "5. Match risk to goals and time. Near-term goals prioritize access and stability; longer horizons may allow more volatility, though they do not remove risk. Write down the goal, date, use of funds, and tolerable loss before choosing an allocation. Diversification, cost control, understanding product rules, and avoiding excessive concentration are generally more controllable than frequent short-term forecasts. Diversification cannot eliminate market-wide risk or guarantee gains.",
+      "Compounding is often described as money earning money, but real outcomes also depend on contributions, fees, taxes, inflation, and volatility. As an illustration only, investing 3,000 yuan each month for 20 years at an assumed 5% annual return compounded monthly, with fees and taxes ignored, would produce roughly 1.23 million yuan versus 720,000 yuan contributed. At 3% average annual inflation, that ending amount would have purchasing power of roughly 680,000 yuan in today's terms. This is arithmetic under assumptions, not a return forecast. Actual returns are uneven, and the path and timing of withdrawals matter.",
+      "Compounding is therefore not a reason to chase the highest advertised return. It is the opportunity for sustainable contributions to accumulate over time, provided costs, panic, leverage, or short-term cash needs do not break the plan. If a plan works only under an optimistic return assumption, consider a lower goal, a longer timeline, more savings, or adjusted spending before taking risks that are hard to reverse.",
+      "6. Automate, then review. Scheduled transfers can reduce the friction of deciding every month, but automation is not a substitute for judgment. Income, family responsibilities, goals, and risk capacity change. Review cash flow regularly and revisit the plan periodically; daily market movement alone does not require constant changes to a long-term strategy.",
+      "7. Treat risk management as part of accumulation. Progress is not only how much a portfolio gains in favorable markets; it is whether a household can keep functioning through a downturn without being forced to sell or abandon its plan. Avoid stacking concentration across one asset, one employer, one income source, and leverage. Preserve liquidity, and write down the purpose, possible loss, and review conditions before investing. Being wrong is part of uncertainty; being unable to withstand a mistake can turn it into a lasting crisis.",
+      "Common detours include upgrading every expense as soon as income rises, borrowing to invest, chasing products whose risks are unclear, trading frequently for short-term gains, and copying someone else's portfolio after seeing a success story. They share a pattern: treating untested optimism as certain income and leaving the risk to one's future self.",
+      "Once a year, ask: Is my earning capacity improving? How much income remains? Can my buffer handle realistic household shocks? Does my investment horizon match the goal? If markets fall or income stops, can I continue living without being forced to sell? The answers need not be flattering; they should lead to a practical next step.",
+      "Q-Stock's compound calculator can compare contribution, time, and return assumptions against a cash-flow plan. The return entered is a scenario, not a prediction, and the tool cannot determine whether an investment is suitable. The more dependable part of wealth-building is usually not certainty about future returns, but creating value, keeping a reasonable surplus, understanding risk, and leaving room to adjust.",
+    ],
+  },
+};
