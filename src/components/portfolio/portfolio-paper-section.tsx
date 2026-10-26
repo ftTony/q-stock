@@ -57,27 +57,31 @@ export function PortfolioPaperSection({
   labels,
 }: Props) {
   const settingsModal = useSettingsModalOptional();
-  const riskBtnClass =
-    "qt-btn qt-btn-ghost h-8 border border-[var(--border)] px-3 text-[12px]";
+  const actionBtn =
+    "qt-btn qt-btn-ghost inline-flex h-8 items-center justify-center px-3 text-[12px] font-medium leading-none";
 
   return (
     <section className="qt-panel space-y-4 p-4 sm:p-5">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 className="text-lg font-semibold">{labels.accountTitle}</h2>
-          <p className="text-sm text-[var(--muted)]">{labels.accountDesc}</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="min-w-0">
+          <h2 className="text-[15px] font-semibold tracking-tight sm:text-base">
+            {labels.accountTitle}
+          </h2>
+          <p className="mt-0.5 text-[12px] leading-relaxed text-[var(--muted)] sm:text-[13px]">
+            {labels.accountDesc}
+          </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
           {settingsModal ? (
             <button
               type="button"
-              className={riskBtnClass}
+              className={actionBtn}
               onClick={() => settingsModal.openSettings()}
             >
               {labels.riskSettings}
             </button>
           ) : (
-            <Link href="/settings" className={riskBtnClass}>
+            <Link href="/settings" className={actionBtn}>
               {labels.riskSettings}
             </Link>
           )}
@@ -86,7 +90,7 @@ export function PortfolioPaperSection({
             loading={resetting}
             loadingLabel={labels.loading}
             onClick={onReset}
-            className="qt-btn-ghost border border-[var(--border)] px-3 py-1.5 text-sm"
+            className={actionBtn}
           >
             {labels.reset}
           </SubmitButton>

@@ -2,9 +2,17 @@
 
 import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { AiLoginGate } from "@/components/ai/ai-login-gate";
 import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
 import { useAiAccess } from "@/components/ai/use-ai-access";
+import { ReviewAiBody } from "@/components/review/review-ai-body";
+import {
+  ReviewFillsList,
+  type FillFilter,
+} from "@/components/review/review-fills-list";
+import { ReviewNotesAside } from "@/components/review/review-notes-aside";
+import { ReviewProcessSummary } from "@/components/review/review-process-summary";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { TopToast } from "@/components/ui/top-toast";
@@ -15,75 +23,25 @@ import {
   type ReviewContent,
   type ReviewResult,
 } from "@/hooks/query/use-review-notes";
-import { formatDateTime } from "@/lib/format-number";
-
-function BulletList({
-  title,
-  items,
-}: {
-  title: string;
-  items: string[];
-}) {
-  if (!items?.length) return null;
-  return (
-    <div>
-      <h3 className="text-xs font-medium text-[var(--muted)]">{title}</h3>
-      <ul className="mt-1.5 list-disc space-y-1 pl-5 text-sm">
-        {items.map((item, i) => (
-          <li key={i}>{item}</li>
-        ))}
-      </ul>
-    </div>
-  );
-}
-
-function ReviewBody({
-  content,
-  labels,
-}: {
-  content: ReviewContent;
-  labels: {
-    summary: string;
-    well: string;
-    improve: string;
-    emotions: string;
-    checklist: string;
-  };
-}) {
-  return (
-    <div className="space-y-4">
-      <div>
-        <h3 className="text-xs font-medium text-[var(--muted)]">
-          {labels.summary}
-        </h3>
-        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed">
-          {content.summary}
-        </p>
-      </div>
-      <BulletList title={labels.well} items={content.whatWentWell} />
-      <BulletList title={labels.improve} items={content.whatToImprove} />
-      <BulletList title={labels.emotions} items={content.emotionFlags} />
-      <BulletList title={labels.checklist} items={content.nextChecklist} />
-    </div>
-  );
-}
+import { useReviewProcess } from "@/hooks/query/use-review-process";
 
 export function ReviewDesk() {
   const t = useTranslations("review");
   const tAi = useTranslations("ai");
-  const tCommon = useTranslations("common");
   const locale = useLocale();
   const access = useAiAccess();
   const [period, setPeriod] = useState<"day" | "week">("day");
+  const [filter, setFilter] = useState<FillFilter>("all");
   const [error, setError] = useState<string | null>(null);
   const [latest, setLatest] = useState<ReviewResult | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const notesQuery = useReviewNotes(access.loggedIn);
+  const processQuery = useReviewProcess(period, access.loggedIn);
   const runReviewMut = useRunReview();
 
   const notes = notesQuery.data?.notes ?? [];
-  const loadingNotes = notesQuery.isLoading;
+  const process = processQuery.data;
   const busy = runReviewMut.isPending;
 
   async function runReview() {
@@ -119,6 +77,9 @@ export function ReviewDesk() {
       ? latest
       : null;
 
+  const displayNoteId =
+    selected?.id ?? latest?.noteId ?? selectedId ?? null;
+
   const sectionLabels = {
     summary: t("summary"),
     well: t("well"),
@@ -135,32 +96,101 @@ export function ReviewDesk() {
     );
   }
 
+  const untaggedHint =
+    process &&
+    process.summary.fillCount > 0 &&
+    process.summary.untaggedCount === process.summary.fillCount;
+
   return (
     <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_280px]">
-      <section className="qt-panel space-y-4 p-4 sm:p-5">
-        <TopToast
-          key={access.toastKey}
-          message={access.toastMsg}
-          tone={access.toastTone}
-          onDismiss={access.dismissToast}
-        />
-        <div className="flex flex-wrap items-end justify-between gap-3">
-          <div>
-            <h2 className="text-lg font-semibold">{t("generateTitle")}</h2>
-            <p className="text-sm text-[var(--muted)]">{t("generateHint")}</p>
-            <AiQuotaBadge className="mt-1" />
+      <div className="space-y-4">
+        <section className="qt-panel space-y-4 p-4 sm:p-5">
+          <TopToast
+            key={access.toastKey}
+            message={access.toastMsg}
+            tone={access.toastTone}
+            onDismiss={access.dismissToast}
+          />
+
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold">{t("processTitle")}</h2>
+              <p className="text-sm text-[var(--muted)]">{t("processHint")}</p>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <QtSelect
+                value={period}
+                onChange={(v) => setPeriod(v as "day" | "week")}
+                className="w-32"
+                triggerClassName="h-9 px-2.5 text-sm"
+                options={[
+                  { value: "day", label: t("periodDay") },
+                  { value: "week", label: t("periodWeek") },
+                ]}
+              />
+            </div>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <QtSelect
-              value={period}
-              onChange={(v) => setPeriod(v as "day" | "week")}
-              className="w-32"
-              triggerClassName="h-9 px-2.5 text-sm"
-              options={[
-                { value: "day", label: t("periodDay") },
-                { value: "week", label: t("periodWeek") },
-              ]}
-            />
+
+          <div
+            role="tablist"
+            className="aw-chip-tabs aw-chip-tabs--flush"
+          >
+            {(
+              [
+                ["all", t("filterAll")],
+                ["tagged", t("filterTagged")],
+                ["flags", t("filterFlags")],
+              ] as const
+            ).map(([value, label]) => (
+              <button
+                key={value}
+                type="button"
+                role="tab"
+                aria-selected={filter === value}
+                data-active={filter === value}
+                onClick={() => setFilter(value)}
+                className="aw-chip"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
+          <ReviewProcessSummary
+            summary={process?.summary}
+            loading={processQuery.isLoading}
+          />
+
+          {untaggedHint ? (
+            <p className="text-xs text-[var(--muted)]">{t("untaggedHint")}</p>
+          ) : null}
+
+          <ReviewFillsList
+            fills={process?.fills ?? []}
+            filter={filter}
+            loading={processQuery.isLoading}
+          />
+
+          <p className="text-[11px] leading-snug text-[var(--muted)]">
+            {t("footnote")}
+          </p>
+          <div className="flex flex-wrap gap-x-3 gap-y-1">
+            <Link href="/strategies" className="aw-text-link text-sm">
+              {t("ctaStrategies")}
+            </Link>
+            <Link href="/portfolio" className="aw-text-link text-sm">
+              {t("ctaPortfolio")}
+            </Link>
+          </div>
+        </section>
+
+        <section className="qt-panel space-y-4 p-4 sm:p-5">
+          <div className="flex flex-wrap items-end justify-between gap-3">
+            <div>
+              <h2 className="text-lg font-semibold">{t("generateTitle")}</h2>
+              <p className="text-sm text-[var(--muted)]">{t("generateHint")}</p>
+              <AiQuotaBadge className="mt-1" />
+            </div>
             <SubmitButton
               type="button"
               loading={busy}
@@ -171,63 +201,35 @@ export function ReviewDesk() {
               {t("run")}
             </SubmitButton>
           </div>
-        </div>
 
-        {error && <p className="text-sm text-[var(--down)]">{error}</p>}
+          {error && <p className="text-sm text-[var(--down)]">{error}</p>}
 
-        {display ? (
-          <>
-            <ReviewBody content={display} labels={sectionLabels} />
-            <p className="text-[11px] text-[var(--muted)]">
-              {latest?.disclaimer || tAi("disclaimer")}
-            </p>
-          </>
-        ) : (
-          <p className="text-sm text-[var(--muted)]">{t("emptyLatest")}</p>
-        )}
-      </section>
-
-      <aside className="qt-panel flex flex-col p-4 sm:p-5">
-        <h2 className="font-semibold">{t("notesTitle")}</h2>
-        <p className="mt-1 text-xs text-[var(--muted)]">{t("notesHint")}</p>
-        <ul className="mt-3 max-h-[min(28rem,60dvh)] space-y-2 overflow-y-auto qt-scroll">
-          {loadingNotes && (
-            <li className="text-sm text-[var(--muted)]">{tCommon("loading")}</li>
+          {display ? (
+            <>
+              <ReviewAiBody
+                content={display}
+                noteId={displayNoteId}
+                labels={sectionLabels}
+              />
+              <p className="text-[11px] text-[var(--muted)]">
+                {latest?.disclaimer || tAi("disclaimer")}
+              </p>
+            </>
+          ) : (
+            <p className="text-sm text-[var(--muted)]">{t("emptyLatest")}</p>
           )}
-          {!loadingNotes && notes.length === 0 && (
-            <li className="text-sm text-[var(--muted)]">{t("notesEmpty")}</li>
-          )}
-          {notes.map((n) => {
-            const active = selectedId === n.id;
-            const periodLabel =
-              n.period === "week" ? t("periodWeek") : t("periodDay");
-            return (
-              <li key={n.id}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedId(n.id);
-                    setLatest(null);
-                  }}
-                  className={`w-full rounded-lg border px-3 py-2.5 text-left transition ${
-                    active
-                      ? "border-[var(--brand)] bg-[var(--brand-soft)]"
-                      : "border-[var(--border)] hover:bg-[var(--surface-2)]/50"
-                  }`}
-                >
-                  <div className="text-xs font-medium">{periodLabel}</div>
-                  <div className="mt-0.5 text-[11px] text-[var(--muted)]">
-                    {formatDateTime(n.createdAt)}
-                  </div>
-                  <p className="mt-1 line-clamp-2 text-xs leading-snug text-[var(--foreground)]">
-                    {n.content?.summary || "—"}
-                  </p>
-                </button>
-              </li>
-            );
-          })}
-        </ul>
-      </aside>
+        </section>
+      </div>
+
+      <ReviewNotesAside
+        notes={notes}
+        loading={notesQuery.isLoading}
+        selectedId={selectedId}
+        onSelect={(id) => {
+          setSelectedId(id);
+          setLatest(null);
+        }}
+      />
     </div>
   );
 }

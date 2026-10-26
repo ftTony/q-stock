@@ -23,6 +23,11 @@ import {
 } from "@/lib/strategy/templates";
 import { StrategiesLabIntro } from "@/components/strategy/strategies-lab-intro";
 import {
+  StrategyLabCardGridSkeleton,
+  StrategyLabEmptyPanel,
+  StrategyLabHistorySkeleton,
+} from "@/components/strategy/strategy-lab-skeletons";
+import {
   useStrategiesLabStore,
   type StrategiesLabTab,
 } from "@/stores/strategies-lab-store";
@@ -134,10 +139,6 @@ export function StrategiesLab() {
     }
   }
 
-  if (status === "loading") {
-    return <p className="text-sm text-[var(--muted)]">{t("loading")}</p>;
-  }
-
   const creating = createMutation.isPending;
   const copyingId = copyMutation.isPending
     ? (copyMutation.variables ?? null)
@@ -145,6 +146,8 @@ export function StrategiesLab() {
   const deletingId = deleteMutation.isPending
     ? (deleteMutation.variables ?? null)
     : null;
+  const listLoading = status === "loading" || listQuery.isLoading;
+  const listError = listQuery.isError;
 
   return (
     <div className="flex h-full gap-3 lg:overflow-hidden">
@@ -285,35 +288,48 @@ export function StrategiesLab() {
 
         <div className="flex min-h-0 flex-1 flex-col">
           {tab === "templates" ? (
-            <PaginatedList
-              items={filteredTemplates}
-              pageSize={PAGE_TEMPLATES}
-              resetKey={`templates:${query.trim()}`}
-              variant="spread"
-              pinPager
-              listClassName={CARD_GRID}
-              empty={
-                <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-                  {listQuery.isLoading ? t("loading") : t("searchEmpty")}
-                </p>
-              }
-              renderItem={(s) => (
-                <StrategyTemplateCard
-                  key={s.id}
-                  row={s}
-                  showCopy={Boolean(session?.user)}
-                  copyBusy={copyingId === s.id}
-                  onCopy={() => void copyTemplate(s.id)}
-                />
-              )}
-            />
+            listLoading ? (
+              <StrategyLabCardGridSkeleton />
+            ) : listError ? (
+              <StrategyLabEmptyPanel>
+                <span className="block">{t("loadFailed")}</span>
+                <button
+                  type="button"
+                  className="mt-3 text-[12px] font-medium text-[var(--brand-text)] hover:underline"
+                  onClick={() => void listQuery.refetch()}
+                >
+                  {t("retry")}
+                </button>
+              </StrategyLabEmptyPanel>
+            ) : (
+              <PaginatedList
+                items={filteredTemplates}
+                pageSize={PAGE_TEMPLATES}
+                resetKey={`templates:${query.trim()}`}
+                variant="spread"
+                pinPager
+                listClassName={CARD_GRID}
+                empty={
+                  <StrategyLabEmptyPanel>{t("searchEmpty")}</StrategyLabEmptyPanel>
+                }
+                renderItem={(s) => (
+                  <StrategyTemplateCard
+                    key={s.id}
+                    row={s}
+                    showCopy={Boolean(session?.user)}
+                    copyBusy={copyingId === s.id}
+                    onCopy={() => void copyTemplate(s.id)}
+                  />
+                )}
+              />
+            )
           ) : null}
 
           {tab === "mine" ? (
-            !session?.user ? (
-              <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-                {t("loginHint")}
-              </p>
+            status === "loading" || listLoading ? (
+              <StrategyLabCardGridSkeleton count={6} />
+            ) : !session?.user ? (
+              <StrategyLabEmptyPanel>{t("loginHint")}</StrategyLabEmptyPanel>
             ) : (
               <PaginatedList
                 items={mine}
@@ -323,9 +339,7 @@ export function StrategiesLab() {
                 pinPager
                 listClassName={CARD_GRID}
                 empty={
-                  <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-                    {t("emptyMine")}
-                  </p>
+                  <StrategyLabEmptyPanel>{t("emptyMine")}</StrategyLabEmptyPanel>
                 }
                 renderItem={(s) => (
                   <StrategyMineCard
@@ -340,10 +354,12 @@ export function StrategiesLab() {
           ) : null}
 
           {tab === "history" ? (
-            !session?.user ? (
-              <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-                {t("loginHint")}
-              </p>
+            status === "loading" ? (
+              <StrategyLabHistorySkeleton />
+            ) : !session?.user ? (
+              <StrategyLabEmptyPanel>{t("loginHint")}</StrategyLabEmptyPanel>
+            ) : replaysQuery.isLoading ? (
+              <StrategyLabHistorySkeleton />
             ) : (
               <PaginatedList
                 items={replays}
@@ -353,9 +369,9 @@ export function StrategiesLab() {
                 pinPager
                 listClassName="rounded-lg border border-[var(--border)] bg-[var(--panel)]"
                 empty={
-                  <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-                    {replaysQuery.isLoading ? t("loading") : t("emptyHistory")}
-                  </p>
+                  <StrategyLabEmptyPanel>
+                    {t("emptyHistory")}
+                  </StrategyLabEmptyPanel>
                 }
                 renderItem={(r) => {
                   const ret = r.result?.totalReturnPct;

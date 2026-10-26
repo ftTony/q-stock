@@ -17,6 +17,8 @@ type Props = {
   quote: Quote | null;
   boundRuleName?: string | null;
   onOpenPlan?: () => void;
+  /** Open paper-trade dock (side drawer). */
+  onOpenTrade?: () => void;
   /** Secondary tabs after price (chart / derivatives / …; not news/press — those are side dock). */
   tabs?: TabItem[];
   tab?: SymbolTab;
@@ -42,6 +44,7 @@ export function SymbolQuoteBar({
   quote,
   boundRuleName = null,
   onOpenPlan,
+  onOpenTrade,
   tabs,
   tab,
   onTabChange,
@@ -159,6 +162,16 @@ export function SymbolQuoteBar({
             }
           >
             {chipName ?? tRail("ruleBadgeUnbound")}
+          </button>
+        ) : null}
+        {onOpenTrade ? (
+          <button
+            type="button"
+            onClick={onOpenTrade}
+            className="aw-btn-pill"
+            title={t("tradeDock")}
+          >
+            {t("tradeDock")}
           </button>
         ) : null}
         <SymbolShareMenu

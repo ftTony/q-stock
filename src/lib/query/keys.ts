@@ -52,6 +52,9 @@ export const queryKeys = {
     quota: ["ai", "quota"] as const,
     reviewNotes: ["ai", "review-notes"] as const,
   },
+  review: {
+    process: (period: string) => ["review", "process", period] as const,
+  },
   invites: {
     list: ["invites", "list"] as const,
   },

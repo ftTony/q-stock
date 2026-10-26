@@ -159,21 +159,28 @@ export default function PortfolioPage() {
     );
   }
 
+  const headerBtn =
+    "qt-btn inline-flex h-8 items-center justify-center px-3 text-[13px] font-medium leading-none";
+
   return (
     <div className="space-y-5 animate-[qtFade_0.45s_ease]">
-      <section className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight">{t("title")}</h1>
-          <p className="text-sm text-[var(--muted)]">{t("desc")}</p>
+      <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="min-w-0">
+          <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
+            {t("title")}
+          </h1>
+          <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-[var(--muted)] sm:text-[13px]">
+            {t("desc")}
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2">
-          <Link href="/review" className="qt-btn qt-btn-ghost h-10 px-3 text-sm">
+        <div className="flex flex-wrap items-center gap-2">
+          <Link href="/review" className={`${headerBtn} qt-btn-ghost`}>
             {t("openReview")}
           </Link>
-          <Link href="/watchlist" className="qt-btn qt-btn-ghost h-10 px-3 text-sm">
+          <Link href="/watchlist" className={`${headerBtn} qt-btn-ghost`}>
             {t("openWatchlist")}
           </Link>
-          <Link href="/alerts" className="qt-btn qt-btn-primary h-10 px-3 text-sm">
+          <Link href="/alerts" className={`${headerBtn} qt-btn-primary`}>
             + {tMarket("create")}
           </Link>
         </div>
@@ -217,39 +224,52 @@ export default function PortfolioPage() {
       />
 
       <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <div className="qt-card p-4">
-          <div className="text-xs text-[var(--muted)]">{t("watchlist")}</div>
-          <div className="mt-2 text-2xl font-semibold">{rows.length}</div>
-        </div>
-        <div className="qt-card p-4">
-          <div className="text-xs text-[var(--muted)]">{tMarket("kpiAvgChange")}</div>
-          <div
-            className={`mt-2 text-2xl font-semibold ${
-              avgChange >= 0 ? "text-[var(--up)]" : "text-[var(--down)]"
-            }`}
-          >
-            {avgChange >= 0 ? "+" : ""}
-            {avgChange.toFixed(2)}%
+        {(
+          [
+            {
+              key: "watch",
+              label: t("watchlist"),
+              value: String(rows.length),
+              tone: "text-[var(--foreground)]",
+            },
+            {
+              key: "avg",
+              label: tMarket("kpiAvgChange"),
+              value: `${avgChange >= 0 ? "+" : ""}${avgChange.toFixed(2)}%`,
+              tone:
+                avgChange >= 0 ? "text-[var(--up)]" : "text-[var(--down)]",
+            },
+            {
+              key: "top",
+              label: tMarket("kpiTop"),
+              value: top
+                ? `${top.symbol} ${top.percentChange >= 0 ? "+" : ""}${top.percentChange.toFixed(1)}%`
+                : "—",
+              tone: "text-[var(--brand-text)]",
+            },
+          ] as const
+        ).map((card) => (
+          <div key={card.key} className="qt-panel px-4 py-3.5">
+            <div className="text-[11px] text-[var(--muted)] sm:text-[12px]">
+              {card.label}
+            </div>
+            <div
+              className={`mt-1.5 text-xl font-semibold tabular-nums tracking-tight sm:text-2xl ${card.tone}`}
+            >
+              {card.value}
+            </div>
           </div>
-        </div>
-        <div className="qt-card p-4">
-          <div className="text-xs text-[var(--muted)]">{tMarket("kpiTop")}</div>
-          <div className="mt-2 text-lg font-semibold text-[var(--brand-text)]">
-            {top
-              ? `${top.symbol} ${top.percentChange >= 0 ? "+" : ""}${top.percentChange.toFixed(1)}%`
-              : "-"}
-          </div>
-        </div>
-        <div className="qt-card p-4">
-          <div className="mb-2 flex items-center justify-between text-xs text-[var(--muted)]">
+        ))}
+        <div className="qt-panel px-4 py-3.5">
+          <div className="flex items-center justify-between text-[11px] text-[var(--muted)] sm:text-[12px]">
             <span>{t("activeAlerts")}</span>
-            {alertActive > 0 && (
-              <span className="h-2 w-2 rounded-full bg-[var(--down)] shadow-[0_0_8px_var(--down)]" />
-            )}
+            {alertActive > 0 ? (
+              <span className="h-1.5 w-1.5 rounded-full bg-[var(--down)]" />
+            ) : null}
           </div>
-          <div className="text-2xl font-semibold">
+          <div className="mt-1.5 text-xl font-semibold tabular-nums tracking-tight sm:text-2xl">
             {alertActive}
-            <span className="ml-2 text-sm font-normal text-[var(--muted)]">
+            <span className="ml-1.5 text-[12px] font-normal text-[var(--muted)] sm:text-[13px]">
               / {alertTriggered} {t("triggeredAlerts")}
             </span>
           </div>

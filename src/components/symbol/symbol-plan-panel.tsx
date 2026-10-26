@@ -324,7 +324,7 @@ export function SymbolPlanPanel({
                 loading={busy}
                 loadingLabel={tSt("loading")}
                 onClick={() => void runReplay()}
-                className="min-w-0 flex-1 !h-9 !rounded-none !border !border-[var(--aw-hairline,var(--border))] !bg-[var(--panel)] !px-3 !py-0 !text-[13px] !font-normal !text-[var(--foreground)]"
+                className="aw-btn-pill-ghost min-w-0 flex-1 !h-9 !px-3 !text-[13px]"
               >
                 {t("planRunReplay")}
               </SubmitButton>

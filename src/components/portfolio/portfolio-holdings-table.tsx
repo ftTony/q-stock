@@ -36,10 +36,12 @@ export function PortfolioHoldingsTable({
 }: Props) {
   return (
     <section className="qt-panel overflow-hidden">
-      <div className="flex items-center justify-between border-b border-[var(--border)] px-4 py-3">
-        <span className="font-medium">{labels.holdings}</span>
+      <div className="flex h-11 items-center justify-between border-b border-[var(--border)] px-4">
+        <span className="text-[13px] font-medium sm:text-[14px]">
+          {labels.holdings}
+        </span>
         {loading && (
-          <span className="text-xs text-[var(--muted)]">{labels.loading}</span>
+          <span className="text-[12px] text-[var(--muted)]">{labels.loading}</span>
         )}
       </div>
       {rows.length === 0 ? (
@@ -50,7 +52,7 @@ export function PortfolioHoldingsTable({
             loading={seeding}
             loadingLabel={labels.loading}
             onClick={onSeedPopular}
-            className="qt-btn-primary px-4 py-2 text-sm"
+            className="qt-btn qt-btn-primary inline-flex h-8 items-center px-3 text-[13px] font-medium leading-none"
           >
             {labels.seedPopular}
           </SubmitButton>
@@ -129,16 +131,16 @@ export function PortfolioHoldingsTable({
                       )}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-3">
+                      <div className="flex flex-wrap items-center gap-1.5">
                         <Link
                           href={`/symbol/${item.assetType}/${item.symbol}`}
-                          className="qt-link-up text-xs font-bold hover:opacity-80"
+                          className="qt-btn qt-btn-ghost inline-flex h-7 items-center px-2.5 text-[12px] font-medium leading-none"
                         >
                           {labels.buy}
                         </Link>
                         <Link
                           href={`/alerts?symbol=${item.symbol}&assetType=${item.assetType}`}
-                          className="qt-link-down text-xs font-bold hover:opacity-80"
+                          className="qt-btn qt-btn-ghost inline-flex h-7 items-center px-2.5 text-[12px] font-medium leading-none"
                         >
                           {labels.sell}
                         </Link>

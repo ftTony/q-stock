@@ -9,6 +9,10 @@ import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
 import { useStrategiesList } from "@/hooks/query/use-strategies";
 import { useTradingOrders } from "@/hooks/query/use-trading";
 import { formatNumber, formatTime } from "@/lib/format-number";
+import {
+  deviationFlags,
+  type DeviationFlag,
+} from "@/lib/review/deviation";
 import type { AssetType } from "@/lib/types";
 
 type OrderRow = {
@@ -35,19 +39,21 @@ type Props = {
   onOpenPlan?: () => void;
 };
 
+const FLAG_TO_RAIL: Record<DeviationFlag, string> = {
+  noTag: "reviewNoTag",
+  noInvalidation: "reviewNoInvalidation",
+  fomo: "reviewFomo",
+  panic: "reviewPanic",
+  revenge: "reviewRevenge",
+  oversizing: "reviewOversizing",
+  noPlan: "reviewNoPlan",
+};
+
 function deviationChips(
   order: OrderRow,
   t: (k: string) => string,
 ): string[] {
-  const chips: string[] = [];
-  if (!order.strategyId) chips.push(t("reviewNoTag"));
-  if (order.emotionTags.includes("oversizing")) chips.push(t("reviewOversizing"));
-  if (order.emotionTags.includes("noPlan")) chips.push(t("reviewNoPlan"));
-  if (order.emotionTags.includes("fomo")) chips.push(t("reviewFomo"));
-  if (order.emotionTags.includes("panic")) chips.push(t("reviewPanic"));
-  if (order.emotionTags.includes("revenge")) chips.push(t("reviewRevenge"));
-  if (!order.invalidationNote) chips.push(t("reviewNoInvalidation"));
-  return chips;
+  return deviationFlags(order).map((f) => t(FLAG_TO_RAIL[f]));
 }
 
 export function SymbolReviewRail({

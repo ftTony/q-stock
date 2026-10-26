@@ -286,6 +286,27 @@ Body：`{ symbol, assetType, side, type, qty, limitPrice?, stopPrice? }`
 
 ---
 
+## 复盘（需登录）
+
+### `GET /api/review/process`
+
+确定性过程摘要与成交列表，**不消耗** AI 配额。详见 [复盘笔记 PRD](./prd/review-notes.md)。
+
+| 参数 | 说明 |
+|---|---|
+| `period` | `day`（默认）/ `week` |
+
+返回 `summary`（成交数、标签覆盖、持仓、现金等）、`fills`（含策略名与偏差 `flags`，最多 40 笔）、`positions`。
+
+### `GET|POST /api/ai/review`
+
+| 方法 | 说明 |
+|---|---|
+| `GET` | 最近 10 条复盘笔记 |
+| `POST` | 消耗 AI 配额生成过程解读并可选入库；输入含过程统计与标签字段 |
+
+---
+
 ## 评论
 
 ### `GET /api/comments`

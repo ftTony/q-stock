@@ -26,3 +26,4 @@
 |---|---|---|
 | 模拟盘风险控制 | [risk-control.md](./risk-control.md) | 下单前摘要、账户规则、与仓位工具/AI 衔接；作用于 paper，非真券商 OMS |
 | 交易策略与回测 | [strategy-and-backtest.md](./strategy-and-backtest.md) | 规则实验室：模板、单标的回放、模拟标签；非量化 IDE / 非实盘自动交易 |
+| 复盘笔记 | [review-notes.md](./review-notes.md) | 跨标的过程资产台：确定性摘要 + 偏差列表 + 可选 AI 解读 |

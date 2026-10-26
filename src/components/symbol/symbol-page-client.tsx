@@ -213,6 +213,10 @@ export function SymbolPageClient({
               quote={s.quote}
               boundRuleName={boundRuleName}
               onOpenPlan={() => setPlanFocusKey((k) => k + 1)}
+              onOpenTrade={() => {
+                setAiOpen(false);
+                setDock("trade");
+              }}
               tabs={quoteTabs}
               tab={panelTab}
               onTabChange={(id) => {

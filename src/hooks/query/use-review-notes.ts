@@ -69,6 +69,7 @@ export function useRunReview() {
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: queryKeys.ai.reviewNotes });
       await qc.invalidateQueries({ queryKey: queryKeys.ai.quota });
+      await qc.invalidateQueries({ queryKey: ["review", "process"] });
     },
   });
 }

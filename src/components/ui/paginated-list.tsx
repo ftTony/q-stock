@@ -102,7 +102,7 @@ export function PaginatedList<T>({
   if (items.length === 0) {
     if (!pinPager) return <>{empty}</>;
     return (
-      <div className="flex min-h-0 flex-1 flex-col justify-center">{empty}</div>
+      <div className="flex min-h-0 flex-1 flex-col">{empty}</div>
     );
   }
 
