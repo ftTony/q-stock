@@ -39,7 +39,11 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
   const [langOpen, setLangOpen] = useState(false);
   const isLandingHome = pathname === "/";
   /** Full-viewport chrome for short pages only (pricing scrolls — too tall for one screen). */
-  const isOneScreen = pathname.startsWith("/disclaimer");
+  const isOneScreen =
+    pathname.startsWith("/disclaimer") ||
+    pathname.startsWith("/privacy") ||
+    pathname.startsWith("/terms") ||
+    pathname.startsWith("/about");
   const dark = mounted && (resolvedTheme || theme) === "dark";
 
   function linkActive(href: string): boolean {

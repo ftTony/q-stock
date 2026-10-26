@@ -3,7 +3,8 @@ import { LEGAL_UPDATED, type LegalDoc } from "@/lib/legal/legal-docs";
 
 /**
  * 法务文档通用版式（隐私政策 / 服务条款）。
- * 与 /disclaimer 保持同一视觉语言：单栏卡片 + 编号 + 底部 CTA。
+ * 与免责声明页一致：内容列宽 max-w-5xl，整页不出现文档级滚动条，
+ * 只有中间的文档卡片内部滚动（标题与页脚固定）。
  * 注意：ScopedMessages 由调用方页面负责包裹，便于 i18n 作用域检查。
  */
 export function LegalDocView({
@@ -16,7 +17,7 @@ export function LegalDocView({
 }) {
   return (
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden animate-[qtFade_0.45s_ease]">
-      <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-y-auto overscroll-y-contain px-4 pt-6 pb-8 sm:px-6 sm:pt-8">
+      <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col px-4 pt-6 pb-4 sm:px-6 sm:pt-8 sm:pb-5">
         <header className="shrink-0 max-w-2xl">
           <p className="text-xs font-semibold tracking-[0.16em] text-[var(--muted)] uppercase">
             {doc.subtitle}
@@ -31,7 +32,7 @@ export function LegalDocView({
 
         {fallbackNote ? (
           <p
-            className="mt-3 rounded-lg px-3 py-2 text-xs leading-relaxed text-[var(--muted)]"
+            className="mt-3 shrink-0 rounded-lg px-3 py-2 text-xs leading-relaxed text-[var(--muted)]"
             style={{
               background: "color-mix(in srgb, var(--panel) 60%, transparent)",
               border: "1px solid var(--border)",
@@ -42,11 +43,11 @@ export function LegalDocView({
           </p>
         ) : null}
 
-        <div className="mt-5 grid gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
-          <aside className="hidden lg:block">
+        <div className="mt-4 grid min-h-0 flex-1 grid-rows-[minmax(0,1fr)] gap-4 sm:mt-5 sm:gap-5 lg:grid-cols-[220px_minmax(0,1fr)]">
+          <aside className="hidden min-h-0 lg:block">
             <nav
               aria-label={doc.tocLabel}
-              className="qt-panel sticky top-4 px-4 py-4"
+              className="qt-panel flex h-full flex-col overflow-y-auto overscroll-y-contain px-4 py-4"
             >
               <p className="text-xs font-semibold tracking-[0.14em] text-[var(--muted)] uppercase">
                 {doc.tocLabel}
@@ -72,7 +73,7 @@ export function LegalDocView({
             </nav>
           </aside>
 
-          <article className="qt-panel min-w-0">
+          <article className="qt-panel min-h-0 min-w-0 overflow-y-auto overscroll-y-contain">
             <ul className="border-b border-[var(--border)] px-4 py-3.5 sm:px-6">
               {doc.highlights.map((h) => (
                 <li
