@@ -1,7 +1,10 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { IconRailExpand } from "@/components/symbol/watchlist-toggle-icons";
+import {
+  IconRailCollapse,
+  IconRailExpand,
+} from "@/components/symbol/watchlist-toggle-icons";
 import "./apple-workbench.css";
 
 export type SideIconId = "ai" | "trade" | "news" | "comments";
@@ -10,9 +13,9 @@ type Props = {
   /** Currently open tool; null when none. */
   active: SideIconId | null;
   onSelect: (id: SideIconId) => void;
-  /** When the quote/plan rail is hidden — show expand control. */
-  showRailExpand?: boolean;
-  onExpandRail?: () => void;
+  /** Right quote/plan rail open — toggle lives on this far-right strip. */
+  railOpen?: boolean;
+  onToggleRail?: () => void;
 };
 
 const SW = 1.7;
@@ -145,23 +148,29 @@ const ICONS: Record<SideIconId, typeof IconTrade> = {
 export function SymbolSideIconRail({
   active,
   onSelect,
-  showRailExpand = false,
-  onExpandRail,
+  railOpen = true,
+  onToggleRail,
 }: Props) {
   const t = useTranslations("symbol");
 
   return (
     <nav aria-label={t("sideDock")} className="aw-side-icon-rail">
-      {showRailExpand && onExpandRail ? (
+      {onToggleRail ? (
         <>
           <button
             type="button"
-            title={t("railExpand")}
-            aria-label={t("railExpand")}
-            onClick={onExpandRail}
+            title={railOpen ? t("railCollapse") : t("railExpand")}
+            aria-label={railOpen ? t("railCollapse") : t("railExpand")}
+            aria-pressed={railOpen}
+            onClick={onToggleRail}
             className="aw-side-icon-btn hidden lg:inline-flex"
           >
-            <IconRailExpand className="h-6 w-6" />
+            {/* Open → arrow right (collapse panel); closed → arrow left (expand). */}
+            {railOpen ? (
+              <IconRailCollapse className="h-6 w-6" />
+            ) : (
+              <IconRailExpand className="h-6 w-6" />
+            )}
           </button>
           <span aria-hidden className="aw-side-icon-rule hidden lg:block" />
         </>

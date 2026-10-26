@@ -3,7 +3,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { SymbolAlertStrip } from "@/components/symbol/symbol-alert-strip";
-import { IconRailCollapse } from "@/components/symbol/watchlist-toggle-icons";
 import { IconHeart } from "@/components/ui/icon-heart";
 import { formatPrice, formatTime } from "@/lib/format-number";
 import { displayName } from "@/lib/market-names";
@@ -28,8 +27,6 @@ type Props = {
   watchBusy: boolean;
   onToggleWatchlist: () => void;
   alert?: AlertProps;
-  /** Desktop: hide right quote/plan rail (persisted). */
-  onCollapse?: () => void;
 };
 
 function marketBadge(assetType: AssetType): string {
@@ -51,7 +48,6 @@ export function SymbolRailQuoteHeader({
   watchBusy,
   onToggleWatchlist,
   alert,
-  onCollapse,
 }: Props) {
   const t = useTranslations("symbol");
   const [timeLabel, setTimeLabel] = useState<string | null>(null);
@@ -110,17 +106,6 @@ export function SymbolRailQuoteHeader({
               }`}
             />
           </button>
-          {onCollapse ? (
-            <button
-              type="button"
-              onClick={onCollapse}
-              title={t("railCollapse")}
-              aria-label={t("railCollapse")}
-              className="aw-rail-collapse-btn hidden lg:inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--aw-parchment)] hover:text-[var(--aw-ink)]"
-            >
-              <IconRailCollapse className="h-4 w-4" />
-            </button>
-          ) : null}
         </div>
       </div>
 

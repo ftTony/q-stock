@@ -371,7 +371,6 @@ export function SymbolPageClient({
                       inWatchlist={s.inWatchlist}
                       watchBusy={s.watchBusy}
                       onToggleWatchlist={() => void s.toggleWatchlist()}
-                      onCollapse={() => rail.setOpen(false)}
                       alert={{
                         condition: s.alertCondition,
                         onConditionChange: s.setAlertCondition,
@@ -409,8 +408,8 @@ export function SymbolPageClient({
             <SymbolSideIconRail
               active={sideIcon}
               onSelect={onSideSelect}
-              showRailExpand={!rail.open}
-              onExpandRail={() => rail.setOpen(true)}
+              railOpen={rail.open}
+              onToggleRail={() => rail.setOpen((v) => !v)}
             />
           </div>
         </div>
