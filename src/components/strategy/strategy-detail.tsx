@@ -26,12 +26,14 @@ import {
 } from "@/lib/strategy/rules";
 import { queryKeys } from "@/lib/query/keys";
 import {
+  useDeleteStrategy,
   useStartStrategyReplay,
   useStrategyDetail,
   useStrategyReplayDetail,
   useStrategyReplayList,
   useUpdateStrategy,
 } from "@/hooks/query/use-strategies";
+import { useStrategiesLabStore } from "@/stores/strategies-lab-store";
 
 type Replay = {
   id: string;
@@ -61,7 +63,9 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
   const signedIn = Boolean(session?.user);
   const detailQuery = useStrategyDetail(strategyId, locale);
   const updateMut = useUpdateStrategy(strategyId, locale);
+  const deleteMut = useDeleteStrategy(locale);
   const startReplayMut = useStartStrategyReplay(strategyId);
+  const setTab = useStrategiesLabStore((s) => s.setTab);
   const strategy = detailQuery.data?.strategy ?? null;
 
   const [name, setName] = useState("");
@@ -98,6 +102,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
     (replaysQuery.data?.quota as Quota | undefined) ??
     null;
   const busy = updateMut.isPending || startReplayMut.isPending;
+  const deleting = deleteMut.isPending;
 
   useEffect(() => {
     setActiveId(replayIdParam);
@@ -233,6 +238,19 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
     }
   }
 
+  async function removeStrategy() {
+    if (!canEdit) return;
+    if (!window.confirm(t("deleteConfirm"))) return;
+    setMsg(null);
+    try {
+      await deleteMut.mutateAsync(strategyId);
+      setTab("mine");
+      router.push("/strategies");
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : t("deleteFailed"));
+    }
+  }
+
   if (!strategy) {
     return <p className="text-sm text-[var(--muted)]">{t("loading")}</p>;
   }
@@ -245,9 +263,11 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
         canEdit={canEdit}
         isTemplate={strategy.isTemplate}
         busy={busy}
+        deleting={deleting}
         onNameChange={setName}
         onDescriptionChange={setDescription}
         onSave={(e) => void save(e)}
+        onDelete={() => void removeStrategy()}
       />
 
       {msg ? (

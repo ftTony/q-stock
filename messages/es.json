@@ -1464,7 +1464,10 @@
     "blockSentSizeNotional1": "Notional ",
     "blockSentSizeRisk1": "Risk ",
     "blockSentSizeQty1": "Qty ",
-    "blockSentSizeCap": " · max "
+    "blockSentSizeCap": " · max ",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this strategy? Related replays will also be removed. This cannot be undone.",
+    "deleteFailed": "Could not delete strategy"
   },
   "symbolShare": {
     "title": "Share",

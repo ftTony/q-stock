@@ -22,6 +22,11 @@ type Props<T> = {
    * `compact` — centered cluster, no redundant “n / total” (marketing grids).
    */
   variant?: "spread" | "compact";
+  /**
+   * Stretch in a flex parent and keep the pager pinned to the bottom
+   * (does not sit right under short card grids).
+   */
+  pinPager?: boolean;
   renderItem: (item: T, index: number) => ReactNode;
 };
 
@@ -58,12 +63,14 @@ export function PaginatedList<T>({
   empty,
   listClassName = "space-y-3",
   variant = "spread",
+  pinPager = false,
   renderItem,
 }: Props<T>) {
   const locale = useLocale();
   const labels = pagerLabels(locale);
   const [page, setPage] = useState(1);
   const rootRef = useRef<HTMLDivElement>(null);
+  const listRef = useRef<HTMLUListElement>(null);
   const totalPages = Math.max(1, Math.ceil(items.length / pageSize));
 
   useEffect(() => {
@@ -84,33 +91,44 @@ export function PaginatedList<T>({
     if (clamped === page) return;
     setPage(clamped);
     requestAnimationFrame(() => {
-      rootRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      if (pinPager) {
+        listRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      } else {
+        rootRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
     });
   };
 
   if (items.length === 0) {
-    return <>{empty}</>;
+    if (!pinPager) return <>{empty}</>;
+    return (
+      <div className="flex min-h-0 flex-1 flex-col justify-center">{empty}</div>
+    );
   }
 
   const pages = pageWindow(page, totalPages);
+  const showPager = totalPages > 1;
+
+  const rootClass = pinPager
+    ? "flex min-h-0 flex-1 flex-col scroll-mt-24"
+    : `scroll-mt-24 ${variant === "compact" ? "space-y-8" : "space-y-3"}`;
+
+  const listClass = pinPager
+    ? `min-h-0 flex-1 overflow-y-auto ${listClassName}`
+    : listClassName;
+
+  const pagerClass =
+    variant === "compact"
+      ? `flex shrink-0 items-center justify-center gap-1${pinPager ? " mt-auto pt-2" : ""}`
+      : `${pinPager ? "mt-auto pt-2" : "mt-2"} grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2`;
 
   return (
-    <div
-      ref={rootRef}
-      className={`scroll-mt-24 ${variant === "compact" ? "space-y-8" : "space-y-3"}`}
-      data-pager="paginated-list-v2"
-    >
-      <ul className={listClassName}>
+    <div ref={rootRef} className={rootClass} data-pager="paginated-list-v2">
+      <ul ref={listRef} className={listClass}>
         {slice.map((item, i) => renderItem(item, (page - 1) * pageSize + i))}
       </ul>
-      {totalPages > 1 && (
-        <div
-          className={
-            variant === "compact"
-              ? "flex items-center justify-center gap-1"
-              : "mt-3 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-3"
-          }
-        >
+      {showPager ? (
+        <div className={pagerClass}>
           <button
             type="button"
             className="qt-btn qt-btn-ghost h-8 shrink-0 px-2.5 text-[12px] leading-none tracking-[-0.12px] disabled:opacity-40 sm:px-3"
@@ -177,7 +195,7 @@ export function PaginatedList<T>({
             )}
           </button>
         </div>
-      )}
+      ) : null}
     </div>
   );
 }

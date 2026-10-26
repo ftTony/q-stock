@@ -1527,7 +1527,10 @@
     "blockSentSizeNotional1": "金额 ",
     "blockSentSizeRisk1": "风险 ",
     "blockSentSizeQty1": "股数 ",
-    "blockSentSizeCap": " · 上限 "
+    "blockSentSizeCap": " · 上限 ",
+    "delete": "刪除",
+    "deleteConfirm": "確定刪除該策略？相關回放記錄也會一併刪除，此操作不可恢復。",
+    "deleteFailed": "刪除失敗"
   },
   "symbolShare": {
     "title": "分享",

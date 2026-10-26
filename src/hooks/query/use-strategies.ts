@@ -156,6 +156,28 @@ export function useUpdateStrategy(strategyId: string, locale: string) {
   });
 }
 
+/** Delete a user-owned strategy (templates are rejected by the API). */
+export function useDeleteStrategy(locale: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (strategyId: string) =>
+      fetchJson<{ ok: boolean }>(
+        `/api/strategies/${encodeURIComponent(strategyId)}`,
+        { method: "DELETE" },
+      ),
+    onSuccess: async (_data, strategyId) => {
+      qc.removeQueries({
+        queryKey: queryKeys.strategies.detail(strategyId, locale),
+      });
+      await qc.invalidateQueries({
+        queryKey: queryKeys.strategies.list(locale),
+      });
+      await qc.invalidateQueries({ queryKey: ["strategies", "mine"] });
+      await qc.invalidateQueries({ queryKey: queryKeys.strategies.replays() });
+    },
+  });
+}
+
 export function useStrategyReplayList(strategyId: string, enabled = true) {
   return useQuery({
     queryKey: queryKeys.strategies.replays(strategyId),

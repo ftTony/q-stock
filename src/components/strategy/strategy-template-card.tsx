@@ -94,7 +94,7 @@ export function StrategyTemplateCard({
   const blurb = localized?.description ?? row.description;
 
   return (
-    <li className="flex flex-col rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3.5 transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))] sm:p-4">
+    <li className="flex h-auto w-full flex-col rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3.5 transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))] sm:p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <Link
@@ -128,7 +128,7 @@ export function StrategyTemplateCard({
 
       {meta ? <MarketPills markets={meta.markets} /> : null}
 
-      <div className="mt-auto flex flex-wrap items-center gap-3 pt-3">
+      <div className="mt-3 flex flex-wrap items-center gap-3">
         {meta ? (
           <Link
             href={meta.learnHref}
@@ -159,10 +159,18 @@ export function StrategyTemplateCard({
   );
 }
 
-export function StrategyMineCard({ row }: { row: StrategyCardRow }) {
+export function StrategyMineCard({
+  row,
+  deleting,
+  onDelete,
+}: {
+  row: StrategyCardRow;
+  deleting?: boolean;
+  onDelete?: () => void;
+}) {
   const t = useTranslations("strategies");
   return (
-    <li className="flex flex-col rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
+    <li className="flex h-auto w-full flex-col rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4">
       <Link
         href={`/strategies/${row.id}`}
         className="text-[15px] font-semibold tracking-tight hover:text-[var(--brand-text)]"
@@ -174,12 +182,25 @@ export function StrategyMineCard({ row }: { row: StrategyCardRow }) {
           {row.description}
         </p>
       ) : null}
-      <Link
-        href={`/strategies/${row.id}`}
-        className="mt-4 text-[12px] font-medium text-[var(--brand-text)] hover:underline"
-      >
-        {t("open")} →
-      </Link>
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <Link
+          href={`/strategies/${row.id}`}
+          className="text-[12px] font-medium text-[var(--brand-text)] hover:underline"
+        >
+          {t("open")} →
+        </Link>
+        {onDelete ? (
+          <SubmitButton
+            type="button"
+            loading={Boolean(deleting)}
+            loadingLabel={t("loading")}
+            onClick={onDelete}
+            className="qt-btn qt-btn-ghost ml-auto h-7 border border-[var(--border)] px-2 text-[12px] text-[var(--down)]"
+          >
+            {t("delete")}
+          </SubmitButton>
+        ) : null}
+      </div>
     </li>
   );
 }

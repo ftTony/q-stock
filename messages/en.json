@@ -1420,7 +1420,6 @@
     "blockSentSizeRisk1": "Risk ",
     "blockSentSizeQty1": "Qty ",
     "blockSentSizeCap": " · max ",
-
     "rulesAddEntry": "Add entry",
     "rulesAddExit": "Add exit",
     "rulesRemove": "Remove",
@@ -1471,7 +1470,10 @@
     "aiReviewFailed": "AI reading failed",
     "aiStoodOut": "What stood out",
     "aiOverfit": "Overfitting risks",
-    "aiChecklist": "Next checklist"
+    "aiChecklist": "Next checklist",
+    "delete": "Delete",
+    "deleteConfirm": "Delete this strategy? Related replays will also be removed. This cannot be undone.",
+    "deleteFailed": "Could not delete strategy"
   },
   "symbolShare": {
     "title": "Share",

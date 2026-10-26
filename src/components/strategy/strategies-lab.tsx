@@ -12,6 +12,7 @@ import { PaginatedList } from "@/components/ui/paginated-list";
 import {
   useCopyStrategyTemplate,
   useCreateBlankStrategy,
+  useDeleteStrategy,
   useStrategiesList,
   useStrategyReplays,
 } from "@/hooks/query/use-strategies";
@@ -26,13 +27,15 @@ import {
   type StrategiesLabTab,
 } from "@/stores/strategies-lab-store";
 
-const PAGE_TEMPLATES = 8;
-const PAGE_MINE = 8;
-const PAGE_HISTORY = 8;
+/** 3 cols × 3 rows on desktop. */
+const PAGE_TEMPLATES = 9;
+const PAGE_MINE = 9;
+const PAGE_HISTORY = 9;
 const PAGE_SIDEBAR = 8;
 
+/** content/items-start: cards keep natural height; pinPager fills space below, not inside cards. */
 const CARD_GRID =
-  "grid w-full gap-3 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4";
+  "grid w-full content-start items-start gap-3 sm:grid-cols-2 xl:grid-cols-3";
 
 function formatDate(iso?: string) {
   if (!iso) return "";
@@ -60,6 +63,7 @@ export function StrategiesLab() {
   );
   const copyMutation = useCopyStrategyTemplate(locale);
   const createMutation = useCreateBlankStrategy(locale);
+  const deleteMutation = useDeleteStrategy(locale);
 
   const templates = useMemo(
     () => sortTemplatesBySlugOrder(listQuery.data?.templates ?? []),
@@ -120,6 +124,16 @@ export function StrategiesLab() {
     }
   }
 
+  async function removeMine(id: string) {
+    if (!window.confirm(t("deleteConfirm"))) return;
+    setError(null);
+    try {
+      await deleteMutation.mutateAsync(id);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t("deleteFailed"));
+    }
+  }
+
   if (status === "loading") {
     return <p className="text-sm text-[var(--muted)]">{t("loading")}</p>;
   }
@@ -128,17 +142,21 @@ export function StrategiesLab() {
   const copyingId = copyMutation.isPending
     ? (copyMutation.variables ?? null)
     : null;
+  const deletingId = deleteMutation.isPending
+    ? (deleteMutation.variables ?? null)
+    : null;
 
   return (
-    <div className="grid gap-3 lg:min-h-[calc(100dvh-8.5rem)] lg:grid-cols-[260px_minmax(0,1fr)] lg:items-stretch">
-      <aside className="hidden min-h-0 rounded-lg border border-[var(--border)] bg-[var(--panel)] lg:flex lg:h-full lg:flex-col">
+    <div className="flex h-full gap-3 lg:overflow-hidden">
+      {/* Height follows the lab viewport, not the right column’s content. */}
+      <aside className="hidden h-full w-[260px] shrink-0 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)] lg:flex lg:flex-col">
         <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-3 py-2.5">
           <span className="text-[12px] font-medium">{t("mine")}</span>
           <span className="rounded-full bg-[var(--brand-soft)] px-1.5 text-[10px] tabular-nums text-[var(--brand-text)]">
             {mine.length}
           </span>
         </div>
-        <div className="max-h-[40%] min-h-0 shrink-0 overflow-y-auto p-1.5">
+        <div className="max-h-[36%] min-h-0 shrink-0 overflow-y-auto p-1.5">
           {!session?.user ? (
             <p className="px-2 py-4 text-[11px] leading-relaxed text-[var(--muted)]">
               {t("loginHint")}
@@ -156,10 +174,13 @@ export function StrategiesLab() {
                 </p>
               }
               renderItem={(s) => (
-                <li key={s.id}>
+                <li
+                  key={s.id}
+                  className="group flex items-stretch rounded-md hover:bg-[var(--surface-2)]"
+                >
                   <Link
                     href={`/strategies/${s.id}`}
-                    className="block rounded-md px-2 py-2 hover:bg-[var(--surface-2)]"
+                    className="min-w-0 flex-1 px-2 py-2"
                   >
                     <div className="truncate text-[12px] font-medium">
                       {s.name}
@@ -170,12 +191,39 @@ export function StrategiesLab() {
                       </div>
                     ) : null}
                   </Link>
+                  <button
+                    type="button"
+                    disabled={deletingId === s.id}
+                    title={t("delete")}
+                    aria-label={t("delete")}
+                    onClick={() => void removeMine(s.id)}
+                    className="flex w-9 shrink-0 items-center justify-center self-stretch text-[var(--muted)] opacity-0 hover:text-[var(--down)] group-hover:opacity-100 disabled:opacity-40"
+                  >
+                    {deletingId === s.id ? (
+                      <span className="text-[11px]">…</span>
+                    ) : (
+                      <svg
+                        className="h-4 w-4"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden
+                      >
+                        <path d="M4 7h16" />
+                        <path d="M9 7V5h6v2" />
+                        <path d="M7 7l1 12h8l1-12" />
+                      </svg>
+                    )}
+                  </button>
                 </li>
               )}
             />
           )}
         </div>
-        <div className="flex min-h-0 flex-1 flex-col gap-2 border-t border-[var(--border)] p-2">
+        <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden border-t border-[var(--border)] p-2">
           <button
             type="button"
             disabled={creating}
@@ -188,8 +236,8 @@ export function StrategiesLab() {
         </div>
       </aside>
 
-      <div className="min-w-0 space-y-2.5 self-start">
-        <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2.5 overflow-hidden">
+        <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-wrap items-center gap-1 border-b border-[var(--border)] sm:border-0">
             {(
               [
@@ -227,115 +275,127 @@ export function StrategiesLab() {
           ) : null}
         </div>
 
-        <p className="text-[11px] leading-relaxed text-[var(--muted)] sm:text-[12px]">
+        <p className="shrink-0 text-[11px] leading-relaxed text-[var(--muted)] sm:text-[12px]">
           {t("disclaimer")}
         </p>
 
         {error ? (
-          <p className="text-sm text-[var(--down)]">{error}</p>
+          <p className="shrink-0 text-sm text-[var(--down)]">{error}</p>
         ) : null}
 
-        {tab === "templates" ? (
-          <PaginatedList
-            items={filteredTemplates}
-            pageSize={PAGE_TEMPLATES}
-            resetKey={`templates:${query.trim()}`}
-            variant="spread"
-            listClassName={CARD_GRID}
-            empty={
-              <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-                {listQuery.isLoading ? t("loading") : t("searchEmpty")}
-              </p>
-            }
-            renderItem={(s) => (
-              <StrategyTemplateCard
-                key={s.id}
-                row={s}
-                showCopy={Boolean(session?.user)}
-                copyBusy={copyingId === s.id}
-                onCopy={() => void copyTemplate(s.id)}
-              />
-            )}
-          />
-        ) : null}
-
-        {tab === "mine" ? (
-          !session?.user ? (
-            <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-              {t("loginHint")}
-            </p>
-          ) : (
+        <div className="flex min-h-0 flex-1 flex-col">
+          {tab === "templates" ? (
             <PaginatedList
-              items={mine}
-              pageSize={PAGE_MINE}
-              resetKey="mine"
+              items={filteredTemplates}
+              pageSize={PAGE_TEMPLATES}
+              resetKey={`templates:${query.trim()}`}
               variant="spread"
+              pinPager
               listClassName={CARD_GRID}
               empty={
                 <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-                  {t("emptyMine")}
+                  {listQuery.isLoading ? t("loading") : t("searchEmpty")}
                 </p>
               }
-              renderItem={(s) => <StrategyMineCard key={s.id} row={s} />}
+              renderItem={(s) => (
+                <StrategyTemplateCard
+                  key={s.id}
+                  row={s}
+                  showCopy={Boolean(session?.user)}
+                  copyBusy={copyingId === s.id}
+                  onCopy={() => void copyTemplate(s.id)}
+                />
+              )}
             />
-          )
-        ) : null}
+          ) : null}
 
-        {tab === "history" ? (
-          !session?.user ? (
-            <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-              {t("loginHint")}
-            </p>
-          ) : (
-            <PaginatedList
-              items={replays}
-              pageSize={PAGE_HISTORY}
-              resetKey="history"
-              variant="spread"
-              listClassName="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]"
-              empty={
-                <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
-                  {replaysQuery.isLoading ? t("loading") : t("emptyHistory")}
-                </p>
-              }
-              renderItem={(r) => {
-                const ret = r.result?.totalReturnPct;
-                return (
-                  <li
-                    key={r.id}
-                    className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] px-3 py-2.5 last:border-0"
-                  >
-                    <div className="min-w-0">
-                      <Link
-                        href={`/strategies/${r.strategyId}?replayId=${r.id}`}
-                        className="text-[13px] font-medium hover:text-[var(--brand-text)]"
-                      >
-                        {r.strategyName}
-                      </Link>
-                      <div className="mt-0.5 text-[11px] text-[var(--muted)]">
-                        {r.symbol} · {r.status} · {formatDate(r.createdAt)}
+          {tab === "mine" ? (
+            !session?.user ? (
+              <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
+                {t("loginHint")}
+              </p>
+            ) : (
+              <PaginatedList
+                items={mine}
+                pageSize={PAGE_MINE}
+                resetKey="mine"
+                variant="spread"
+                pinPager
+                listClassName={CARD_GRID}
+                empty={
+                  <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
+                    {t("emptyMine")}
+                  </p>
+                }
+                renderItem={(s) => (
+                  <StrategyMineCard
+                    key={s.id}
+                    row={s}
+                    deleting={deletingId === s.id}
+                    onDelete={() => void removeMine(s.id)}
+                  />
+                )}
+              />
+            )
+          ) : null}
+
+          {tab === "history" ? (
+            !session?.user ? (
+              <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
+                {t("loginHint")}
+              </p>
+            ) : (
+              <PaginatedList
+                items={replays}
+                pageSize={PAGE_HISTORY}
+                resetKey="history"
+                variant="spread"
+                pinPager
+                listClassName="rounded-lg border border-[var(--border)] bg-[var(--panel)]"
+                empty={
+                  <p className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-10 text-center text-sm text-[var(--muted)]">
+                    {replaysQuery.isLoading ? t("loading") : t("emptyHistory")}
+                  </p>
+                }
+                renderItem={(r) => {
+                  const ret = r.result?.totalReturnPct;
+                  return (
+                    <li
+                      key={r.id}
+                      className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] px-3 py-2.5 last:border-0"
+                    >
+                      <div className="min-w-0">
+                        <Link
+                          href={`/strategies/${r.strategyId}?replayId=${r.id}`}
+                          className="text-[13px] font-medium hover:text-[var(--brand-text)]"
+                        >
+                          {r.strategyName}
+                        </Link>
+                        <div className="mt-0.5 text-[11px] text-[var(--muted)]">
+                          {r.symbol} · {r.status} · {formatDate(r.createdAt)}
+                        </div>
                       </div>
-                    </div>
-                    {typeof ret === "number" ? (
-                      <span
-                        className={`text-[12px] tabular-nums ${
-                          ret >= 0 ? "text-[var(--up)]" : "text-[var(--down)]"
-                        }`}
-                      >
-                        {ret >= 0 ? "+" : ""}
-                        {ret.toFixed(2)}%
-                      </span>
-                    ) : (
-                      <span className="text-[11px] text-[var(--muted)]">
-                        {r.status}
-                      </span>
-                    )}
-                  </li>
-                );
-              }}
-            />
-          )
-        ) : null}
+                      {typeof ret === "number" ? (
+                        <span
+                          className={`text-[12px] tabular-nums ${
+                            ret >= 0 ? "text-[var(--up)]" : "text-[var(--down)]"
+                          }`}
+                        >
+                          {ret >= 0 ? "+" : ""}
+                          {ret.toFixed(2)}%
+                        </span>
+                      ) : (
+                        <span className="text-[11px] text-[var(--muted)]">
+                          {r.status}
+                        </span>
+                      )}
+                    </li>
+                  );
+                }}
+              />
+            )
+          ) : null}
+        </div>
       </div>
     </div>
   );

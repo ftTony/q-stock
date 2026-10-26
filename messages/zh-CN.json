@@ -1477,7 +1477,6 @@
     "blockSentSizeRisk1": "风险 ",
     "blockSentSizeQty1": "股数 ",
     "blockSentSizeCap": " · 上限 ",
-
     "rulesAddEntry": "添加入场",
     "rulesAddExit": "添加出场",
     "rulesRemove": "删除",
@@ -1528,7 +1527,10 @@
     "aiReviewFailed": "AI 解读失败",
     "aiStoodOut": "值得注意",
     "aiOverfit": "过拟合风险",
-    "aiChecklist": "下一步清单"
+    "aiChecklist": "下一步清单",
+    "delete": "删除",
+    "deleteConfirm": "确定删除该策略？相关回放记录也会一并删除，此操作不可恢复。",
+    "deleteFailed": "删除失败"
   },
   "symbolShare": {
     "title": "分享",

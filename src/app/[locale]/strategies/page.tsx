@@ -7,7 +7,7 @@ export default function StrategiesPage() {
   const t = useTranslations("strategies");
 
   return (
-    <div className="flex animate-[qtFade_0.45s_ease] flex-col lg:min-h-[calc(100dvh-5.5rem)]">
+    <div className="flex animate-[qtFade_0.45s_ease] flex-col lg:h-[calc(100dvh-5.5rem)] lg:overflow-hidden">
       <div className="mb-3 shrink-0">
         <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
           {t("title")}

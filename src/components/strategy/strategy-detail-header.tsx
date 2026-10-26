@@ -12,18 +12,22 @@ export function StrategyDetailHeader({
   canEdit,
   isTemplate,
   busy,
+  deleting,
   onNameChange,
   onDescriptionChange,
   onSave,
+  onDelete,
 }: {
   name: string;
   description: string;
   canEdit: boolean;
   isTemplate: boolean;
   busy: boolean;
+  deleting?: boolean;
   onNameChange: (v: string) => void;
   onDescriptionChange: (v: string) => void;
   onSave: (e: FormEvent) => void;
+  onDelete?: () => void;
 }) {
   const t = useTranslations("strategies");
   const edit = useStrategyBlocksStore((s) => s.edit);
@@ -66,14 +70,29 @@ export function StrategyDetailHeader({
           </div>
 
           {canEdit ? (
-            <SubmitButton
-              type="submit"
-              loading={busy}
-              loadingLabel={t("loading")}
-              className="qt-btn qt-btn-primary h-8 shrink-0 px-3.5 text-[12px]"
-            >
-              {t("save")}
-            </SubmitButton>
+            <div className="flex shrink-0 items-center gap-2">
+              {onDelete ? (
+                <SubmitButton
+                  type="button"
+                  loading={Boolean(deleting)}
+                  loadingLabel={t("loading")}
+                  disabled={busy || deleting}
+                  onClick={onDelete}
+                  className="qt-btn qt-btn-ghost h-8 border border-[var(--border)] px-3 text-[12px] text-[var(--down)] hover:border-[color-mix(in_srgb,var(--down)_40%,var(--border))]"
+                >
+                  {t("delete")}
+                </SubmitButton>
+              ) : null}
+              <SubmitButton
+                type="submit"
+                loading={busy}
+                loadingLabel={t("loading")}
+                disabled={deleting}
+                className="qt-btn qt-btn-primary h-8 px-3.5 text-[12px]"
+              >
+                {t("save")}
+              </SubmitButton>
+            </div>
           ) : null}
         </form>
 
