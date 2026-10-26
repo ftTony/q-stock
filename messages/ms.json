@@ -343,7 +343,11 @@
     "inviteCode": "Kod jemputan",
     "inviteCodeOptional": "Pilihan",
     "inviteInvalid": "Kod jemputan tidak sah atau telah digunakan",
-    "emailTaken": "E-mel sudah didaftarkan"
+    "emailTaken": "E-mel sudah didaftarkan",
+    "consentLead": "Dengan mencipta akaun, anda bersetuju dengan",
+    "consentTerms": "Terma Perkhidmatan",
+    "consentAnd": "dan",
+    "consentPrivacy": "Dasar Privasi"
   },
   "settings": {
     "title": "Tetapan",
@@ -470,7 +474,9 @@
     "aboutIntroTitle": "Perihal Qianli Gu",
     "aboutIntroBody": "Tiada tip beli/jual. AI dan peraturan menyambung penyelidikan, jeda sebelum order, dan semakan selepas — supaya takut dan tamak kurang menguasai. Data untuk pembelajaran sahaja, bukan nasihat pelaburan.",
     "aboutPageLink": "Halaman Perihal penuh",
-    "disclaimerPageLink": "Buka halaman penafian"
+    "disclaimerPageLink": "Buka halaman penafian",
+    "termsPageLink": "Terma Perkhidmatan",
+    "privacyPageLink": "Dasar Privasi"
   },
   "alerts": {
     "title": "Amaran harga",
@@ -965,7 +971,9 @@
       "ctaLoggedIn": "Try AI in markets"
     },
     "footerPricing": "Pricing",
-    "footerAdvancedQuotes": "Advanced quotes"
+    "footerAdvancedQuotes": "Advanced quotes",
+    "footerTerms": "Terma Perkhidmatan",
+    "footerPrivacy": "Dasar Privasi"
   },
   "disclaimer": {
     "title": "Disclaimer",

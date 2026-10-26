@@ -351,7 +351,11 @@
     "inviteCode": "Invite code",
     "inviteCodeOptional": "Optional",
     "inviteInvalid": "Invalid or already used invite code",
-    "emailTaken": "Email already registered"
+    "emailTaken": "Email already registered",
+    "consentLead": "By creating an account you agree to the",
+    "consentTerms": "Terms of Service",
+    "consentAnd": "and",
+    "consentPrivacy": "Privacy Policy"
   },
   "settings": {
     "title": "Settings",
@@ -478,7 +482,9 @@
     "aboutIntroTitle": "About Qianli Gu",
     "aboutIntroBody": "No stock tips, no \"buy this / sell that\" verdicts. We use AI and rules to connect research, a calmer pause before you order, and post-trade review—so fear and greed have less room to steer the next decision. Market data and content are for learning only, not investment advice.",
     "aboutPageLink": "Open full About page",
-    "disclaimerPageLink": "Open disclaimer page"
+    "disclaimerPageLink": "Open disclaimer page",
+    "termsPageLink": "Terms of Service",
+    "privacyPageLink": "Privacy Policy"
   },
   "alerts": {
     "title": "Price alerts",
@@ -977,7 +983,9 @@
     "dotStory": "Origin",
     "footerTools": "Tools",
     "footerPricing": "Pricing",
-    "footerAdvancedQuotes": "Advanced quotes"
+    "footerAdvancedQuotes": "Advanced quotes",
+    "footerTerms": "Terms of Service",
+    "footerPrivacy": "Privacy Policy"
   },
   "disclaimer": {
     "title": "Disclaimer",

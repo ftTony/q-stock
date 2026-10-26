@@ -343,7 +343,11 @@
     "inviteCode": "Einladungscode",
     "inviteCodeOptional": "Optional",
     "inviteInvalid": "Ungültiger oder bereits verwendeter Einladungscode",
-    "emailTaken": "E-Mail bereits registriert"
+    "emailTaken": "E-Mail bereits registriert",
+    "consentLead": "Mit der Registrierung akzeptieren Sie die",
+    "consentTerms": "Nutzungsbedingungen",
+    "consentAnd": "und die",
+    "consentPrivacy": "Datenschutzerklärung"
   },
   "settings": {
     "title": "Einstellungen",
@@ -470,7 +474,9 @@
     "aboutIntroTitle": "Über Qianli Gu",
     "aboutIntroBody": "Keine Aktien-Tipps, keine Kauf-/Verkaufs-Urteile. KI und Regeln verbinden Research, eine Pause vor der Order und die Nachschau — damit Gier und Angst weniger steuern. Marktdaten nur zum Lernen, keine Anlageberatung.",
     "aboutPageLink": "Vollständige Über-uns-Seite",
-    "disclaimerPageLink": "Haftungsausschluss öffnen"
+    "disclaimerPageLink": "Haftungsausschluss öffnen",
+    "termsPageLink": "Nutzungsbedingungen",
+    "privacyPageLink": "Datenschutzerklärung"
   },
   "alerts": {
     "title": "Kursalarme",
@@ -965,7 +971,9 @@
       "ctaLoggedIn": "Try AI in markets"
     },
     "footerPricing": "Pricing",
-    "footerAdvancedQuotes": "Advanced quotes"
+    "footerAdvancedQuotes": "Advanced quotes",
+    "footerTerms": "Nutzungsbedingungen",
+    "footerPrivacy": "Datenschutzerklärung"
   },
   "disclaimer": {
     "title": "Disclaimer",

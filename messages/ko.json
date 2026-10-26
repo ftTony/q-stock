@@ -343,7 +343,11 @@
     "inviteCode": "초대 코드",
     "inviteCodeOptional": "선택",
     "inviteInvalid": "유효하지 않거나 이미 사용된 초대 코드입니다",
-    "emailTaken": "이미 등록된 이메일입니다"
+    "emailTaken": "이미 등록된 이메일입니다",
+    "consentLead": "계정을 만들면 다음에 동의하게 됩니다:",
+    "consentTerms": "서비스 약관",
+    "consentAnd": "및",
+    "consentPrivacy": "개인정보 처리방침"
   },
   "settings": {
     "title": "설정",
@@ -470,7 +474,9 @@
     "aboutIntroTitle": "전리구 소개",
     "aboutIntroBody": "종목 추천이나 매수/매도 단정은 하지 않습니다. AI와 규칙으로 리서치·주문 전 한 호흡·사후 복기를 잇고, 탐욕과 공포가 다음 결정을 덜 좌우하게 합니다. 시세와 콘텐츠는 학습용이며 투자 자문이 아닙니다.",
     "aboutPageLink": "전체 소개 페이지",
-    "disclaimerPageLink": "면책 페이지 열기"
+    "disclaimerPageLink": "면책 페이지 열기",
+    "termsPageLink": "서비스 약관",
+    "privacyPageLink": "개인정보 처리방침"
   },
   "alerts": {
     "title": "가격 알림",
@@ -965,7 +971,9 @@
       "ctaLoggedIn": "Try AI in markets"
     },
     "footerPricing": "Pricing",
-    "footerAdvancedQuotes": "Advanced quotes"
+    "footerAdvancedQuotes": "Advanced quotes",
+    "footerTerms": "서비스 약관",
+    "footerPrivacy": "개인정보 처리방침"
   },
   "disclaimer": {
     "title": "Disclaimer",

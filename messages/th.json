@@ -343,7 +343,11 @@
     "inviteCode": "รหัสเชิญ",
     "inviteCodeOptional": "ไม่บังคับ",
     "inviteInvalid": "รหัสเชิญไม่ถูกต้องหรือถูกใช้แล้ว",
-    "emailTaken": "อีเมลนี้ลงทะเบียนแล้ว"
+    "emailTaken": "อีเมลนี้ลงทะเบียนแล้ว",
+    "consentLead": "การสร้างบัญชีถือว่าคุณยอมรับ",
+    "consentTerms": "ข้อกำหนดการให้บริการ",
+    "consentAnd": "และ",
+    "consentPrivacy": "นโยบายความเป็นส่วนตัว"
   },
   "settings": {
     "title": "การตั้งค่า",
@@ -470,7 +474,9 @@
     "aboutIntroTitle": "เกี่ยวกับ Qianli Gu",
     "aboutIntroBody": "ไม่มีคำแนะนำซื้อ/ขาย ใช้ AI และกติกาเชื่อมการวิจัย การหยุดก่อนสั่ง และการทบทวนหลังเทรด ให้ความโลภและความกลัวครอบงำน้อยลง ข้อมูลเพื่อการเรียนรู้เท่านั้น ไม่ใช่คำแนะนำการลงทุน",
     "aboutPageLink": "หน้าเกี่ยวกับแบบเต็ม",
-    "disclaimerPageLink": "เปิดหน้าข้อจำกัดความรับผิด"
+    "disclaimerPageLink": "เปิดหน้าข้อจำกัดความรับผิด",
+    "termsPageLink": "ข้อกำหนดการให้บริการ",
+    "privacyPageLink": "นโยบายความเป็นส่วนตัว"
   },
   "alerts": {
     "title": "การแจ้งเตือนราคา",
@@ -965,7 +971,9 @@
       "ctaLoggedIn": "Try AI in markets"
     },
     "footerPricing": "Pricing",
-    "footerAdvancedQuotes": "Advanced quotes"
+    "footerAdvancedQuotes": "Advanced quotes",
+    "footerTerms": "ข้อกำหนดการให้บริการ",
+    "footerPrivacy": "นโยบายความเป็นส่วนตัว"
   },
   "disclaimer": {
     "title": "Disclaimer",

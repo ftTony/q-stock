@@ -17,6 +17,8 @@ function isMarketingPath(pathname: string) {
     pathname === "/" ||
     pathname.startsWith("/about") ||
     pathname.startsWith("/disclaimer") ||
+    pathname.startsWith("/privacy") ||
+    pathname.startsWith("/terms") ||
     pathname.startsWith("/learn") ||
     pathname.startsWith("/tools") ||
     pathname.startsWith("/pricing") ||

@@ -343,7 +343,11 @@
     "inviteCode": "Code d'invitation",
     "inviteCodeOptional": "Facultatif",
     "inviteInvalid": "Code d'invitation invalide ou déjà utilisé",
-    "emailTaken": "Cet e-mail est déjà enregistré"
+    "emailTaken": "Cet e-mail est déjà enregistré",
+    "consentLead": "En créant un compte, vous acceptez les",
+    "consentTerms": "Conditions d'utilisation",
+    "consentAnd": "et la",
+    "consentPrivacy": "Politique de confidentialité"
   },
   "settings": {
     "title": "Paramètres",
@@ -470,7 +474,9 @@
     "aboutIntroTitle": "À propos de Qianli Gu",
     "aboutIntroBody": "Pas de conseils d'achat/vente. IA et règles relient recherche, pause avant l'ordre et revue après coup — pour que peur et avidité pèsent moins. Données et contenus à but éducatif uniquement, pas un conseil d'investissement.",
     "aboutPageLink": "Page À propos complète",
-    "disclaimerPageLink": "Ouvrir la page d'avertissement"
+    "disclaimerPageLink": "Ouvrir la page d'avertissement",
+    "termsPageLink": "Conditions d'utilisation",
+    "privacyPageLink": "Politique de confidentialité"
   },
   "alerts": {
     "title": "Alertes de prix",
@@ -965,7 +971,9 @@
       "ctaLoggedIn": "Try AI in markets"
     },
     "footerPricing": "Pricing",
-    "footerAdvancedQuotes": "Advanced quotes"
+    "footerAdvancedQuotes": "Advanced quotes",
+    "footerTerms": "Conditions d'utilisation",
+    "footerPrivacy": "Politique de confidentialité"
   },
   "disclaimer": {
     "title": "Disclaimer",

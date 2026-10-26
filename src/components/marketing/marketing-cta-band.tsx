@@ -58,6 +58,12 @@ export function MarketingCtaBand({
             <Link href="/disclaimer" className="hover:text-[var(--foreground)]">
               {t("footerDisclaimer")}
             </Link>
+            <Link href="/terms" className="hover:text-[var(--foreground)]">
+              {t("footerTerms")}
+            </Link>
+            <Link href="/privacy" className="hover:text-[var(--foreground)]">
+              {t("footerPrivacy")}
+            </Link>
           </nav>
         </div>
         <Link

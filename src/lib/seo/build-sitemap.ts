@@ -57,6 +57,8 @@ const STATIC_PATHS: Array<{
   { path: "/pricing", changeFrequency: "monthly", priority: 0.65 },
   { path: "/advanced-quotes", changeFrequency: "monthly", priority: 0.6 },
   { path: "/disclaimer", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/terms", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
 ];
 
 const MARKET_PRIORITY: Record<SitemapMarket, number> = {

@@ -186,6 +186,16 @@ export function RegisterForm({
         >
           {t("submitRegister")}
         </SubmitButton>
+        <p className="text-center text-[12px] leading-relaxed text-[var(--muted)]">
+          {t("consentLead")}{" "}
+          <Link href="/terms" className="text-[var(--brand-text)] hover:underline">
+            {t("consentTerms")}
+          </Link>{" "}
+          {t("consentAnd")}{" "}
+          <Link href="/privacy" className="text-[var(--brand-text)] hover:underline">
+            {t("consentPrivacy")}
+          </Link>
+        </p>
       </form>
       <OAuthSignInButtons
         disabled={formBusy}

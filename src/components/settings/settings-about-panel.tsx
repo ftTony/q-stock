@@ -61,6 +61,21 @@ export function SettingsAboutPanel() {
           ))}
         </ol>
 
+        <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px]">
+          <Link
+            href="/terms"
+            className="font-medium text-[var(--brand-text)] hover:underline"
+          >
+            {t("termsPageLink")}
+          </Link>
+          <Link
+            href="/privacy"
+            className="font-medium text-[var(--brand-text)] hover:underline"
+          >
+            {t("privacyPageLink")}
+          </Link>
+        </div>
+
         <aside
           className="flex gap-3 rounded-none px-3 py-3 sm:px-3.5"
           role="note"

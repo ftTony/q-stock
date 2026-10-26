@@ -343,7 +343,11 @@
     "inviteCode": "招待コード",
     "inviteCodeOptional": "任意",
     "inviteInvalid": "招待コードが無効、または使用済みです",
-    "emailTaken": "このメールアドレスは既に登録されています"
+    "emailTaken": "このメールアドレスは既に登録されています",
+    "consentLead": "アカウント登録により次に同意したものとみなされます：",
+    "consentTerms": "利用規約",
+    "consentAnd": "および",
+    "consentPrivacy": "プライバシーポリシー"
   },
   "settings": {
     "title": "設定",
@@ -470,7 +474,9 @@
     "aboutIntroTitle": "銭力股について",
     "aboutIntroBody": "銘柄推奨や「買い／売り」の断定はしません。AI とルールで調査・発注前の一呼吸・事後振り返りをつなぎ、欲と恐れが次の判断を支配しにくくします。相場情報は学習用であり投資助言ではありません。",
     "aboutPageLink": "詳細ページを開く",
-    "disclaimerPageLink": "免責事項ページを開く"
+    "disclaimerPageLink": "免責事項ページを開く",
+    "termsPageLink": "利用規約",
+    "privacyPageLink": "プライバシーポリシー"
   },
   "alerts": {
     "title": "価格アラート",
@@ -965,7 +971,9 @@
       "ctaLoggedIn": "Try AI in markets"
     },
     "footerPricing": "Pricing",
-    "footerAdvancedQuotes": "Advanced quotes"
+    "footerAdvancedQuotes": "Advanced quotes",
+    "footerTerms": "利用規約",
+    "footerPrivacy": "プライバシーポリシー"
   },
   "disclaimer": {
     "title": "Disclaimer",

@@ -357,7 +357,11 @@
     "inviteCode": "邀请码",
     "inviteCodeOptional": "可选",
     "inviteInvalid": "邀请码无效或已被使用",
-    "emailTaken": "该邮箱已注册"
+    "emailTaken": "该邮箱已注册",
+    "consentLead": "注册即表示你已阅读并同意",
+    "consentTerms": "《服务条款》",
+    "consentAnd": "与",
+    "consentPrivacy": "《隐私政策》"
   },
   "settings": {
     "title": "设置",
@@ -484,7 +488,9 @@
     "aboutIntroTitle": "关于钱力股",
     "aboutIntroBody": "钱力股不做荐股、不喊「买这个/卖那个」。用 AI 与规则把研究、下单前的冷静停顿和事后复盘串起来，让贪婪与恐惧少一点主导下一次决定。行情与内容仅供学习，不构成投资建议。",
     "aboutPageLink": "查看完整关于页",
-    "disclaimerPageLink": "打开免责声明页"
+    "disclaimerPageLink": "打开免责声明页",
+    "termsPageLink": "服务条款",
+    "privacyPageLink": "隐私政策"
   },
   "alerts": {
     "title": "价格提醒",
@@ -983,7 +989,9 @@
     "dotStory": "缘起",
     "footerTools": "理财工具",
     "footerPricing": "定价",
-    "footerAdvancedQuotes": "高级行情"
+    "footerAdvancedQuotes": "高级行情",
+    "footerTerms": "服务条款",
+    "footerPrivacy": "隐私政策"
   },
   "disclaimer": {
     "title": "免责声明",

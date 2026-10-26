@@ -351,7 +351,11 @@
     "inviteCode": "邀請碼",
     "inviteCodeOptional": "選填",
     "inviteInvalid": "邀請碼無效或已被使用",
-    "emailTaken": "此電子郵件已註冊"
+    "emailTaken": "此電子郵件已註冊",
+    "consentLead": "註冊即表示你已閱讀並同意",
+    "consentTerms": "《服務條款》",
+    "consentAnd": "與",
+    "consentPrivacy": "《隱私政策》"
   },
   "settings": {
     "title": "設定",
@@ -478,7 +482,9 @@
     "aboutIntroTitle": "關於錢力股",
     "aboutIntroBody": "錢力股不做薦股、不喊「買這個/賣那個」。用 AI 與規則把研究、下單前的冷靜停頓和事後復盤串起來，讓貪婪與恐懼少一點主導下一次決定。行情與內容僅供學習，不構成投資建議。",
     "aboutPageLink": "查看完整關於頁",
-    "disclaimerPageLink": "打開免責聲明頁"
+    "disclaimerPageLink": "打開免責聲明頁",
+    "termsPageLink": "服務條款",
+    "privacyPageLink": "隱私政策"
   },
   "alerts": {
     "title": "價格提醒",
@@ -977,7 +983,9 @@
     "dotStory": "緣起",
     "footerTools": "理財工具",
     "footerPricing": "定價",
-    "footerAdvancedQuotes": "高級行情"
+    "footerAdvancedQuotes": "高級行情",
+    "footerTerms": "服務條款",
+    "footerPrivacy": "隱私政策"
   },
   "disclaimer": {
     "title": "免責聲明",
