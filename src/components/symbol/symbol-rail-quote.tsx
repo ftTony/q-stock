@@ -23,7 +23,7 @@ export function SymbolRailQuote({ symbol, assetType, quote }: Props) {
             {symbol}
           </div>
           <p className="mt-1 truncate text-[11px] leading-none tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]">
-            {displayName(symbol, assetType) || t("profile")}
+            {displayName(symbol, assetType, quote?.name) || t("profile")}
           </p>
         </div>
         <div className="shrink-0 text-right">

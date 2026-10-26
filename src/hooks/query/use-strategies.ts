@@ -21,7 +21,15 @@ export type ReplayRow = {
   assetType: string;
   status: string;
   createdAt: string;
-  result?: { totalReturnPct?: number } | null;
+  rangeFrom?: string | Date | null;
+  rangeTo?: string | Date | null;
+  result?: {
+    totalReturnPct?: number;
+    maxDrawdownPct?: number;
+    tradeCount?: number;
+    winRate?: number | null;
+    buyHoldReturnPct?: number;
+  } | null;
 };
 
 type StrategiesListResponse = {

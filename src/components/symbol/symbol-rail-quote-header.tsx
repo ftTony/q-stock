@@ -61,7 +61,7 @@ export function SymbolRailQuoteHeader({
     setTimeLabel(formatTime(d));
   }, [updatedAt, quote?.timestamp]);
 
-  const name = displayName(symbol, assetType);
+  const name = displayName(symbol, assetType, quote?.name);
   const up = quote != null ? quote.change >= 0 : true;
   const tone = up ? "text-[var(--up)]" : "text-[var(--down)]";
   const watchLabel = inWatchlist ? t("inWatchlist") : t("addWatchlist");

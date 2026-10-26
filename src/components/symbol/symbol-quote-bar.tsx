@@ -55,6 +55,10 @@ export function SymbolQuoteBar({
   const tRail = useTranslations("symbolRail");
   const chipName = boundRuleName ? ruleChipLabel(boundRuleName) : null;
   const showTabs = Boolean(tabs?.length && onTabChange && tab);
+  const companyName = displayName(symbol, assetType, quote?.name);
+  const showCompanyName =
+    Boolean(companyName) &&
+    companyName.toUpperCase() !== symbol.toUpperCase();
 
   return (
     <div className="aw-quote-bar flex h-10 min-h-10 items-stretch border-b border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas,#fff)] px-3 sm:px-4">
@@ -99,9 +103,11 @@ export function SymbolQuoteBar({
 
           <div className="flex min-w-0 items-center gap-2">
             <span className="aw-ticker shrink-0">{symbol}</span>
-            <span className="aw-caption hidden max-w-[8rem] truncate md:inline lg:max-w-[12rem]">
-              {displayName(symbol, assetType)}
-            </span>
+            {showCompanyName ? (
+              <span className="aw-caption hidden max-w-[8rem] truncate md:inline lg:max-w-[12rem]">
+                {companyName}
+              </span>
+            ) : null}
           </div>
 
           <div className="flex min-w-0 shrink-0 items-baseline gap-2">

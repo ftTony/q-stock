@@ -129,7 +129,11 @@ export function SymbolWatchlistPanel({
                 row.symbol === currentSymbol &&
                 row.assetType === currentAssetType;
               const ch = row.quote?.percentChange ?? null;
-              const name = displayName(row.symbol, row.assetType);
+              const name = displayName(
+                row.symbol,
+                row.assetType,
+                row.quote?.name,
+              );
               return (
                 <li key={row.id}>
                   <Link

@@ -9,6 +9,7 @@ import {
   getQuoteCtx,
   hasLongbridgeCreds,
 } from "@/lib/market/providers/longbridge-client";
+import { resolveLongbridgeNames } from "@/lib/market/providers/longbridge-static-names";
 
 export {
   getLongbridgeFilings,
@@ -41,12 +42,15 @@ export const longbridgeProvider: MarketDataProvider = {
     }
     const normalized = normalizeSymbol(symbol, assetType);
     const lbSym = toLongbridgeSymbol(normalized, assetType);
-    const key = `lb:quote:v2:${assetType}:${normalized}`;
+    const key = `lb:quote:v3:${assetType}:${normalized}`;
 
     try {
       return await cachedFetch(key, 15_000, async () => {
         const ctx = await getQuoteCtx();
-        const rows = await ctx.quote([lbSym]);
+        const [rows, names] = await Promise.all([
+          ctx.quote([lbSym]),
+          resolveLongbridgeNames([{ symbol: normalized, assetType }]),
+        ]);
         const q = rows[0];
         if (!q) {
           throw new MarketDataError(`No quote for ${lbSym}`, "longbridge");
@@ -59,6 +63,7 @@ export const longbridgeProvider: MarketDataProvider = {
         const turnover = dec(
           (q as { turnover?: { toNumber(): number } | null }).turnover,
         );
+        const name = names.get(normalized);
         let bid: number | undefined;
         let ask: number | undefined;
         let bidSize: number | undefined;
@@ -97,6 +102,7 @@ export const longbridgeProvider: MarketDataProvider = {
           ...(ask != null ? { ask } : {}),
           ...(bidSize != null ? { bidSize } : {}),
           ...(askSize != null ? { askSize } : {}),
+          ...(name ? { name } : {}),
           source: "longbridge" as const,
         } satisfies QuoteWithSource;
       });
@@ -125,7 +131,16 @@ export const longbridgeProvider: MarketDataProvider = {
           return [toLongbridgeSymbol(n, i.assetType), { ...i, normalized: n }] as const;
         }),
       );
-      const rows = await ctx.quote([...map.keys()]);
+      const lbKeys = [...map.keys()];
+      const [rows, names] = await Promise.all([
+        ctx.quote(lbKeys),
+        resolveLongbridgeNames(
+          equityItems.map((i) => ({
+            symbol: normalizeSymbol(i.symbol, i.assetType),
+            assetType: i.assetType,
+          })),
+        ),
+      ]);
       const out: QuoteWithSource[] = [];
       for (const q of rows) {
         const meta = map.get(q.symbol);
@@ -137,6 +152,7 @@ export const longbridgeProvider: MarketDataProvider = {
         const turnover = dec(
           (q as { turnover?: { toNumber(): number } | null }).turnover,
         );
+        const name = names.get(meta.normalized);
         out.push({
           symbol: meta.normalized,
           assetType: meta.assetType,
@@ -150,6 +166,7 @@ export const longbridgeProvider: MarketDataProvider = {
           timestamp: Math.floor((q.timestamp?.getTime?.() ?? Date.now()) / 1000),
           ...(volume > 0 ? { volume } : {}),
           ...(turnover > 0 ? { turnover } : {}),
+          ...(name ? { name } : {}),
           source: "longbridge",
         });
       }

@@ -5,11 +5,22 @@ export const STOCK_NAMES: Record<string, string> = {
   AAPL: "Apple Inc.",
   MSFT: "Microsoft Corp.",
   GOOGL: "Alphabet Inc.",
+  GOOG: "Alphabet Inc.",
   AMZN: "Amazon.com Inc.",
   NVDA: "NVIDIA Corp.",
   META: "Meta Platforms",
   TSLA: "Tesla Inc.",
   JPM: "JPMorgan Chase",
+  "BRK.A": "Berkshire Hathaway A",
+  "BRK.B": "Berkshire Hathaway B",
+  "BRK/A": "Berkshire Hathaway A",
+  "BRK/B": "Berkshire Hathaway B",
+  MU: "Micron Technology",
+  AMD: "Advanced Micro Devices",
+  INTC: "Intel Corp.",
+  NFLX: "Netflix Inc.",
+  AVGO: "Broadcom Inc.",
+  SKHY: "SK hynix Inc.",
 };
 
 export const HK_NAMES: Record<string, string> = {
@@ -45,7 +56,13 @@ export const CRYPTO_NAMES: Record<string, string> = {
   AVAX: "Avalanche",
 };
 
-export function displayName(symbol: string, assetType: AssetType): string {
+export function displayName(
+  symbol: string,
+  assetType: AssetType,
+  liveName?: string | null,
+): string {
+  const live = liveName?.trim();
+  if (live) return live;
   const key = symbol.toUpperCase();
   if (assetType === "crypto") return CRYPTO_NAMES[key] || key;
   if (assetType === "hk") {

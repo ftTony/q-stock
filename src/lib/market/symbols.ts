@@ -60,7 +60,8 @@ export function toLongbridgeSymbol(
   if (assetType === "cn") {
     return toThscode(s);
   }
-  if (s.includes(".")) return s;
+  // US class shares keep the dot (BRK.B) but still need the .US region suffix.
+  if (/\.(US|HK|SH|SZ|BJ)$/i.test(s)) return s;
   return `${s}.US`;
 }
 

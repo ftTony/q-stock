@@ -264,7 +264,11 @@ function WatchlistContent() {
                               {item.symbol}
                             </span>
                             <span className="block truncate text-[11px] text-[var(--muted)]">
-                              {displayName(item.symbol, item.assetType)}
+                              {displayName(
+                                item.symbol,
+                                item.assetType,
+                                quote?.name,
+                              )}
                             </span>
                           </span>
                         </Link>

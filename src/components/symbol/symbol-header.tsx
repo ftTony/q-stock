@@ -105,11 +105,13 @@ function UpdatedAtLabel({ updatedAt }: { updatedAt: Date }) {
 function SymbolIdentity({
   symbol,
   assetType,
+  liveName,
 }: {
   symbol: string;
   assetType: AssetType;
+  liveName?: string | null;
 }) {
-  const name = displayName(symbol, assetType);
+  const name = displayName(symbol, assetType, liveName);
   return (
     <div className="min-w-0">
       {/* Visual title; page H1 lives in SymbolSeoHeading (sr-only for crawlers). */}
@@ -218,7 +220,11 @@ export function SymbolHeader({
         className="hidden h-3.5 w-px shrink-0 bg-[var(--border)] sm:block"
         aria-hidden
       />
-      <SymbolIdentity symbol={symbol} assetType={assetType} />
+      <SymbolIdentity
+        symbol={symbol}
+        assetType={assetType}
+        liveName={quote?.name}
+      />
       <div className="ml-auto flex items-center gap-2">
         <SymbolQuoteMeta quote={quote} updatedAt={updatedAt} />
         <WatchButton {...watchProps} />

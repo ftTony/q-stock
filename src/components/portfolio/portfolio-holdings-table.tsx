@@ -89,7 +89,7 @@ export function PortfolioHoldingsTable({
                         <span>
                           <span className="block font-semibold">{item.symbol}</span>
                           <span className="block text-xs text-[var(--muted)]">
-                            {displayName(item.symbol, item.assetType)}
+                            {displayName(item.symbol, item.assetType, q?.name)}
                           </span>
                         </span>
                       </Link>

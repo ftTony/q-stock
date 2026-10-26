@@ -23,6 +23,10 @@ import {
 } from "@/lib/strategy/templates";
 import { StrategiesLabIntro } from "@/components/strategy/strategies-lab-intro";
 import {
+  StrategyLabHistoryHeader,
+  StrategyLabHistoryRow,
+} from "@/components/strategy/strategy-lab-history";
+import {
   StrategyLabCardGridSkeleton,
   StrategyLabEmptyPanel,
   StrategyLabHistorySkeleton,
@@ -360,55 +364,29 @@ export function StrategiesLab() {
               <StrategyLabEmptyPanel>{t("loginHint")}</StrategyLabEmptyPanel>
             ) : replaysQuery.isLoading ? (
               <StrategyLabHistorySkeleton />
+            ) : replays.length === 0 ? (
+              <StrategyLabEmptyPanel>
+                {t("emptyHistory")}
+              </StrategyLabEmptyPanel>
             ) : (
-              <PaginatedList
-                items={replays}
-                pageSize={PAGE_HISTORY}
-                resetKey="history"
-                variant="spread"
-                pinPager
-                listClassName="rounded-lg border border-[var(--border)] bg-[var(--panel)]"
-                empty={
-                  <StrategyLabEmptyPanel>
-                    {t("emptyHistory")}
-                  </StrategyLabEmptyPanel>
-                }
-                renderItem={(r) => {
-                  const ret = r.result?.totalReturnPct;
-                  return (
-                    <li
-                      key={r.id}
-                      className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] px-3 py-2.5 last:border-0"
-                    >
-                      <div className="min-w-0">
-                        <Link
-                          href={`/strategies/${r.strategyId}?replayId=${r.id}`}
-                          className="text-[13px] font-medium hover:text-[var(--brand-text)]"
-                        >
-                          {r.strategyName}
-                        </Link>
-                        <div className="mt-0.5 text-[11px] text-[var(--muted)]">
-                          {r.symbol} · {r.status} · {formatDate(r.createdAt)}
-                        </div>
-                      </div>
-                      {typeof ret === "number" ? (
-                        <span
-                          className={`text-[12px] tabular-nums ${
-                            ret >= 0 ? "text-[var(--up)]" : "text-[var(--down)]"
-                          }`}
-                        >
-                          {ret >= 0 ? "+" : ""}
-                          {ret.toFixed(2)}%
-                        </span>
-                      ) : (
-                        <span className="text-[11px] text-[var(--muted)]">
-                          {r.status}
-                        </span>
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+                <div className="flex min-h-0 flex-1 flex-col overflow-x-auto">
+                  <div className="flex min-h-0 min-w-[44rem] flex-1 flex-col">
+                    <StrategyLabHistoryHeader />
+                    <PaginatedList
+                      items={replays}
+                      pageSize={PAGE_HISTORY}
+                      resetKey="history"
+                      variant="spread"
+                      pinPager
+                      listClassName=""
+                      renderItem={(r) => (
+                        <StrategyLabHistoryRow key={r.id} row={r} />
                       )}
-                    </li>
-                  );
-                }}
-              />
+                    />
+                  </div>
+                </div>
+              </div>
             )
           ) : null}
         </div>
