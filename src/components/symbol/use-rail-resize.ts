@@ -8,7 +8,8 @@ import {
   type PointerEvent as ReactPointerEvent,
 } from "react";
 
-const STORAGE_KEY = "qstock.symbolRailWidth.v1";
+const WIDTH_KEY = "qstock.symbolRailWidth.v1";
+const OPEN_KEY = "qstock.symbolRailOpen.v1";
 export const RAIL_MIN = 300;
 export const RAIL_MAX = 560;
 export const RAIL_DEFAULT = 360;
@@ -17,10 +18,10 @@ function clamp(n: number): number {
   return Math.min(RAIL_MAX, Math.max(RAIL_MIN, Math.round(n)));
 }
 
-function readStored(): number {
+function readWidth(): number {
   if (typeof window === "undefined") return RAIL_DEFAULT;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = localStorage.getItem(WIDTH_KEY);
     const n = raw ? Number(raw) : NaN;
     return Number.isFinite(n) ? clamp(n) : RAIL_DEFAULT;
   } catch {
@@ -28,15 +29,41 @@ function readStored(): number {
   }
 }
 
-/** Desktop-only rail width with drag + localStorage. */
+function readOpen(): boolean {
+  if (typeof window === "undefined") return true;
+  try {
+    const raw = localStorage.getItem(OPEN_KEY);
+    // First visit: open — quote / plan rail is the primary side panel.
+    if (raw === null) return true;
+    return raw !== "0";
+  } catch {
+    return true;
+  }
+}
+
+/** Desktop rail width + open state with localStorage. */
 export function useRailResize() {
   const [width, setWidth] = useState(RAIL_DEFAULT);
+  const [open, setOpenState] = useState(true);
   const [dragging, setDragging] = useState(false);
   const widthRef = useRef(width);
   widthRef.current = width;
 
   useEffect(() => {
-    setWidth(readStored());
+    setWidth(readWidth());
+    setOpenState(readOpen());
+  }, []);
+
+  const setOpen = useCallback((next: boolean | ((v: boolean) => boolean)) => {
+    setOpenState((prev) => {
+      const value = typeof next === "function" ? next(prev) : next;
+      try {
+        localStorage.setItem(OPEN_KEY, value ? "1" : "0");
+      } catch {
+        /* ignore */
+      }
+      return value;
+    });
   }, []);
 
   const onResizeStart = useCallback((e: ReactPointerEvent<HTMLElement>) => {
@@ -68,7 +95,7 @@ export function useRailResize() {
       const next = clamp(startW + (startX - ev.clientX));
       setWidth(next);
       try {
-        localStorage.setItem(STORAGE_KEY, String(next));
+        localStorage.setItem(WIDTH_KEY, String(next));
       } catch {
         /* ignore */
       }
@@ -89,5 +116,5 @@ export function useRailResize() {
     window.addEventListener("pointercancel", onUp);
   }, []);
 
-  return { width, dragging, onResizeStart };
+  return { width, open, setOpen, dragging, onResizeStart };
 }

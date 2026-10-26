@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { IconRailExpand } from "@/components/symbol/watchlist-toggle-icons";
 import "./apple-workbench.css";
 
 export type SideIconId = "ai" | "trade" | "news" | "comments";
@@ -9,6 +10,9 @@ type Props = {
   /** Currently open tool; null when none. */
   active: SideIconId | null;
   onSelect: (id: SideIconId) => void;
+  /** When the quote/plan rail is hidden — show expand control. */
+  showRailExpand?: boolean;
+  onExpandRail?: () => void;
 };
 
 const SW = 1.7;
@@ -138,11 +142,30 @@ const ICONS: Record<SideIconId, typeof IconTrade> = {
 };
 
 /** Futu edge chrome — trade / news+press / comments / AI. */
-export function SymbolSideIconRail({ active, onSelect }: Props) {
+export function SymbolSideIconRail({
+  active,
+  onSelect,
+  showRailExpand = false,
+  onExpandRail,
+}: Props) {
   const t = useTranslations("symbol");
 
   return (
     <nav aria-label={t("sideDock")} className="aw-side-icon-rail">
+      {showRailExpand && onExpandRail ? (
+        <>
+          <button
+            type="button"
+            title={t("railExpand")}
+            aria-label={t("railExpand")}
+            onClick={onExpandRail}
+            className="aw-side-icon-btn hidden lg:inline-flex"
+          >
+            <IconRailExpand className="h-6 w-6" />
+          </button>
+          <span aria-hidden className="aw-side-icon-rule hidden lg:block" />
+        </>
+      ) : null}
       {ITEMS.map((item) => {
         const selected = active === item.id;
         const Icon = ICONS[item.id];

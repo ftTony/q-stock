@@ -1,7 +1,13 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+  type CSSProperties,
+} from "react";
 import { SymbolOrderRail } from "@/components/symbol/symbol-order-rail";
 import { SymbolQuoteBar } from "@/components/symbol/symbol-quote-bar";
 import { SymbolRailQuoteHeader } from "@/components/symbol/symbol-rail-quote-header";
@@ -15,6 +21,7 @@ import { useSymbolPage } from "@/components/symbol/use-symbol-page";
 import { useRailResize } from "@/components/symbol/use-rail-resize";
 import { useWatchlistResize } from "@/components/symbol/use-watchlist-resize";
 import { setBoundStrategyId as persistBoundStrategyId } from "@/components/symbol/symbol-plan-binding";
+import type { IndicatorFlags } from "@/components/charts/candle-chart-overlays";
 import { isMarketIndexSymbol } from "@/lib/market/indices";
 import type { AssetType, CandleResolution, Quote } from "@/lib/types";
 import "./apple-workbench.css";
@@ -128,14 +135,18 @@ export function SymbolPageClient({
       ? "chart"
       : s.tab;
 
-  const resolutionLabels = {
-    T: s.t("intraday"),
-    "1": s.t("min1"),
-    "5": s.t("min5"),
-    D: s.t("day"),
-    Q: s.t("quarter"),
-    Y: s.t("year"),
-  } satisfies Record<CandleResolution, string>;
+  const resolutionLabels = useMemo(
+    () =>
+      ({
+        T: s.t("intraday"),
+        "1": s.t("min1"),
+        "5": s.t("min5"),
+        D: s.t("day"),
+        Q: s.t("quarter"),
+        Y: s.t("year"),
+      }) satisfies Record<CandleResolution, string>,
+    [s.t],
+  );
 
   function closeDock() {
     setDock(null);
@@ -175,6 +186,56 @@ export function SymbolPageClient({
 
   const resizing = rail.dragging || watch.dragging;
 
+  const onFlagToggle = useCallback(
+    (key: keyof IndicatorFlags) => {
+      s.setFlags((f) => ({ ...f, [key]: !f[key] }));
+    },
+    [s.setFlags],
+  );
+
+  const indicatorsLabel = s.t("indicators");
+  const intradayUnavailableLabel = s.t("intradayUnavailable");
+  const loadingLabel = s.tCommon("loading");
+
+  const chartSlot = useMemo(
+    () => (
+      <SymbolChartSection
+        resolution={s.resolution}
+        onResolutionChange={s.setResolution}
+        resolutionLabels={resolutionLabels}
+        indicatorsLabel={indicatorsLabel}
+        intradayUnavailableLabel={intradayUnavailableLabel}
+        flags={s.flags}
+        onFlagToggle={onFlagToggle}
+        loadingChart={s.loadingChart}
+        loadingLabel={loadingLabel}
+        bars={s.bars}
+        assetType={assetType}
+        symbol={symbol}
+        onLoadMore={s.loadMoreCandles}
+        loadingMore={s.loadingMoreCandles}
+        hasMore={s.hasMoreCandles}
+      />
+    ),
+    [
+      s.resolution,
+      s.setResolution,
+      resolutionLabels,
+      indicatorsLabel,
+      intradayUnavailableLabel,
+      s.flags,
+      onFlagToggle,
+      s.loadingChart,
+      loadingLabel,
+      s.bars,
+      assetType,
+      symbol,
+      s.loadMoreCandles,
+      s.loadingMoreCandles,
+      s.hasMoreCandles,
+    ],
+  );
+
   return (
     <div className="aw aw-stack flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--aw-canvas)] lg:overflow-hidden">
       {/* Watchlist is full-height left; quote bar only over main workbench */}
@@ -212,7 +273,10 @@ export function SymbolPageClient({
               assetType={assetType}
               quote={s.quote}
               boundRuleName={boundRuleName}
-              onOpenPlan={() => setPlanFocusKey((k) => k + 1)}
+              onOpenPlan={() => {
+                rail.setOpen(true);
+                setPlanFocusKey((k) => k + 1);
+              }}
               onOpenTrade={() => {
                 setAiOpen(false);
                 setDock("trade");
@@ -236,27 +300,7 @@ export function SymbolPageClient({
             <div className="aw-stack-y flex min-h-0 min-w-0 flex-col overflow-hidden bg-[var(--aw-canvas)]">
               <SymbolTabsPanel
                 tab={panelTab}
-                chartSlot={
-                  <SymbolChartSection
-                    resolution={s.resolution}
-                    onResolutionChange={s.setResolution}
-                    resolutionLabels={resolutionLabels}
-                    indicatorsLabel={s.t("indicators")}
-                    intradayUnavailableLabel={s.t("intradayUnavailable")}
-                    flags={s.flags}
-                    onFlagToggle={(key) =>
-                      s.setFlags((f) => ({ ...f, [key]: !f[key] }))
-                    }
-                    loadingChart={s.loadingChart}
-                    loadingLabel={s.tCommon("loading")}
-                    bars={s.bars}
-                    assetType={assetType}
-                    symbol={symbol}
-                    onLoadMore={s.loadMoreCandles}
-                    loadingMore={s.loadingMoreCandles}
-                    hasMore={s.hasMoreCandles}
-                  />
-                }
+                chartSlot={chartSlot}
                 degraded={s.degraded}
                 degradedLabel={s.tCommon("degraded")}
                 tabLoading={s.tabLoading}
@@ -307,57 +351,67 @@ export function SymbolPageClient({
               />
             </div>
 
-            <button
-              type="button"
-              className="aw-workbench-resizer"
-              aria-label="Resize side panel"
-              data-dragging={rail.dragging ? "true" : undefined}
-              onPointerDown={rail.onResizeStart}
-            />
+            {rail.open ? (
+              <>
+                <button
+                  type="button"
+                  className="aw-workbench-resizer"
+                  aria-label="Resize side panel"
+                  data-dragging={rail.dragging ? "true" : undefined}
+                  onPointerDown={rail.onResizeStart}
+                />
 
-            <aside className="aw-workbench-rail min-h-0 overflow-hidden bg-[var(--aw-canvas)]">
-              <div className="shrink-0">
-                <SymbolRailQuoteHeader
-                  symbol={symbol}
-                  assetType={assetType}
-                  quote={s.quote}
-                  updatedAt={s.updatedAt}
-                  inWatchlist={s.inWatchlist}
-                  watchBusy={s.watchBusy}
-                  onToggleWatchlist={() => void s.toggleWatchlist()}
-                  alert={{
-                    condition: s.alertCondition,
-                    onConditionChange: s.setAlertCondition,
-                    price: s.alertPrice,
-                    onPriceChange: s.setAlertPrice,
-                    busy: s.alertBusy,
-                    message: s.alertMsg,
-                    onSubmit: s.createAlert,
-                  }}
-                />
-                <SymbolRailStats
-                  quote={s.quote}
-                  metrics={s.earningsMetrics}
-                  assetType={assetType}
-                  marketCap={marketCap}
-                />
-              </div>
-              <SymbolOrderRail
-                symbol={symbol}
-                assetType={assetType}
-                isIndex={isIndex}
-                onBoundStrategyChange={(name, id) => {
-                  setBoundRuleName(name);
-                  setBoundStrategyId(id ?? null);
-                }}
-                focusPlanToken={planFocusKey}
-                onRequestOrder={() => {
-                  setAiOpen(false);
-                  setDock("trade");
-                }}
-              />
-            </aside>
-            <SymbolSideIconRail active={sideIcon} onSelect={onSideSelect} />
+                <aside className="aw-workbench-rail min-h-0 overflow-hidden bg-[var(--aw-canvas)]">
+                  <div className="shrink-0">
+                    <SymbolRailQuoteHeader
+                      symbol={symbol}
+                      assetType={assetType}
+                      quote={s.quote}
+                      updatedAt={s.updatedAt}
+                      inWatchlist={s.inWatchlist}
+                      watchBusy={s.watchBusy}
+                      onToggleWatchlist={() => void s.toggleWatchlist()}
+                      onCollapse={() => rail.setOpen(false)}
+                      alert={{
+                        condition: s.alertCondition,
+                        onConditionChange: s.setAlertCondition,
+                        price: s.alertPrice,
+                        onPriceChange: s.setAlertPrice,
+                        busy: s.alertBusy,
+                        message: s.alertMsg,
+                        onSubmit: s.createAlert,
+                      }}
+                    />
+                    <SymbolRailStats
+                      quote={s.quote}
+                      metrics={s.earningsMetrics}
+                      assetType={assetType}
+                      marketCap={marketCap}
+                    />
+                  </div>
+                  <SymbolOrderRail
+                    symbol={symbol}
+                    assetType={assetType}
+                    isIndex={isIndex}
+                    onBoundStrategyChange={(name, id) => {
+                      setBoundRuleName(name);
+                      setBoundStrategyId(id ?? null);
+                    }}
+                    focusPlanToken={planFocusKey}
+                    onRequestOrder={() => {
+                      setAiOpen(false);
+                      setDock("trade");
+                    }}
+                  />
+                </aside>
+              </>
+            ) : null}
+            <SymbolSideIconRail
+              active={sideIcon}
+              onSelect={onSideSelect}
+              showRailExpand={!rail.open}
+              onExpandRail={() => rail.setOpen(true)}
+            />
           </div>
         </div>
       </div>

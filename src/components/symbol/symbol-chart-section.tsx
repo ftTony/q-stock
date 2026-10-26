@@ -1,18 +1,23 @@
 "use client";
 
-import {
-  useCallback,
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  useState,
-} from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { useSession } from "next-auth/react";
+import { useLocale } from "next-intl";
 import {
   CandleChart,
+  type CandleChartHandle,
   type IndicatorFlags,
 } from "@/components/charts/candle-chart";
 import { INDICATOR_KEYS } from "@/components/charts/candle-chart-overlays";
+import {
+  readChartUiSettings,
+  writeChartUiSettings,
+  type ChartUiSettings,
+} from "@/components/charts/candle-chart-settings";
+import { CandleChartToolbarActions } from "@/components/charts/candle-chart-toolbar-actions";
+import { ordersToTradeMarkers } from "@/components/charts/candle-chart-trade-markers";
 import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
+import { useTradingOrders } from "@/hooks/query/use-trading";
 import {
   isIntradayResolution,
   type AssetType,
@@ -40,72 +45,7 @@ type Props = {
   hasMore: boolean;
 };
 
-const PERIODS = ["D", "Q", "Y"] as const;
-
-function ResolutionTabs({
-  resolution,
-  onResolutionChange,
-  resolutionLabels,
-}: {
-  resolution: CandleResolution;
-  onResolutionChange: (r: CandleResolution) => void;
-  resolutionLabels: { D: string; Q: string; Y: string };
-}) {
-  const listRef = useRef<HTMLDivElement>(null);
-  const btnRefs = useRef(new Map<string, HTMLButtonElement>());
-  const [indicator, setIndicator] = useState({ left: 0, width: 0 });
-
-  const syncIndicator = useCallback(() => {
-    const list = listRef.current;
-    const btn = btnRefs.current.get(resolution);
-    if (!list || !btn) return;
-    setIndicator({
-      left: btn.offsetLeft,
-      width: btn.offsetWidth,
-    });
-  }, [resolution]);
-
-  useLayoutEffect(() => {
-    syncIndicator();
-  }, [syncIndicator, resolutionLabels]);
-
-  useEffect(() => {
-    window.addEventListener("resize", syncIndicator);
-    return () => window.removeEventListener("resize", syncIndicator);
-  }, [syncIndicator]);
-
-  return (
-    <div
-      ref={listRef}
-      className="relative -mb-px flex items-center gap-0.5 pb-px"
-    >
-      {PERIODS.map((key) => (
-        <button
-          key={key}
-          type="button"
-          ref={(el) => {
-            if (el) btnRefs.current.set(key, el);
-            else btnRefs.current.delete(key);
-          }}
-          onClick={() => onResolutionChange(key)}
-          className={`relative z-[1] h-8 px-2.5 text-[12px] leading-none font-medium transition-colors ${resolution === key
-            ? "text-[var(--foreground)]"
-            : "text-[var(--muted)] hover:text-[var(--foreground)]"
-            }`}
-        >
-          {resolutionLabels[key]}
-        </button>
-      ))}
-      <span
-        aria-hidden
-        className="pointer-events-none absolute bottom-0 z-[2] h-0.5 rounded-full bg-[var(--brand)] transition-[left,width] duration-200 ease-out"
-        style={{ left: indicator.left, width: Math.max(indicator.width, 0) }}
-      />
-    </div>
-  );
-}
-
-export function SymbolChartSection({
+export const SymbolChartSection = memo(function SymbolChartSection({
   resolution,
   onResolutionChange,
   resolutionLabels,
@@ -122,15 +62,60 @@ export function SymbolChartSection({
   loadingMore,
   hasMore,
 }: Props) {
+  const locale = useLocale();
+  const { data: session } = useSession();
+  const signedIn = Boolean(session?.user);
+  const chartRef = useRef<CandleChartHandle>(null);
+  const [fullscreen, setFullscreen] = useState(false);
+  const [chartSettings, setChartSettings] = useState<ChartUiSettings>({
+    showTradeMarkers: true,
+  });
+
+  useEffect(() => {
+    setChartSettings(readChartUiSettings());
+  }, []);
+
+  const fillsQuery = useTradingOrders({
+    status: "filled",
+    symbol,
+    assetType,
+    enabled: signedIn && chartSettings.showTradeMarkers,
+  });
+  const tradeMarkers = useMemo(() => {
+    const orders =
+      (
+        fillsQuery.data as
+          | {
+              orders?: Array<{
+                id: string;
+                side: string;
+                status?: string;
+                filledAt?: string | null;
+                filledPrice?: number | null;
+              }>;
+            }
+          | undefined
+      )?.orders ?? [];
+    const zh = locale.startsWith("zh");
+    return ordersToTradeMarkers(orders, {
+      buy: zh ? "买" : "B",
+      sell: zh ? "卖" : "S",
+    });
+  }, [fillsQuery.data, locale]);
   const periods: CandleResolution[] = ["T", "1", "5", "D", "Q", "Y"];
   const primaryKeys = INDICATOR_KEYS.filter(([k]) => PRIMARY_INDICATORS.has(k));
   const moreKeys = INDICATOR_KEYS.filter(([k]) => !PRIMARY_INDICATORS.has(k));
   const intradayEmpty =
     isIntradayResolution(resolution) && !loadingChart && bars.length === 0;
 
+  const onChartSettingsChange = (next: ChartUiSettings) => {
+    setChartSettings(next);
+    writeChartUiSettings(next);
+  };
+
   return (
     <div className="aw-surface-flush flex h-full min-h-0 flex-col">
-      <div className="aw-chart-toolbar flex shrink-0 flex-wrap items-center gap-0.5 border-b border-[var(--border)] bg-[var(--surface)] px-2">
+      <div className="aw-chart-toolbar flex shrink-0 flex-nowrap items-center gap-0.5 border-b border-[var(--border)] bg-[var(--surface)] px-2">
         {periods.map((key) => (
           <button
             key={key}
@@ -172,27 +157,40 @@ export function SymbolChartSection({
             </button>
           ))}
         </div>
+
+        <CandleChartToolbarActions
+          flags={flags}
+          onFlagToggle={onFlagToggle}
+          settings={chartSettings}
+          onSettingsChange={onChartSettingsChange}
+          onClearDrawings={() => chartRef.current?.clearDrawings()}
+          fullscreen={fullscreen}
+          onToggleFullscreen={() => chartRef.current?.toggleFullscreen()}
+          onScreenshot={() => chartRef.current?.captureScreenshot()}
+        />
       </div>
 
-      {loadingChart ? (
+      {intradayEmpty ? (
+        <div className="flex min-h-[280px] flex-1 items-center justify-center lg:min-h-0">
+          <EmptyStateBlock art="chart" label={intradayUnavailableLabel} />
+        </div>
+      ) : bars.length === 0 && loadingChart ? (
         <div className="flex min-h-[280px] flex-1 items-center justify-center lg:min-h-0">
           <div
             className="h-full min-h-[280px] w-full animate-pulse bg-[color-mix(in_srgb,var(--aw-hairline,var(--border))_35%,transparent)] lg:min-h-0"
             aria-label={loadingLabel}
           />
         </div>
-      ) : intradayEmpty ? (
-        <div className="flex min-h-[280px] flex-1 items-center justify-center lg:min-h-0">
-          <EmptyStateBlock art="chart" label={intradayUnavailableLabel} />
-        </div>
       ) : (
-        <div className="min-h-0 flex-1 [&_>div]:h-full [&_>div]:rounded-none [&_>div]:border-0">
+        <div className="relative min-h-0 flex-1 [&_>div]:h-full [&_>div]:rounded-none [&_>div]:border-0">
           <CandleChart
+            ref={chartRef}
             bars={bars}
             flags={flags}
             onFlagToggle={onFlagToggle}
             indicatorsLabel={indicatorsLabel}
             showFloatingIndicators={false}
+            showFloatingChrome={false}
             resetKey={`${assetType}:${symbol}:${resolution}`}
             resolution={resolution}
             symbol={symbol}
@@ -201,9 +199,20 @@ export function SymbolChartSection({
             onLoadMore={onLoadMore}
             loadingMore={loadingMore}
             hasMore={hasMore}
+            tradeMarkers={
+              chartSettings.showTradeMarkers ? tradeMarkers : []
+            }
+            chartSettings={chartSettings}
+            onFullscreenChange={setFullscreen}
           />
+          {loadingChart ? (
+            <div
+              className="pointer-events-none absolute inset-0 animate-pulse bg-[color-mix(in_srgb,var(--aw-hairline,var(--border))_28%,transparent)]"
+              aria-label={loadingLabel}
+            />
+          ) : null}
         </div>
       )}
     </div>
   );
-}
+});

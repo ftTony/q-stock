@@ -95,7 +95,7 @@ export function SymbolWatchlistPanel({
       />
 
       <div
-        className="aw-watchlist-cols grid h-8 shrink-0 items-center border-b border-[var(--aw-hairline,var(--border))] px-2 text-[11px] text-[var(--muted)]"
+        className="aw-watchlist-cols grid shrink-0 items-center border-b border-[var(--aw-hairline,var(--border))] px-2 text-[var(--muted)]"
         aria-hidden
       >
         <span>{t("watchlistColName")}</span>

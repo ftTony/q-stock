@@ -265,7 +265,22 @@
     "watchlistCreateGroup": "建立分組",
     "watchlistGroupSoon": "自訂分組即將支援；可先依市場篩選。",
     "watchlistNewGroupName": "新分組",
-    "watchlistGroupEmpty": "暫無資料"
+    "watchlistGroupEmpty": "暫無資料",
+    "search": "搜尋標的",
+    "searchPlaceholder": "搜尋同市場代碼…",
+    "searchPlaceholderHk": "搜尋港股代碼…",
+    "searchPlaceholderCn": "搜尋 A 股代碼…",
+    "searchPlaceholderCrypto": "搜尋加密貨幣…",
+    "searchEmpty": "無匹配標的",
+    "chartSettings": "圖表設定",
+    "chartSettingsDisplay": "顯示",
+    "chartShowTradeMarks": "顯示買賣打點",
+    "chartSettingsColors": "漲跌色",
+    "chartColorCn": "紅漲綠跌",
+    "chartColorUs": "綠漲紅跌",
+    "chartScreenshot": "截圖",
+    "railCollapse": "收起右側欄",
+    "railExpand": "展開右側欄"
   },
   "company": {
     "na": "該資產暫無公司概況",
@@ -774,7 +789,6 @@
     "loginBody": "復盤會結合你的模擬成交、持倉與情緒標記，幫你看清過程而不只是盈虧。登入即可使用；新帳戶贈送 5 次 AI，邀請好友成功註冊再 +5。",
     "loginHint": "內容僅供學習參考，不構成投資建議。"
   },
-
   "seo": {
     "titleDefault": "錢力股 Q-Stock",
     "titleTemplate": "%s · 錢力股",

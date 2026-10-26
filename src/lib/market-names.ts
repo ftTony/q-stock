@@ -56,22 +56,43 @@ export const CRYPTO_NAMES: Record<string, string> = {
   AVAX: "Avalanche",
 };
 
+/** Seeded / static map only — stable product copy when we know the ticker. */
+export function seededDisplayName(
+  symbol: string,
+  assetType: AssetType,
+): string | null {
+  const key = symbol.toUpperCase();
+  if (assetType === "crypto") return CRYPTO_NAMES[key] ?? null;
+  if (assetType === "hk") {
+    const padded = key.replace(/\D/g, "").padStart(5, "0");
+    return HK_NAMES[padded] || HK_NAMES[key] || null;
+  }
+  if (assetType === "cn") {
+    const ths = normalizeCnThscode(key);
+    return CN_NAMES[ths] ?? null;
+  }
+  return STOCK_NAMES[key] ?? null;
+}
+
+/**
+ * Prefer seeded names so UI copy does not flicker when quote feeds
+ * alternate between REST (with name) and push (without) or vendor variants.
+ * Live name is only used when we have no seed for the ticker.
+ */
 export function displayName(
   symbol: string,
   assetType: AssetType,
   liveName?: string | null,
 ): string {
+  const seeded = seededDisplayName(symbol, assetType);
+  if (seeded) return seeded;
   const live = liveName?.trim();
   if (live) return live;
   const key = symbol.toUpperCase();
-  if (assetType === "crypto") return CRYPTO_NAMES[key] || key;
+  if (assetType === "cn") return normalizeCnThscode(key);
   if (assetType === "hk") {
     const padded = key.replace(/\D/g, "").padStart(5, "0");
-    return HK_NAMES[padded] || HK_NAMES[key] || key;
+    return padded || key;
   }
-  if (assetType === "cn") {
-    const ths = normalizeCnThscode(key);
-    return CN_NAMES[ths] || ths;
-  }
-  return STOCK_NAMES[key] || key;
+  return key;
 }

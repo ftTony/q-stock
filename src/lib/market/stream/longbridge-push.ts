@@ -109,6 +109,8 @@ function mergePush(
       : prev?.turnover
         ? { turnover: prev.turnover }
         : {}),
+    // Push ticks omit static name — keep last known so UI does not flicker.
+    ...(prev?.name ? { name: prev.name } : {}),
   };
   lastByKey.set(key, quote);
   return quote;

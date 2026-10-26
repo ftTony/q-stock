@@ -265,7 +265,22 @@
     "watchlistCreateGroup": "创建分组",
     "watchlistGroupSoon": "自定义分组即将支持；可先按市场筛选。",
     "watchlistNewGroupName": "新分组",
-    "watchlistGroupEmpty": "暂无数据"
+    "watchlistGroupEmpty": "暂无数据",
+    "search": "搜索标的",
+    "searchPlaceholder": "搜索同市场代码…",
+    "searchPlaceholderHk": "搜索港股代码…",
+    "searchPlaceholderCn": "搜索 A 股代码…",
+    "searchPlaceholderCrypto": "搜索加密货币…",
+    "searchEmpty": "无匹配标的",
+    "chartSettings": "图表设置",
+    "chartSettingsDisplay": "显示",
+    "chartShowTradeMarks": "显示买卖打点",
+    "chartSettingsColors": "涨跌色",
+    "chartColorCn": "红涨绿跌",
+    "chartColorUs": "绿涨红跌",
+    "chartScreenshot": "截图",
+    "railCollapse": "收起右侧栏",
+    "railExpand": "展开右侧栏"
   },
   "company": {
     "na": "该资产暂无公司概况",

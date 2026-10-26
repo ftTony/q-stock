@@ -305,9 +305,9 @@ export function useSymbolTabData({
     let idleId: number | undefined;
     let timeoutId: ReturnType<typeof setTimeout> | undefined;
     if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(run, { timeout: 2500 });
+      idleId = window.requestIdleCallback(run, { timeout: 4500 });
     } else {
-      timeoutId = setTimeout(run, 1200);
+      timeoutId = setTimeout(run, 2200);
     }
     return () => {
       cancelled = true;

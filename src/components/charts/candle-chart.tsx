@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useImperativeHandle,
+  useRef,
+  useState,
+} from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { OhlcvBar } from "@/lib/types";
 import { usePreference } from "@/components/providers/preference-provider";
@@ -15,29 +22,28 @@ import {
   toKLineData,
   type TipLabels,
 } from "@/components/charts/candle-chart-styles";
+import type { ChartUiSettings } from "@/components/charts/candle-chart-settings";
+import { downloadChartScreenshot } from "@/components/charts/candle-chart-screenshot";
+import {
+  syncTradeMarkers,
+  USER_DRAWINGS_GROUP,
+  type ChartTradeMarker,
+} from "@/components/charts/candle-chart-trade-markers";
 import { isAssetSessionOpen } from "@/lib/market/session";
 import type { AssetType } from "@/lib/types";
 
-export type { DrawingTool, IndicatorFlags };
+export type { DrawingTool, IndicatorFlags, ChartTradeMarker };
+
+export type CandleChartHandle = {
+  toggleFullscreen: () => void;
+  captureScreenshot: () => void;
+  clearDrawings: () => void;
+};
 
 type KLineChartsModule = typeof import("klinecharts");
 type ChartInstance = NonNullable<ReturnType<KLineChartsModule["init"]>>;
 
-export function CandleChart({
-  bars,
-  flags,
-  onFlagToggle,
-  indicatorsLabel,
-  showFloatingIndicators = true,
-  resetKey,
-  resolution = "D",
-  symbol = "",
-  assetType = "stock",
-  onLoadMore,
-  loadingMore = false,
-  hasMore = true,
-  fillParent = false,
-}: {
+type CandleChartProps = {
   bars: OhlcvBar[];
   /** @deprecated KLineChart computes indicators internally */
   indicators?: unknown;
@@ -46,6 +52,8 @@ export function CandleChart({
   indicatorsLabel?: string;
   /** False when a parent toolbar already lists MA/MACD/… */
   showFloatingIndicators?: boolean;
+  /** False when parent toolbar owns settings / fullscreen / screenshot. */
+  showFloatingChrome?: boolean;
   resetKey?: string;
   resolution?: string;
   symbol?: string;
@@ -55,7 +63,35 @@ export function CandleChart({
   hasMore?: boolean;
   /** Fill a flex parent instead of fixed 360/520/620 heights. */
   fillParent?: boolean;
-}) {
+  /** Paper fills — buy/sell annotations on the candle pane. */
+  tradeMarkers?: ChartTradeMarker[];
+  chartSettings?: ChartUiSettings;
+  onFullscreenChange?: (fullscreen: boolean) => void;
+};
+
+export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
+  function CandleChart(
+    {
+      bars,
+      flags,
+      onFlagToggle,
+      indicatorsLabel,
+      showFloatingIndicators = true,
+      showFloatingChrome = true,
+      resetKey,
+      resolution = "D",
+      symbol = "",
+      assetType = "stock",
+      onLoadMore,
+      loadingMore = false,
+      hasMore = true,
+      fillParent = false,
+      tradeMarkers = [],
+      chartSettings = { showTradeMarkers: true },
+      onFullscreenChange,
+    },
+    ref,
+  ) {
   const shellRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ChartInstance | null>(null);
@@ -64,16 +100,31 @@ export function CandleChart({
   const hasMoreRef = useRef(hasMore);
   const onLoadMoreRef = useRef(onLoadMore);
   const flagsRef = useRef(flags);
+  const tradeMarkersRef = useRef(tradeMarkers);
   const indicatorIdsRef = useRef<Record<string, string | null>>({});
   const [drawingTool, setDrawingTool] = useState<DrawingTool>("none");
   const [ready, setReady] = useState(false);
   const [fullscreen, setFullscreen] = useState(false);
+  const chartSettingsRef = useRef(chartSettings);
+  chartSettingsRef.current = chartSettings;
   const [liveSession, setLiveSession] = useState(() =>
     isAssetSessionOpen(assetType),
   );
   const { changeColorScheme } = usePreference();
   const locale = useLocale();
   const t = useTranslations("symbol");
+  const tApp = useTranslations("app");
+  const domainRef = useRef(tApp("domain"));
+  domainRef.current = tApp("domain");
+  /** Corner mark follows locale (`app.name`: 钱力股 / 錢力股 / Qianli Gu / …). */
+  const brandRef = useRef(tApp("name"));
+  brandRef.current = tApp("name");
+  const logoSrcRef = useRef("/logo-light.png?v=2");
+  logoSrcRef.current = locale.startsWith("zh")
+    ? "/logo-cn.png?v=2"
+    : locale.startsWith("en")
+      ? "/logo-en.png?v=2"
+      : "/logo-light.png?v=2";
   const tipLabelsRef = useRef<TipLabels>({
     time: t("time"),
     open: t("open"),
@@ -95,6 +146,7 @@ export function CandleChart({
   hasMoreRef.current = hasMore;
   onLoadMoreRef.current = onLoadMore;
   flagsRef.current = flags;
+  tradeMarkersRef.current = tradeMarkers;
 
   useEffect(() => {
     const tick = () => setLiveSession(isAssetSessionOpen(assetType));
@@ -167,11 +219,10 @@ export function CandleChart({
       if (disposed || !containerRef.current) return;
       kcRef.current = KC;
       const chart = KC.init(containerRef.current, {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         styles: buildChartStyles(tipLabelsRef.current, resolution, {
           liveSession: isAssetSessionOpen(assetType),
           flushEdge: fillParent,
-        }) as any,
+        }) as never,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
       if (!chart) return;
@@ -266,17 +317,36 @@ export function CandleChart({
     );
   }, [changeColorScheme, ready, locale, resolution, liveSession, fillParent]);
 
+  const tradeMarkersKey = tradeMarkers
+    .map((m) => `${m.id}:${m.timeMs}:${m.price}:${m.side}`)
+    .join("|");
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart || !ready) return;
+    const marks = chartSettings.showTradeMarkers
+      ? tradeMarkersRef.current
+      : [];
+    syncTradeMarkers(chart, marks);
+  }, [
+    ready,
+    tradeMarkersKey,
+    changeColorScheme,
+    bars.length,
+    chartSettings.showTradeMarkers,
+  ]);
+
   useEffect(() => {
     function onFsChange() {
       const active = document.fullscreenElement === shellRef.current;
       setFullscreen(active);
+      onFullscreenChange?.(active);
       requestAnimationFrame(() => {
         chartRef.current?.resize();
       });
     }
     document.addEventListener("fullscreenchange", onFsChange);
     return () => document.removeEventListener("fullscreenchange", onFsChange);
-  }, []);
+  }, [onFullscreenChange]);
 
   useEffect(() => {
     const shell = shellRef.current;
@@ -305,13 +375,84 @@ export function CandleChart({
   const startDrawing = (tool: DrawingTool) => {
     setDrawingTool(tool);
     if (tool === "none") return;
-    chartRef.current?.createOverlay({ name: tool });
+    chartRef.current?.createOverlay({
+      name: tool,
+      groupId: USER_DRAWINGS_GROUP,
+    });
   };
 
   const clearDrawings = () => {
-    chartRef.current?.removeOverlay();
+    const chart = chartRef.current;
+    if (!chart) return;
+    chart.removeOverlay({ groupId: USER_DRAWINGS_GROUP });
     setDrawingTool("none");
+    syncTradeMarkers(
+      chart,
+      chartSettingsRef.current.showTradeMarkers
+        ? tradeMarkersRef.current
+        : [],
+    );
   };
+
+  const captureScreenshot = () => {
+    const chart = chartRef.current;
+    if (!chart) return;
+
+    const styleOpts = { liveSession, flushEdge: fillParent };
+    const restoreStyles = () => {
+      chart.setStyles(
+        buildChartStyles(tipLabelsRef.current, resolution, styleOpts) as never,
+      );
+    };
+    const nextFrame = () =>
+      new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+    void (async () => {
+      try {
+        // Full style replace (not a partial merge) so OHLC tip is off.
+        // klinecharts: setStyles → layout (microtask) → canvas draw (rAF).
+        chart.setStyles(
+          buildChartStyles(tipLabelsRef.current, resolution, {
+            ...styleOpts,
+            hideCandleTooltip: true,
+          }) as never,
+        );
+        chart.resize();
+        await Promise.resolve();
+        await nextFrame();
+        await nextFrame();
+
+        // false = skip overlay canvas (OHLC tip / crosshair live there).
+        // Main pane still has candles + MA lines; tip cannot leak into PNG.
+        const url = chart.getConvertPictureUrl(false, "png", "#ffffff");
+        restoreStyles();
+        if (!url) return;
+        await downloadChartScreenshot(url, {
+          domain: domainRef.current,
+          brand: brandRef.current,
+          logoSrc: logoSrcRef.current,
+          filename: `${symbol || "chart"}-${resolution || "D"}.png`,
+        });
+      } catch {
+        try {
+          restoreStyles();
+        } catch {
+          /* ignore restore failure */
+        }
+      }
+    })();
+  };
+
+  useImperativeHandle(
+    ref,
+    () => ({
+      toggleFullscreen: () => void toggleFullscreen(),
+      captureScreenshot,
+      clearDrawings,
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- stable imperative API
+    [symbol, resolution],
+  );
 
   // fillParent sits beside the workbench resizer — no shell border or the
   // right edge doubles with the 1px hairline divider.
@@ -337,6 +478,7 @@ export function CandleChart({
         flags={flags}
         onFlagToggle={onFlagToggle}
         showFloatingIndicators={showFloatingIndicators}
+        showFloatingChrome={showFloatingChrome}
         indicatorsLabel={indicatorsLabel}
         loadingMore={loadingMore}
       />
@@ -344,4 +486,5 @@ export function CandleChart({
       <div ref={containerRef} className={plotClass} />
     </div>
   );
-}
+  },
+);

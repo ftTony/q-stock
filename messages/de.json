@@ -249,7 +249,30 @@
     "watchlistCreateGroup": "New group",
     "watchlistGroupSoon": "Custom groups coming soon — filter by market for now.",
     "watchlistNewGroupName": "New group",
-    "watchlistGroupEmpty": "No data"
+    "watchlistGroupEmpty": "No data",
+    "search": "Search",
+    "searchPlaceholder": "Search same market…",
+    "searchPlaceholderHk": "Search HK ticker…",
+    "searchPlaceholderCn": "Search A-share…",
+    "searchPlaceholderCrypto": "Search crypto…",
+    "searchEmpty": "No matches",
+    "chartSettings": "Chart settings",
+    "chartSettingsDisplay": "Display",
+    "chartShowTradeMarks": "Show trade marks",
+    "chartSettingsColors": "Up / down colors",
+    "chartColorCn": "Red up",
+    "chartColorUs": "Green up",
+    "chartScreenshot": "Screenshot",
+    "tradeDock": "Handel",
+    "watchlistDock": "Watchlist",
+    "watchlistDockHint": "Klicken zum Wechseln",
+    "watchlistColPrice": "Kurs",
+    "watchlistColChg": "Änd.%",
+    "watchlistCollapse": "Watchlist einklappen",
+    "watchlistExpand": "Watchlist ausklappen",
+    "sideDock": "Seitenleiste",
+    "railCollapse": "Seitenpanel einklappen",
+    "railExpand": "Seitenpanel ausklappen"
   },
   "company": {
     "na": "Kein Unternehmensprofil für diesen Vermögenswert verfügbar",
@@ -754,7 +777,6 @@
     "loginBody": "Reviews use your paper trades, positions, and emotion flags to look at process, not just P&L. Sign in to use AI — new accounts get 5 uses; invite a friend who registers and you get 5 more.",
     "loginHint": "For learning only; not investment advice."
   },
-
   "seo": {
     "titleDefault": "Qianli Gu Q-Stock",
     "titleTemplate": "%s · Qianli Gu",

@@ -55,8 +55,9 @@ function RailScroll({ children }: { children: ReactNode }) {
   );
 }
 
-function defaultTab(showMarket: boolean): RailTab {
-  return showMarket ? "market" : "plan";
+/** Plan-first (PRD): market depth is opt-in, not the critical path. */
+function defaultTab(): RailTab {
+  return "plan";
 }
 
 export function SymbolOrderRail({
@@ -69,7 +70,7 @@ export function SymbolOrderRail({
 }: Props) {
   const t = useTranslations("symbolRail");
   const showMarket = assetType !== "crypto" && !isIndex;
-  const [tab, setTab] = useState<RailTab>(() => defaultTab(showMarket));
+  const [tab, setTab] = useState<RailTab>(() => defaultTab());
   const [strategyId, setStrategyId] = useState<string | null>(null);
   const [nameById, setNameById] = useState<Record<string, string>>({});
 
@@ -80,7 +81,7 @@ export function SymbolOrderRail({
 
   useEffect(() => {
     setStrategyId(null);
-    setTab(defaultTab(showMarket));
+    setTab(defaultTab());
     onBoundStrategyChange?.(null, null);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- reset on symbol switch only
   }, [symbol, assetType]);

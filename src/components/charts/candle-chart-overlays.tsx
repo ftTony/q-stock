@@ -47,6 +47,8 @@ type Props = {
   showFloatingIndicators?: boolean;
   indicatorsLabel?: string;
   loadingMore?: boolean;
+  /** When false, hide floating fullscreen (parent toolbar owns it). */
+  showFloatingChrome?: boolean;
 };
 
 function toolBtnClass(active: boolean) {
@@ -69,6 +71,7 @@ export function CandleChartOverlays({
   showFloatingIndicators = true,
   indicatorsLabel,
   loadingMore,
+  showFloatingChrome = true,
 }: Props) {
   const t = useTranslations("symbol");
   const [mounted, setMounted] = useState(false);
@@ -151,25 +154,27 @@ export function CandleChartOverlays({
         </div>
       </div>
 
-      <div className="pointer-events-none absolute right-12 top-0 z-10 p-2 sm:right-14 sm:p-2.5 lg:right-16">
-        <button
-          type="button"
-          onClick={onToggleFullscreen}
-          aria-label={fullscreen ? t("exitFullscreen") : t("fullscreen")}
-          title={fullscreen ? t("exitFullscreen") : t("fullscreen")}
-          className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 text-[var(--muted)] shadow-sm backdrop-blur-sm hover:text-[var(--foreground)]"
-        >
-          {fullscreen ? (
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
-            </svg>
-          ) : (
-            <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
-              <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-            </svg>
-          )}
-        </button>
-      </div>
+      {showFloatingChrome ? (
+        <div className="pointer-events-none absolute right-2 top-0 z-10 p-2 sm:p-2.5">
+          <button
+            type="button"
+            onClick={onToggleFullscreen}
+            aria-label={fullscreen ? t("exitFullscreen") : t("fullscreen")}
+            title={fullscreen ? t("exitFullscreen") : t("fullscreen")}
+            className="pointer-events-auto flex h-8 w-8 items-center justify-center rounded-lg border border-[var(--border)]/80 bg-[var(--panel)]/90 text-[var(--muted)] shadow-sm backdrop-blur-sm hover:text-[var(--foreground)]"
+          >
+            {fullscreen ? (
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+              </svg>
+            ) : (
+              <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden>
+                <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+              </svg>
+            )}
+          </button>
+        </div>
+      ) : null}
 
       {/* Floating indicators — hide when parent chart toolbar already exposes them */}
       {showFloatingIndicators && onFlagToggle ? (

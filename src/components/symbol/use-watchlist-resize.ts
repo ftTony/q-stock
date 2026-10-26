@@ -30,20 +30,21 @@ function readWidth(): number {
 }
 
 function readOpen(): boolean {
-  if (typeof window === "undefined") return true;
+  if (typeof window === "undefined") return false;
   try {
     const raw = localStorage.getItem(OPEN_KEY);
-    if (raw === null) return true;
+    // First visit: closed — skip watchlist quote poll on critical path.
+    if (raw === null) return false;
     return raw !== "0";
   } catch {
-    return true;
+    return false;
   }
 }
 
-/** Left watchlist width + open state (default open). */
+/** Left watchlist width + open state (default closed for first visit). */
 export function useWatchlistResize() {
   const [width, setWidth] = useState(WATCH_DEFAULT);
-  const [open, setOpenState] = useState(true);
+  const [open, setOpenState] = useState(false);
   const [dragging, setDragging] = useState(false);
   const widthRef = useRef(width);
   widthRef.current = width;

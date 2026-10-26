@@ -31,6 +31,12 @@ const PROVIDER_I18N: Record<ProviderId, string> = {
 
 const STORAGE_KEY = "qstock.dataSourceBadgePos.v1";
 const EDGE = 8;
+/** Matches main shell sticky header `h-10`. */
+const TOPBAR_H = 40;
+/** Matches mobile bottom tab bar approx height. */
+const MOBILE_TAB_H = 68;
+/** Matches `SIDEBAR_WIDTH_COLLAPSED` (icon rail). */
+const SIDEBAR_W = 56;
 
 type Pos = { left: number; top: number };
 
@@ -54,13 +60,32 @@ function readStoredPos(): Pos | null {
   return null;
 }
 
-function clampPos(left: number, top: number, w: number, h: number): Pos {
-  const maxL = Math.max(EDGE, window.innerWidth - w - EDGE);
-  const maxT = Math.max(EDGE, window.innerHeight - h - EDGE);
+function chromeInsets() {
+  const lg = window.matchMedia("(min-width: 1024px)").matches;
   return {
-    left: Math.min(maxL, Math.max(EDGE, Math.round(left))),
-    top: Math.min(maxT, Math.max(EDGE, Math.round(top))),
+    top: TOPBAR_H + EDGE,
+    right: EDGE,
+    bottom: lg ? EDGE : MOBILE_TAB_H + EDGE,
+    left: lg ? SIDEBAR_W + EDGE : EDGE,
   };
+}
+
+function clampPos(left: number, top: number, w: number, h: number): Pos {
+  const inset = chromeInsets();
+  const maxL = Math.max(inset.left, window.innerWidth - w - inset.right);
+  const maxT = Math.max(inset.top, window.innerHeight - h - inset.bottom);
+  return {
+    left: Math.min(maxL, Math.max(inset.left, Math.round(left))),
+    top: Math.min(maxT, Math.max(inset.top, Math.round(top))),
+  };
+}
+
+function persistPos(next: Pos) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {
+    /* ignore */
+  }
 }
 
 /**
@@ -92,11 +117,29 @@ export function DataSourceBadge() {
         );
   }, [health.data]);
 
+  // Restore + clamp away from sticky topbar / sidebar / mobile tabs.
+  // Re-run when providers appear so we can measure the mounted badge.
   useEffect(() => {
-    setPos(readStoredPos());
-  }, []);
+    if (!chain.length) return;
+    const stored = posRef.current ?? readStoredPos();
+    if (!stored) return;
+    const apply = () => {
+      const el = rootRef.current;
+      if (!el) {
+        setPos(stored);
+        return;
+      }
+      const { width, height } = el.getBoundingClientRect();
+      const next = clampPos(stored.left, stored.top, width, height);
+      setPos(next);
+      if (next.left !== stored.left || next.top !== stored.top) {
+        persistPos(next);
+      }
+    };
+    requestAnimationFrame(apply);
+  }, [chain.length]);
 
-  // Keep stored position inside the viewport on resize.
+  // Keep stored position clear of chrome on resize.
   useEffect(() => {
     const onResize = () => {
       const current = posRef.current;
@@ -106,11 +149,7 @@ export function DataSourceBadge() {
       const next = clampPos(current.left, current.top, width, height);
       if (next.left === current.left && next.top === current.top) return;
       setPos(next);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        /* ignore */
-      }
+      persistPos(next);
     };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
@@ -163,11 +202,7 @@ export function DataSourceBadge() {
         rect.height,
       );
       setPos(next);
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        /* ignore */
-      }
+      persistPos(next);
       setDragging(false);
       document.body.style.cursor = prevCursor;
       document.body.style.userSelect = prevUserSelect;

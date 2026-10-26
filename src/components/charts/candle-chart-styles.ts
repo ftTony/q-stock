@@ -43,7 +43,13 @@ export function candleTypeFromResolution(
 export function buildChartStyles(
   labels: TipLabels,
   resolution = "D",
-  opts?: { liveSession?: boolean; /** Hide axis line that sits on the panel split. */ flushEdge?: boolean },
+  opts?: {
+    liveSession?: boolean;
+    /** Hide axis line that sits on the panel split. */
+    flushEdge?: boolean;
+    /** Hide OHLC tip (e.g. while exporting a PNG). */
+    hideCandleTooltip?: boolean;
+  },
 ) {
   const c = readThemeColors();
   const flushEdge = Boolean(opts?.flushEdge);
@@ -118,7 +124,7 @@ export function buildChartStyles(
         },
       },
       tooltip: {
-        showRule: "always",
+        showRule: opts?.hideCandleTooltip ? "none" : "always",
         showType: "rect",
         offsetLeft: tipOffsetLeft,
         offsetTop: tipOffsetTop,

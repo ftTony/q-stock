@@ -26,9 +26,9 @@ export function SymbolChipsPanel({
     setLoading(true);
     void (async () => {
       try {
-        // Prefer session 1m; fall back to daily.
+        // Prefer daily (often warm from main chart); fall back to session 1m.
         let bars: OhlcvBar[] = [];
-        for (const resolution of ["T", "D"] as const) {
+        for (const resolution of ["D", "T"] as const) {
           const res = await fetch(
             `/api/candles?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&resolution=${resolution}&indicators=0`,
           );

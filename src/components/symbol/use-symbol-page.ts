@@ -81,13 +81,22 @@ export function useSymbolPage(
 
   const onWsMessage = useCallback(
     (msg: ServerMessage) => {
+      const mergeQuote = (incoming: Quote) => {
+        qc.setQueryData(
+          quoteKey,
+          (prev: { quote?: Quote | null } | undefined) => {
+            const name = incoming.name?.trim() || prev?.quote?.name;
+            return { quote: name ? { ...incoming, name } : incoming };
+          },
+        );
+      };
       if (msg.op === "quote") {
         if (
           msg.quote.symbol.toUpperCase() === symbol.toUpperCase() &&
           msg.quote.assetType === assetType &&
           msg.quote.price > 0
         ) {
-          qc.setQueryData(quoteKey, { quote: msg.quote });
+          mergeQuote(msg.quote);
         }
         return;
       }
@@ -98,7 +107,7 @@ export function useSymbolPage(
             q.assetType === assetType &&
             q.price > 0,
         );
-        if (hit) qc.setQueryData(quoteKey, { quote: hit });
+        if (hit) mergeQuote(hit);
       }
     },
     [symbol, assetType, qc, quoteKey],
@@ -116,7 +125,9 @@ export function useSymbolPage(
     refetchInterval: (query) => {
       const q = query.state.data?.quote;
       const hasPrice = q != null && q.price > 0;
-      if (!hasPrice || !wsPush || wsDegraded) return 3_000;
+      // No quote yet: mild poll. Otherwise trust quotePollIntervalMs
+      // (5s degraded / 60s when push is live) — avoid a 3s storm.
+      if (!hasPrice) return 5_000;
       return quotePollIntervalMs({
         enabled: wsEnabled,
         connected: wsConnected,

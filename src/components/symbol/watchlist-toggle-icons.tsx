@@ -48,6 +48,54 @@ export function IconSettingsGear({ className }: { className?: string }) {
 /** @deprecated Use IconSettingsGear */
 export const IconWatchlistManage = IconSettingsGear;
 
+/** Collapse right quote/plan rail: square + arrow right. */
+export function IconRailCollapse({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect
+        x="4.5"
+        y="4.5"
+        width="15"
+        height="15"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth={SW}
+      />
+      <path
+        d="M10 8.5l3.5 3.5L10 15.5M13.5 12H8"
+        stroke="currentColor"
+        strokeWidth={SW}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/** Expand right rail from the side dock. */
+export function IconRailExpand({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
+      <rect
+        x="4.5"
+        y="4.5"
+        width="15"
+        height="15"
+        rx="2"
+        stroke="currentColor"
+        strokeWidth={SW}
+      />
+      <path
+        d="M14 8.5l-3.5 3.5L14 15.5M10.5 12H16"
+        stroke="currentColor"
+        strokeWidth={SW}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 /** Collapsed → expand: list + heart. */
 export function IconWatchlistExpand({ className }: { className?: string }) {
   return (
