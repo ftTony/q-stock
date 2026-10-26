@@ -29,6 +29,7 @@
     "@ai-sdk/openai": "^3.0.119",
     "@auth/prisma-adapter": "^2.11.3",
     "@prisma/client": "^6.19.3",
+    "@tanstack/react-query": "^5.104.5",
     "ai": "^7.0.111",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.4.0",
@@ -44,7 +45,8 @@
     "resend": "^6.28.0",
     "tsx": "^4.23.13",
     "ws": "^8.22.0",
-    "zod": "^4.6.5"
+    "zod": "^4.6.5",
+    "zustand": "^5.0.16"
   },
   "optionalDependencies": {
     "longbridge-linux-arm64-gnu": "5.1.0",

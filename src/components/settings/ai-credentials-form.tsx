@@ -9,16 +9,24 @@ import {
   presetModelsForVendor,
   type AiCredsStatus,
   type AiVendor,
-  type ServiceCredsStatus,
 } from "@/lib/user/service-creds-types";
+import {
+  useDeleteServiceCredentials,
+  useSaveServiceCredentials,
+  useServiceCredentials,
+} from "@/hooks/query/use-credentials";
 
 const CUSTOM = "__custom__";
 
 export function AiCredentialsForm() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const [status, setStatus] = useState<AiCredsStatus | null>(null);
-  const [loading, setLoading] = useState(true);
+  const credsQuery = useServiceCredentials();
+  const saveMut = useSaveServiceCredentials();
+  const deleteMut = useDeleteServiceCredentials();
+  const status: AiCredsStatus | null = credsQuery.data?.ai ?? null;
+  const loading = credsQuery.isLoading;
+
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<"ok" | "error">("ok");
@@ -31,41 +39,22 @@ export function AiCredentialsForm() {
   const [modelCustom, setModelCustom] = useState("");
   const [baseUrl, setBaseUrl] = useState("");
 
-  async function refresh() {
-    const res = await fetch("/api/user/service-credentials");
-    if (!res.ok) return;
-    const data = (await res.json()) as ServiceCredsStatus;
-    setStatus(data.ai);
-    if (data.ai.configured) {
-      if (data.ai.vendor) setVendor(data.ai.vendor);
-      if (data.ai.baseUrl) setBaseUrl(data.ai.baseUrl);
-      if (data.ai.model && data.ai.vendor) {
-        const presets = presetModelsForVendor(data.ai.vendor);
-        if ((presets as readonly string[]).includes(data.ai.model)) {
-          setModelPick(data.ai.model);
-          setModelCustom("");
-        } else {
-          setModelPick(CUSTOM);
-          setModelCustom(data.ai.model);
-        }
+  useEffect(() => {
+    const ai = credsQuery.data?.ai;
+    if (!ai?.configured) return;
+    if (ai.vendor) setVendor(ai.vendor);
+    if (ai.baseUrl) setBaseUrl(ai.baseUrl);
+    if (ai.model && ai.vendor) {
+      const presets = presetModelsForVendor(ai.vendor);
+      if ((presets as readonly string[]).includes(ai.model)) {
+        setModelPick(ai.model);
+        setModelCustom("");
+      } else {
+        setModelPick(CUSTOM);
+        setModelCustom(ai.model);
       }
     }
-    return data.ai;
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        await refresh();
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  }, [credsQuery.data?.ai]);
 
   useEffect(() => {
     if (!message) return;
@@ -101,33 +90,20 @@ export function AiCredentialsForm() {
     const model =
       modelPick === CUSTOM ? modelCustom.trim() : modelPick.trim();
     try {
-      const res = await fetch("/api/user/service-credentials", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ai: {
-            vendor,
-            apiKey: apiKey.trim() || undefined,
-            model,
-            baseUrl: showBaseUrl ? baseUrl.trim() || undefined : undefined,
-          },
-        }),
+      await saveMut.mutateAsync({
+        ai: {
+          vendor,
+          apiKey: apiKey.trim() || undefined,
+          model,
+          baseUrl: showBaseUrl ? baseUrl.trim() || undefined : undefined,
+        },
       });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setMessageKind("error");
-        setMessage(
-          typeof data.error === "string" ? data.error : t("aiSaveError"),
-        );
-        return;
-      }
-      setStatus((data as ServiceCredsStatus).ai);
       setApiKey("");
       setMessageKind("ok");
       setMessage(t("aiSaved"));
-    } catch {
+    } catch (err) {
       setMessageKind("error");
-      setMessage(t("aiSaveError"));
+      setMessage(err instanceof Error ? err.message : t("aiSaveError"));
     } finally {
       setSaving(false);
     }
@@ -137,16 +113,7 @@ export function AiCredentialsForm() {
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/user/service-credentials?provider=ai", {
-        method: "DELETE",
-      });
-      if (!res.ok) {
-        setMessageKind("error");
-        setMessage(t("aiSaveError"));
-        return;
-      }
-      const data = (await res.json()) as ServiceCredsStatus;
-      setStatus(data.ai);
+      await deleteMut.mutateAsync("ai");
       setApiKey("");
       setMessageKind("ok");
       setMessage(t("aiCleared"));

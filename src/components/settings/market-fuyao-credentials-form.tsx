@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
@@ -8,53 +9,46 @@ import {
   MARKET_VENDORS_CHANGED,
   type MarketCredsStatus,
 } from "@/lib/market/creds-status-client";
+import {
+  useDeleteMarketCredentials,
+  useMarketCredentials,
+  useSaveMarketCredentials,
+} from "@/hooks/query/use-credentials";
+import { queryKeys } from "@/lib/query/keys";
 
 type Status = MarketCredsStatus;
 
 export function MarketFuyaoCredentialsForm() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const [status, setStatus] = useState<Status | null>(null);
-  const [loading, setLoading] = useState(true);
+  const qc = useQueryClient();
+  const { data: statusData, isLoading: loading, refetch } =
+    useMarketCredentials();
+  const saveMut = useSaveMarketCredentials();
+  const deleteMut = useDeleteMarketCredentials();
+  const status = statusData ?? null;
+
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<"ok" | "error">("ok");
   const [apiKey, setApiKey] = useState("");
 
-  async function refresh() {
-    const res = await fetch("/api/user/market-credentials");
-    if (!res.ok) return;
-    setStatus((await res.json()) as Status);
-  }
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        await refresh();
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   useEffect(() => {
     function onVendorsChanged(ev: Event) {
       const detail = (ev as CustomEvent<MarketCredsStatus>).detail;
       if (detail) {
-        setStatus((prev) => (prev ? { ...prev, ...detail } : detail));
+        qc.setQueryData<Status>(queryKeys.credentials.market, (prev) =>
+          prev ? { ...prev, ...detail } : detail,
+        );
       } else {
-        void refresh();
+        void refetch();
       }
     }
     window.addEventListener(MARKET_VENDORS_CHANGED, onVendorsChanged);
     return () => {
       window.removeEventListener(MARKET_VENDORS_CHANGED, onVendorsChanged);
     };
-  }, []);
+  }, [qc, refetch]);
 
   useEffect(() => {
     if (!message) return;
@@ -67,26 +61,13 @@ export function MarketFuyaoCredentialsForm() {
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/user/market-credentials", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fuyao: { apiKey: apiKey.trim() } }),
-      });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        setMessageKind("error");
-        setMessage(data?.error || t("credsSaveError"));
-        return;
-      }
+      await saveMut.mutateAsync({ fuyao: { apiKey: apiKey.trim() } });
       setApiKey("");
-      await refresh();
       setMessageKind("ok");
       setMessage(t("credsSaved"));
-    } catch {
+    } catch (err) {
       setMessageKind("error");
-      setMessage(t("credsSaveError"));
+      setMessage(err instanceof Error ? err.message : t("credsSaveError"));
     } finally {
       setSaving(false);
     }
@@ -94,17 +75,14 @@ export function MarketFuyaoCredentialsForm() {
 
   async function onClear() {
     setMessage(null);
-    const res = await fetch("/api/user/market-credentials?provider=fuyao", {
-      method: "DELETE",
-    });
-    if (!res.ok) {
+    try {
+      await deleteMut.mutateAsync("fuyao");
+      setMessageKind("ok");
+      setMessage(t("credsCleared"));
+    } catch {
       setMessageKind("error");
       setMessage(t("credsSaveError"));
-      return;
     }
-    await refresh();
-    setMessageKind("ok");
-    setMessage(t("credsCleared"));
   }
 
   if (loading) {

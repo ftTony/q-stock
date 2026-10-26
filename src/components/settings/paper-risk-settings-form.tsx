@@ -1,9 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { SettingsHint } from "@/components/settings/settings-hint";
+import {
+  usePaperRiskSettings,
+  useSavePaperRiskSettings,
+} from "@/hooks/query/use-trading";
 import { DEFAULT_RISK_SETTINGS } from "@/lib/trading/risk-math";
 import type { PaperRiskSettingsDto } from "@/lib/trading/paper-risk-settings";
 
@@ -31,7 +36,9 @@ function Row({
           <div className="text-[13px] font-medium tracking-[-0.08px]">
             {label}
           </div>
-          <p className="aw-caption mt-0.5">{hint}</p>
+          <p className="mt-0.5 text-[12px] leading-relaxed text-[var(--muted)]">
+            {hint}
+          </p>
         </div>
         <div className="flex shrink-0 items-center gap-2.5">
           <input
@@ -61,48 +68,40 @@ function Row({
   );
 }
 
+type RiskPayload = {
+  settings?: PaperRiskSettingsDto;
+  dayPnlPct?: number | null;
+  circuitBroken?: boolean;
+};
+
 export function PaperRiskSettingsForm() {
   const t = useTranslations("paperRisk");
   const tCommon = useTranslations("common");
+  const riskQuery = usePaperRiskSettings();
+  const saveMut = useSavePaperRiskSettings();
+  const remote = riskQuery.data as RiskPayload | undefined;
   const [settings, setSettings] = useState<PaperRiskSettingsDto | null>(null);
-  const [dayPnlPct, setDayPnlPct] = useState<number | null>(null);
-  const [circuitBroken, setCircuitBroken] = useState(false);
-  const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
 
-  const load = useCallback(async () => {
-    const res = await fetch("/api/trading/risk-settings");
-    if (!res.ok) return;
-    const data = await res.json();
-    setSettings(data.settings);
-    setDayPnlPct(data.dayPnlPct ?? null);
-    setCircuitBroken(Boolean(data.circuitBroken));
-  }, []);
-
   useEffect(() => {
-    void load();
-  }, [load]);
+    if (remote?.settings) setSettings(remote.settings);
+  }, [remote?.settings]);
+
+  const dayPnlPct = remote?.dayPnlPct ?? null;
+  const circuitBroken = Boolean(remote?.circuitBroken);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
     if (!settings) return;
-    setBusy(true);
     setMsg(null);
     try {
-      const res = await fetch("/api/trading/risk-settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(settings),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setMsg(data.error || t("saveFailed"));
-        return;
-      }
-      setSettings(data.settings);
+      const data = (await saveMut.mutateAsync(settings)) as RiskPayload & {
+        error?: string;
+      };
+      if (data.settings) setSettings(data.settings);
       setMsg(t("saved"));
-    } finally {
-      setBusy(false);
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : t("saveFailed"));
     }
   }
 
@@ -125,7 +124,7 @@ export function PaperRiskSettingsForm() {
         <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
           {t("title")}
         </h2>
-        <p className="aw-caption mt-1">{t("subtitle")}</p>
+        <SettingsHint className="mt-2">{t("subtitle")}</SettingsHint>
       </div>
 
       <form onSubmit={(e) => void save(e)}>
@@ -168,7 +167,9 @@ export function PaperRiskSettingsForm() {
             <div className="text-[13px] font-medium tracking-[-0.08px]">
               {t("softOnly")}
             </div>
-            <p className="aw-caption mt-0.5">{t("softOnlyHint")}</p>
+            <p className="mt-0.5 text-[12px] leading-relaxed text-[var(--muted)]">
+              {t("softOnlyHint")}
+            </p>
           </div>
           <button
             type="button"
@@ -207,7 +208,7 @@ export function PaperRiskSettingsForm() {
 
         <div className="flex flex-wrap items-center gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-3">
           <SubmitButton
-            loading={busy}
+            loading={saveMut.isPending}
             loadingLabel={tCommon("loading")}
             className="qt-btn qt-btn-primary h-8 px-3 text-[12px]"
           >
@@ -232,7 +233,7 @@ export function PaperRiskSettingsForm() {
         </div>
       </form>
 
-      <p className="aw-caption border-t border-[var(--aw-hairline,var(--border))] pt-3">
+      <p className="border-t border-[var(--aw-hairline,var(--border))] pt-3 text-[12px] leading-relaxed text-[var(--muted)]">
         {t("disclaimer")}
       </p>
     </section>

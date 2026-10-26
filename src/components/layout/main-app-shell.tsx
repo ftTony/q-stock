@@ -35,11 +35,11 @@ function IconStar({ className = "h-4 w-4" }: { className?: string }) {
   );
 }
 
-function IconBell({ className = "h-4 w-4" }: { className?: string }) {
+function IconLab({ className = "h-4 w-4" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M6 9a6 6 0 1 1 12 0c0 7 3 7 3 7H3s3 0 3-7" />
-      <path d="M10 19a2 2 0 0 0 4 0" />
+      <path d="M9 3v7.2L4.8 18.5A1.8 1.8 0 0 0 6.4 21h11.2a1.8 1.8 0 0 0 1.6-2.5L15 10.2V3" />
+      <path d="M8.5 3h7" strokeLinecap="round" />
     </svg>
   );
 }
@@ -68,10 +68,10 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
 
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isWatchlist = pathname.startsWith("/watchlist");
-  const isAlerts = pathname.startsWith("/alerts");
   const isReview = pathname.startsWith("/review");
   const isPortfolio = pathname.startsWith("/portfolio");
-  const isAccountGatePage = isWatchlist || isAlerts || isReview;
+  const isStrategiesNav = pathname.startsWith("/strategies");
+  const isAccountGatePage = isWatchlist || isReview;
   // Session status often differs SSR ("loading") vs client ("authenticated").
   // Keep the pre-mount layout identical to SSR, then tighten after mount.
   const authed = mounted && sessionStatus === "authenticated";
@@ -184,18 +184,18 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
               {t("watchlist")}
             </Link>
             <Link
-              href="/alerts"
-              className={`flex flex-col items-center gap-1 rounded-lg py-2 ${isAlerts ? "text-[var(--brand-text)]" : "text-[var(--muted)]"}`}
-            >
-              <IconBell />
-              {t("alerts")}
-            </Link>
-            <Link
               href="/portfolio"
               className={`flex flex-col items-center gap-1 rounded-lg py-2 ${isPortfolio ? "text-[var(--brand-text)]" : "text-[var(--muted)]"}`}
             >
               <IconBag />
               {t("portfolio")}
+            </Link>
+            <Link
+              href="/strategies"
+              className={`flex flex-col items-center gap-1 rounded-lg py-2 ${isStrategiesNav ? "text-[var(--brand-text)]" : "text-[var(--muted)]"}`}
+            >
+              <IconLab />
+              {t("strategies")}
             </Link>
           </div>
         </nav>

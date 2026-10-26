@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
@@ -9,6 +9,19 @@ import type { Quote } from "@/lib/types";
 import { PortfolioPaperSection } from "@/components/portfolio/portfolio-paper-section";
 import { PortfolioHoldingsTable } from "@/components/portfolio/portfolio-holdings-table";
 import { PortfolioAside } from "@/components/portfolio/portfolio-aside";
+import { useAlerts } from "@/hooks/query/use-alerts";
+import { useMarketNews, useMarketSentiment } from "@/hooks/query/use-market";
+import {
+  useAddWatchlistItem,
+  useWatchlist,
+} from "@/hooks/query/use-watchlist";
+import {
+  useCancelOrder,
+  useResetPaperAccount,
+  useTradingAccount,
+  useTradingOrders,
+  useTradingPositions,
+} from "@/hooks/query/use-trading";
 import type {
   MarketSentiment,
   PaperOrder,
@@ -24,80 +37,59 @@ export default function PortfolioPage() {
   const tTrade = useTranslations("trading");
   const { data: session, status } = useSession();
 
-  const [rows, setRows] = useState<PortfolioRow[]>([]);
-  const [alertActive, setAlertActive] = useState(0);
-  const [alertTriggered, setAlertTriggered] = useState(0);
-  const [news, setNews] = useState<PortfolioNewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [seeding, setSeeding] = useState(false);
-  const [cash, setCash] = useState(0);
-  const [positions, setPositions] = useState<PaperPosition[]>([]);
-  const [pendingOrders, setPendingOrders] = useState<PaperOrder[]>([]);
-  const [fills, setFills] = useState<PaperOrder[]>([]);
   const [tradeMsg, setTradeMsg] = useState<string | null>(null);
-  const [resetting, setResetting] = useState(false);
-  const [sentiment, setSentiment] = useState<MarketSentiment | null>(null);
+  const signedIn = Boolean(session?.user);
+  const poll = signedIn ? 45_000 : false;
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const [w, a, s, n, acc, pos, pend, filled] = await Promise.all([
-        fetch("/api/watchlist?quotes=1"),
-        fetch("/api/alerts"),
-        fetch("/api/sentiment?assetType=stock"),
-        fetch("/api/news?assetType=stock"),
-        fetch("/api/trading/account"),
-        fetch("/api/trading/positions?quotes=1"),
-        fetch("/api/trading/orders?status=pending"),
-        fetch("/api/trading/orders?status=filled"),
-      ]);
-      if (w.ok) {
-        const wj = await w.json();
-        setRows(wj.items ?? []);
-      }
-      if (a.ok) {
-        const aj = await a.json();
-        const alerts = aj.alerts ?? [];
-        setAlertActive(alerts.filter((x: { status: string }) => x.status === "active").length);
-        setAlertTriggered(
-          alerts.filter((x: { status: string }) => x.status === "triggered").length,
-        );
-      }
-      if (s.ok) {
-        const sj = await s.json();
-        setSentiment(sj.market ?? null);
-      }
-      if (n.ok) {
-        const nj = await n.json();
-        setNews((nj.news ?? []).slice(0, 3));
-      }
-      if (acc.ok) {
-        const aj = await acc.json();
-        setCash(aj.account?.cashBalance ?? 0);
-      }
-      if (pos.ok) {
-        const pj = await pos.json();
-        setPositions(pj.positions ?? []);
-      }
-      if (pend.ok) {
-        const oj = await pend.json();
-        setPendingOrders(oj.orders ?? []);
-      }
-      if (filled.ok) {
-        const fj = await filled.json();
-        setFills((fj.orders ?? []).slice(0, 10));
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const watchlist = useWatchlist({
+    quotes: true,
+    enabled: signedIn,
+    refetchInterval: poll,
+  });
+  const alertsQuery = useAlerts({ enabled: signedIn, refetchInterval: poll });
+  const sentimentQuery = useMarketSentiment("stock", signedIn);
+  const newsQuery = useMarketNews("stock", signedIn);
+  const accountQuery = useTradingAccount(signedIn);
+  const positionsQuery = useTradingPositions({
+    quotes: true,
+    enabled: signedIn,
+  });
+  const pendingQuery = useTradingOrders({
+    status: "pending",
+    enabled: signedIn,
+  });
+  const fillsQuery = useTradingOrders({ status: "filled", enabled: signedIn });
+  const addItem = useAddWatchlistItem();
+  const cancelOrderMut = useCancelOrder();
+  const resetAccountMut = useResetPaperAccount();
 
-  useEffect(() => {
-    if (!session?.user) return;
-    void load();
-    const timer = setInterval(() => void load(), 45000);
-    return () => clearInterval(timer);
-  }, [session, load]);
+  const rows = (watchlist.data?.items ?? []) as PortfolioRow[];
+  const alerts = alertsQuery.data?.alerts ?? [];
+  const alertActive = alerts.filter((x) => x.status === "active").length;
+  const alertTriggered = alerts.filter((x) => x.status === "triggered").length;
+  const sentiment =
+    ((sentimentQuery.data as { market?: MarketSentiment } | undefined)
+      ?.market ?? null);
+  const news = (
+    ((newsQuery.data as { news?: PortfolioNewsItem[] } | undefined)?.news ??
+      []) as PortfolioNewsItem[]
+  ).slice(0, 3);
+  const cash =
+    (accountQuery.data as { account?: { cashBalance?: number } } | undefined)
+      ?.account?.cashBalance ?? 0;
+  const positions =
+    ((positionsQuery.data as { positions?: PaperPosition[] } | undefined)
+      ?.positions ?? []) as PaperPosition[];
+  const pendingOrders =
+    ((pendingQuery.data as { orders?: PaperOrder[] } | undefined)?.orders ??
+      []) as PaperOrder[];
+  const fills = (
+    ((fillsQuery.data as { orders?: PaperOrder[] } | undefined)?.orders ??
+      []) as PaperOrder[]
+  ).slice(0, 10);
+  const loading = watchlist.isLoading;
+  const seeding = addItem.isPending;
+  const resetting = resetAccountMut.isPending;
 
   const quotes = useMemo(
     () => rows.map((r) => r.quote).filter((q): q is Quote => Boolean(q)),
@@ -130,46 +122,27 @@ export default function PortfolioPage() {
   const neutral = Math.max(0, 100 - bullish - bearish);
 
   async function seedPopular() {
-    setSeeding(true);
-    try {
-      const popular = ["AAPL", "MSFT", "NVDA", "TSLA", "META", "AMZN"];
-      await Promise.all(
-        popular.map((symbol) =>
-          fetch("/api/watchlist", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ symbol, assetType: "stock" }),
-          }),
-        ),
-      );
-      await load();
-    } finally {
-      setSeeding(false);
-    }
+    const popular = ["AAPL", "MSFT", "NVDA", "TSLA", "META", "AMZN"];
+    await Promise.all(
+      popular.map((symbol) =>
+        addItem.mutateAsync({ symbol, assetType: "stock" }),
+      ),
+    );
   }
 
   async function resetAccount() {
     if (!window.confirm(tTrade("resetConfirm"))) return;
-    setResetting(true);
     setTradeMsg(null);
     try {
-      const res = await fetch("/api/trading/account", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "reset" }),
-      });
-      if (res.ok) {
-        setTradeMsg(tTrade("resetDone"));
-        await load();
-      }
-    } finally {
-      setResetting(false);
+      await resetAccountMut.mutateAsync();
+      setTradeMsg(tTrade("resetDone"));
+    } catch {
+      /* ignore */
     }
   }
 
   async function cancelOrder(id: string) {
-    await fetch(`/api/trading/orders?id=${id}`, { method: "DELETE" });
-    await load();
+    await cancelOrderMut.mutateAsync(id);
   }
 
   if (status === "loading") {

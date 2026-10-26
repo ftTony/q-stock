@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { type IndicatorFlags } from "@/components/charts/candle-chart";
@@ -13,14 +14,26 @@ import {
 } from "@/components/symbol/symbol-page-tabs";
 import { symbolPageMutations } from "@/components/symbol/use-symbol-page-mutations";
 import { useSymbolTabData } from "@/components/symbol/use-symbol-tab-data";
+import { useCreateAlert } from "@/hooks/query/use-alerts";
+import {
+  useCreateComment,
+  useDeleteComment,
+} from "@/hooks/query/use-comments";
+import {
+  useAddWatchlistItem,
+  useRemoveWatchlistItem,
+  useWatchlist,
+} from "@/hooks/query/use-watchlist";
+import { useSymbolQuote } from "@/hooks/query/use-symbol-quote";
 import {
   quotePollIntervalMs,
   useQuoteChannels,
 } from "@/hooks/use-quote-socket";
+import { queryKeys } from "@/lib/query/keys";
 import type { ServerMessage } from "@/lib/market/stream/protocol";
 import type { AssetType, CandleResolution, Quote } from "@/lib/types";
 
-function quoteTimestamp(quote: Quote | null): Date | null {
+function quoteTimestamp(quote: Quote | null | undefined): Date | null {
   if (!quote?.timestamp) return null;
   const ms =
     quote.timestamp > 1e12 ? quote.timestamp : quote.timestamp * 1000;
@@ -41,8 +54,8 @@ export function useSymbolPage(
   const tAlerts = useTranslations("alerts");
   const tEarnings = useTranslations("earnings");
   const { data: session } = useSession();
+  const qc = useQueryClient();
 
-  const [quote, setQuote] = useState<Quote | null>(initialQuote);
   const [resolution, setResolution] = useState<CandleResolution>("D");
   const [flags, setFlags] = useState<IndicatorFlags>({
     ma: true,
@@ -62,36 +75,19 @@ export function useSymbolPage(
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
   const [alertBusy, setAlertBusy] = useState(false);
   const [commentBusy, setCommentBusy] = useState(false);
-  const [inWatchlist, setInWatchlist] = useState(false);
   const [watchBusy, setWatchBusy] = useState(false);
-  const [updatedAt, setUpdatedAt] = useState<Date | null>(() =>
-    quoteTimestamp(initialQuote),
-  );
 
-  const applyQuote = useCallback((q: Quote | null | undefined) => {
-    if (!q || !(q.price > 0)) return;
-    setQuote(q);
-    setUpdatedAt(quoteTimestamp(q) ?? new Date());
-    setAlertPrice((prev) => {
-      if (prev) return prev;
-      return String(Number(q.price.toFixed(4)));
-    });
-  }, []);
-
-  const loadQuote = useCallback(async () => {
-    const res = await fetch(`/api/quotes?symbol=${symbol}&assetType=${assetType}`);
-    const data = await res.json();
-    if (res.ok) applyQuote(data.quote);
-  }, [symbol, assetType, applyQuote]);
+  const quoteKey = queryKeys.symbol.quote(assetType, symbol);
 
   const onWsMessage = useCallback(
     (msg: ServerMessage) => {
       if (msg.op === "quote") {
         if (
           msg.quote.symbol.toUpperCase() === symbol.toUpperCase() &&
-          msg.quote.assetType === assetType
+          msg.quote.assetType === assetType &&
+          msg.quote.price > 0
         ) {
-          applyQuote(msg.quote);
+          qc.setQueryData(quoteKey, { quote: msg.quote });
         }
         return;
       }
@@ -99,12 +95,13 @@ export function useSymbolPage(
         const hit = msg.quotes.find(
           (q) =>
             q.symbol.toUpperCase() === symbol.toUpperCase() &&
-            q.assetType === assetType,
+            q.assetType === assetType &&
+            q.price > 0,
         );
-        applyQuote(hit);
+        if (hit) qc.setQueryData(quoteKey, { quote: hit });
       }
     },
-    [symbol, assetType, applyQuote],
+    [symbol, assetType, qc, quoteKey],
   );
 
   const {
@@ -114,9 +111,42 @@ export function useSymbolPage(
     push: wsPush,
   } = useQuoteChannels([{ type: "symbol", assetType, symbol }], onWsMessage);
 
+  const quoteQuery = useSymbolQuote(symbol, assetType, {
+    initialQuote,
+    refetchInterval: (query) => {
+      const q = query.state.data?.quote;
+      const hasPrice = q != null && q.price > 0;
+      if (!hasPrice || !wsPush || wsDegraded) return 3_000;
+      return quotePollIntervalMs({
+        enabled: wsEnabled,
+        connected: wsConnected,
+        degraded: wsDegraded,
+        push: wsPush,
+      });
+    },
+  });
+
+  const quote = quoteQuery.data?.quote ?? null;
+  const updatedAt =
+    quoteTimestamp(quote) ??
+    (quoteQuery.dataUpdatedAt ? new Date(quoteQuery.dataUpdatedAt) : null);
+
+  const watchlist = useWatchlist({ enabled: Boolean(session?.user) });
+  const inWatchlist = useMemo(
+    () =>
+      (watchlist.data?.items ?? []).some(
+        (i) => i.symbol === symbol && i.assetType === assetType,
+      ),
+    [watchlist.data, symbol, assetType],
+  );
+
+  const createAlertMut = useCreateAlert();
+  const addWatch = useAddWatchlistItem();
+  const removeWatch = useRemoveWatchlistItem();
+  const createCommentMut = useCreateComment();
+  const deleteCommentMut = useDeleteComment();
+
   useEffect(() => {
-    setQuote(initialQuote);
-    setUpdatedAt(quoteTimestamp(initialQuote));
     setAlertPrice(
       initialQuote?.price ? String(Number(initialQuote.price.toFixed(4))) : "",
     );
@@ -124,53 +154,13 @@ export function useSymbolPage(
     setTab("chart");
   }, [symbol, assetType, initialQuote]);
 
-  const hasQuotePrice = quote != null && quote.price > 0;
-
   useEffect(() => {
-    // SSR already painted a quote — skip the duplicate REST kickoff; poll/WS refresh.
-    const ssrOk = initialQuote != null && initialQuote.price > 0;
-    if (!ssrOk) void loadQuote();
-    const ms =
-      !hasQuotePrice || !wsPush || wsDegraded
-        ? 3_000
-        : quotePollIntervalMs({
-            enabled: wsEnabled,
-            connected: wsConnected,
-            degraded: wsDegraded,
-            push: wsPush,
-          });
-    const timer = setInterval(() => void loadQuote(), ms);
-    return () => clearInterval(timer);
-  }, [
-    loadQuote,
-    initialQuote,
-    hasQuotePrice,
-    wsEnabled,
-    wsConnected,
-    wsDegraded,
-    wsPush,
-  ]);
-
-  useEffect(() => {
-    if (!session?.user) {
-      setInWatchlist(false);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const res = await fetch("/api/watchlist");
-      if (!res.ok || cancelled) return;
-      const data = await res.json();
-      const found = (data.items ?? []).some(
-        (i: { symbol: string; assetType: string }) =>
-          i.symbol === symbol && i.assetType === assetType,
-      );
-      setInWatchlist(found);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [session, symbol, assetType]);
+    if (!quote?.price || !(quote.price > 0)) return;
+    setAlertPrice((prev) => {
+      if (prev) return prev;
+      return String(Number(quote.price.toFixed(4)));
+    });
+  }, [quote]);
 
   const tabs = useMemo(
     () => buildSymbolTabs(t, assetType, isIndex),
@@ -181,6 +171,10 @@ export function useSymbolPage(
     const next = fallbackSymbolTab(tabs, tab);
     if (next !== tab) setTab(next);
   }, [assetType, isIndex, tab, tabs]);
+
+  const loadQuote = useCallback(async () => {
+    await quoteQuery.refetch();
+  }, [quoteQuery]);
 
   const { postComment, deleteComment, createAlert, toggleWatchlist } =
     symbolPageMutations({
@@ -198,11 +192,15 @@ export function useSymbolPage(
       setAlertMsg,
       setAlertPrice,
       inWatchlist,
-      setInWatchlist,
       setWatchBusy,
       loadTab: tabData.loadTab,
       tAlerts,
       tCommon,
+      createAlertMut,
+      addWatch,
+      removeWatch,
+      createCommentMut,
+      deleteCommentMut,
     });
 
   return {

@@ -13,7 +13,8 @@ export async function GET(req: Request) {
   const url = new URL(req.url);
   const mine = url.searchParams.get("mine") === "1";
   const session = await auth();
-  const locale = await getLocale();
+  // API paths are locale-less; prefer ?locale= from the client page.
+  const locale = url.searchParams.get("locale") || (await getLocale());
 
   if (mine) {
     if (!session?.user?.id) {
@@ -75,6 +76,7 @@ export async function POST(req: Request) {
   let rules = parsed.data.rules;
   let description = parsed.data.description ?? null;
   let name = parsed.data.name ?? "My strategy";
+  const locale = (await getLocale()) || "en";
 
   if (parsed.data.fromTemplateId) {
     const tpl = await prisma.strategy.findFirst({
@@ -84,8 +86,9 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Template not found" }, { status: 404 });
     }
     rules = parseStrategyRules(tpl.rules);
-    if (!description) description = tpl.description;
-    if (!parsed.data.name) name = `${tpl.name} (copy)`;
+    const localized = serializeStrategy(tpl, locale);
+    if (!description) description = localized.description;
+    if (!parsed.data.name) name = `${localized.name} (copy)`;
   }
 
   if (!rules) {

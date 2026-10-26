@@ -43,9 +43,10 @@ export function candleTypeFromResolution(
 export function buildChartStyles(
   labels: TipLabels,
   resolution = "D",
-  opts?: { liveSession?: boolean },
+  opts?: { liveSession?: boolean; /** Hide axis line that sits on the panel split. */ flushEdge?: boolean },
 ) {
   const c = readThemeColors();
+  const flushEdge = Boolean(opts?.flushEdge);
   // Always use a dark glass tip + light text — theme CSS vars can make
   // legend titles land as near-black on a dark rect (unreadable on mobile).
   const tipBg = "rgba(12, 18, 28, 0.94)";
@@ -194,14 +195,33 @@ export function buildChartStyles(
       },
     },
     xAxis: {
-      axisLine: { color: c.border },
+      axisLine: {
+        show: !flushEdge,
+        color: c.border,
+        size: flushEdge ? 0 : 1,
+      },
       tickLine: { color: c.border },
       tickText: { color: c.muted },
     },
     yAxis: {
-      axisLine: { color: c.border },
-      tickLine: { color: c.border },
-      tickText: { color: c.muted },
+      // Right y-axis spine sits on the chart|rail split — hide it when the
+      // workbench draws its own hairline, or the seam reads as a double line.
+      axisLine: {
+        show: !flushEdge,
+        color: flushEdge ? "transparent" : c.border,
+        size: flushEdge ? 0 : 1,
+      },
+      tickLine: {
+        show: !flushEdge,
+        color: c.border,
+        length: flushEdge ? 0 : 3,
+      },
+      tickText: {
+        color: c.muted,
+        // Sit labels closer to the panel split (default marginEnd is 6).
+        marginEnd: flushEdge ? 2 : 6,
+        marginStart: flushEdge ? 2 : 4,
+      },
     },
     crosshair: {
       horizontal: {

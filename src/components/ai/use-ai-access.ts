@@ -1,10 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import type { ToastTone } from "@/components/ui/top-toast";
+import { useAiQuota } from "@/hooks/query/use-ai-quota";
 import { emitAiQuotaChanged } from "@/lib/ai/quota-events";
+import { queryKeys } from "@/lib/query/keys";
 
 type Quota = { used: number; limit: number; remaining: number };
 
@@ -12,38 +15,30 @@ type Quota = { used: number; limit: number; remaining: number };
 export function useAiAccess() {
   const { status } = useSession();
   const tAi = useTranslations("ai");
-  const [quota, setQuota] = useState<Quota | null>(null);
+  const qc = useQueryClient();
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [toastTone, setToastTone] = useState<ToastTone>("neutral");
   const [toastKey, setToastKey] = useState(0);
 
   const loggedIn = status === "authenticated";
   const sessionLoading = status === "loading";
+  const quotaQuery = useAiQuota(loggedIn);
+  const quota = (quotaQuery.data as Quota | undefined) ?? null;
 
   const refreshQuota = useCallback(async () => {
-    if (status !== "authenticated") {
-      setQuota(null);
-      return null;
-    }
-    try {
-      const res = await fetch("/api/ai/quota");
-      if (!res.ok) {
-        setQuota(null);
-        return null;
-      }
-      const data = (await res.json()) as Quota;
-      setQuota(data);
-      emitAiQuotaChanged();
-      return data;
-    } catch {
-      setQuota(null);
-      return null;
-    }
-  }, [status]);
-
-  useEffect(() => {
-    void refreshQuota();
-  }, [refreshQuota]);
+    if (status !== "authenticated") return null;
+    await qc.invalidateQueries({ queryKey: queryKeys.ai.quota });
+    const data = await qc.fetchQuery({
+      queryKey: queryKeys.ai.quota,
+      queryFn: async () => {
+        const res = await fetch("/api/ai/quota");
+        if (!res.ok) throw new Error("quota");
+        return res.json() as Promise<Quota>;
+      },
+    });
+    emitAiQuotaChanged();
+    return data;
+  }, [status, qc]);
 
   const showToast = useCallback((message: string, tone: ToastTone = "neutral") => {
     setToastTone(tone);

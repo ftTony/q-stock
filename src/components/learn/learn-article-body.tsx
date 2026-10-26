@@ -1,4 +1,5 @@
 import { LearnIndicatorIllustration } from "@/components/learn/learn-indicator-illustration";
+import { LearnStrategyWalkthrough } from "@/components/learn/learn-strategy-walkthrough";
 
 type Block =
   | { type: "lead"; text: string }
@@ -99,7 +100,9 @@ export function LearnArticleBody({
               <p className="border-l-[3px] border-[var(--brand-text)] pl-4 text-base font-medium leading-8 text-[var(--foreground)] sm:text-[17px] sm:leading-8">
                 {block.text}
               </p>
-              {illustrationSlug ? (
+              {illustrationSlug?.startsWith("strategy-") ? (
+                <LearnStrategyWalkthrough locale={locale} />
+              ) : illustrationSlug ? (
                 <LearnIndicatorIllustration
                   slug={illustrationSlug}
                   locale={locale}
@@ -111,32 +114,32 @@ export function LearnArticleBody({
 
         if (block.type === "steps") {
           return (
-            <ol key={i} className="grid gap-3">
+            <ol key={i} className="grid gap-4 sm:gap-5">
               {block.items.map((step, j) => {
                 const { label, body } = splitStepLabel(step);
                 return (
                   <li
                     key={j}
-                    className="relative overflow-hidden rounded-2xl border border-[var(--border)] p-4 sm:p-5"
+                    className="relative overflow-hidden rounded-2xl border border-[var(--border)] p-5 sm:min-h-[6.5rem] sm:p-6"
                     style={{
                       background:
                         "linear-gradient(165deg, color-mix(in srgb, var(--brand) 7%, var(--panel)), var(--panel))",
                     }}
                   >
-                    <div className="flex items-start gap-3">
+                    <div className="flex items-start gap-4">
                       <span
-                        className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl text-sm font-semibold text-white"
+                        className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-base font-semibold text-white"
                         style={{ background: "var(--brand)" }}
                       >
                         {j + 1}
                       </span>
-                      <div className="min-w-0 space-y-1.5">
+                      <div className="min-w-0 space-y-2 pt-0.5">
                         {label ? (
-                          <p className="text-sm font-semibold tracking-tight text-[var(--brand-text)]">
+                          <p className="text-[15px] font-semibold tracking-tight text-[var(--brand-text)] sm:text-base">
                             {label}
                           </p>
                         ) : null}
-                        <p className="text-sm leading-relaxed text-[var(--foreground)] sm:leading-7">
+                        <p className="text-[15px] leading-7 text-[var(--foreground)] sm:text-base sm:leading-8">
                           {body}
                         </p>
                       </div>

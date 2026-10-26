@@ -1,9 +1,13 @@
 "use client";
 
-import { use } from "react";
+import { Suspense, use } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { StrategyDetail } from "@/components/strategy/strategy-detail";
+
+function DetailBody({ id }: { id: string }) {
+  return <StrategyDetail strategyId={id} />;
+}
 
 export default function StrategyDetailPage({
   params,
@@ -25,7 +29,9 @@ export default function StrategyDetailPage({
         <span className="text-[var(--muted)]">/</span>
         <span className="text-[var(--muted)]">{t("detailTitle")}</span>
       </div>
-      <StrategyDetail strategyId={id} />
+      <Suspense fallback={<p className="text-sm text-[var(--muted)]">{t("loading")}</p>}>
+        <DetailBody id={id} />
+      </Suspense>
     </div>
   );
 }

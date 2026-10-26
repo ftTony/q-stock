@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
@@ -12,15 +13,10 @@ import {
 } from "@/components/symbol/watchlist-toggle-icons";
 import { SymbolWatchlistSettingsModal } from "@/components/symbol/symbol-watchlist-settings-modal";
 import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
+import { useWatchlist } from "@/hooks/query/use-watchlist";
+import { queryKeys } from "@/lib/query/keys";
 import { displayName } from "@/lib/market-names";
-import type { AssetType, Quote } from "@/lib/types";
-
-type Row = {
-  id: string;
-  symbol: string;
-  assetType: AssetType;
-  quote: Quote | null;
-};
+import type { AssetType } from "@/lib/types";
 
 type Props = {
   currentSymbol: string;
@@ -38,33 +34,29 @@ export function SymbolWatchlistPanel({
   const tMarket = useTranslations("market");
   const tCommon = useTranslations("common");
   const { status } = useSession();
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const qc = useQueryClient();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const closeSettings = useCallback(() => setSettingsOpen(false), []);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/watchlist?quotes=1");
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || tCommon("error"));
-      setRows(data.items ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : tCommon("error"));
-      setRows([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [tCommon]);
+  const authenticated = status === "authenticated";
+  const watchlist = useWatchlist({
+    quotes: true,
+    enabled: authenticated,
+    refetchInterval: authenticated ? 45_000 : false,
+  });
 
-  useEffect(() => {
-    if (status !== "authenticated") return;
-    void load();
-    const timer = setInterval(() => void load(), 45000);
-    return () => clearInterval(timer);
-  }, [status, load]);
+  const rows = watchlist.data?.items ?? [];
+  const loading = watchlist.isLoading;
+  const error =
+    watchlist.error instanceof Error
+      ? watchlist.error.message
+      : watchlist.error
+        ? tCommon("error")
+        : null;
+
+  const onChanged = useCallback(() => {
+    void qc.invalidateQueries({ queryKey: queryKeys.watchlist.all });
+  }, [qc]);
 
   return (
     <aside className="aw-watchlist-pane flex min-h-0 flex-col overflow-hidden bg-[var(--aw-canvas)]">
@@ -98,8 +90,8 @@ export function SymbolWatchlistPanel({
 
       <SymbolWatchlistSettingsModal
         open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        onChanged={() => void load()}
+        onClose={closeSettings}
+        onChanged={onChanged}
       />
 
       <div

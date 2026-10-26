@@ -8,10 +8,11 @@ import { serializeStrategy } from "@/lib/strategy/serialize";
 
 type Ctx = { params: Promise<{ id: string }> };
 
-export async function GET(_req: Request, ctx: Ctx) {
+export async function GET(req: Request, ctx: Ctx) {
   const { id } = await ctx.params;
   const session = await auth();
-  const locale = await getLocale();
+  const locale =
+    new URL(req.url).searchParams.get("locale") || (await getLocale());
 
   const strategy = await prisma.strategy.findUnique({ where: { id } });
   if (!strategy) {

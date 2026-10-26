@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { InlineLoading } from "@/components/ui/panel-skeleton";
+import { useInvites } from "@/hooks/query/use-invites";
 
 type InviteRow = {
   code: string;
@@ -16,36 +17,15 @@ type AiQuota = { used: number; limit: number; remaining: number };
 export function InvitePanel() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const [invites, setInvites] = useState<InviteRow[] | null>(null);
-  const [aiQuota, setAiQuota] = useState<AiQuota | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const invitesQuery = useInvites();
   const [copiedKey, setCopiedKey] = useState<string | null>(null);
 
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/user/invites");
-        if (!res.ok) {
-          if (!cancelled) setError(t("inviteLoadError"));
-          return;
-        }
-        const data = (await res.json()) as {
-          invites: InviteRow[];
-          aiQuota?: AiQuota;
-        };
-        if (!cancelled) {
-          setInvites(data.invites);
-          setAiQuota(data.aiQuota ?? null);
-        }
-      } catch {
-        if (!cancelled) setError(t("inviteLoadError"));
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [t]);
+  const payload = invitesQuery.data as
+    | { invites: InviteRow[]; aiQuota?: AiQuota }
+    | undefined;
+  const invites = invitesQuery.isSuccess ? (payload?.invites ?? []) : null;
+  const aiQuota = payload?.aiQuota ?? null;
+  const error = invitesQuery.isError ? t("inviteLoadError") : null;
 
   useEffect(() => {
     if (!copiedKey) return;
@@ -140,7 +120,7 @@ export function InvitePanel() {
                         type="button"
                         className="qt-btn qt-btn-ghost invite-action-btn"
                         onClick={() =>
-                          copyText(
+                          void copyText(
                             `${row.code}-code`,
                             shareCodeText(row.code),
                           )
@@ -154,7 +134,7 @@ export function InvitePanel() {
                         type="button"
                         className="qt-btn qt-btn-primary invite-action-btn"
                         onClick={() =>
-                          copyText(
+                          void copyText(
                             `${row.code}-link`,
                             shareLinkText(linkFor(row)),
                           )

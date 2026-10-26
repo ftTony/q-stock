@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AiLoginGate } from "@/components/ai/ai-login-gate";
 import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
@@ -8,29 +8,14 @@ import { useAiAccess } from "@/components/ai/use-ai-access";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { TopToast } from "@/components/ui/top-toast";
+import {
+  ReviewHttpError,
+  useReviewNotes,
+  useRunReview,
+  type ReviewContent,
+  type ReviewResult,
+} from "@/hooks/query/use-review-notes";
 import { formatDateTime } from "@/lib/format-number";
-
-type ReviewContent = {
-  whatWentWell: string[];
-  whatToImprove: string[];
-  emotionFlags: string[];
-  nextChecklist: string[];
-  summary: string;
-};
-
-type ReviewResult = ReviewContent & {
-  period: "day" | "week";
-  disclaimer?: string;
-  noteId?: string;
-  error?: string;
-};
-
-type NoteRow = {
-  id: string;
-  period: string;
-  content: ReviewContent;
-  createdAt: string;
-};
 
 function BulletList({
   title,
@@ -90,54 +75,36 @@ export function ReviewDesk() {
   const locale = useLocale();
   const access = useAiAccess();
   const [period, setPeriod] = useState<"day" | "week">("day");
-  const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [latest, setLatest] = useState<ReviewResult | null>(null);
-  const [notes, setNotes] = useState<NoteRow[]>([]);
-  const [loadingNotes, setLoadingNotes] = useState(true);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const loadNotes = useCallback(async () => {
-    setLoadingNotes(true);
-    try {
-      const res = await fetch("/api/ai/review");
-      if (!res.ok) return;
-      const data = (await res.json()) as { notes?: NoteRow[] };
-      setNotes(data.notes ?? []);
-    } finally {
-      setLoadingNotes(false);
-    }
-  }, []);
+  const notesQuery = useReviewNotes(access.loggedIn);
+  const runReviewMut = useRunReview();
 
-  useEffect(() => {
-    void loadNotes();
-  }, [loadNotes]);
+  const notes = notesQuery.data?.notes ?? [];
+  const loadingNotes = notesQuery.isLoading;
+  const busy = runReviewMut.isPending;
 
   async function runReview() {
     if (!access.loggedIn) return;
     if (!(await access.ensureQuota())) return;
-    setBusy(true);
     setError(null);
     setSelectedId(null);
     try {
-      const res = await fetch("/api/ai/review", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ period, locale, save: true }),
+      const data = await runReviewMut.mutateAsync({
+        period,
+        locale,
+        save: true,
       });
-      const data = (await res.json()) as ReviewResult;
-      if (!res.ok) {
-        if (access.handleAiHttpError(res.status)) return;
-        throw new Error(data.error || t("error"));
-      }
       setLatest(data);
       if (data.noteId) setSelectedId(data.noteId);
-      await loadNotes();
       void access.refreshQuota();
     } catch (err) {
+      if (err instanceof ReviewHttpError && access.handleAiHttpError(err.status)) {
+        return;
+      }
       setError(err instanceof Error ? err.message : t("error"));
-    } finally {
-      setBusy(false);
     }
   }
 

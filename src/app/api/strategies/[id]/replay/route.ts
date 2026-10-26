@@ -57,7 +57,7 @@ export async function GET(req: Request, ctx: Ctx) {
     take: 20,
   });
   return NextResponse.json({
-    replays: replays.map(serializeReplay),
+    replays: replays.map((r) => serializeReplay(r)),
     quota,
   });
 }

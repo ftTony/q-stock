@@ -1,13 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AI_QUOTA_CHANGED } from "@/lib/ai/quota-events";
+import { useAiQuota } from "@/hooks/query/use-ai-quota";
+import { queryKeys } from "@/lib/query/keys";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
-
-type Quota = { used: number; limit: number; remaining: number };
 
 /** Remaining AI uses for signed-in users. */
 export function AiQuotaBadge(props: {
@@ -17,47 +18,34 @@ export function AiQuotaBadge(props: {
   const { status } = useSession();
   const t = useTranslations("ai");
   const settingsModal = useSettingsModalOptional();
-  const [quota, setQuota] = useState<Quota | null>(null);
-
-  const load = useCallback(async () => {
-    if (status !== "authenticated") {
-      setQuota(null);
-      return;
-    }
-    try {
-      const res = await fetch("/api/ai/quota");
-      if (!res.ok) {
-        setQuota(null);
-        return;
-      }
-      setQuota((await res.json()) as Quota);
-    } catch {
-      setQuota(null);
-    }
-  }, [status]);
+  const qc = useQueryClient();
+  const authenticated = status === "authenticated";
+  const { data: quota } = useAiQuota(authenticated);
 
   useEffect(() => {
-    void load();
-  }, [load, props.refreshKey]);
+    if (props.refreshKey == null) return;
+    void qc.invalidateQueries({ queryKey: queryKeys.ai.quota });
+  }, [props.refreshKey, qc]);
 
   useEffect(() => {
     const onChange = () => {
-      void load();
+      void qc.invalidateQueries({ queryKey: queryKeys.ai.quota });
     };
     window.addEventListener(AI_QUOTA_CHANGED, onChange);
     return () => window.removeEventListener(AI_QUOTA_CHANGED, onChange);
-  }, [load]);
+  }, [qc]);
 
-  if (status !== "authenticated") return null;
-
-  if (!quota) return null;
+  if (!authenticated) return null;
+  if (
+    !quota ||
+    typeof quota.remaining !== "number" ||
+    typeof quota.limit !== "number"
+  ) {
+    return null;
+  }
 
   return (
-    <p
-      className={
-        props.className ?? "text-sm text-[var(--muted)]"
-      }
-    >
+    <p className={props.className ?? "text-sm text-[var(--muted)]"}>
       {t("quotaRemaining", {
         remaining: quota.remaining,
         limit: quota.limit,

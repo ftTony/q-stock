@@ -12,6 +12,7 @@ import {
   type AppLocale,
 } from "@/i18n/config";
 import { useMounted } from "@/hooks/use-mounted";
+import { useAlerts } from "@/hooks/query/use-alerts";
 import { getEquitySession } from "@/lib/market/session";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
@@ -105,8 +106,6 @@ export function TopBarActions({
   const pathname = usePathname();
   const router = useRouter();
   const mounted = useMounted();
-  const [alertCount, setAlertCount] = useState(0);
-  const [recent, setRecent] = useState<AlertItem[]>([]);
   const [menuOpen, setMenuOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
@@ -116,29 +115,14 @@ export function TopBarActions({
   const settingsModal = useSettingsModalOptional();
   const loginModal = useLoginModalOptional();
 
-  useEffect(() => {
-    if (!showNotifications || !session?.user) {
-      setAlertCount(0);
-      setRecent([]);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const res = await fetch("/api/alerts");
-      if (!res.ok || cancelled) return;
-      const data = await res.json();
-      const alerts = (data.alerts ?? []) as AlertItem[];
-      setAlertCount(alerts.filter((a) => a.status === "active").length);
-      setRecent(
-        [...alerts]
-          .filter((a) => a.status === "triggered" || a.status === "active")
-          .slice(0, 6),
-      );
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [session, pathname, showNotifications]);
+  const alertsQuery = useAlerts({
+    enabled: Boolean(showNotifications && session?.user),
+  });
+  const alerts = (alertsQuery.data?.alerts ?? []) as AlertItem[];
+  const alertCount = alerts.filter((a) => a.status === "active").length;
+  const recent = [...alerts]
+    .filter((a) => a.status === "triggered" || a.status === "active")
+    .slice(0, 6);
 
   useEffect(() => {
     function onDoc(e: MouseEvent) {

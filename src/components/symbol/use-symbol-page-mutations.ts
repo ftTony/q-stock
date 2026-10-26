@@ -4,6 +4,31 @@ import { type FormEvent, type Dispatch, type SetStateAction } from "react";
 import type { Session } from "next-auth";
 import type { AssetType } from "@/lib/types";
 
+type MutateWatch = {
+  mutateAsync: (vars: { symbol: string; assetType: AssetType }) => Promise<unknown>;
+};
+
+type MutateAlert = {
+  mutateAsync: (vars: {
+    symbol: string;
+    assetType: AssetType;
+    condition: "gte" | "lte";
+    triggerPrice: number;
+  }) => Promise<unknown>;
+};
+
+type MutateComment = {
+  mutateAsync: (vars: {
+    symbol: string;
+    assetType: AssetType;
+    content: string;
+  }) => Promise<unknown>;
+};
+
+type MutateDeleteComment = {
+  mutateAsync: (id: string) => Promise<unknown>;
+};
+
 type Args = {
   session: Session | null;
   symbol: string;
@@ -19,11 +44,15 @@ type Args = {
   setAlertMsg: Dispatch<SetStateAction<string | null>>;
   setAlertPrice: Dispatch<SetStateAction<string>>;
   inWatchlist: boolean;
-  setInWatchlist: Dispatch<SetStateAction<boolean>>;
   setWatchBusy: Dispatch<SetStateAction<boolean>>;
   loadTab: () => Promise<void>;
   tAlerts: (key: string) => string;
   tCommon: (key: string) => string;
+  createAlertMut: MutateAlert;
+  addWatch: MutateWatch;
+  removeWatch: MutateWatch;
+  createCommentMut: MutateComment;
+  deleteCommentMut: MutateDeleteComment;
 };
 
 /** Comment / alert / watchlist write paths for the symbol page. */
@@ -33,26 +62,22 @@ export function symbolPageMutations(a: Args) {
     if (!a.commentText.trim() || a.commentBusy) return;
     a.setCommentBusy(true);
     try {
-      const res = await fetch("/api/comments", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          symbol: a.symbol,
-          assetType: a.assetType,
-          content: a.commentText,
-        }),
+      await a.createCommentMut.mutateAsync({
+        symbol: a.symbol,
+        assetType: a.assetType,
+        content: a.commentText,
       });
-      if (res.ok) {
-        a.setCommentText("");
-        await a.loadTab();
-      }
+      a.setCommentText("");
+      await a.loadTab();
+    } catch {
+      /* ignore */
     } finally {
       a.setCommentBusy(false);
     }
   }
 
   async function deleteComment(id: string) {
-    await fetch(`/api/comments?id=${id}`, { method: "DELETE" });
+    await a.deleteCommentMut.mutateAsync(id);
     await a.loadTab();
   }
 
@@ -66,22 +91,16 @@ export function symbolPageMutations(a: Args) {
     if (a.alertBusy) return;
     a.setAlertBusy(true);
     try {
-      const res = await fetch("/api/alerts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          symbol: a.symbol,
-          assetType: a.assetType,
-          condition: a.alertCondition,
-          triggerPrice: Number(a.alertPrice),
-        }),
+      await a.createAlertMut.mutateAsync({
+        symbol: a.symbol,
+        assetType: a.assetType,
+        condition: a.alertCondition,
+        triggerPrice: Number(a.alertPrice),
       });
-      if (!res.ok) {
-        a.setAlertMsg(a.tCommon("error"));
-        return;
-      }
       a.setAlertMsg("OK");
       a.setAlertPrice("");
+    } catch {
+      a.setAlertMsg(a.tCommon("error"));
     } finally {
       a.setAlertBusy(false);
     }
@@ -95,21 +114,15 @@ export function symbolPageMutations(a: Args) {
     a.setWatchBusy(true);
     try {
       if (a.inWatchlist) {
-        await fetch(
-          `/api/watchlist?symbol=${a.symbol}&assetType=${a.assetType}`,
-          { method: "DELETE" },
-        );
-        a.setInWatchlist(false);
-      } else {
-        const res = await fetch("/api/watchlist", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            symbol: a.symbol,
-            assetType: a.assetType,
-          }),
+        await a.removeWatch.mutateAsync({
+          symbol: a.symbol,
+          assetType: a.assetType,
         });
-        if (res.ok) a.setInWatchlist(true);
+      } else {
+        await a.addWatch.mutateAsync({
+          symbol: a.symbol,
+          assetType: a.assetType,
+        });
       }
     } finally {
       a.setWatchBusy(false);

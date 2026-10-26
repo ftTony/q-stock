@@ -91,6 +91,7 @@ model User {
   aiUsageLimit      Int                @default(5)
 
   watchlist          WatchlistItem[]
+  watchlistGroups    WatchlistGroup[]
   priceAlerts        PriceAlert[]
   comments           Comment[]
   alertDeliveries    AlertDeliveryLog[]
@@ -102,6 +103,7 @@ model User {
   paperRiskSettings  PaperRiskSettings?
   strategies         Strategy[]
   strategyReplays    StrategyReplay[]
+  strategyLabReports StrategyLabReport[]
   marketCredentials   UserMarketCredential[]
   serviceCredentials  UserServiceCredential[]
   passwordResetTokens PasswordResetToken[]
@@ -222,10 +224,38 @@ model WatchlistItem {
   assetType AssetType
   createdAt DateTime  @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members WatchlistGroupMember[]
 
   @@unique([userId, symbol, assetType])
   @@index([userId])
+}
+
+/** User-defined watchlist folder (custom group). */
+model WatchlistGroup {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user    User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members WatchlistGroupMember[]
+
+  @@index([userId, sortOrder])
+}
+
+model WatchlistGroupMember {
+  id      String @id @default(cuid())
+  groupId String
+  itemId  String
+
+  group WatchlistGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  item  WatchlistItem  @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@unique([groupId, itemId])
+  @@index([itemId])
 }
 
 /** One email per user per US trade date (America/New_York calendar day). */
@@ -425,11 +455,38 @@ model StrategyReplay {
   status      String    @default("pending")
   result      Json?
   error       String?
+  /** Opaque token for read-only public share (null = private). */
+  shareToken  String?   @unique
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
   user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   strategy Strategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+/**
+ * P2 lab batch: dual compare, tiny param grid, or multi-symbol basket.
+ * Basket runs async on Worker (sequential); compare/grid may complete inline.
+ */
+model StrategyLabReport {
+  id         String   @id @default(cuid())
+  userId     String
+  /** compare | param_grid | basket */
+  kind       String
+  /** Quota units consumed (compare=2, grid=values, basket=symbols). */
+  cost       Int      @default(1)
+  request    Json
+  status     String   @default("pending")
+  result     Json?
+  error      String?
+  shareToken String?  @unique
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId, createdAt])
   @@index([status])

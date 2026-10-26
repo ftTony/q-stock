@@ -2,6 +2,7 @@
 
 import {
   useEffect,
+  useMemo,
   useRef,
   useState,
   type CSSProperties,
@@ -9,6 +10,7 @@ import {
 } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useHealth } from "@/hooks/query/use-health";
 
 type ProviderId =
   | "longbridge"
@@ -68,47 +70,31 @@ function clampPos(left: number, top: number, w: number, h: number): Pos {
 export function DataSourceBadge() {
   const t = useTranslations("common");
   const { status: sessionStatus } = useSession();
-  const [chain, setChain] = useState<ProviderId[]>([]);
+  const health = useHealth(sessionStatus !== "loading");
   const [pos, setPos] = useState<Pos | null>(null);
   const [dragging, setDragging] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
   const posRef = useRef<Pos | null>(null);
   posRef.current = pos;
 
+  const chain = useMemo(() => {
+    const data = health.data;
+    if (!data) return [] as ProviderId[];
+    const configured = data.providers ?? {};
+    const priority = (data.providerPriority ?? []).filter(
+      (id): id is ProviderId =>
+        id in PROVIDER_I18N && Boolean(configured[id]),
+    );
+    return priority.length
+      ? priority
+      : (Object.keys(PROVIDER_I18N) as ProviderId[]).filter(
+          (id) => configured[id],
+        );
+  }, [health.data]);
+
   useEffect(() => {
     setPos(readStoredPos());
   }, []);
-
-  useEffect(() => {
-    if (sessionStatus === "loading") return;
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/health");
-        if (!res.ok || cancelled) return;
-        const data = (await res.json()) as {
-          providers?: Record<string, boolean>;
-          providerPriority?: string[];
-        };
-        const configured = data.providers ?? {};
-        const priority = (data.providerPriority ?? []).filter(
-          (id): id is ProviderId =>
-            id in PROVIDER_I18N && Boolean(configured[id]),
-        );
-        const ordered = priority.length
-          ? priority
-          : (Object.keys(PROVIDER_I18N) as ProviderId[]).filter(
-              (id) => configured[id],
-            );
-        if (!cancelled) setChain(ordered);
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [sessionStatus]);
 
   // Keep stored position inside the viewport on resize.
   useEffect(() => {

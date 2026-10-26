@@ -20,6 +20,7 @@ const SECTIONS: SettingsSection[] = [
   "trading",
   "market",
   "account",
+  "about",
 ];
 
 function NavIcon({ id }: { id: SettingsSection }) {
@@ -56,6 +57,15 @@ function NavIcon({ id }: { id: SettingsSection }) {
       <svg {...common}>
         <path d="M3 12a9 9 0 1 0 18 0 9 9 0 0 0-18 0" />
         <path d="M3.6 9h16.8M3.6 15h16.8M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18" />
+      </svg>
+    );
+  }
+  if (id === "about") {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="9" />
+        <path d="M12 11v5" />
+        <circle cx="12" cy="8" r="1" fill="currentColor" stroke="none" />
       </svg>
     );
   }
@@ -108,6 +118,7 @@ export function SettingsModal({
     trading: t("navTrading"),
     market: t("navMarket"),
     account: t("navAccount"),
+    about: t("navAbout"),
   };
 
   return createPortal(

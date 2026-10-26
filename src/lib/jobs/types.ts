@@ -1,4 +1,7 @@
 /** Extensible worker job kinds (DB-backed queue; no Redis required). */
-export type JobKind = "strategy_replay";
+export type JobKind = "strategy_replay" | "strategy_lab";
 
-export const JOB_KINDS = ["strategy_replay"] as const satisfies readonly JobKind[];
+export const JOB_KINDS = [
+  "strategy_replay",
+  "strategy_lab",
+] as const satisfies readonly JobKind[];

@@ -9,17 +9,15 @@ import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { SymbolSearchField } from "@/components/ui/symbol-search-field";
+import {
+  useAlerts,
+  useCreateAlert,
+  useDeleteAlert,
+  usePatchAlert,
+  type AlertRow,
+} from "@/hooks/query/use-alerts";
 import type { AssetType } from "@/lib/types";
 import { parseAssetType } from "@/lib/types";
-
-type AlertRow = {
-  id: string;
-  symbol: string;
-  assetType: AssetType;
-  condition: "gte" | "lte";
-  triggerPrice: number;
-  status: "active" | "triggered" | "disabled";
-};
 
 function statusTone(status: AlertRow["status"]) {
   if (status === "active") {
@@ -37,7 +35,6 @@ function AlertsContent() {
   const tCommon = useTranslations("common");
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
-  const [alerts, setAlerts] = useState<AlertRow[]>([]);
   const [symbol, setSymbol] = useState(searchParams.get("symbol") || "");
   const [assetType, setAssetType] = useState<AssetType>(
     parseAssetType(searchParams.get("assetType")),
@@ -45,8 +42,15 @@ function AlertsContent() {
   const [condition, setCondition] = useState<"gte" | "lte">("gte");
   const [triggerPrice, setTriggerPrice] = useState("");
   const [error, setError] = useState<string | null>(null);
-  const [submitting, setSubmitting] = useState(false);
   const [actionId, setActionId] = useState<string | null>(null);
+
+  const signedIn = Boolean(session?.user);
+  const alertsQuery = useAlerts({ enabled: signedIn });
+  const createAlert = useCreateAlert();
+  const patchAlert = usePatchAlert();
+  const deleteAlert = useDeleteAlert();
+
+  const alerts = alertsQuery.data?.alerts ?? [];
 
   const marketLabel = useCallback(
     (type: AssetType) => {
@@ -57,17 +61,6 @@ function AlertsContent() {
     },
     [tMarket],
   );
-
-  const load = useCallback(async () => {
-    const res = await fetch("/api/alerts");
-    if (!res.ok) return;
-    const data = await res.json();
-    setAlerts(data.alerts ?? []);
-  }, []);
-
-  useEffect(() => {
-    if (session?.user) void load();
-  }, [session, load]);
 
   useEffect(() => {
     const s = searchParams.get("symbol");
@@ -99,39 +92,23 @@ function AlertsContent() {
       setError(t("symbolRequired"));
       return;
     }
-    setSubmitting(true);
     try {
-      const res = await fetch("/api/alerts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          symbol: symbol.trim(),
-          assetType,
-          condition,
-          triggerPrice: Number(triggerPrice),
-        }),
+      await createAlert.mutateAsync({
+        symbol: symbol.trim(),
+        assetType,
+        condition,
+        triggerPrice: Number(triggerPrice),
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || tCommon("error"));
-        return;
-      }
       setTriggerPrice("");
-      await load();
-    } finally {
-      setSubmitting(false);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : tCommon("error"));
     }
   }
 
   async function patchStatus(id: string, next: "active" | "disabled") {
     setActionId(id);
     try {
-      await fetch("/api/alerts", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, status: next }),
-      });
-      await load();
+      await patchAlert.mutateAsync({ id, status: next });
     } finally {
       setActionId(null);
     }
@@ -140,8 +117,7 @@ function AlertsContent() {
   async function remove(id: string) {
     setActionId(id);
     try {
-      await fetch(`/api/alerts?id=${id}`, { method: "DELETE" });
-      await load();
+      await deleteAlert.mutateAsync(id);
     } finally {
       setActionId(null);
     }
@@ -151,8 +127,18 @@ function AlertsContent() {
 
   return (
     <div className="space-y-5 animate-[qtFade_0.45s_ease]">
+      <div className="mb-1 flex items-center gap-2 text-[12px]">
+        <Link
+          href="/watchlist"
+          className="text-[var(--brand-text)] hover:underline"
+        >
+          {t("backWatchlist")}
+        </Link>
+        <span className="text-[var(--muted)]">/</span>
+        <span className="text-[var(--muted)]">{t("title")}</span>
+      </div>
       <header className="flex flex-wrap items-end justify-between gap-3">
-        <div className="space-y-1">
+        <div className="space-y-1.5">
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
             {t("title")}
           </h1>
@@ -233,7 +219,7 @@ function AlertsContent() {
             {error && <p className="text-xs text-[var(--down)]">{error}</p>}
 
             <SubmitButton
-              loading={submitting}
+              loading={createAlert.isPending}
               loadingLabel={tCommon("loading")}
               className="qt-btn qt-btn-primary h-9 w-full text-sm"
             >
@@ -354,9 +340,7 @@ export default function AlertsPage() {
   return (
     <Suspense
       fallback={
-        <div className="qt-panel p-6 text-sm text-[var(--muted)]">
-          …
-        </div>
+        <div className="qt-panel p-6 text-sm text-[var(--muted)]">…</div>
       }
     >
       <AlertsContent />

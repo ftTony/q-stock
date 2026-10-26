@@ -5,17 +5,23 @@ import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import { QtSelect } from "@/components/ui/qt-select";
-import type {
-  EmailChannel,
-  EmailCredsStatus,
-  ServiceCredsStatus,
-} from "@/lib/user/service-creds-types";
+import { SettingsHint } from "@/components/settings/settings-hint";
+import type { EmailChannel, EmailCredsStatus } from "@/lib/user/service-creds-types";
+import {
+  useDeleteServiceCredentials,
+  useSaveServiceCredentials,
+  useServiceCredentials,
+} from "@/hooks/query/use-credentials";
 
 export function EmailCredentialsForm() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const [status, setStatus] = useState<EmailCredsStatus | null>(null);
-  const [loading, setLoading] = useState(true);
+  const credsQuery = useServiceCredentials();
+  const saveMut = useSaveServiceCredentials();
+  const deleteMut = useDeleteServiceCredentials();
+  const status: EmailCredsStatus | null = credsQuery.data?.email ?? null;
+  const loading = credsQuery.isLoading;
+
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<"ok" | "error">("ok");
@@ -29,31 +35,12 @@ export function EmailCredentialsForm() {
   const [smtpPass, setSmtpPass] = useState("");
   const [smtpSecure, setSmtpSecure] = useState(false);
 
-  async function refresh() {
-    const res = await fetch("/api/user/service-credentials");
-    if (!res.ok) return;
-    const data = (await res.json()) as ServiceCredsStatus;
-    setStatus(data.email);
-    if (data.email.configured) {
-      if (data.email.channel) setChannel(data.email.channel);
-      if (data.email.from) setFrom(data.email.from);
-    }
-    return data.email;
-  }
-
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        await refresh();
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    const email = credsQuery.data?.email;
+    if (!email?.configured) return;
+    if (email.channel) setChannel(email.channel);
+    if (email.from) setFrom(email.from);
+  }, [credsQuery.data?.email]);
 
   useEffect(() => {
     if (!message) return;
@@ -86,27 +73,14 @@ export function EmailCredentialsForm() {
                 smtpSecure,
               },
             };
-      const res = await fetch("/api/user/service-credentials", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        setMessageKind("error");
-        setMessage(
-          typeof data.error === "string" ? data.error : t("emailSaveError"),
-        );
-        return;
-      }
-      setStatus((data as ServiceCredsStatus).email);
+      await saveMut.mutateAsync(body);
       setResendApiKey("");
       setSmtpPass("");
       setMessageKind("ok");
       setMessage(t("emailSaved"));
-    } catch {
+    } catch (err) {
       setMessageKind("error");
-      setMessage(t("emailSaveError"));
+      setMessage(err instanceof Error ? err.message : t("emailSaveError"));
     } finally {
       setSaving(false);
     }
@@ -116,17 +90,7 @@ export function EmailCredentialsForm() {
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch(
-        "/api/user/service-credentials?provider=email",
-        { method: "DELETE" },
-      );
-      if (!res.ok) {
-        setMessageKind("error");
-        setMessage(t("emailSaveError"));
-        return;
-      }
-      const data = (await res.json()) as ServiceCredsStatus;
-      setStatus(data.email);
+      await deleteMut.mutateAsync("email");
       setResendApiKey("");
       setSmtpPass("");
       setMessageKind("ok");
@@ -147,9 +111,9 @@ export function EmailCredentialsForm() {
     <div className="space-y-4">
       <div>
         <h2 className="text-lg font-semibold">{t("emailTitle")}</h2>
-        <p className="aw-caption mt-1.5 leading-relaxed">
+        <SettingsHint tone="trust" className="mt-2">
           {t("credsTrustNote")}
-        </p>
+        </SettingsHint>
         <p className="mt-2 text-xs">
           <span
             className={

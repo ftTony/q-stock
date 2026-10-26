@@ -18,8 +18,10 @@ import { MarketVendorPrefs } from "@/components/settings/market-vendor-prefs";
 import { AiCredentialsForm } from "@/components/settings/ai-credentials-form";
 import { InvitePanel } from "@/components/settings/invite-panel";
 import { PaperRiskSettingsForm } from "@/components/settings/paper-risk-settings-form";
+import { SettingsAboutPanel } from "@/components/settings/settings-about-panel";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
+import { useSaveUserSettings } from "@/hooks/query/use-user-settings";
 import {
   locales,
   languageLabels,
@@ -27,7 +29,14 @@ import {
   type AppLocale,
 } from "@/i18n/config";
 
-export type SettingsSection = "general" | "trading" | "market" | "account";
+export type SettingsSection =
+  | "general"
+  | "trading"
+  | "market"
+  | "account"
+  | "about";
+
+const GUEST_SECTIONS: SettingsSection[] = ["general", "about"];
 
 function SchemePreview({ scheme }: { scheme: ChangeColorScheme }) {
   const up = scheme === "cn" ? "#e11d48" : "#22c55e";
@@ -90,6 +99,7 @@ export function SettingsPanel({
   const [message, setMessage] = useState<string | null>(null);
   const [messageKind, setMessageKind] = useState<"ok" | "error">("ok");
   const [saving, setSaving] = useState(false);
+  const saveSettings = useSaveUserSettings();
   const loggedIn = Boolean(session?.user);
 
   useEffect(() => {
@@ -146,22 +156,12 @@ export function SettingsPanel({
     }
 
     try {
-      const res = await fetch("/api/user/settings", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: displayName.trim() || undefined,
-          locale: lang,
-          theme: theme === "light" || theme === "dark" ? theme : "system",
-          changeColorScheme,
-        }),
+      const data = await saveSettings.mutateAsync({
+        name: displayName.trim() || undefined,
+        locale: lang,
+        theme: theme === "light" || theme === "dark" ? theme : "system",
+        changeColorScheme,
       });
-      if (!res.ok) {
-        setMessageKind("error");
-        setMessage(t("saveError"));
-        return;
-      }
-      const data = await res.json();
       await update({
         name: (data.user?.name ?? displayName.trim()) || null,
         locale: lang,
@@ -179,12 +179,15 @@ export function SettingsPanel({
         }
         router.replace(pathname || "/markets", { locale: lang });
       }
+    } catch {
+      setMessageKind("error");
+      setMessage(t("saveError"));
     } finally {
       setSaving(false);
     }
   }
 
-  if (section !== "general" && !loggedIn) {
+  if (!GUEST_SECTIONS.includes(section) && !loggedIn) {
     return (
       <div className="flex h-full min-h-[18rem] flex-1 flex-col items-center justify-center px-4 py-8">
         <AuthLoginGate
@@ -195,6 +198,10 @@ export function SettingsPanel({
         />
       </div>
     );
+  }
+
+  if (section === "about") {
+    return <SettingsAboutPanel />;
   }
 
   if (section === "trading") {

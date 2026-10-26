@@ -1,10 +1,12 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { formatNumber } from "@/lib/format-number";
 import type { IndexQuote } from "@/components/market/markets-types";
+import { useMarketIndices } from "@/hooks/query/use-market";
 import {
   mergeIndexQuotes,
   seedIndexQuotes,
@@ -13,17 +15,13 @@ import {
   quotePollIntervalMs,
   useQuoteChannels,
 } from "@/hooks/use-quote-socket";
+import { queryKeys } from "@/lib/query/keys";
 import type { ServerMessage } from "@/lib/market/stream/protocol";
 import type { AssetType } from "@/lib/types";
 
 const MARKETS: Array<Exclude<AssetType, "crypto">> = ["stock", "hk", "cn"];
 
 const ROTATE_MS = 5_000;
-
-type MarketBundle = {
-  assetType: Exclude<AssetType, "crypto">;
-  indices: IndexQuote[];
-};
 
 function IndexChip({ item }: { item: IndexQuote }) {
   const t = useTranslations("market");
@@ -71,63 +69,38 @@ function IndexChip({ item }: { item: IndexQuote }) {
 
 /** Header ticker: auto-rotate US / HK / CN index triples (WS push + HTTP fallback). */
 export function TopbarIndexTicker() {
-  const [bundles, setBundles] = useState<MarketBundle[]>(() =>
-    MARKETS.map((assetType) => ({
-      assetType,
-      indices: seedIndexQuotes(assetType),
-    })),
-  );
+  const qc = useQueryClient();
   const [page, setPage] = useState(0);
-
-  const mergeMarket = useCallback(
-    (assetType: Exclude<AssetType, "crypto">, indices: IndexQuote[]) => {
-      setBundles((prev) =>
-        prev.map((b) =>
-          b.assetType === assetType
-            ? { ...b, indices: mergeIndexQuotes(b.indices, indices) }
-            : b,
-        ),
-      );
-    },
-    [],
-  );
-
-  const loadHttp = useCallback(async () => {
-    const results = await Promise.all(
-      MARKETS.map(async (assetType) => {
-        try {
-          const res = await fetch(`/api/indices?assetType=${assetType}`);
-          if (!res.ok) return { assetType, indices: null as IndexQuote[] | null };
-          const data = (await res.json()) as { indices?: IndexQuote[] };
-          return { assetType, indices: data.indices ?? null };
-        } catch {
-          return { assetType, indices: null as IndexQuote[] | null };
-        }
-      }),
-    );
-    setBundles((prev) =>
-      prev.map((b) => {
-        const hit = results.find((r) => r.assetType === b.assetType);
-        if (!hit?.indices?.length) return b;
-        return { ...b, indices: mergeIndexQuotes(b.indices, hit.indices) };
-      }),
-    );
-  }, []);
+  const [pollFast, setPollFast] = useState(true);
 
   const onWsMessage = useCallback(
     (msg: ServerMessage) => {
       if (msg.op === "indices") {
-        mergeMarket(msg.assetType, msg.indices);
+        const key = queryKeys.market.indices(msg.assetType);
+        qc.setQueryData(key, (prev: { indices?: IndexQuote[] } | undefined) => {
+          const seed = seedIndexQuotes(msg.assetType);
+          const base = prev?.indices?.length ? prev.indices : seed;
+          return { indices: mergeIndexQuotes(base, msg.indices) };
+        });
         return;
       }
       if (msg.op === "snapshot" && msg.indicesByMarket) {
         for (const market of MARKETS) {
           const indices = msg.indicesByMarket[market];
-          if (indices) mergeMarket(market, indices);
+          if (!indices) continue;
+          const key = queryKeys.market.indices(market);
+          qc.setQueryData(
+            key,
+            (prev: { indices?: IndexQuote[] } | undefined) => {
+              const seed = seedIndexQuotes(market);
+              const base = prev?.indices?.length ? prev.indices : seed;
+              return { indices: mergeIndexQuotes(base, indices) };
+            },
+          );
         }
       }
     },
-    [mergeMarket],
+    [qc],
   );
 
   const {
@@ -137,34 +110,43 @@ export function TopbarIndexTicker() {
     push: wsPush,
   } = useQuoteChannels([{ type: "indices" }], onWsMessage);
 
-  const hasAnyPrice = bundles.some((b) =>
-    b.indices.some(
-      (i) => i.price != null && Number.isFinite(i.price) && i.price > 0,
-    ),
-  );
+  const interval = useMemo(() => {
+    if (pollFast || !wsPush || wsDegraded) return 3_000;
+    return quotePollIntervalMs({
+      enabled: wsEnabled,
+      connected: wsConnected,
+      degraded: wsDegraded,
+      push: wsPush,
+    });
+  }, [pollFast, wsPush, wsDegraded, wsEnabled, wsConnected]);
+
+  const stockQ = useMarketIndices("stock", { refetchInterval: interval });
+  const hkQ = useMarketIndices("hk", { refetchInterval: interval });
+  const cnQ = useMarketIndices("cn", { refetchInterval: interval });
+
+  const bundles = useMemo(() => {
+    const byMarket: Record<string, IndexQuote[]> = {
+      stock: (stockQ.data?.indices as IndexQuote[] | undefined) ?? [],
+      hk: (hkQ.data?.indices as IndexQuote[] | undefined) ?? [],
+      cn: (cnQ.data?.indices as IndexQuote[] | undefined) ?? [],
+    };
+    return MARKETS.map((assetType) => {
+      const live = byMarket[assetType] ?? [];
+      const indices = live.length
+        ? mergeIndexQuotes(seedIndexQuotes(assetType), live)
+        : seedIndexQuotes(assetType);
+      return { assetType, indices };
+    });
+  }, [stockQ.data, hkQ.data, cnQ.data]);
 
   useEffect(() => {
-    void loadHttp();
-    // No push / no prices yet → hit REST until quotes appear.
-    const ms =
-      !hasAnyPrice || !wsPush || wsDegraded
-        ? 3_000
-        : quotePollIntervalMs({
-            enabled: wsEnabled,
-            connected: wsConnected,
-            degraded: wsDegraded,
-            push: wsPush,
-          });
-    const refresh = window.setInterval(() => void loadHttp(), ms);
-    return () => window.clearInterval(refresh);
-  }, [
-    loadHttp,
-    hasAnyPrice,
-    wsEnabled,
-    wsConnected,
-    wsDegraded,
-    wsPush,
-  ]);
+    const hasAnyPrice = bundles.some((b) =>
+      b.indices.some(
+        (i) => i.price != null && Number.isFinite(i.price) && i.price > 0,
+      ),
+    );
+    setPollFast(!hasAnyPrice || !wsPush || wsDegraded);
+  }, [bundles, wsPush, wsDegraded]);
 
   useEffect(() => {
     const id = window.setInterval(() => {

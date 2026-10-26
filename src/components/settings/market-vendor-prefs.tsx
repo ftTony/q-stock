@@ -4,12 +4,12 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { QtSelect } from "@/components/ui/qt-select";
 import type { CryptoVendorId, EquityVendorId } from "@/lib/market/types";
+import { notifyMarketVendorsChanged } from "@/lib/market/creds-status-client";
+import { SettingsHint } from "@/components/settings/settings-hint";
 import {
-  notifyMarketVendorsChanged,
-  type MarketCredsStatus,
-} from "@/lib/market/creds-status-client";
-
-type Status = MarketCredsStatus;
+  useMarketCredentials,
+  useSaveMarketCredentials,
+} from "@/hooks/query/use-credentials";
 
 /**
  * Choose preferred equity broker (Longbridge / Futu) and crypto exchange
@@ -17,28 +17,18 @@ type Status = MarketCredsStatus;
  */
 export function MarketVendorPrefs() {
   const t = useTranslations("settings");
+  const { data: remote } = useMarketCredentials();
+  const saveMut = useSaveMarketCredentials();
+
   const [equity, setEquity] = useState<EquityVendorId>("longbridge");
   const [crypto, setCrypto] = useState<CryptoVendorId>("binance");
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await fetch("/api/user/market-credentials");
-        if (!res.ok || cancelled) return;
-        const data = (await res.json()) as Status;
-        if (data.equityVendor) setEquity(data.equityVendor);
-        if (data.cryptoVendor) setCrypto(data.cryptoVendor);
-      } catch {
-        /* ignore */
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+    if (remote?.equityVendor) setEquity(remote.equityVendor);
+    if (remote?.cryptoVendor) setCrypto(remote.cryptoVendor);
+  }, [remote?.equityVendor, remote?.cryptoVendor]);
 
   useEffect(() => {
     if (!message) return;
@@ -52,20 +42,13 @@ export function MarketVendorPrefs() {
     setSaving(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/user/market-credentials", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(next),
-      });
-      if (!res.ok) {
-        setMessage(t("credsSaveError"));
-        return;
-      }
-      const data = (await res.json()) as Status;
+      const data = await saveMut.mutateAsync(next);
       if (data.equityVendor) setEquity(data.equityVendor);
       if (data.cryptoVendor) setCrypto(data.cryptoVendor);
       notifyMarketVendorsChanged(data);
       setMessage(t("vendorSaved"));
+    } catch {
+      setMessage(t("credsSaveError"));
     } finally {
       setSaving(false);
     }
@@ -77,7 +60,7 @@ export function MarketVendorPrefs() {
         <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
           {t("vendorTitle")}
         </h2>
-        <p className="aw-caption mt-1">{t("vendorHint")}</p>
+        <SettingsHint className="mt-2">{t("vendorHint")}</SettingsHint>
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
@@ -94,7 +77,7 @@ export function MarketVendorPrefs() {
               { value: "futu", label: t("credsFutu") },
             ]}
           />
-          <p className="aw-caption">{t("vendorEquityHint")}</p>
+          <SettingsHint>{t("vendorEquityHint")}</SettingsHint>
         </div>
         <div className="space-y-1.5">
           <span className="aw-metric-label block">{t("vendorCrypto")}</span>
@@ -110,7 +93,7 @@ export function MarketVendorPrefs() {
               { value: "okx", label: t("credsOkx") },
             ]}
           />
-          <p className="aw-caption">{t("vendorCryptoHint")}</p>
+          <SettingsHint>{t("vendorCryptoHint")}</SettingsHint>
         </div>
       </div>
       {saving || message ? (

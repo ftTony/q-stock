@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -11,15 +11,14 @@ import { Sparkline } from "@/components/market/sparkline";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { SegmentedTabs } from "@/components/ui/segmented-tabs";
+import {
+  useAddWatchlistItem,
+  useRemoveWatchlistItem,
+  useWatchlist,
+} from "@/hooks/query/use-watchlist";
+import { useSymbolSearch } from "@/hooks/query/use-symbol-search";
 import { displayName } from "@/lib/market-names";
-import type { AssetType, Quote } from "@/lib/types";
-
-type Row = {
-  id: string;
-  symbol: string;
-  assetType: AssetType;
-  quote: Quote | null;
-};
+import type { AssetType } from "@/lib/types";
 
 function WatchlistContent() {
   const t = useTranslations("market");
@@ -34,15 +33,19 @@ function WatchlistContent() {
       ? list
       : "all",
   );
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [q, setQ] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
   const [addType, setAddType] = useState<AssetType>("stock");
-  const [results, setResults] = useState<
-    { symbol: string; description: string; assetType: AssetType }[]
-  >([]);
-  const [adding, setAdding] = useState(false);
+
+  const signedIn = Boolean(session?.user);
+  const watchlist = useWatchlist({
+    quotes: true,
+    enabled: signedIn,
+    refetchInterval: signedIn ? 45_000 : false,
+  });
+  const addItem = useAddWatchlistItem();
+  const removeItem = useRemoveWatchlistItem();
+  const search = useSymbolSearch(debouncedQ, addType, signedIn);
 
   useEffect(() => {
     if (list === "crypto" || list === "stock" || list === "hk" || list === "cn") {
@@ -50,79 +53,21 @@ function WatchlistContent() {
     }
   }, [list]);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch("/api/watchlist?quotes=1");
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || tCommon("error"));
-      setRows(data.items ?? []);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : tCommon("error"));
-      setRows([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [tCommon]);
-
   useEffect(() => {
-    if (session?.user) {
-      void load();
-      const timer = setInterval(() => void load(), 45000);
-      return () => clearInterval(timer);
-    }
-    setLoading(false);
-  }, [session, load]);
-
-  async function seedPopular() {
-    setAdding(true);
-    try {
-      const list =
-        filter === "crypto"
-          ? ["BTC", "ETH", "SOL", "BNB"]
-          : filter === "hk"
-            ? ["00700", "09988", "03690", "01810"]
-            : filter === "cn"
-              ? ["600519.SH", "000001.SZ", "300750.SZ", "000858.SZ"]
-              : ["AAPL", "MSFT", "NVDA", "TSLA", "META", "AMZN"];
-      const assetType: AssetType =
-        filter === "crypto"
-          ? "crypto"
-          : filter === "hk"
-            ? "hk"
-            : filter === "cn"
-              ? "cn"
-              : "stock";
-      await Promise.all(
-        list.map((symbol) =>
-          fetch("/api/watchlist", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ symbol, assetType }),
-          }),
-        ),
-      );
-      await load();
-    } finally {
-      setAdding(false);
-    }
-  }
-
-  useEffect(() => {
-    if (!q.trim()) {
-      setResults([]);
-      return;
-    }
-    const handle = setTimeout(async () => {
-      const res = await fetch(
-        `/api/search?q=${encodeURIComponent(q)}&assetType=${addType}`,
-      );
-      const data = await res.json();
-      setResults(data.results ?? []);
-    }, 250);
+    const handle = setTimeout(() => setDebouncedQ(q), 250);
     return () => clearTimeout(handle);
-  }, [q, addType]);
+  }, [q]);
+
+  const rows = watchlist.data?.items ?? [];
+  const results = search.data?.results ?? [];
+  const loading = watchlist.isLoading;
+  const error =
+    watchlist.error instanceof Error
+      ? watchlist.error.message
+      : watchlist.error
+        ? tCommon("error")
+        : null;
+  const mutating = addItem.isPending || removeItem.isPending;
 
   const visible = useMemo(
     () => (filter === "all" ? rows : rows.filter((r) => r.assetType === filter)),
@@ -138,25 +83,32 @@ function WatchlistContent() {
           ? "descCrypto"
           : "descStock";
 
-  async function remove(id: string) {
-    await fetch(`/api/watchlist?id=${id}`, { method: "DELETE" });
-    await load();
+  async function seedPopular() {
+    const list =
+      filter === "crypto"
+        ? ["BTC", "ETH", "SOL", "BNB"]
+        : filter === "hk"
+          ? ["00700", "09988", "03690", "01810"]
+          : filter === "cn"
+            ? ["600519.SH", "000001.SZ", "300750.SZ", "000858.SZ"]
+            : ["AAPL", "MSFT", "NVDA", "TSLA", "META", "AMZN"];
+    const assetType: AssetType =
+      filter === "crypto"
+        ? "crypto"
+        : filter === "hk"
+          ? "hk"
+          : filter === "cn"
+            ? "cn"
+            : "stock";
+    await Promise.all(
+      list.map((symbol) => addItem.mutateAsync({ symbol, assetType })),
+    );
   }
 
   async function addSymbol(symbol: string, assetType: AssetType) {
-    setAdding(true);
-    try {
-      await fetch("/api/watchlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ symbol, assetType }),
-      });
-      setQ("");
-      setResults([]);
-      await load();
-    } finally {
-      setAdding(false);
-    }
+    await addItem.mutateAsync({ symbol, assetType });
+    setQ("");
+    setDebouncedQ("");
   }
 
   if (status === "loading") {
@@ -189,6 +141,12 @@ function WatchlistContent() {
             )}
           </div>
           <p className="text-xs text-[var(--muted)] sm:text-sm">{t(descKey)}</p>
+          <Link
+            href="/alerts"
+            className="mt-1.5 inline-block text-[12px] text-[var(--brand-text)] hover:underline"
+          >
+            {tWatch("manageAlerts")} →
+          </Link>
         </div>
         <SegmentedTabs
           value={filter}
@@ -222,7 +180,7 @@ function WatchlistContent() {
             placeholder={t("search")}
             className="qt-input h-9 min-w-0 flex-1 px-3 text-sm leading-none"
           />
-          {adding && (
+          {mutating && (
             <span className="shrink-0 text-xs text-[var(--muted)]">
               {tCommon("loading")}
             </span>
@@ -234,7 +192,7 @@ function WatchlistContent() {
               <li key={`${r.assetType}-${r.symbol}`}>
                 <button
                   type="button"
-                  disabled={adding}
+                  disabled={mutating}
                   className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--sidebar-hover)] disabled:opacity-50"
                   onClick={() => void addSymbol(r.symbol, r.assetType)}
                 >
@@ -266,7 +224,7 @@ function WatchlistContent() {
             <button
               type="button"
               className="qt-btn qt-btn-ghost h-8 px-3 text-xs"
-              onClick={() => void load()}
+              onClick={() => void watchlist.refetch()}
             >
               {tCommon("retry")}
             </button>
@@ -351,7 +309,7 @@ function WatchlistContent() {
                           <button
                             type="button"
                             className="text-xs font-medium text-[var(--muted)] hover:text-[var(--down)]"
-                            onClick={() => void remove(item.id)}
+                            onClick={() => void removeItem.mutateAsync(item.id)}
                           >
                             {t("remove")}
                           </button>
@@ -368,7 +326,7 @@ function WatchlistContent() {
                       </p>
                       <SubmitButton
                         type="button"
-                        loading={adding}
+                        loading={addItem.isPending}
                         loadingLabel={tCommon("loading")}
                         onClick={() => void seedPopular()}
                         className="qt-btn-primary h-10 px-4 text-sm font-medium"
@@ -391,9 +349,7 @@ export default function WatchlistPage() {
   return (
     <Suspense
       fallback={
-        <div className="qt-panel p-6 text-sm text-[var(--muted)]">
-          …
-        </div>
+        <div className="qt-panel p-6 text-sm text-[var(--muted)]">…</div>
       }
     >
       <WatchlistContent />

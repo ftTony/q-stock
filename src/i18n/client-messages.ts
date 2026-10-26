@@ -25,6 +25,8 @@ export const SHELL_NAMESPACES = [
   "settings",
   "paperRisk",
   "auth",
+  /** Settings → About embeds the full disclaimer copy. */
+  "disclaimer",
 ] as const;
 
 /**

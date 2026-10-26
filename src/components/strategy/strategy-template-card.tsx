@@ -1,9 +1,10 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
 import {
+  localizedTemplateCopy,
   templateMetaBySlug,
   type StrategyTemplateMeta,
 } from "@/lib/strategy/templates";
@@ -86,20 +87,24 @@ export function StrategyTemplateCard({
   onCopy: () => void;
 }) {
   const t = useTranslations("strategies");
+  const locale = useLocale();
   const meta = templateMetaBySlug(row.slug);
+  const localized = localizedTemplateCopy(row.slug, locale);
+  const title = localized?.name ?? row.name;
+  const blurb = localized?.description ?? row.description;
 
   return (
-    <li className="flex flex-col rounded-lg border border-[var(--border)] bg-[var(--panel)] p-4 transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))]">
+    <li className="flex flex-col rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3.5 transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))] sm:p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
           <Link
             href={`/strategies/${row.id}`}
-            className="text-[15px] font-semibold tracking-tight hover:text-[var(--brand-text)]"
+            className="text-[14px] font-semibold tracking-tight hover:text-[var(--brand-text)] sm:text-[15px]"
           >
-            {row.name}
+            {title}
           </Link>
           {meta ? (
-            <div className="mt-1.5">
+            <div className="mt-1">
               <span
                 className={`inline-block rounded px-1.5 py-0.5 text-[10px] font-medium ${TAG_TONE[meta.tagKey]}`}
               >
@@ -115,15 +120,15 @@ export function StrategyTemplateCard({
         ) : null}
       </div>
 
-      {row.description ? (
-        <p className="mt-2 line-clamp-3 text-[12px] leading-relaxed text-[var(--muted)]">
-          {row.description}
+      {blurb ? (
+        <p className="mt-1.5 line-clamp-2 text-[12px] leading-relaxed text-[var(--muted)]">
+          {blurb}
         </p>
       ) : null}
 
       {meta ? <MarketPills markets={meta.markets} /> : null}
 
-      <div className="mt-auto flex flex-wrap items-center gap-3 pt-4">
+      <div className="mt-auto flex flex-wrap items-center gap-3 pt-3">
         {meta ? (
           <Link
             href={meta.learnHref}

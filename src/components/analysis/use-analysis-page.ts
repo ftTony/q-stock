@@ -1,129 +1,90 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import type { Quote } from "@/lib/types";
 import {
   ANALYSIS_BASKET_MAX,
-  ANALYSIS_RECENT_KEY,
-  ANALYSIS_RECENT_MAX,
   basketKey,
   industryStockToQuote,
   quoteToBasketItem,
   type AnalysisBasketItem,
   type AnalysisEquityType,
   type AnalysisRecentItem,
-  type AnalysisWorkspace,
   type IndustryHeatCell,
 } from "@/components/analysis/types";
-
-function readRecent(): AnalysisRecentItem[] {
-  if (typeof window === "undefined") return [];
-  try {
-    const raw = localStorage.getItem(ANALYSIS_RECENT_KEY);
-    if (!raw) return [];
-    const parsed = JSON.parse(raw) as AnalysisRecentItem[];
-    return Array.isArray(parsed) ? parsed.slice(0, ANALYSIS_RECENT_MAX) : [];
-  } catch {
-    return [];
-  }
-}
-
-function writeRecent(items: AnalysisRecentItem[]) {
-  try {
-    localStorage.setItem(ANALYSIS_RECENT_KEY, JSON.stringify(items));
-  } catch {
-    /* ignore quota */
-  }
-}
+import {
+  useAddWatchlistItem,
+  useRemoveWatchlistItem,
+  useWatchlist,
+} from "@/hooks/query/use-watchlist";
+import { useIndustryRanks } from "@/hooks/query/use-market";
+import { fetchJson } from "@/lib/query/fetch-json";
+import { useAnalysisPageStore } from "@/stores/analysis-page-store";
 
 export function useAnalysisPage(initialIndustries: IndustryHeatCell[]) {
   const { data: session } = useSession();
-  const [assetType, setAssetTypeState] = useState<AnalysisEquityType>("stock");
-  const [workspace, setWorkspace] = useState<AnalysisWorkspace>("boards");
-  const [industries, setIndustries] =
-    useState<IndustryHeatCell[]>(initialIndustries);
-  const [industryId, setIndustryIdState] = useState<string | null>(
-    initialIndustries[0]?.id ?? null,
-  );
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [basket, setBasket] = useState<AnalysisBasketItem[]>([]);
-  const [recent, setRecent] = useState<AnalysisRecentItem[]>([]);
-  const [watched, setWatched] = useState<Set<string>>(new Set());
-  const [sort, setSort] = useState<"changeDesc" | "changeAsc">("changeDesc");
+  const assetType = useAnalysisPageStore((s) => s.assetType);
+  const workspace = useAnalysisPageStore((s) => s.workspace);
+  const industryId = useAnalysisPageStore((s) => s.industryId);
+  const basket = useAnalysisPageStore((s) => s.basket);
+  const recent = useAnalysisPageStore((s) => s.recent);
+  const sort = useAnalysisPageStore((s) => s.sort);
+  const setAssetType = useAnalysisPageStore((s) => s.setAssetType);
+  const setWorkspace = useAnalysisPageStore((s) => s.setWorkspace);
+  const setIndustryId = useAnalysisPageStore((s) => s.setIndustryId);
+  const setBasket = useAnalysisPageStore((s) => s.setBasket);
+  const setSort = useAnalysisPageStore((s) => s.setSort);
+  const hydrateRecent = useAnalysisPageStore((s) => s.hydrateRecent);
+  const pushRecent = useAnalysisPageStore((s) => s.pushRecent);
+
+  const signedIn = Boolean(session?.user);
+  const watchlist = useWatchlist({ enabled: signedIn });
+  const addWatch = useAddWatchlistItem();
+  const removeWatch = useRemoveWatchlistItem();
+  const ranksQuery = useIndustryRanks(assetType, { limit: 40 });
 
   useEffect(() => {
-    setRecent(readRecent());
-  }, []);
+    hydrateRecent();
+  }, [hydrateRecent]);
 
   useEffect(() => {
-    if (!session?.user) {
-      setWatched(new Set());
-      return;
+    if (industryId == null && initialIndustries[0]?.id) {
+      setIndustryId(initialIndustries[0].id);
     }
-    let cancelled = false;
-    (async () => {
-      const res = await fetch("/api/watchlist");
-      if (!res.ok || cancelled) return;
-      const data = await res.json();
-      setWatched(
-        new Set(
-          (data.items ?? []).map(
-            (i: { symbol: string; assetType: string }) =>
-              `${i.assetType}:${i.symbol}`,
-          ),
-        ),
-      );
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [session]);
+  }, [industryId, initialIndustries, setIndustryId]);
 
-  const loadIndustries = useCallback(async (type: AnalysisEquityType) => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await fetch(
-        `/api/industry-ranks?assetType=${type}&limit=40`,
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to load industries");
-      const list = (data.industries ?? []) as IndustryHeatCell[];
-      // weight ≈ industry market cap (treemap area)
-      const sorted = [...list].sort((a, b) => b.weight - a.weight);
-      setIndustries(sorted);
-      setIndustryIdState(sorted[0]?.id ?? null);
-      setBasket([]);
-      if (data.degraded && sorted.length === 0) {
-        setError("unavailable");
-      }
-    } catch (err) {
-      setIndustries([]);
-      setIndustryIdState(null);
-      setBasket([]);
-      setError(err instanceof Error ? err.message : "Failed to load");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const industries = useMemo(() => {
+    const raw =
+      (
+        ranksQuery.data as
+          | { industries?: IndustryHeatCell[]; degraded?: boolean }
+          | undefined
+      )?.industries ?? initialIndustries;
+    return [...raw].sort((a, b) => b.weight - a.weight);
+  }, [ranksQuery.data, initialIndustries]);
 
   useEffect(() => {
-    void loadIndustries(assetType);
-  }, [assetType, loadIndustries]);
+    if (!industries.length) return;
+    if (!industryId || !industries.some((i) => i.id === industryId)) {
+      setIndustryId(industries[0]!.id);
+    }
+  }, [industries, industryId, setIndustryId]);
 
-  function setAssetType(type: AnalysisEquityType) {
-    setAssetTypeState(type);
-    setWorkspace("boards");
-  }
+  const loading = ranksQuery.isLoading;
+  const error = useMemo(() => {
+    if (ranksQuery.error instanceof Error) return ranksQuery.error.message;
+    const data = ranksQuery.data as
+      | { degraded?: boolean; industries?: IndustryHeatCell[] }
+      | undefined;
+    if (data?.degraded && !(data.industries?.length)) return "unavailable";
+    return null;
+  }, [ranksQuery.error, ranksQuery.data]);
 
-  function setIndustryId(id: string) {
-    if (id === industryId) return;
-    setIndustryIdState(id);
-    setBasket([]);
-    setWorkspace("boards");
-  }
+  const watched = useMemo(() => {
+    const items = watchlist.data?.items ?? [];
+    return new Set(items.map((i) => `${i.assetType}:${i.symbol}`));
+  }, [watchlist.data?.items]);
 
   const selectedIndustry = useMemo(
     () => industries.find((i) => i.id === industryId) ?? null,
@@ -146,33 +107,22 @@ export function useAnalysisPage(initialIndustries: IndustryHeatCell[]) {
     ? { id: selectedIndustry.id, name: selectedIndustry.name }
     : undefined;
 
-  function pushRecent(item: AnalysisRecentItem) {
-    setRecent((prev) => {
-      const next = [
-        item,
-        ...prev.filter(
-          (r) =>
-            !(r.symbol === item.symbol && r.assetType === item.assetType),
-        ),
-      ].slice(0, ANALYSIS_RECENT_MAX);
-      writeRecent(next);
-      return next;
-    });
-  }
-
   function enrichBasketQuote(symbol: string, type: AnalysisEquityType) {
     void (async () => {
       try {
-        const res = await fetch(
+        const data = await fetchJson<{ quote?: Quote }>(
           `/api/quotes?symbol=${encodeURIComponent(symbol)}&assetType=${type}`,
         );
-        const data = await res.json();
-        if (!res.ok || !data.quote) return;
-        const q = data.quote as Quote;
+        if (!data.quote) return;
+        const q = data.quote;
         setBasket((prev) =>
           prev.map((b) =>
             b.symbol === q.symbol && b.assetType === q.assetType
-              ? { ...quoteToBasketItem(q, industryMeta), industryId: industryMeta?.id, industryName: industryMeta?.name }
+              ? {
+                  ...quoteToBasketItem(q, industryMeta),
+                  industryId: industryMeta?.id,
+                  industryName: industryMeta?.name,
+                }
               : b,
           ),
         );
@@ -205,7 +155,10 @@ export function useAnalysisPage(initialIndustries: IndustryHeatCell[]) {
     return true;
   }
 
-  function removeFromBasket(symbol: string, type: AnalysisBasketItem["assetType"]) {
+  function removeFromBasket(
+    symbol: string,
+    type: AnalysisBasketItem["assetType"],
+  ) {
     setBasket((prev) =>
       prev.filter((b) => !(b.symbol === symbol && b.assetType === type)),
     );
@@ -224,29 +177,22 @@ export function useAnalysisPage(initialIndustries: IndustryHeatCell[]) {
     setBasket([]);
   }
 
-  async function toggleWatch(symbol: string, type: AnalysisBasketItem["assetType"]) {
+  async function toggleWatch(
+    symbol: string,
+    type: AnalysisBasketItem["assetType"],
+  ) {
     if (!session?.user) return;
     const key = `${type}:${symbol}`;
     const isOn = watched.has(key);
     if (isOn) {
-      await fetch(`/api/watchlist?symbol=${symbol}&assetType=${type}`, {
-        method: "DELETE",
-      });
-      setWatched((prev) => {
-        const next = new Set(prev);
-        next.delete(key);
-        return next;
-      });
+      await removeWatch.mutateAsync({ symbol, assetType: type });
     } else {
-      const res = await fetch("/api/watchlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ symbol, assetType: type }),
-      });
-      if (res.ok) {
-        setWatched((prev) => new Set(prev).add(key));
-      }
+      await addWatch.mutateAsync({ symbol, assetType: type });
     }
+  }
+
+  function loadIndustries(_type: AnalysisEquityType) {
+    void ranksQuery.refetch();
   }
 
   const basketKeys = new Set(basket.map(basketKey));
@@ -280,6 +226,6 @@ export function useAnalysisPage(initialIndustries: IndustryHeatCell[]) {
     clearBasket,
     addToBasket,
     toggleWatch,
-    pushRecent,
+    pushRecent: (item: AnalysisRecentItem) => pushRecent(item),
   };
 }

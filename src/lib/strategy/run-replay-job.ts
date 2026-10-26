@@ -1,11 +1,8 @@
 import { prisma } from "@/lib/db";
 import { claimByIds } from "@/lib/jobs/claim";
-import { getDailyCandles } from "@/lib/market";
-import { withUserMarket } from "@/lib/market/with-user-market";
-import { runReplay, type ReplayBar } from "@/lib/strategy/replay-engine";
+import { loadReplayBars } from "@/lib/strategy/load-replay-bars";
+import { runReplay } from "@/lib/strategy/replay-engine";
 import type { AssetType } from "@/lib/types";
-
-const MAX_BARS = 800;
 /** Re-queue jobs stuck in `running` (crash / OOM mid-job). */
 const STALE_RUNNING_MS = 10 * 60 * 1000;
 
@@ -68,29 +65,13 @@ export async function runStrategyReplayJob(replayId: string) {
       Math.max(1000, Number(assumptions.initialCash) || 100_000),
     );
 
-    const fromSec = Math.floor(job.rangeFrom.getTime() / 1000);
-    const toSec = Math.floor(job.rangeTo.getTime() / 1000);
-    const candles = await withUserMarket(job.userId, () =>
-      getDailyCandles(
-        job.symbol,
-        job.assetType as AssetType,
-        fromSec,
-        toSec,
-      ),
-    );
-    const sliced = candles.slice(-MAX_BARS);
-    if (sliced.length < 30) {
-      throw new Error("Not enough daily bars for replay (need ≥30)");
-    }
-
-    const bars: ReplayBar[] = sliced.map((c) => ({
-      t: c.time * (c.time < 1e12 ? 1000 : 1),
-      o: c.open,
-      h: c.high,
-      l: c.low,
-      c: c.close,
-      v: c.volume,
-    }));
+    const bars = await loadReplayBars({
+      userId: job.userId,
+      symbol: job.symbol,
+      assetType: job.assetType as AssetType,
+      rangeFrom: job.rangeFrom,
+      rangeTo: job.rangeTo,
+    });
 
     const result = runReplay(bars, job.strategy.rules, {
       fill: "signal_close",

@@ -170,6 +170,7 @@ export function CandleChart({
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         styles: buildChartStyles(tipLabelsRef.current, resolution, {
           liveSession: isAssetSessionOpen(assetType),
+          flushEdge: fillParent,
         }) as any,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
@@ -260,9 +261,10 @@ export function CandleChart({
     chart.setStyles(
       buildChartStyles(tipLabelsRef.current, resolution, {
         liveSession,
+        flushEdge: fillParent,
       }) as never,
     );
-  }, [changeColorScheme, ready, locale, resolution, liveSession]);
+  }, [changeColorScheme, ready, locale, resolution, liveSession, fillParent]);
 
   useEffect(() => {
     function onFsChange() {
@@ -311,10 +313,12 @@ export function CandleChart({
     setDrawingTool("none");
   };
 
+  // fillParent sits beside the workbench resizer — no shell border or the
+  // right edge doubles with the 1px hairline divider.
   const shellClass = fullscreen
     ? "relative flex h-screen flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)]"
     : fillParent
-      ? "relative flex h-[360px] flex-col overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)] sm:h-[520px] lg:h-full lg:min-h-[280px]"
+      ? "relative flex h-[360px] flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)] sm:h-[520px] lg:h-full lg:min-h-[280px]"
       : "relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)]";
 
   const plotClass =

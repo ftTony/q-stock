@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -11,25 +11,36 @@ import { KpiCard } from "@/components/market/kpi-card";
 import { MarketsHeaderToolbar } from "@/components/market/markets-header-toolbar";
 import { RankBoardPanel } from "@/components/market/rank-board-panel";
 import type { RankQuote } from "@/components/market/markets-types";
+import {
+  useAddWatchlistItem,
+  useRemoveWatchlistItem,
+  useWatchlist,
+} from "@/hooks/query/use-watchlist";
+import { useAlerts } from "@/hooks/query/use-alerts";
+import {
+  useMarketBoards,
+  useMarketNews,
+  useMarketSentiment,
+} from "@/hooks/query/use-market";
+import { useSymbolSearch } from "@/hooks/query/use-symbol-search";
 import { formatTime } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 
 type Tab = AssetType;
 type Board = "hot" | "gainers" | "losers";
 
-type NewsItem = {
-  headline: string;
-  summary?: string;
-  url?: string;
-  datetime?: number;
-  source?: string;
-  category?: string;
-  image?: string;
-};
-
 type Boards = Record<Board, RankQuote[]>;
 
 const EMPTY_BOARDS: Boards = { hot: [], gainers: [], losers: [] };
+
+function boardsHaveData(boards: Boards, assetType: Tab): boolean {
+  if (assetType === "crypto") return boards.hot.length > 0;
+  return (
+    boards.hot.length > 0 ||
+    boards.gainers.length > 0 ||
+    boards.losers.length > 0
+  );
+}
 
 /** Client-only relative age — avoids Date.now() SSR/client hydration skew. */
 function NewsAgeMinutes({ datetime }: { datetime: number }) {
@@ -59,201 +70,88 @@ export default function MarketsDashboard() {
 
   const [tab, setTab] = useState<Tab>(initialTab);
   const [q, setQ] = useState("");
-  const [boards, setBoards] = useState<Boards>(EMPTY_BOARDS);
-  const [watched, setWatched] = useState<Set<string>>(new Set());
-  const [results, setResults] = useState<
-    { symbol: string; description: string; assetType: AssetType }[]
-  >([]);
-  const [news, setNews] = useState<NewsItem[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [alertCount, setAlertCount] = useState(0);
-  const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
-  const [sentiment, setSentiment] = useState<{
-    buzz_score?: number;
-    sentiment_score?: number;
-    bullish_pct?: number;
-    bearish_pct?: number;
-    trend?: string | null;
-    available?: boolean;
-    message?: string;
-  } | null>(null);
+  const [debouncedQ, setDebouncedQ] = useState("");
+
+  const signedIn = Boolean(session?.user);
+
+  const boardsQuery = useMarketBoards(tab, {
+    refetchInterval: (query) => {
+      const data = query.state.data?.boards;
+      if (!data) return 45_000;
+      const boards: Boards = {
+        hot: data.hot ?? [],
+        gainers: data.gainers ?? [],
+        losers: data.losers ?? [],
+      };
+      return boardsHaveData(boards, tab) ? false : 45_000;
+    },
+  });
+  const newsQuery = useMarketNews(tab, tab !== "cn");
+  const sentimentQuery = useMarketSentiment(
+    tab,
+    tab !== "hk" && tab !== "cn",
+  );
+  const alertsQuery = useAlerts({ enabled: true });
+  const watchlistQuery = useWatchlist({ enabled: signedIn });
+  const addWatch = useAddWatchlistItem();
+  const removeWatch = useRemoveWatchlistItem();
+  const searchQuery = useSymbolSearch(debouncedQ, tab);
 
   useEffect(() => {
     setTab(initialTab);
   }, [initialTab]);
 
   useEffect(() => {
-    if (!q.trim()) {
-      setResults([]);
-      return;
-    }
-    const handle = setTimeout(async () => {
-      const res = await fetch(
-        `/api/search?q=${encodeURIComponent(q)}&assetType=${tab}`,
-      );
-      const data = await res.json();
-      setResults(data.results ?? []);
-    }, 250);
+    const handle = setTimeout(() => setDebouncedQ(q), 250);
     return () => clearTimeout(handle);
-  }, [q, tab]);
+  }, [q]);
 
-  useEffect(() => {
-    if (!session?.user) {
-      setWatched(new Set());
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      const res = await fetch("/api/watchlist");
-      if (!res.ok || cancelled) return;
-      const data = await res.json();
-      setWatched(
-        new Set(
-          (data.items ?? []).map(
-            (i: { symbol: string; assetType: string }) =>
-              `${i.assetType}:${i.symbol}`,
-          ),
-        ),
-      );
-    })();
-    return () => {
-      cancelled = true;
+  const boards: Boards = useMemo(() => {
+    const raw = boardsQuery.data?.boards;
+    if (!raw) return EMPTY_BOARDS;
+    return {
+      hot: raw.hot ?? [],
+      gainers: raw.gainers ?? [],
+      losers: raw.losers ?? [],
     };
-  }, [session]);
+  }, [boardsQuery.data]);
+
+  const watched = useMemo(() => {
+    if (!signedIn) return new Set<string>();
+    return new Set(
+      (watchlistQuery.data?.items ?? []).map(
+        (i) => `${i.assetType}:${i.symbol}`,
+      ),
+    );
+  }, [signedIn, watchlistQuery.data]);
+
+  const results = !q.trim() ? [] : (searchQuery.data?.results ?? []);
+  const news = (newsQuery.data?.news ?? []).slice(0, 4);
+  const sentiment = sentimentQuery.data?.market ?? null;
+  const alertCount = (alertsQuery.data?.alerts ?? []).filter(
+    (a) => a.status === "active",
+  ).length;
+
+  const loading = boardsQuery.isLoading && !boardsQuery.data;
+  const error =
+    boardsQuery.error instanceof Error
+      ? boardsQuery.error.message
+      : boardsQuery.error
+        ? tCommon("error")
+        : null;
+  const updatedAt = boardsQuery.dataUpdatedAt
+    ? new Date(boardsQuery.dataUpdatedAt)
+    : null;
 
   async function toggleWatch(symbol: string, assetType: AssetType) {
-    if (!session?.user) return;
+    if (!signedIn) return;
     const key = `${assetType}:${symbol}`;
-    const isOn = watched.has(key);
-    if (isOn) {
-      await fetch(`/api/watchlist?symbol=${symbol}&assetType=${assetType}`, {
-        method: "DELETE",
-      });
-      setWatched((prev) => {
-        const next = new Set(prev);
-        next.delete(key);
-        return next;
-      });
+    if (watched.has(key)) {
+      await removeWatch.mutateAsync({ symbol, assetType });
     } else {
-      const res = await fetch("/api/watchlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ symbol, assetType }),
-      });
-      if (res.ok) {
-        setWatched((prev) => new Set(prev).add(key));
-      }
+      await addWatch.mutateAsync({ symbol, assetType });
     }
   }
-
-  const loadBoards = useCallback(
-    async (assetType: Tab, silent = false): Promise<boolean> => {
-      if (!silent) {
-        setLoading(true);
-        setError(null);
-        // Keep prior boards so tab switches / reloads don't flash empty.
-      }
-      try {
-        const quoteUrl =
-          assetType === "crypto"
-            ? `/api/quotes?popular=1&assetType=crypto`
-            : `/api/ranks?assetType=${assetType}&board=all&limit=7`;
-        // Ranks first — don't block the board UI on news/sentiment/alerts.
-        const qr = await fetch(quoteUrl);
-        const qj = await qr.json();
-        if (!qr.ok) throw new Error(qj.error || "quotes failed");
-        let gotData = false;
-        if (assetType === "crypto") {
-          const quotes = (qj.quotes ?? []) as RankQuote[];
-          setBoards({ hot: quotes, gainers: [], losers: [] });
-          gotData = quotes.length > 0;
-        } else {
-          const next = {
-            hot: (qj.boards?.hot ?? []) as RankQuote[],
-            gainers: (qj.boards?.gainers ?? []) as RankQuote[],
-            losers: (qj.boards?.losers ?? []) as RankQuote[],
-          };
-          setBoards(next);
-          gotData =
-            next.hot.length > 0 ||
-            next.gainers.length > 0 ||
-            next.losers.length > 0;
-        }
-        setUpdatedAt(new Date());
-        if (!silent) setLoading(false);
-
-        const [sr, nr, ar] = await Promise.all([
-          assetType === "hk" || assetType === "cn"
-            ? Promise.resolve(null)
-            : fetch(`/api/sentiment?assetType=${assetType}`).catch(() => null),
-          assetType === "cn"
-            ? Promise.resolve(null)
-            : fetch(`/api/news?assetType=${assetType}`).catch(() => null),
-          fetch("/api/alerts").catch(() => null),
-        ]);
-        if (sr?.ok) {
-          const sj = await sr.json();
-          setSentiment(sj?.market ?? null);
-        } else if (assetType === "hk" || assetType === "cn") {
-          setSentiment(null);
-        }
-        if (nr?.ok) {
-          const nj = await nr.json();
-          setNews((nj.news ?? []).slice(0, 4));
-        } else if (assetType === "cn") {
-          setNews([]);
-        }
-        if (ar?.ok) {
-          const aj = await ar.json();
-          setAlertCount(
-            (aj.alerts ?? []).filter(
-              (a: { status: string }) => a.status === "active",
-            ).length,
-          );
-        }
-        return gotData;
-      } catch (err) {
-        if (!silent) {
-          setError(err instanceof Error ? err.message : tCommon("error"));
-          setBoards(EMPTY_BOARDS);
-        }
-        return false;
-      } finally {
-        if (!silent) setLoading(false);
-      }
-    },
-    [tCommon],
-  );
-
-  // Fetch on tab change; retry only while empty — stop polling once data arrives.
-  useEffect(() => {
-    let cancelled = false;
-    let timer: ReturnType<typeof setInterval> | null = null;
-
-    const stopPoll = () => {
-      if (timer) {
-        clearInterval(timer);
-        timer = null;
-      }
-    };
-
-    void (async () => {
-      const ok = await loadBoards(tab);
-      if (cancelled || ok) return;
-      timer = setInterval(() => {
-        void (async () => {
-          const got = await loadBoards(tab, true);
-          if (got) stopPoll();
-        })();
-      }, 45_000);
-    })();
-
-    return () => {
-      cancelled = true;
-      stopPoll();
-    };
-  }, [tab, loadBoards]);
 
   const kpiQuotes = boards.hot;
   const avgChange = useMemo(() => {
@@ -344,7 +242,7 @@ export default function MarketsDashboard() {
             <button
               type="button"
               className="qt-btn qt-btn-ghost px-3 py-1.5"
-              onClick={() => void loadBoards(tab)}
+              onClick={() => void boardsQuery.refetch()}
             >
               {tCommon("retry")}
             </button>

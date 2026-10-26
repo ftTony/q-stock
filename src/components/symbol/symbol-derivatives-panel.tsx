@@ -3,6 +3,10 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import {
+  useMarketOptionsChain,
+  useMarketOptionsMeta,
+} from "@/hooks/query/use-market-options";
 import { formatNumber } from "@/lib/format-number";
 import type { OptionRow } from "@/lib/market/providers/longbridge-research";
 import type { AssetType } from "@/lib/types";
@@ -141,13 +145,56 @@ export function SymbolDerivativesPanel({
   lastPrice: number | null;
 }) {
   const t = useTranslations("symbol");
-  const [expiries, setExpiries] = useState<string[]>([]);
   const [expiry, setExpiry] = useState("");
-  const [calls, setCalls] = useState<OptionRow[]>([]);
-  const [puts, setPuts] = useState<OptionRow[]>([]);
-  const [unavailable, setUnavailable] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [chainError, setChainError] = useState<string | null>(null);
+
+  const metaQuery = useMarketOptionsMeta(symbol, assetType);
+  const meta = metaQuery.data;
+  const unavailable =
+    Boolean(meta?.unavailable) ||
+    !(meta?.expiries?.length) ||
+    metaQuery.isError;
+  const expiries = unavailable ? [] : (meta?.expiries ?? []);
+  const loading = metaQuery.isLoading;
+
+  const metaError =
+    meta?.code === "LB_CONN_LIMIT"
+      ? t("derivativesConnLimit")
+      : meta?.code === "LB_OPTION_PACKAGE"
+        ? t("derivativesNoPackage")
+        : typeof meta?.detail === "string"
+          ? meta.detail
+          : null;
+
+  useEffect(() => {
+    setExpiry("");
+  }, [symbol, assetType]);
+
+  useEffect(() => {
+    if (!expiries.length) return;
+    setExpiry((prev) => prev || expiries[0]!);
+  }, [expiries]);
+
+  const chainQuery = useMarketOptionsChain({
+    symbol,
+    assetType,
+    expiry: expiry || null,
+    spot: lastPrice ?? 0,
+    enabled: Boolean(expiry) && !unavailable,
+  });
+  const chain = chainQuery.data;
+  const calls = (chain?.calls ?? []) as OptionRow[];
+  const puts = (chain?.puts ?? []) as OptionRow[];
+  const chainError = chain?.unavailable
+    ? chain.code === "LB_CONN_LIMIT"
+      ? t("derivativesConnLimit")
+      : chain.code === "LB_OPTION_PACKAGE"
+        ? t("derivativesNoPackage")
+        : typeof chain.detail === "string"
+          ? chain.detail
+          : t("derivativesEmpty")
+    : chainQuery.isError
+      ? t("derivativesEmpty")
+      : metaError;
 
   const spot =
     lastPrice != null && lastPrice > 0
@@ -160,93 +207,6 @@ export function SymbolDerivativesPanel({
     lastPrice != null && lastPrice > 0
       ? `/tools/options?symbol=${encodeURIComponent(symbol)}&spot=${lastPrice}`
       : `/tools/options?symbol=${encodeURIComponent(symbol)}`;
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    void (async () => {
-      try {
-        const res = await fetch(
-          `/api/market/options?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-        );
-        const json = await res.json();
-        if (cancelled) return;
-        if (json.unavailable || !json.expiries?.length) {
-          setUnavailable(true);
-          setExpiries([]);
-          setExpiry("");
-          setChainError(
-            json.code === "LB_CONN_LIMIT"
-              ? t("derivativesConnLimit")
-              : json.code === "LB_OPTION_PACKAGE"
-                ? t("derivativesNoPackage")
-                : typeof json.detail === "string"
-                  ? json.detail
-                  : null,
-          );
-        } else {
-          setUnavailable(false);
-          setChainError(null);
-          setExpiries(json.expiries as string[]);
-          setExpiry((prev) => prev || (json.expiries[0] as string));
-        }
-      } catch {
-        if (!cancelled) {
-          setUnavailable(true);
-          setChainError(null);
-        }
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [symbol, assetType, t]);
-
-  useEffect(() => {
-    if (!expiry || unavailable) return;
-    let cancelled = false;
-    void (async () => {
-      try {
-        const qs = new URLSearchParams({
-          symbol,
-          assetType,
-          expiry,
-          spot: String(lastPrice ?? 0),
-        });
-        const res = await fetch(`/api/market/options?${qs}`);
-        const json = await res.json();
-        if (cancelled) return;
-        if (json.unavailable) {
-          setCalls([]);
-          setPuts([]);
-          setChainError(
-            json.code === "LB_CONN_LIMIT"
-              ? t("derivativesConnLimit")
-              : json.code === "LB_OPTION_PACKAGE"
-                ? t("derivativesNoPackage")
-                : typeof json.detail === "string"
-                  ? json.detail
-                  : t("derivativesEmpty"),
-          );
-        } else {
-          setCalls(json.calls ?? []);
-          setPuts(json.puts ?? []);
-          setChainError(null);
-        }
-      } catch {
-        if (!cancelled) {
-          setCalls([]);
-          setPuts([]);
-          setChainError(t("derivativesEmpty"));
-        }
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [symbol, assetType, expiry, lastPrice, unavailable, t]);
 
   return (
     <div className="flex h-full min-h-0 flex-1 flex-col">

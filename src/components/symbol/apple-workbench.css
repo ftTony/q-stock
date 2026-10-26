@@ -407,12 +407,11 @@ html.aw-rail-resizing {
     width: var(--aw-side-dock-w, 44px);
     align-self: stretch;
   }
+  /* Zero-width flex item: hairline is rail border-left; ::before is the drag hit target. */
   .aw-workbench-resizer {
     display: block;
-    flex: 0 0 8px;
-    width: 8px;
-    margin-left: -4px;
-    margin-right: -4px;
+    flex: 0 0 0;
+    width: 0;
     position: relative;
     z-index: 5;
     cursor: col-resize;
@@ -420,23 +419,23 @@ html.aw-rail-resizing {
     background: transparent;
     border: none;
     padding: 0;
+    align-self: stretch;
   }
-  .aw-workbench-resizer::after {
+  .aw-workbench-resizer::before {
     content: "";
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 50%;
-    width: 1px;
-    transform: translateX(-50%);
-    background: var(--aw-hairline);
-    transition: background 0.12s ease, width 0.12s ease;
+    left: -4px;
+    width: 8px;
   }
-  .aw-workbench-resizer:hover::after,
-  .aw-workbench-resizer:focus-visible::after,
-  .aw-workbench-resizer[data-dragging="true"]::after {
-    width: 2px;
-    background: var(--aw-primary);
+  .aw-workbench-resizer::after {
+    content: none;
+  }
+  .aw-workbench-resizer:hover ~ .aw-workbench-rail,
+  .aw-workbench-resizer:focus-visible ~ .aw-workbench-rail,
+  .aw-workbench-grid[data-resizing="true"] .aw-workbench-rail {
+    border-left-color: var(--aw-primary);
   }
   .aw-workbench-rail {
     flex: 0 0 var(--aw-rail-width, 360px);
@@ -444,8 +443,10 @@ html.aw-rail-resizing {
     max-width: min(560px, 48vw);
     min-width: 300px;
     border-top: none;
+    /* Single hairline at the chart|rail edge (chart y-axis spine is flushEdge-hidden). */
     border-left: 1px solid var(--aw-hairline);
     min-height: 0;
+    transition: border-left-color 0.12s ease;
   }
   .aw-workbench-grid[data-resizing="true"] {
     user-select: none;
@@ -703,6 +704,7 @@ html.aw-rail-resizing {
 }
 
 .aw-tab {
+  position: relative;
   display: inline-flex;
   align-items: center;
   height: 34px;
@@ -711,14 +713,25 @@ html.aw-rail-resizing {
   letter-spacing: -0.12px;
   color: var(--aw-ink-muted-48);
   padding: 0 11px;
-  border-bottom: 2px solid transparent;
+  /* Active mark via ::after so it does not stack with the tablist 1px hairline. */
+  border-bottom: none;
   border-radius: 0;
 }
 
 .aw-tab[data-active="true"] {
   color: var(--aw-ink);
   font-weight: 600;
-  border-bottom-color: var(--aw-primary);
+}
+
+.aw-tab[data-active="true"]::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  z-index: 1;
+  height: 2px;
+  background: var(--aw-primary);
 }
 
 /* QuoteBar secondary tabs: full row height so active mark sits on bar bottom edge */
@@ -729,6 +742,12 @@ html.aw-rail-resizing {
   margin-bottom: -1px;
   padding-top: 0;
   padding-bottom: 0;
+}
+
+.aw-tab-quote[data-active="true"]::after {
+  left: 0;
+  right: 0;
+  bottom: 0;
 }
 
 .aw-hairline {

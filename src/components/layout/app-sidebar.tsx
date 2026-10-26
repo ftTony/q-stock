@@ -59,15 +59,6 @@ function IconDoc({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   );
 }
 
-function IconBell({ className = "h-[18px] w-[18px]" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
-      <path d="M6.5 9.5a5.5 5.5 0 0 1 11 0c0 6.5 2.5 6.5 2.5 6.5H4s2.5 0 2.5-6.5" strokeLinejoin="round" />
-      <path d="M10 19a2 2 0 0 0 4 0" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 function IconLab({ className = "h-[18px] w-[18px]" }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6">
@@ -160,7 +151,6 @@ export function AppSidebar({ onNavigate }: Props) {
   const isPortfolio = pathname.startsWith("/portfolio");
   const isReview = pathname.startsWith("/review");
   const isStrategies = pathname.startsWith("/strategies");
-  const isAlerts = pathname.startsWith("/alerts");
   const settingsModal = useSettingsModalOptional();
 
   return (
@@ -207,13 +197,6 @@ export function AppSidebar({ onNavigate }: Props) {
           active={isReview}
           icon={<IconDoc />}
           label={t("review")}
-          onNavigate={onNavigate}
-        />
-        <RailItem
-          href="/alerts"
-          active={isAlerts}
-          icon={<IconBell />}
-          label={t("alerts")}
           onNavigate={onNavigate}
         />
         <RailItem

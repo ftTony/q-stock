@@ -175,11 +175,16 @@ export function LearnIndicatorIllustration({
   const label = LABELS[language][indicator];
 
   return (
-    <figure className="my-7 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--panel)]">
-      <div className="overflow-x-auto px-3 pt-4 sm:px-5">
+    <figure className="my-8 overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--panel)]">
+      <div className="border-b border-[var(--border)] px-4 py-3.5 sm:px-6">
+        <p className="text-base font-semibold tracking-tight text-[var(--foreground)]">
+          {label.title}
+        </p>
+      </div>
+      <div className="overflow-x-auto px-3 py-5 sm:px-6 sm:py-6">
         <svg
           aria-label={label.title}
-          className="h-auto min-w-[540px] w-full"
+          className="h-auto min-h-[220px] min-w-[560px] w-full sm:min-h-[280px]"
           role="img"
           viewBox="0 0 680 250"
         >
@@ -197,7 +202,7 @@ export function LearnIndicatorIllustration({
             .signal-line { stroke: #d99b28; stroke-width: 2.5; }
             .band-boundary { stroke: #4b9b8c; stroke-width: 2; stroke-dasharray: 6 4; }
             .histogram path { stroke: #4b9b8c; stroke-width: 10; opacity: .68; }
-            .diagram-label { fill: var(--muted); font: 12px system-ui, sans-serif; }
+            .diagram-label { fill: var(--muted); font: 13px system-ui, sans-serif; }
             .legend-line { stroke-width: 3; }
             .legend-0 { stroke: var(--brand-text); }
             .legend-1 { stroke: #d99b28; }
@@ -205,7 +210,7 @@ export function LearnIndicatorIllustration({
           `}</style>
         </svg>
       </div>
-      <figcaption className="px-4 pb-4 pt-2 text-xs leading-relaxed text-[var(--muted)] sm:px-5">
+      <figcaption className="px-4 pb-5 pt-1 text-[13px] leading-relaxed text-[var(--muted)] sm:px-6">
         <span className="font-medium text-[var(--foreground)]">{label.note}。</span>{" "}
         {label.caption}
       </figcaption>

@@ -1,33 +1,48 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
-import { QtSelect } from "@/components/ui/qt-select";
-import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
-import { displayName } from "@/lib/market-names";
+import {
+  SymbolWatchlistManageSidebar,
+  type CustomGroup,
+  type GroupKey,
+} from "@/components/symbol/symbol-watchlist-manage-sidebar";
+import {
+  SymbolWatchlistManagePanel,
+  type WatchlistRow,
+} from "@/components/symbol/symbol-watchlist-manage-panel";
+import {
+  useAddWatchlistItem,
+  useRemoveWatchlistItem,
+  useWatchlist,
+} from "@/hooks/query/use-watchlist";
+import {
+  useAddWatchlistGroupItems,
+  useCreateWatchlistGroup,
+  useRemoveWatchlistGroupItems,
+  useUpdateWatchlistGroup,
+  useWatchlistGroupDetail,
+  useWatchlistGroups,
+} from "@/hooks/query/use-watchlist-groups";
+import { useSymbolSearch } from "@/hooks/query/use-symbol-search";
 import type { AssetType } from "@/lib/types";
-
-type Row = {
-  id: string;
-  symbol: string;
-  assetType: AssetType;
-};
-
-type SearchHit = {
-  symbol: string;
-  description: string;
-  assetType: AssetType;
-};
 
 type Props = {
   open: boolean;
   onClose: () => void;
-  /** Called after add/remove so the dock list can refresh. */
   onChanged: () => void;
 };
 
-/** Centered dialog: search-add + remove for the symbol-page watchlist dock. */
+function isCustom(key: GroupKey): key is `g:${string}` {
+  return key.startsWith("g:");
+}
+
+function customId(key: `g:${string}`) {
+  return key.slice(2);
+}
+
+/** Watchlist manager — market folders + custom groups (create = inline rename). */
 export function SymbolWatchlistSettingsModal({
   open,
   onClose,
@@ -37,82 +52,236 @@ export function SymbolWatchlistSettingsModal({
   const tMarket = useTranslations("market");
   const tCommon = useTranslations("common");
   const [mounted, setMounted] = useState(false);
-  const [rows, setRows] = useState<Row[]>([]);
-  const [loading, setLoading] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [group, setGroup] = useState<GroupKey>("all");
+  const [selected, setSelected] = useState<Set<string>>(() => new Set());
+  const [showAdd, setShowAdd] = useState(false);
   const [q, setQ] = useState("");
+  const [debouncedQ, setDebouncedQ] = useState("");
   const [addType, setAddType] = useState<AssetType>("stock");
-  const [results, setResults] = useState<SearchHit[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState("");
+  const editRef = useRef<HTMLInputElement>(null);
+
+  const customGroupId = isCustom(group) ? customId(group) : null;
+
+  const watchlistQuery = useWatchlist({ enabled: open });
+  const groupsQuery = useWatchlistGroups(open);
+  const groupDetailQuery = useWatchlistGroupDetail(customGroupId, open);
+  const searchQuery = useSymbolSearch(
+    debouncedQ,
+    addType,
+    open && showAdd && Boolean(debouncedQ.trim()),
+  );
+
+  const createGroupMut = useCreateWatchlistGroup();
+  const updateGroupMut = useUpdateWatchlistGroup();
+  const addWatch = useAddWatchlistItem();
+  const removeWatch = useRemoveWatchlistItem();
+  const addGroupItems = useAddWatchlistGroupItems();
+  const removeGroupItems = useRemoveWatchlistGroupItems();
 
   useEffect(() => setMounted(true), []);
 
-  const load = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/watchlist");
-      const data = await res.json();
-      if (res.ok) setRows(data.items ?? []);
-      else setRows([]);
-    } catch {
-      setRows([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  useEffect(() => {
+    const handle = setTimeout(() => setDebouncedQ(q), 250);
+    return () => clearTimeout(handle);
+  }, [q]);
+
+  // Only reset when the dialog opens — do not depend on unstable onClose
+  // identities (parent re-renders / quote poll would snap selection back to「全部」).
+  useEffect(() => {
+    if (!open) return;
+    setGroup("all");
+    setSelected(new Set());
+    setShowAdd(false);
+    setEditingId(null);
+    setQ("");
+    setDebouncedQ("");
+    void watchlistQuery.refetch();
+    void groupsQuery.refetch();
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = prev;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- open-only reset
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
-    void load();
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
+      if (e.key !== "Escape") return;
+      if (editingId) {
+        setEditingId(null);
+        return;
+      }
+      onClose();
     };
     window.addEventListener("keydown", onKey);
-    return () => {
-      document.body.style.overflow = prev;
-      window.removeEventListener("keydown", onKey);
-    };
-  }, [open, load, onClose]);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, editingId, onClose]);
 
   useEffect(() => {
-    if (!open || !q.trim()) {
-      setResults([]);
-      return;
-    }
-    const handle = setTimeout(async () => {
-      const res = await fetch(
-        `/api/search?q=${encodeURIComponent(q)}&assetType=${addType}`,
+    if (!editingId) return;
+    const id = window.setTimeout(() => {
+      editRef.current?.focus();
+      editRef.current?.select();
+    }, 0);
+    return () => window.clearTimeout(id);
+  }, [editingId]);
+
+  const rows = (watchlistQuery.data?.items ?? []) as WatchlistRow[];
+  const groups = (groupsQuery.data?.groups ?? []) as CustomGroup[];
+  const groupRows = isCustom(group)
+    ? ((groupDetailQuery.data?.items ?? []) as WatchlistRow[])
+    : null;
+  const results =
+    !open || !showAdd || !q.trim()
+      ? []
+      : (searchQuery.data?.results ?? []);
+  const loading =
+    (watchlistQuery.isLoading || groupsQuery.isLoading) && rows.length === 0;
+
+  const counts = useMemo(() => {
+    const c = { all: rows.length, stock: 0, hk: 0, cn: 0, crypto: 0 };
+    for (const r of rows) c[r.assetType] += 1;
+    return c;
+  }, [rows]);
+
+  const filtered = useMemo(() => {
+    if (isCustom(group)) return groupRows ?? [];
+    if (group === "all") return rows;
+    return rows.filter((r) => r.assetType === group);
+  }, [rows, group, groupRows]);
+
+  const title = useMemo(() => {
+    if (isCustom(group)) {
+      return (
+        groups.find((g) => g.id === customId(group))?.name ??
+        t("watchlistNewGroupName")
       );
-      const data = await res.json();
-      setResults(data.results ?? []);
-    }, 250);
-    return () => clearTimeout(handle);
-  }, [open, q, addType]);
+    }
+    if (group === "all") return t("watchlistGroupAll");
+    if (group === "stock") return tMarket("stocks");
+    if (group === "hk") return tMarket("hk");
+    if (group === "cn") return tMarket("cn");
+    return tMarket("crypto");
+  }, [group, groups, t, tMarket]);
+
+  const marketLabel = (assetType: AssetType) => {
+    if (assetType === "stock") return tMarket("stocks");
+    if (assetType === "hk") return tMarket("hk");
+    if (assetType === "cn") return tMarket("cn");
+    return tMarket("crypto");
+  };
+
+  const allSelected =
+    filtered.length > 0 && filtered.every((r) => selected.has(r.id));
+  const someSelected = filtered.some((r) => selected.has(r.id));
+
+  function selectGroup(key: GroupKey) {
+    setGroup(key);
+    setSelected(new Set());
+    setEditingId(null);
+  }
+
+  function toggleAll() {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (allSelected) for (const r of filtered) next.delete(r.id);
+      else for (const r of filtered) next.add(r.id);
+      return next;
+    });
+  }
+
+  function toggleRow(id: string) {
+    setSelected((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  async function createGroup() {
+    setBusy(true);
+    try {
+      const data = await createGroupMut.mutateAsync({
+        name: t("watchlistNewGroupName"),
+      });
+      const g = data.group as CustomGroup;
+      setGroup(`g:${g.id}`);
+      setSelected(new Set());
+      setEditingId(g.id);
+      setEditName(g.name);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function commitRename() {
+    if (!editingId) return;
+    const name = editName.trim() || t("watchlistNewGroupName");
+    const id = editingId;
+    setEditingId(null);
+    try {
+      await updateGroupMut.mutateAsync({ id, name });
+    } catch {
+      void groupsQuery.refetch();
+    }
+  }
 
   async function addSymbol(symbol: string, assetType: AssetType) {
     setBusy(true);
     try {
-      await fetch("/api/watchlist", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ symbol, assetType }),
-      });
+      if (isCustom(group)) {
+        await addGroupItems.mutateAsync({
+          groupId: customId(group),
+          symbol,
+          assetType,
+        });
+      } else {
+        await addWatch.mutateAsync({ symbol, assetType });
+      }
       setQ("");
-      setResults([]);
-      await load();
+      setDebouncedQ("");
       onChanged();
     } finally {
       setBusy(false);
     }
   }
 
-  async function remove(id: string) {
+  async function removeSelected() {
+    const ids = [...selected];
+    if (!ids.length) return;
     setBusy(true);
     try {
-      await fetch(`/api/watchlist?id=${id}`, { method: "DELETE" });
-      await load();
+      if (isCustom(group)) {
+        await removeGroupItems.mutateAsync({
+          groupId: customId(group),
+          itemIds: ids,
+        });
+      } else {
+        await Promise.all(ids.map((id) => removeWatch.mutateAsync(id)));
+      }
+      setSelected(new Set());
       onChanged();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function addSelectedToGroup(targetGroupId: string) {
+    const ids = [...selected];
+    if (!ids.length) return;
+    setBusy(true);
+    try {
+      await addGroupItems.mutateAsync({
+        groupId: targetGroupId,
+        itemIds: ids,
+      });
+      setSelected(new Set());
     } finally {
       setBusy(false);
     }
@@ -121,7 +290,7 @@ export function SymbolWatchlistSettingsModal({
   if (!mounted || !open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+    <div className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-5">
       <button
         type="button"
         aria-label="Close"
@@ -131,119 +300,102 @@ export function SymbolWatchlistSettingsModal({
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={t("watchlistSettings")}
-        className="relative z-10 flex max-h-[min(90vh,32rem)] w-full max-w-[24rem] flex-col overflow-hidden rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] shadow-[0_24px_80px_rgba(15,23,42,0.28)]"
+        aria-label={t("watchlistManage")}
+        className="relative z-10 flex h-[min(88dvh,36rem)] w-full max-w-[44rem] flex-col overflow-hidden rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] shadow-[0_24px_80px_rgba(15,23,42,0.28)]"
       >
-        <div className="flex shrink-0 items-start justify-between gap-3 border-b border-[var(--aw-hairline,var(--border))] px-4 py-3">
-          <h2 className="text-[15px] font-semibold tracking-tight text-[var(--foreground)]">
-            {t("watchlistSettings")}
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--aw-hairline,var(--border))] px-4 py-3">
+          <h2 className="text-[15px] font-semibold tracking-tight">
+            {t("watchlistManage")}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-none text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
+            className="inline-flex h-8 w-8 items-center justify-center text-[var(--muted)] hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
             aria-label="Close"
           >
-            <svg
-              className="h-4 w-4"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2.2"
-              strokeLinecap="round"
-            >
+            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>
         </div>
 
-        <div className="relative shrink-0 border-b border-[var(--aw-hairline,var(--border))] px-4 py-3">
-          <div className="flex items-center gap-2">
-            <QtSelect
-              value={addType}
-              onChange={(v) => setAddType(v as AssetType)}
-              className="w-[6.5rem] shrink-0"
-              triggerClassName="h-9"
-              options={[
-                { value: "stock", label: tMarket("stocks") },
-                { value: "hk", label: tMarket("hk") },
-                { value: "cn", label: tMarket("cn") },
-                { value: "crypto", label: tMarket("crypto") },
-              ]}
-            />
-            <input
-              value={q}
-              onChange={(e) => setQ(e.target.value)}
-              placeholder={tMarket("search")}
-              className="qt-input h-9 min-w-0 flex-1 px-3 text-sm leading-none"
-              disabled={busy}
-            />
-          </div>
-          {results.length > 0 ? (
-            <ul className="absolute left-4 right-4 top-[calc(100%-0.25rem)] z-20 max-h-44 overflow-auto rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] shadow-xl qt-scroll">
-              {results.map((r) => (
-                <li key={`${r.assetType}-${r.symbol}`}>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    className="flex w-full items-center justify-between gap-2 px-3 py-2 text-left text-sm hover:bg-[var(--sidebar-hover)] disabled:opacity-50"
-                    onClick={() => void addSymbol(r.symbol, r.assetType)}
-                  >
-                    <span className="min-w-0 truncate">
-                      <span className="font-semibold">{r.symbol}</span>
-                      <span className="ml-2 text-xs text-[var(--muted)]">
-                        {r.description}
-                      </span>
-                    </span>
-                    <span className="shrink-0 text-[11px] text-[var(--brand-text)]">
-                      + {tMarket("addWatch")}
-                    </span>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          ) : null}
-        </div>
+        <div className="flex min-h-0 flex-1">
+          <SymbolWatchlistManageSidebar
+            group={group}
+            onSelect={selectGroup}
+            counts={counts}
+            groups={groups}
+            busy={busy}
+            onCreate={() => void createGroup()}
+            editingId={editingId}
+            editName={editName}
+            onEditName={setEditName}
+            onCommitRename={() => void commitRename()}
+            onCancelRename={() => {
+              setEditingId(null);
+              void groupsQuery.refetch();
+            }}
+            onStartRename={(id, name) => {
+              setEditingId(id);
+              setEditName(name);
+            }}
+            editRef={editRef}
+            labels={{
+              createGroup: t("watchlistCreateGroup"),
+              groupAll: t("watchlistGroupAll"),
+              stocks: tMarket("stocks"),
+              hk: tMarket("hk"),
+              cn: tMarket("cn"),
+              crypto: tMarket("crypto"),
+            }}
+          />
 
-        <div className="min-h-0 flex-1 overflow-y-auto qt-scroll">
-          {loading && rows.length === 0 ? (
-            <p className="px-4 py-8 text-center text-sm text-[var(--muted)]">
-              {tCommon("loading")}
-            </p>
-          ) : rows.length === 0 ? (
-            <div className="px-4">
-              <EmptyStateBlock
-                art="watchlist"
-                label={tMarket("watchlistEmpty")}
-              />
-            </div>
-          ) : (
-            <ul>
-              {rows.map((row) => (
-                <li
-                  key={row.id}
-                  className="flex items-center justify-between gap-2 border-b border-[var(--aw-hairline,var(--border))]/70 px-4 py-2.5 last:border-0"
-                >
-                  <div className="min-w-0">
-                    <div className="truncate text-sm font-semibold leading-tight">
-                      {row.symbol}
-                    </div>
-                    <div className="truncate text-[11px] text-[var(--muted)]">
-                      {displayName(row.symbol, row.assetType)}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    disabled={busy}
-                    className="shrink-0 text-xs font-medium text-[var(--muted)] hover:text-[var(--down)] disabled:opacity-50"
-                    onClick={() => void remove(row.id)}
-                  >
-                    {tMarket("remove")}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+          <SymbolWatchlistManagePanel
+            title={title}
+            showAdd={showAdd}
+            onToggleAdd={() => {
+              setShowAdd((v) => !v);
+              setQ("");
+              setDebouncedQ("");
+            }}
+            addType={addType}
+            onAddType={setAddType}
+            q={q}
+            onQ={setQ}
+            results={results}
+            onAddSymbol={(symbol, assetType) =>
+              void addSymbol(symbol, assetType)
+            }
+            busy={busy}
+            loading={loading && !isCustom(group)}
+            filtered={filtered}
+            selected={selected}
+            onToggleRow={toggleRow}
+            onToggleAll={toggleAll}
+            allSelected={allSelected}
+            someSelected={someSelected}
+            marketLabel={marketLabel}
+            groups={groups}
+            showAddToGroup={!isCustom(group)}
+            onAddToGroup={(gid) => void addSelectedToGroup(gid)}
+            onRemoveSelected={() => void removeSelected()}
+            labels={{
+              addWatch: tMarket("addWatch"),
+              search: tMarket("search"),
+              stocks: tMarket("stocks"),
+              hk: tMarket("hk"),
+              cn: tMarket("cn"),
+              crypto: tMarket("crypto"),
+              colCode: t("watchlistColCode"),
+              colName: t("watchlistColName"),
+              colMarket: t("watchlistColMarket"),
+              loading: tCommon("loading"),
+              empty: t("watchlistGroupEmpty"),
+              selectAll: t("watchlistSelectAll"),
+              addTo: t("watchlistAddTo"),
+              deleteSelected: t("watchlistDeleteSelected"),
+            }}
+          />
         </div>
       </div>
     </div>,

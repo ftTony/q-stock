@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -10,6 +10,14 @@ import { QtSelect } from "@/components/ui/qt-select";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { TopToast, type ToastTone } from "@/components/ui/top-toast";
 import { useMounted } from "@/hooks/use-mounted";
+import { useMyStrategies } from "@/hooks/query/use-strategies";
+import {
+  useCancelOrder,
+  usePlaceOrder,
+  useTradingAccount,
+  useTradingOrders,
+  useTradingPositions,
+} from "@/hooks/query/use-trading";
 import { formatNumber } from "@/lib/format-number";
 import { summarizeOrderRisk } from "@/lib/trading/risk-math";
 import type { EmotionTagId } from "@/components/symbol/symbol-emotion-check";
@@ -92,71 +100,59 @@ export function TradePanel({
   const [invalidationPrice, setInvalidationPrice] = useState("");
   const [emotionTags, setEmotionTags] = useState<EmotionTagId[]>([]);
   const [strategyIdInner, setStrategyIdInner] = useState<string>("");
-  const [strategies, setStrategies] = useState<
-    Array<{ id: string; name: string }>
-  >([]);
   const strategyId =
     strategyIdProp !== undefined ? strategyIdProp : strategyIdInner;
+  const signedIn = Boolean(session?.user);
+
+  const accountQuery = useTradingAccount(signedIn);
+  const positionsQuery = useTradingPositions({ enabled: signedIn });
+  const ordersQuery = useTradingOrders({
+    status: "pending",
+    symbol,
+    assetType,
+    enabled: signedIn,
+  });
+  const strategiesQuery = useMyStrategies(signedIn);
+  const placeOrder = usePlaceOrder();
+  const cancelOrder = useCancelOrder();
+
+  const strategies = strategiesQuery.data?.strategies ?? [];
   const setStrategyId = (id: string) => {
     const name = strategies.find((s) => s.id === id)?.name;
     if (onStrategyIdChange) onStrategyIdChange(id, name);
     else setStrategyIdInner(id);
   };
-  const [account, setAccount] = useState<Account | null>(null);
-  const [position, setPosition] = useState<Position | null>(null);
-  const [orders, setOrders] = useState<Order[]>([]);
+
+  const account = (accountQuery.data as { account?: Account } | undefined)
+    ?.account ?? null;
+  const position = useMemo(() => {
+    const list =
+      (
+        positionsQuery.data as
+          | { positions?: Array<{ symbol: string; assetType: string; qty: number; avgCost: number }> }
+          | undefined
+      )?.positions ?? [];
+    const pos = list.find(
+      (x) => x.symbol === symbol && x.assetType === assetType,
+    );
+    return pos ? ({ qty: pos.qty, avgCost: pos.avgCost } as Position) : null;
+  }, [positionsQuery.data, symbol, assetType]);
+  const orders =
+    ((ordersQuery.data as { orders?: Order[] } | undefined)?.orders ??
+      []) as Order[];
+  const loading =
+    accountQuery.isLoading ||
+    positionsQuery.isLoading ||
+    ordersQuery.isLoading;
+  const busy = placeOrder.isPending || cancelOrder.isPending;
+
   const [msg, setMsg] = useState<string | null>(null);
   const [msgTone, setMsgTone] = useState<ToastTone>("neutral");
   const [msgKey, setMsgKey] = useState(0);
-  const [busy, setBusy] = useState(false);
-  const [loading, setLoading] = useState(false);
-
-  const load = useCallback(async () => {
-    if (!session?.user) return;
-    setLoading(true);
-    try {
-      const [a, p, o, st] = await Promise.all([
-        fetch("/api/trading/account"),
-        fetch("/api/trading/positions"),
-        fetch(
-          `/api/trading/orders?symbol=${symbol}&assetType=${assetType}&status=pending`,
-        ),
-        fetch("/api/strategies?mine=1").catch(() => null),
-      ]);
-      if (a.ok) {
-        const aj = await a.json();
-        setAccount(aj.account);
-        onCashBalance?.(aj.account?.cashBalance ?? null);
-      }
-      if (p.ok) {
-        const pj = await p.json();
-        const pos = (pj.positions ?? []).find(
-          (x: { symbol: string; assetType: string }) =>
-            x.symbol === symbol && x.assetType === assetType,
-        );
-        setPosition(pos ? { qty: pos.qty, avgCost: pos.avgCost } : null);
-      }
-      if (o.ok) {
-        const oj = await o.json();
-        setOrders(oj.orders ?? []);
-      }
-      if (st && st.ok) {
-        const sj = await st.json();
-        setStrategies(
-          (sj.strategies ?? []).map((x: { id: string; name: string }) => ({
-            id: x.id,
-            name: x.name,
-          })),
-        );
-      }
-    } finally {
-      setLoading(false);
-    }
-  }, [session?.user, symbol, assetType, onCashBalance]);
 
   useEffect(() => {
-    void load();
-  }, [load]);
+    onCashBalance?.(account?.cashBalance ?? null);
+  }, [account?.cashBalance, onCashBalance]);
 
   useEffect(() => {
     if (lastPrice && lastPrice > 0) {
@@ -217,7 +213,6 @@ export function TradePanel({
       showToast(t("loginRequired"), "neutral");
       return;
     }
-    setBusy(true);
     try {
       const stopForRisk =
         orderType === "stop"
@@ -251,35 +246,29 @@ export function TradePanel({
       if (orderType === "limit") body.limitPrice = Number(limitPrice);
       if (orderType === "stop") body.stopPrice = Number(stopPrice);
 
-      const res = await fetch("/api/trading/orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        showToast(data.error || t("orderFailed"), "error");
-        return;
-      }
+      const data = (await placeOrder.mutateAsync(body)) as {
+        order?: { status?: string };
+        error?: string;
+      };
       showToast(
         data.order?.status === "filled" ? t("orderFilled") : t("orderPending"),
         "success",
       );
       setEmotionTags([]);
       onDismissAiDraft?.();
-      await load();
-    } finally {
-      setBusy(false);
+    } catch (err) {
+      showToast(
+        err instanceof Error ? err.message : t("orderFailed"),
+        "error",
+      );
     }
   }
 
   async function cancel(id: string) {
-    setBusy(true);
     try {
-      await fetch(`/api/trading/orders?id=${id}`, { method: "DELETE" });
-      await load();
-    } finally {
-      setBusy(false);
+      await cancelOrder.mutateAsync(id);
+    } catch {
+      /* ignore */
     }
   }
 

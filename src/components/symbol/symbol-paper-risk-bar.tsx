@@ -1,8 +1,15 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import {
+  usePaperRiskSettings,
+  useTradingAccount,
+  useTradingPositions,
+} from "@/hooks/query/use-trading";
+import { queryKeys } from "@/lib/query/keys";
 import { formatNumber } from "@/lib/format-number";
 import { DEFAULT_RISK_SETTINGS } from "@/lib/trading/risk-math";
 import type { AssetType } from "@/lib/types";
@@ -47,7 +54,9 @@ function Cell({
       <div className="aw-metric-label">{label}</div>
       <div
         className={`mt-1 truncate ${
-          primary ? "aw-metric-value" : "text-[13px] font-medium tabular-nums tracking-[-0.16px] text-[var(--foreground)]"
+          primary
+            ? "aw-metric-value"
+            : "text-[13px] font-medium tabular-nums tracking-[-0.16px] text-[var(--foreground)]"
         } ${color}`}
       >
         {value}
@@ -72,52 +81,39 @@ export function SymbolPaperRiskBar({
 }) {
   const t = useTranslations("paperRiskBar");
   const { data: session, status } = useSession();
-  const [cash, setCash] = useState<number | null>(null);
-  const [positions, setPositions] = useState<Pos[]>([]);
-  const [maxPct, setMaxPct] = useState(
-    DEFAULT_RISK_SETTINGS.maxPositionPctPerSymbol,
-  );
+  const qc = useQueryClient();
+  const signedIn = Boolean(session?.user);
 
-  const load = useCallback(async () => {
-    if (!session?.user) {
-      setCash(null);
-      setPositions([]);
-      return;
-    }
-    try {
-      const [a, p, r] = await Promise.all([
-        fetch("/api/trading/account"),
-        fetch("/api/trading/positions?quotes=1"),
-        fetch("/api/trading/risk-settings"),
-      ]);
-      if (a.ok) {
-        const aj = await a.json();
-        setCash(aj.account?.cashBalance ?? null);
-      }
-      if (p.ok) {
-        const pj = await p.json();
-        setPositions(pj.positions ?? []);
-      }
-      if (r.ok) {
-        const rj = await r.json();
-        const m = rj.settings?.maxPositionPctPerSymbol;
-        if (typeof m === "number" && m > 0) setMaxPct(m);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, [session?.user]);
+  const accountQuery = useTradingAccount(signedIn);
+  const positionsQuery = useTradingPositions({
+    quotes: true,
+    enabled: signedIn,
+  });
+  const riskQuery = usePaperRiskSettings(signedIn);
 
   useEffect(() => {
-    void load();
-  }, [load, symbol, assetType, refreshKey]);
+    if (!refreshKey) return;
+    void qc.invalidateQueries({ queryKey: queryKeys.trading.all });
+  }, [refreshKey, qc]);
 
   if (status === "loading") return null;
-
-  // Guest empty state lives in the trade dock (AuthLoginGate); stay quiet here.
   if (!session?.user) return null;
 
+  const cash =
+    (accountQuery.data as { account?: { cashBalance?: number } } | undefined)
+      ?.account?.cashBalance ?? null;
   if (cash == null) return null;
+
+  const positions =
+    ((positionsQuery.data as { positions?: Pos[] } | undefined)?.positions ??
+      []) as Pos[];
+  const maxPct =
+    (
+      riskQuery.data as
+        | { settings?: { maxPositionPctPerSymbol?: number } }
+        | undefined
+    )?.settings?.maxPositionPctPerSymbol ??
+    DEFAULT_RISK_SETTINGS.maxPositionPctPerSymbol;
 
   const mark = lastPrice && lastPrice > 0 ? lastPrice : 0;
   let gross = 0;

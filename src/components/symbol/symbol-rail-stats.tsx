@@ -218,7 +218,7 @@ export function SymbolRailStats({
   const rows = expanded ? [...primary, ...extra] : primary;
 
   return (
-    <div className="border-b border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas)] px-3 pt-1.5 pb-1">
+    <div className="bg-[var(--aw-canvas)] px-3 pt-1.5 pb-1">
       {rows.map((pair, i) => (
         <PairRow
           key={i}

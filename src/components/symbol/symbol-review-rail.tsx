@@ -1,11 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
+import { useStrategiesList } from "@/hooks/query/use-strategies";
+import { useTradingOrders } from "@/hooks/query/use-trading";
 import { formatNumber, formatTime } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 
@@ -55,53 +57,37 @@ export function SymbolReviewRail({
   onOpenPlan,
 }: Props) {
   const t = useTranslations("symbolRail");
+  const locale = useLocale();
   const { data: session, status } = useSession();
-  const [orders, setOrders] = useState<OrderRow[]>([]);
-  const [loading, setLoading] = useState(false);
   const [filter, setFilter] = useState<Filter>("all");
+  const signedIn = Boolean(session?.user);
 
-  const [resolvedNames, setResolvedNames] = useState<Record<string, string>>(
-    {},
-  );
+  const ordersQuery = useTradingOrders({
+    symbol,
+    assetType,
+    enabled: signedIn,
+  });
+  const strategiesQuery = useStrategiesList(locale, signedIn);
 
-  const load = useCallback(async () => {
-    if (!session?.user) return;
-    setLoading(true);
-    try {
-      const [ordRes, stRes] = await Promise.all([
-        fetch(
-          `/api/trading/orders?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-        ),
-        fetch("/api/strategies"),
-      ]);
-      if (ordRes.ok) {
-        const data = await ordRes.json();
-        setOrders(data.orders ?? []);
-      }
-      if (stRes.ok) {
-        const sj = await stRes.json();
-        const map: Record<string, string> = {};
-        for (const s of [
-          ...(sj.templates ?? []),
-          ...(sj.strategies ?? []),
-        ] as Array<{ id: string; name: string }>) {
-          map[s.id] = s.name;
-        }
-        setResolvedNames(map);
-      }
-    } finally {
-      setLoading(false);
+  const orders =
+    ((ordersQuery.data as { orders?: OrderRow[] } | undefined)?.orders ??
+      []) as OrderRow[];
+  const loading = ordersQuery.isLoading;
+
+  const resolvedNames = useMemo(() => {
+    const map: Record<string, string> = {};
+    const data = strategiesQuery.data;
+    if (!data) return map;
+    for (const s of [...(data.templates ?? []), ...(data.strategies ?? [])]) {
+      map[s.id] = s.name;
     }
-  }, [session?.user, symbol, assetType]);
+    return map;
+  }, [strategiesQuery.data]);
 
   const nameById = useMemo(
     () => ({ ...resolvedNames, ...strategyNameById }),
     [resolvedNames, strategyNameById],
   );
-
-  useEffect(() => {
-    void load();
-  }, [load]);
 
   const filtered = useMemo(() => {
     return orders.filter((o) => {

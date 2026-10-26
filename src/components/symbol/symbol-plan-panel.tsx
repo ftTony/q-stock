@@ -1,14 +1,22 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { EmptyReviewArt } from "@/components/symbol/symbol-empty-art";
 import { StrategyRulesSummary } from "@/components/strategy/strategy-rules-summary";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
+import {
+  useCopyStrategyTemplate,
+  useStartStrategyReplay,
+  useStrategiesList,
+  useStrategyDetail,
+  useStrategyReplayDetail,
+  useStrategyReplayList,
+} from "@/hooks/query/use-strategies";
 import { formatNumber } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 import {
@@ -77,32 +85,31 @@ export function SymbolPlanPanel({
 }: Props) {
   const t = useTranslations("symbolRail");
   const tSt = useTranslations("strategies");
+  const locale = useLocale();
   const { data: session, status } = useSession();
-  const [templates, setTemplates] = useState<StrategyRow[]>([]);
-  const [mine, setMine] = useState<StrategyRow[]>([]);
-  const [active, setActive] = useState<StrategyRow | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
-  const [replay, setReplay] = useState<ReplayRow | null>(null);
+  const [matchedReplayId, setMatchedReplayId] = useState<string | null>(null);
   const range = useMemo(() => defaultRange(), []);
 
-  const loadLists = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/strategies");
-      if (!res.ok) return;
-      const data = await res.json();
-      setTemplates(data.templates ?? []);
-      setMine(data.strategies ?? []);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const listQuery = useStrategiesList(locale);
+  const detailQuery = useStrategyDetail(
+    strategyId ?? "",
+    locale,
+    Boolean(strategyId),
+  );
+  const replaysQuery = useStrategyReplayList(
+    strategyId ?? "",
+    Boolean(strategyId),
+  );
+  const copyMut = useCopyStrategyTemplate(locale);
+  const startReplayMut = useStartStrategyReplay(strategyId ?? "");
 
-  useEffect(() => {
-    void loadLists();
-  }, [loadLists]);
+  const templates = (listQuery.data?.templates ?? []) as unknown as StrategyRow[];
+  const mine = (listQuery.data?.strategies ?? []) as unknown as StrategyRow[];
+  const active =
+    (detailQuery.data?.strategy as unknown as StrategyRow | undefined) ?? null;
+  const loading = listQuery.isLoading;
+  const busy = copyMut.isPending || startReplayMut.isPending;
 
   useEffect(() => {
     const bound = getBoundStrategyId(assetType, symbol);
@@ -112,53 +119,39 @@ export function SymbolPlanPanel({
 
   useEffect(() => {
     if (!strategyId) {
-      setActive(null);
-      setReplay(null);
+      setMatchedReplayId(null);
       return;
     }
-    let cancelled = false;
-    void (async () => {
-      const res = await fetch(`/api/strategies/${strategyId}`);
-      if (!res.ok || cancelled) return;
-      const data = await res.json();
-      const s = data.strategy as StrategyRow | undefined;
-      if (!s) return;
-      setActive(s);
-      // Sync display name to quote bar without rewriting binding id.
-      onStrategyIdChange(s.id, s.name);
-      const rr = await fetch(`/api/strategies/${strategyId}/replay`);
-      if (!rr.ok || cancelled) return;
-      const rj = await rr.json();
-      const match = (rj.replays as ReplayRow[] | undefined)?.find(
-        (r) =>
-          r.symbol.toUpperCase() === symbol.toUpperCase() &&
-          r.assetType === assetType,
-      );
-      if (match) setReplay(match);
-      else setReplay(null);
-    })();
-    return () => {
-      cancelled = true;
-    };
-    // intentionally omit onStrategyIdChange — stable from parent useCallback
+    if (active) onStrategyIdChange(active.id, active.name);
+    const match = (replaysQuery.data?.replays as ReplayRow[] | undefined)?.find(
+      (r) =>
+        r.symbol.toUpperCase() === symbol.toUpperCase() &&
+        r.assetType === assetType,
+    );
+    setMatchedReplayId(match?.id ?? null);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [strategyId, symbol, assetType]);
+  }, [strategyId, symbol, assetType, active?.id, active?.name, replaysQuery.data]);
 
-  useEffect(() => {
-    if (!replay || !strategyId) return;
-    if (replay.status !== "pending" && replay.status !== "running") return;
-    const id = window.setInterval(() => {
-      void (async () => {
-        const res = await fetch(
-          `/api/strategies/${strategyId}/replay?replayId=${replay.id}`,
-        );
-        if (!res.ok) return;
-        const data = await res.json();
-        if (data.replay) setReplay(data.replay);
-      })();
-    }, 2000);
-    return () => window.clearInterval(id);
-  }, [replay, strategyId]);
+  const activeReplayQuery = useStrategyReplayDetail(
+    strategyId ?? "",
+    matchedReplayId,
+    {
+      enabled: Boolean(strategyId && matchedReplayId),
+      refetchInterval: (q) => {
+        const st = (q.state.data as { replay?: ReplayRow } | undefined)?.replay
+          ?.status;
+        if (!st || st === "done" || st === "failed") return false;
+        return 2000;
+      },
+    },
+  );
+
+  const replay =
+    (activeReplayQuery.data?.replay as ReplayRow | undefined) ??
+    ((replaysQuery.data?.replays as ReplayRow[] | undefined)?.find(
+      (r) => r.id === matchedReplayId,
+    ) ??
+      null);
 
   function bind(id: string | null, name?: string | null) {
     setBoundStrategyId(assetType, symbol, id);
@@ -171,24 +164,13 @@ export function SymbolPlanPanel({
       setMsg(t("planLogin"));
       return;
     }
-    setBusy(true);
     setMsg(null);
     try {
-      const res = await fetch("/api/strategies", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fromTemplateId: templateId }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setMsg(data.error || tSt("copyFailed"));
-        return;
-      }
-      const s = data.strategy as StrategyRow;
-      await loadLists();
-      bind(s.id, s.name);
-    } finally {
-      setBusy(false);
+      const data = await copyMut.mutateAsync(templateId);
+      const s = data.strategy as StrategyRow | undefined;
+      if (s) bind(s.id, s.name);
+    } catch (err) {
+      setMsg(err instanceof Error ? err.message : tSt("copyFailed"));
     }
   }
 
@@ -198,27 +180,23 @@ export function SymbolPlanPanel({
       return;
     }
     if (!strategyId) return;
-    setBusy(true);
     setMsg(null);
     try {
-      const res = await fetch(`/api/strategies/${strategyId}/replay`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          symbol,
-          assetType,
-          rangeFrom: `${range.from}T00:00:00.000Z`,
-          rangeTo: `${range.to}T23:59:59.000Z`,
-        }),
+      const data = await startReplayMut.mutateAsync({
+        symbol,
+        assetType,
+        rangeFrom: `${range.from}T00:00:00.000Z`,
+        rangeTo: `${range.to}T23:59:59.000Z`,
       });
-      const data = await res.json();
-      if (!res.ok) {
-        setMsg(replayErrorMessage(data, tSt));
-        return;
-      }
-      setReplay(data.replay);
-    } finally {
-      setBusy(false);
+      const next = data.replay as ReplayRow | undefined;
+      if (next?.id) setMatchedReplayId(next.id);
+    } catch (err) {
+      setMsg(
+        replayErrorMessage(
+          { error: err instanceof Error ? err.message : undefined },
+          tSt,
+        ),
+      );
     }
   }
 
@@ -268,8 +246,7 @@ export function SymbolPlanPanel({
           onChange={(v) => {
             if (v === "__none__") {
               bind(null);
-              setActive(null);
-              setReplay(null);
+              setMatchedReplayId(null);
               return;
             }
             const row = mine.find((s) => s.id === v);
@@ -318,9 +295,7 @@ export function SymbolPlanPanel({
         <div className="space-y-3 border-t border-[var(--border)] pt-3">
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
-              <p className="aw-caption-strong text-[13px]">
-                {active.name}
-              </p>
+              <p className="aw-caption-strong text-[13px]">{active.name}</p>
               {active.description ? (
                 <p className="aw-caption mt-0.5 line-clamp-2">
                   {active.description}
@@ -364,7 +339,9 @@ export function SymbolPlanPanel({
 
             {replay &&
             (replay.status === "pending" || replay.status === "running") ? (
-              <p className="aw-caption">{tSt("replayRunning")} · {replay.status}</p>
+              <p className="aw-caption">
+                {tSt("replayRunning")} · {replay.status}
+              </p>
             ) : null}
             {replay?.status === "failed" ? (
               <p className="text-[12px] text-[var(--down)]">
@@ -402,7 +379,11 @@ export function SymbolPlanPanel({
                   {t("planReplayFootnote")}
                 </p>
                 <Link
-                  href={`/strategies/${active.id}`}
+                  href={
+                    replay?.id
+                      ? `/strategies/${active.id}?replayId=${replay.id}`
+                      : `/strategies/${active.id}`
+                  }
                   className="aw-text-link text-[12px]"
                 >
                   {t("planFullReport")}
