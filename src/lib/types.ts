@@ -20,6 +20,23 @@ export interface OhlcvBar {
   volume: number;
 }
 
+/** US extended-hours snapshot (pre / post / overnight). */
+export type ExtendedSessionQuote = {
+  price: number;
+  change: number;
+  percentChange: number;
+  timestamp?: number;
+  high?: number;
+  low?: number;
+  volume?: number;
+};
+
+export type QuoteSession =
+  | "pre"
+  | "regular"
+  | "post"
+  | "overnight";
+
 export interface Quote {
   symbol: string;
   assetType: AssetType;
@@ -42,6 +59,14 @@ export interface Quote {
   askSize?: number;
   /** Display name from rank API when available. */
   name?: string;
+  /** US pre-market (when broker provides it). */
+  preMarket?: ExtendedSessionQuote;
+  /** US after-hours. */
+  postMarket?: ExtendedSessionQuote;
+  /** US overnight session. */
+  overnight?: ExtendedSessionQuote;
+  /** Which session `price` / change currently reflect. */
+  activeSession?: QuoteSession;
 }
 
 export interface SearchResult {

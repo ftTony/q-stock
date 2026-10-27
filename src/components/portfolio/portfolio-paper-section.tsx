@@ -99,29 +99,31 @@ export function PortfolioPaperSection({
       {tradeMsg && (
         <p className="text-xs text-[var(--muted)]">{tradeMsg}</p>
       )}
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-3">
+      <div className="grid grid-cols-2 divide-y divide-[var(--border)] border-y border-[var(--border)] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+        <div className="min-w-0 px-3 py-3">
           <div className="text-[11px] text-[var(--muted)]">{labels.cash}</div>
-          <div className="mt-1 text-xl font-semibold tabular-nums">
+          <div className="mt-1 text-lg font-semibold tabular-nums sm:text-xl">
             ${fmtMoney(cash)}
           </div>
         </div>
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-3">
+        <div className="min-w-0 px-3 py-3">
           <div className="text-[11px] text-[var(--muted)]">{labels.marketValue}</div>
-          <div className="mt-1 text-xl font-semibold tabular-nums">
+          <div className="mt-1 text-lg font-semibold tabular-nums sm:text-xl">
             ${fmtMoney(positionsValue)}
           </div>
         </div>
-        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-3 col-span-2 sm:col-span-1">
+        <div className="col-span-2 min-w-0 px-3 py-3 sm:col-span-1">
           <div className="text-[11px] text-[var(--muted)]">{labels.equity}</div>
-          <div className="mt-1 text-xl font-semibold tabular-nums text-[var(--brand-text)]">
+          <div className="mt-1 text-lg font-semibold tabular-nums text-[var(--brand-text)] sm:text-xl">
             ${fmtMoney(equity)}
           </div>
         </div>
       </div>
 
-      <div>
-        <h3 className="mb-2 text-sm font-semibold">{labels.positions}</h3>
+      <div className="border-t border-[var(--border)] pt-4">
+        <h3 className="mb-2 text-sm font-semibold tracking-tight">
+          {labels.positions}
+        </h3>
         {positions.length === 0 ? (
           <p className="text-sm text-[var(--muted)]">{labels.emptyPositions}</p>
         ) : (
@@ -186,9 +188,11 @@ export function PortfolioPaperSection({
         )}
       </div>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        <div>
-          <h3 className="mb-2 text-sm font-semibold">{labels.pendingOrders}</h3>
+      <div className="grid gap-0 border-t border-[var(--border)] pt-0 lg:grid-cols-2 lg:divide-x lg:divide-[var(--border)]">
+        <div className="pt-4 lg:pr-4">
+          <h3 className="mb-2 text-sm font-semibold tracking-tight">
+            {labels.pendingOrders}
+          </h3>
           {pendingOrders.length === 0 ? (
             <p className="text-sm text-[var(--muted)]">{labels.emptyOrders}</p>
           ) : (
@@ -235,8 +239,10 @@ export function PortfolioPaperSection({
             </ul>
           )}
         </div>
-        <div>
-          <h3 className="mb-2 text-sm font-semibold">{labels.recentFills}</h3>
+        <div className="border-t border-[var(--border)] pt-4 lg:border-t-0 lg:pl-4">
+          <h3 className="mb-2 text-sm font-semibold tracking-tight">
+            {labels.recentFills}
+          </h3>
           {fills.length === 0 ? (
             <p className="text-sm text-[var(--muted)]">{labels.emptyFills}</p>
           ) : (

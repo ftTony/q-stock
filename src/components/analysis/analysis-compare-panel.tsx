@@ -198,7 +198,7 @@ export function AnalysisComparePanel({
       </header>
 
       <div
-        className={`grid gap-3 ${
+        className={`qt-panel grid divide-y divide-[var(--border)] overflow-hidden sm:divide-x sm:divide-y-0 ${
           basket.length <= 2
             ? "sm:grid-cols-2"
             : basket.length === 3
@@ -212,23 +212,23 @@ export function AnalysisComparePanel({
           return (
             <article
               key={`${b.assetType}:${b.symbol}`}
-              className="qt-panel flex flex-col gap-2.5 p-3.5"
+              className="flex min-w-0 flex-col gap-2.5 p-3.5"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="min-w-0">
                   <Link
                     href={`/symbol/${b.assetType}/${b.symbol}`}
-                    className="text-[14px] font-semibold tracking-wide hover:text-[var(--brand-text)]"
+                    className="text-[13px] font-semibold tracking-wide hover:text-[var(--brand-text)]"
                   >
                     {b.symbol}
                   </Link>
-                  <div className="truncate text-[12px] text-[var(--muted)]">
+                  <div className="truncate text-[11px] text-[var(--muted)]">
                     {b.name || displayName(b.symbol, b.assetType)}
                   </div>
                 </div>
                 <button
                   type="button"
-                  className="rounded px-1.5 text-[14px] leading-none text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]"
+                  className="inline-flex h-7 w-7 items-center justify-center rounded-full text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
                   aria-label={t("removeFromCompare")}
                   onClick={() => onRemove(b.symbol, b.assetType)}
                 >
@@ -237,7 +237,7 @@ export function AnalysisComparePanel({
               </div>
 
               <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
-                <span className="text-[14px] font-semibold tabular-nums">
+                <span className="text-[13px] font-semibold tabular-nums">
                   {b.price != null ? (
                     <>
                       <span className="font-normal text-[var(--muted)]">
@@ -252,7 +252,7 @@ export function AnalysisComparePanel({
                     "—"
                   )}
                 </span>
-                <span className="text-[14px] font-medium">
+                <span className="text-[13px] font-medium">
                   {b.percentChange != null ? (
                     <ChangePct value={b.percentChange} />
                   ) : (
@@ -274,21 +274,21 @@ export function AnalysisComparePanel({
                   />
                 )}
 
-              <dl className="grid grid-cols-3 gap-2 border-t border-[var(--border)] pt-2.5 text-[14px]">
+              <dl className="grid grid-cols-3 gap-2 border-t border-[var(--border)] pt-2.5 text-[13px]">
                 <div>
-                  <dt className="text-[12px] text-[var(--muted)]">{t("high")}</dt>
+                  <dt className="text-[11px] text-[var(--muted)]">{t("high")}</dt>
                   <dd className="mt-0.5 font-medium tabular-nums">
                     {formatMoney(b.high, b.assetType)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-[12px] text-[var(--muted)]">{t("low")}</dt>
+                  <dt className="text-[11px] text-[var(--muted)]">{t("low")}</dt>
                   <dd className="mt-0.5 font-medium tabular-nums">
                     {formatMoney(b.low, b.assetType)}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-[12px] text-[var(--muted)]">
+                  <dt className="text-[11px] text-[var(--muted)]">
                     {t("metricMktCap")}
                   </dt>
                   <dd className="mt-0.5 font-medium tabular-nums">
@@ -321,13 +321,15 @@ export function AnalysisComparePanel({
         />
         <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
           <div className="space-y-1">
-            <h3 className="text-[14px] font-semibold">{t("aiCompare")}</h3>
+            <h3 className="text-sm font-semibold tracking-tight">
+              {t("aiCompare")}
+            </h3>
             <AiQuotaBadge refreshKey={quotaTick} />
           </div>
           {ai && access.loggedIn && (
             <SubmitButton
               type="button"
-              className="qt-btn-ghost h-9 px-3"
+              className="qt-btn-ghost h-8 px-3 text-[13px]"
               disabled={!canRun}
               loading={aiLoading}
               showElapsed={(s) => tAi("elapsed", { seconds: s })}
@@ -356,7 +358,7 @@ export function AnalysisComparePanel({
             </p>
             <SubmitButton
               type="button"
-              className="qt-btn-primary mt-3 h-9 px-4"
+              className="qt-btn-primary mt-3 h-8 px-4 text-[13px]"
               loading={aiLoading}
               showElapsed={(s) => tAi("elapsed", { seconds: s })}
               onClick={() => void runAiCompare()}

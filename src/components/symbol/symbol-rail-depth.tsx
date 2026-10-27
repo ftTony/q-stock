@@ -13,7 +13,7 @@ type Mode = "book" | "ticks" | "split";
 function fmtPx(n: number) {
   return formatNumber(n, {
     minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
+    maximumFractionDigits: 2,
   });
 }
 
@@ -26,16 +26,30 @@ function fmtVol(n: number) {
 function TickPrice({ trade }: { trade: TradeTick }) {
   return (
     <span
-      className={`truncate text-right font-medium ${
+      className={`truncate text-right tabular-nums ${
         trade.direction === "up"
           ? "text-[var(--up)]"
           : trade.direction === "down"
             ? "text-[var(--down)]"
-            : "text-[var(--foreground)]"
+            : "text-[var(--aw-ink,var(--foreground))]"
       }`}
     >
       {fmtPx(trade.price)}
     </span>
+  );
+}
+
+function TickTriple({ trade }: { trade: TradeTick }) {
+  return (
+    <>
+      <span className="truncate text-[var(--aw-ink-muted-48,var(--muted))]">
+        {formatTime(trade.time * 1000)}
+      </span>
+      <TickPrice trade={trade} />
+      <span className="text-right text-[var(--aw-ink-muted-48,var(--muted))]">
+        {fmtVol(trade.volume)}
+      </span>
+    </>
   );
 }
 
@@ -56,23 +70,27 @@ function TicksList({
   const rows = limit != null ? trades.slice(0, limit) : trades;
   const mid = Math.ceil(rows.length / 2);
   const pairs = Array.from({ length: mid }, (_, i) => [rows[i], rows[i + mid]] as const);
+  // Gutter col separates the two tapes so halves don't visually merge.
   const grid =
-    "grid grid-cols-[3.6rem_minmax(0,1fr)_3rem_3.6rem_minmax(0,1fr)_3rem] items-center gap-x-1.5";
+    "grid grid-cols-[3.25rem_minmax(0,1fr)_2.5rem_0.75rem_3.25rem_minmax(0,1fr)_2.5rem] items-center gap-x-1";
   const head =
-    "whitespace-nowrap text-[12px] leading-none tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]";
+    "whitespace-nowrap text-[10px] leading-none tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]";
   return (
-    <div className="px-2 py-2">
+    <div className="px-3 py-2.5">
       <p className="text-[12px] font-semibold leading-none tracking-[-0.12px] text-[var(--aw-ink,var(--foreground))]">
         {title}
       </p>
       {rows.length === 0 ? (
         <EmptyStateBlock art="depth" label={empty} compact />
       ) : (
-        <div className="mt-1.5">
-          <div className={`${grid} border-b border-[var(--aw-hairline,var(--border))] pb-1 ${head}`}>
+        <div className="mt-2">
+          <div
+            className={`${grid} border-b border-[var(--aw-hairline,var(--border))] pb-1.5 ${head}`}
+          >
             <span>{cols.time}</span>
             <span className="text-right">{cols.price}</span>
             <span className="text-right">{cols.volume}</span>
+            <span aria-hidden />
             <span>{cols.time}</span>
             <span className="text-right">{cols.price}</span>
             <span className="text-right">{cols.volume}</span>
@@ -80,25 +98,12 @@ function TicksList({
           {pairs.map(([left, right], i) => (
             <div
               key={`${left.time}-${i}`}
-              className={`${grid} h-[22px] text-[12px] tabular-nums leading-none tracking-[-0.12px]`}
+              className={`${grid} h-6 text-[11px] tabular-nums leading-none tracking-[-0.1px]`}
             >
-              <span className="truncate text-[var(--aw-ink-muted-48,var(--muted))]">
-                {formatTime(left.time * 1000)}
-              </span>
-              <TickPrice trade={left} />
-              <span className="text-right text-[var(--aw-ink-muted-48,var(--muted))]">
-                {fmtVol(left.volume)}
-              </span>
+              <TickTriple trade={left} />
+              <span aria-hidden />
               {right ? (
-                <>
-                  <span className="truncate text-[var(--aw-ink-muted-48,var(--muted))]">
-                    {formatTime(right.time * 1000)}
-                  </span>
-                  <TickPrice trade={right} />
-                  <span className="text-right text-[var(--aw-ink-muted-48,var(--muted))]">
-                    {fmtVol(right.volume)}
-                  </span>
-                </>
+                <TickTriple trade={right} />
               ) : (
                 <>
                   <span />
@@ -125,8 +130,8 @@ function BookList({
 }) {
   if (!book) {
     return (
-      <div className="p-1">
-        <p className="px-2 pt-2 text-[12px] font-medium text-[var(--muted)]">
+      <div className="px-3 py-2.5">
+        <p className="text-[12px] font-semibold leading-none tracking-[-0.12px] text-[var(--aw-ink,var(--foreground))]">
           {labels.title}
         </p>
         <EmptyStateBlock art="depth" label={empty} compact />
@@ -139,12 +144,14 @@ function BookList({
     ...book.asks.map((a) => a.volume),
   );
   return (
-    <div className="space-y-2 p-3">
-      <p className="text-[12px] font-medium text-[var(--muted)]">{labels.title}</p>
-      <div className="grid grid-cols-[1fr_auto_1fr] gap-x-2 text-[12px]">
-        <div className="text-[var(--muted)]">{labels.bid}</div>
-        <div className="text-center text-[var(--muted)]">{labels.price}</div>
-        <div className="text-right text-[var(--muted)]">{labels.ask}</div>
+    <div className="space-y-2 px-3 py-2.5">
+      <p className="text-[12px] font-semibold leading-none tracking-[-0.12px] text-[var(--aw-ink,var(--foreground))]">
+        {labels.title}
+      </p>
+      <div className="grid grid-cols-[1fr_auto_1fr] gap-x-2 text-[10px] leading-none tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]">
+        <div>{labels.bid}</div>
+        <div className="text-center">{labels.price}</div>
+        <div className="text-right">{labels.ask}</div>
       </div>
       <div className="space-y-0.5">
         {Array.from({
@@ -155,7 +162,7 @@ function BookList({
           return (
             <div
               key={i}
-              className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-2 text-[12px] tabular-nums"
+              className="grid grid-cols-[1fr_auto_1fr] items-center gap-x-2 text-[11px] tabular-nums leading-none tracking-[-0.1px]"
             >
               <div className="relative overflow-hidden py-0.5 text-[var(--up)]">
                 {bid ? (

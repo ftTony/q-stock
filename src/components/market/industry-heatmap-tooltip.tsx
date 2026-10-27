@@ -40,12 +40,19 @@ function StocksSkeleton({ label }: { label: string }) {
   return (
     <div className="mt-2.5 border-t border-[var(--border)] pt-2.5">
       <div className="mb-2 text-[11px] text-[var(--muted)]">{label}</div>
-      <ul className="max-h-56 space-y-2" aria-busy="true" aria-live="polite">
+      <ul
+        className="max-h-56 space-y-1.5"
+        aria-busy="true"
+        aria-live="polite"
+      >
         {Array.from({ length: 5 }).map((_, i) => (
-          <li key={i} className="flex items-center gap-2">
-            <span className="h-3 flex-1 animate-pulse rounded bg-[var(--surface-2)]" />
-            <span className="h-3 w-12 shrink-0 animate-pulse rounded bg-[var(--surface-2)]" />
-            <span className="h-3 w-14 shrink-0 animate-pulse rounded bg-[var(--surface-2)]" />
+          <li
+            key={i}
+            className="grid grid-cols-[minmax(0,1fr)_4.5rem_3.75rem] items-center gap-x-2"
+          >
+            <span className="h-3 animate-pulse rounded bg-[var(--surface-2)]" />
+            <span className="h-3 animate-pulse rounded bg-[var(--surface-2)]" />
+            <span className="h-3 animate-pulse rounded bg-[var(--surface-2)]" />
           </li>
         ))}
       </ul>
@@ -116,23 +123,23 @@ export function IndustryHeatmapTooltip({
       {stocksLoading ? (
         <StocksSkeleton label={labels.loading} />
       ) : cell.stocks.length > 0 ? (
-        <ul className="mt-2.5 max-h-56 space-y-1.5 overflow-y-auto border-t border-[var(--border)] pt-2.5">
+        <ul className="qt-scroll mt-2.5 max-h-56 space-y-1 overflow-y-auto overscroll-contain border-t border-[var(--border)] pt-2.5 pr-0.5">
           {cell.stocks.map((s) => (
             <li
               key={s.symbol}
-              className="flex items-baseline justify-between gap-2 text-xs"
+              className="grid grid-cols-[minmax(0,1fr)_4.5rem_3.75rem] items-baseline gap-x-2 text-xs"
             >
               <Link
                 href={`/symbol/${assetType}/${s.symbol}`}
-                className="min-w-0 flex-1 truncate text-[var(--fg)] hover:underline"
+                className="min-w-0 truncate text-[var(--fg)] hover:underline"
               >
                 {s.name}
               </Link>
-              <span className="shrink-0 tabular-nums text-[var(--fg)]">
+              <span className="text-right tabular-nums text-[var(--fg)]">
                 {formatPrice(s.price)}
               </span>
               <span
-                className={`w-[4.25rem] shrink-0 text-right font-medium tabular-nums ${pctClass(s.percentChange)}`}
+                className={`text-right font-medium tabular-nums ${pctClass(s.percentChange)}`}
               >
                 {formatPct(s.percentChange)}
               </span>

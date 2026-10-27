@@ -17,12 +17,14 @@ export function AnalysisSeoIntro({
   return (
     <header className="min-w-0">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between sm:gap-8">
-        <div className="min-w-0 max-w-lg space-y-1.5">
-          <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
+        <div className="min-w-0 max-w-lg space-y-1">
+          <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
             {title}
           </h1>
-          <p className="text-sm leading-relaxed text-[var(--muted)]">{intro}</p>
-          <p className="text-[11px] leading-relaxed text-[var(--muted)] sm:text-xs">
+          <p className="text-[12px] leading-relaxed text-[var(--muted)] sm:text-[13px]">
+            {intro}
+          </p>
+          <p className="text-[11px] leading-relaxed text-[var(--muted)]">
             {disclaimer}
           </p>
         </div>

@@ -12,6 +12,7 @@ import {
 } from "@/lib/market/providers/futu-rank";
 import { isFutuConfigured } from "@/lib/market/providers/futu-http";
 import { getQuotes } from "@/lib/market";
+import { enrichUsExtendedBoards } from "@/lib/market/enrich-us-extended-boards";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import {
   POPULAR_CN,
@@ -90,21 +91,37 @@ export async function GET(req: Request) {
       if (isLongbridgeRankConfigured()) {
         try {
           if (board === "all") {
-            const boards = await withTimeout(
+            let boards = await withTimeout(
               getLongbridgeRankBoards(assetType, limit),
               RANK_PROVIDER_TIMEOUT_MS,
               "longbridge ranks",
             );
+            if (assetType === "stock") {
+              boards = await enrichUsExtendedBoards(boards);
+            }
             return NextResponse.json({
               boards,
               source: "longbridge",
             });
           }
-          const quotes = await withTimeout(
+          let quotes = await withTimeout(
             getLongbridgeRankList(assetType, board, limit),
             RANK_PROVIDER_TIMEOUT_MS,
             "longbridge ranks",
           );
+          if (assetType === "stock") {
+            const enriched = await enrichUsExtendedBoards({
+              hot: board === "hot" ? quotes : [],
+              gainers: board === "gainers" ? quotes : [],
+              losers: board === "losers" ? quotes : [],
+            });
+            quotes =
+              board === "hot"
+                ? enriched.hot
+                : board === "gainers"
+                  ? enriched.gainers
+                  : enriched.losers;
+          }
           return NextResponse.json({
             quotes,
             board,
@@ -151,7 +168,15 @@ export async function GET(req: Request) {
                 symbol: s,
                 assetType: "stock" as const,
               }));
-      const quotes = await getQuotes(list);
+      let quotes = await getQuotes(list);
+      if (assetType === "stock") {
+        const enriched = await enrichUsExtendedBoards({
+          hot: quotes,
+          gainers: quotes,
+          losers: quotes,
+        });
+        quotes = enriched.hot;
+      }
       if (board === "all") {
         return NextResponse.json({
           boards: sortBoards(quotes, limit),

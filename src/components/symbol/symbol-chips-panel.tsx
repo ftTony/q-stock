@@ -1,13 +1,24 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { SymbolChipsChart } from "@/components/symbol/symbol-chips-chart";
 import {
   buildVolumeProfile,
   type VolumeProfile,
 } from "@/lib/charts/volume-profile";
-import { formatNumber } from "@/lib/format-number";
+import { formatDate, formatNumber } from "@/lib/format-number";
 import type { AssetType, OhlcvBar } from "@/lib/types";
+
+function px(n: number | null) {
+  if (n == null) return "—";
+  return formatNumber(n, { maximumFractionDigits: 2 });
+}
+
+function pct(n: number | null) {
+  if (n == null) return "—";
+  return `${formatNumber(n, { maximumFractionDigits: 2 })}%`;
+}
 
 export function SymbolChipsPanel({
   symbol,
@@ -26,7 +37,6 @@ export function SymbolChipsPanel({
     setLoading(true);
     void (async () => {
       try {
-        // Prefer daily (often warm from main chart); fall back to session 1m.
         let bars: OhlcvBar[] = [];
         for (const resolution of ["D", "T"] as const) {
           const res = await fetch(
@@ -39,7 +49,7 @@ export function SymbolChipsPanel({
           }
         }
         if (cancelled) return;
-        const profile = buildVolumeProfile(bars, 24);
+        const profile = buildVolumeProfile(bars, 48);
         if (!profile.buckets.length) {
           setUnavailable(true);
           setVp(null);
@@ -58,6 +68,11 @@ export function SymbolChipsPanel({
     };
   }, [symbol, assetType]);
 
+  const dateLabel = useMemo(() => {
+    if (!vp?.toTs) return undefined;
+    return formatDate(vp.toTs * (vp.toTs < 1e12 ? 1000 : 1));
+  }, [vp]);
+
   if (loading) {
     return (
       <div className="py-8 text-center text-[12px] text-[var(--muted)]">…</div>
@@ -73,58 +88,86 @@ export function SymbolChipsPanel({
         <p className="mx-auto max-w-md text-[12px] leading-[1.47] tracking-[-0.12px] text-[var(--muted)]">
           {t("chipsEmpty")}
         </p>
-        <p className="text-[12px] tracking-[-0.12px] text-[var(--muted)]">
+        <p className="text-[11px] tracking-[-0.1px] text-[var(--muted)]">
           {t("chipsHint")}
         </p>
       </div>
     );
   }
 
-  const maxPct = Math.max(1, ...vp.buckets.map((b) => b.pct));
-
   return (
-    <div className="space-y-3">
-      <div className="flex flex-wrap items-baseline gap-x-4 gap-y-1 text-[12px]">
-        <p className="font-medium text-[var(--muted)]">{t("chipsTitle")}</p>
-        {vp.poc != null ? (
-          <span className="tabular-nums">
-            POC{" "}
-            <strong>
-              {formatNumber(vp.poc, { maximumFractionDigits: 2 })}
-            </strong>
-          </span>
-        ) : null}
-        {vp.val != null && vp.vah != null ? (
-          <span className="tabular-nums text-[var(--muted)]">
-            VA{" "}
-            {formatNumber(vp.val, { maximumFractionDigits: 2 })}–
-            {formatNumber(vp.vah, { maximumFractionDigits: 2 })}
+    <div className="space-y-2.5">
+      <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+        <p className="text-[12px] font-semibold leading-none tracking-[-0.12px] text-[var(--aw-ink,var(--foreground))]">
+          {t("chipsTitle")}
+        </p>
+        {dateLabel ? (
+          <span className="text-[11px] tabular-nums text-[var(--muted)]">
+            {t("chipsDate", { date: dateLabel })}
           </span>
         ) : null}
       </div>
-      <p className="text-[12px] tracking-[-0.12px] text-[var(--muted)]">
+      <p className="text-[11px] leading-snug tracking-[-0.1px] text-[var(--muted)]">
         {t("chipsHint")}
       </p>
-      <div className="space-y-1">
-        {[...vp.buckets].reverse().map((b) => (
-          <div
-            key={b.price}
-            className="grid grid-cols-[4.5rem_1fr_2.5rem] items-center gap-2 text-[12px] tabular-nums tracking-[-0.12px]"
-          >
-            <span className="text-[var(--muted)]">
-              {formatNumber(b.price, { maximumFractionDigits: 2 })}
+
+      <SymbolChipsChart profile={vp} dateLabel={dateLabel} />
+
+      <div className="space-y-2">
+        <p className="text-[13px] font-semibold tabular-nums leading-none tracking-[-0.12px]">
+          {t("chipsProfit")}{" "}
+          <span className="text-[var(--foreground)]">{pct(vp.profitPct)}</span>
+        </p>
+
+        <ul className="space-y-1.5 text-[12px] leading-none tracking-[-0.12px]">
+          <li className="flex items-center gap-2 tabular-nums">
+            <span
+              className="inline-block h-2 w-2 shrink-0 rounded-[2px]"
+              style={{ background: "#e89a3c" }}
+            />
+            <span className="text-[var(--muted)]">{t("chipsResist")}</span>
+            <span className="font-medium">{px(vp.vah)}</span>
+          </li>
+          <li className="flex items-center gap-2 tabular-nums">
+            <span className="inline-block h-2 w-2 shrink-0 rounded-[2px] bg-[var(--muted)]" />
+            <span className="text-[var(--muted)]">{t("chipsAvgCost")}</span>
+            <span className="font-medium">{px(vp.avgCost)}</span>
+          </li>
+          <li className="flex items-center gap-2 tabular-nums">
+            <span className="inline-block h-2 w-2 shrink-0 rounded-[2px] bg-[var(--brand)]" />
+            <span className="text-[var(--muted)]">{t("chipsSupport")}</span>
+            <span className="font-medium">{px(vp.val)}</span>
+          </li>
+        </ul>
+
+        <div className="space-y-1 text-[11px] leading-snug tracking-[-0.1px] text-[var(--muted)]">
+          {vp.concentrationPct != null ? (
+            <p className="tabular-nums">
+              {t("chipsConcentration")}{" "}
+              <span className="text-[var(--foreground)]">
+                {pct(vp.concentrationPct)}
+              </span>
+            </p>
+          ) : null}
+          <p className="flex flex-wrap items-baseline gap-x-1.5 tabular-nums">
+            <span
+              className="inline-block h-1.5 w-1.5 shrink-0 rounded-[1px]"
+              style={{
+                background: "color-mix(in srgb, var(--brand) 55%, transparent)",
+              }}
+            />
+            {t("chipsRange90")}{" "}
+            <span className="text-[var(--foreground)]">
+              {px(vp.r90Lo)}~{px(vp.r90Hi)}
             </span>
-            <div className="h-2 overflow-hidden rounded-sm bg-[var(--surface-2)]">
-              <div
-                className="h-full rounded-sm bg-[var(--brand)]/45"
-                style={{ width: `${(b.pct / maxPct) * 100}%` }}
-              />
-            </div>
-            <span className="text-right text-[var(--muted)]">
-              {formatNumber(b.pct, { maximumFractionDigits: 1 })}%
+          </p>
+          <p className="tabular-nums opacity-80">
+            {t("chipsRange70")}{" "}
+            <span>
+              {px(vp.val)}~{px(vp.vah)}
             </span>
-          </div>
-        ))}
+          </p>
+        </div>
       </div>
     </div>
   );

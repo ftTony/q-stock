@@ -80,8 +80,10 @@
   font-weight: 400;
 }
 
-/* Chart lives inside the tab surface — drop the extra frame */
-.aw-tab-chart {
+/* Chart lives inside the tab surface — drop the extra frame.
+   Keep `display:flex` only when visible; `.hidden` must win on other tabs
+   (otherwise this rule overrides Tailwind `hidden` and the candle stays on screen). */
+.aw-tab-chart:not(.hidden) {
   display: flex;
   flex-direction: column;
   min-height: 0;

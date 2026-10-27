@@ -155,7 +155,7 @@ export function AnalysisIndustryPicker({
         <div className="flex shrink-0 items-center justify-between gap-2 border-t border-[var(--border)] px-2 py-2">
           <button
             type="button"
-            className="qt-btn qt-btn-ghost h-9 flex-1 px-2 !text-[14px] leading-5 disabled:opacity-40"
+            className="qt-btn qt-btn-ghost h-8 flex-1 px-2 text-[13px] font-medium leading-none disabled:opacity-40"
             disabled={page <= 0}
             onClick={() => setPage((p) => Math.max(0, p - 1))}
           >
@@ -163,7 +163,7 @@ export function AnalysisIndustryPicker({
           </button>
           <button
             type="button"
-            className="qt-btn qt-btn-ghost h-9 flex-1 px-2 !text-[14px] leading-5 disabled:opacity-40"
+            className="qt-btn qt-btn-ghost h-8 flex-1 px-2 text-[13px] font-medium leading-none disabled:opacity-40"
             disabled={page >= pageCount - 1}
             onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
           >

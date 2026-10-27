@@ -6,9 +6,9 @@ import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { CryptoPopularTable } from "@/components/market/crypto-popular-table";
 import { IndustryHeatmap } from "@/components/market/industry-heatmap";
-import { IpoPanel } from "@/components/market/ipo-panel";
-import { KpiCard } from "@/components/market/kpi-card";
+import { MarketsAsidePanels } from "@/components/market/markets-aside-panels";
 import { MarketsHeaderToolbar } from "@/components/market/markets-header-toolbar";
+import { MarketsKpiStrip } from "@/components/market/markets-kpi-strip";
 import { RankBoardPanel } from "@/components/market/rank-board-panel";
 import type { RankQuote } from "@/components/market/markets-types";
 import {
@@ -40,17 +40,6 @@ function boardsHaveData(boards: Boards, assetType: Tab): boolean {
     boards.gainers.length > 0 ||
     boards.losers.length > 0
   );
-}
-
-/** Client-only relative age — avoids Date.now() SSR/client hydration skew. */
-function NewsAgeMinutes({ datetime }: { datetime: number }) {
-  const [label, setLabel] = useState<string | null>(null);
-  useEffect(() => {
-    const mins = Math.max(1, Math.round((Date.now() / 1000 - datetime) / 60));
-    setLabel(`${mins}m`);
-  }, [datetime]);
-  if (!label) return null;
-  return <span suppressHydrationWarning>{label}</span>;
 }
 
 export default function MarketsDashboard() {
@@ -173,10 +162,6 @@ export default function MarketsDashboard() {
     return boards.gainers[0];
   }, [boards.gainers, boards.hot, tab]);
 
-  const bullish = sentiment?.bullish_pct ?? 0;
-  const bearish = sentiment?.bearish_pct ?? 0;
-  const neutral = Math.max(0, 100 - bullish - bearish);
-
   const boardMeta: { key: Board; title: string }[] = [
     { key: "hot", title: t("rankHot") },
     { key: "gainers", title: t("gainers") },
@@ -195,38 +180,45 @@ export default function MarketsDashboard() {
         onQueryChange={setQ}
       />
 
-      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        <KpiCard
-          label={t("kpiTickers")}
-          value={String(kpiQuotes.length || 0)}
-        />
-        <KpiCard
-          label={t("kpiAvgChange")}
-          value={`${avgChange >= 0 ? "+" : ""}${avgChange.toFixed(2)}%`}
-          valueClass={avgChange >= 0 ? "text-[var(--up)]" : "text-[var(--down)]"}
-        />
-        <KpiCard
-          label={t("kpiTop")}
-          value={
-            topPerformer
+      <MarketsKpiStrip
+        items={[
+          {
+            key: "tickers",
+            label: t("kpiTickers"),
+            value: String(kpiQuotes.length || 0),
+          },
+          {
+            key: "avg",
+            label: t("kpiAvgChange"),
+            value: `${avgChange >= 0 ? "+" : ""}${avgChange.toFixed(2)}%`,
+            valueClass:
+              avgChange >= 0 ? "text-[var(--up)]" : "text-[var(--down)]",
+          },
+          {
+            key: "top",
+            label: t("kpiTop"),
+            value: topPerformer
               ? `${topPerformer.symbol} ${topPerformer.percentChange >= 0 ? "+" : ""}${topPerformer.percentChange.toFixed(1)}%`
-              : "-"
-          }
-          valueClass="text-[var(--brand-text)]"
-        />
-        <KpiCard
-          label={t("kpiAlerts")}
-          value={String(alertCount)}
-          hint={t("kpiAlertsValue")}
-          hintDot={alertCount > 0}
-        />
-      </section>
+              : "-",
+            valueClass: "text-[var(--brand-text)]",
+          },
+          {
+            key: "alerts",
+            label: t("kpiAlerts"),
+            value: String(alertCount),
+            hint: t("kpiAlertsValue"),
+            hintDot: alertCount > 0,
+          },
+        ]}
+      />
 
       {tab !== "crypto" && <IndustryHeatmap assetType={tab} />}
 
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-3">
-          <h2 className="text-lg font-semibold tracking-tight">{sectionTitle}</h2>
+          <h2 className="text-base font-semibold tracking-tight sm:text-lg">
+            {sectionTitle}
+          </h2>
           <span className="text-xs text-[var(--muted)]">
             {loading
               ? tCommon("loading")
@@ -259,7 +251,7 @@ export default function MarketsDashboard() {
               t={t}
             />
           ) : (
-            <div className="grid gap-3 xl:grid-cols-3">
+            <div className="qt-panel grid divide-y divide-[var(--border)] overflow-hidden xl:grid-cols-3 xl:divide-x xl:divide-y-0">
               {boardMeta.map(({ key, title }) => (
                 <RankBoardPanel
                   key={key}
@@ -269,6 +261,7 @@ export default function MarketsDashboard() {
                   watched={watched}
                   onToggleWatch={toggleWatch}
                   t={t}
+                  framed={false}
                 />
               ))}
             </div>
@@ -276,107 +269,7 @@ export default function MarketsDashboard() {
       </section>
 
       {tab !== "cn" && (
-        <section className="grid items-stretch gap-4 lg:grid-cols-2">
-          <div className="qt-panel flex h-full flex-col p-4">
-            <div className="mb-3">
-              <h2 className="font-semibold">{t("narrative")}</h2>
-            </div>
-            <ul className="space-y-3">
-              {news.length === 0 && (
-                <li className="text-sm text-[var(--muted)]">{t("unavailable")}</li>
-              )}
-              {news.map((n, i) => (
-                <li
-                  key={i}
-                  className="flex gap-3 border-b border-[var(--border)] pb-3 last:border-0 last:pb-0"
-                >
-                  <div className="h-14 w-14 shrink-0 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--surface-2)]">
-                    {n.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img src={n.image} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-[10px] text-[var(--muted)]">
-                        NEWS
-                      </div>
-                    )}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="mb-1 flex flex-wrap items-center gap-2 text-[10px] tracking-wide text-[var(--muted)] uppercase">
-                      <span>{n.category || n.source || "MARKET"}</span>
-                      {n.datetime ? (
-                        <NewsAgeMinutes datetime={n.datetime} />
-                      ) : null}
-                    </div>
-                    <a
-                      href={n.url || "#"}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="line-clamp-2 text-sm font-medium hover:text-[var(--brand-text)]"
-                    >
-                      {n.headline}
-                    </a>
-                  </div>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          {tab === "hk" ? (
-            <IpoPanel assetType="hk" />
-          ) : (
-            <div className="qt-panel flex h-full flex-col p-4">
-              <h2 className="mb-4 font-semibold">{t("sentiment")}</h2>
-              {sentiment?.available === false ? (
-                <p className="text-sm text-[var(--muted)]">
-                  {sentiment.message || t("unavailable")}
-                </p>
-              ) : (
-                <>
-                  <div className="mb-4 flex h-3 overflow-hidden rounded-full bg-[var(--surface-2)]">
-                    <div className="bg-[var(--up)]" style={{ width: `${bullish}%` }} />
-                    <div
-                      className="bg-[var(--muted)]"
-                      style={{ width: `${neutral}%` }}
-                    />
-                    <div
-                      className="bg-[var(--down)]"
-                      style={{ width: `${bearish}%` }}
-                    />
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 text-center">
-                    <div>
-                      <div className="text-xl font-semibold text-[var(--up)]">
-                        {bullish.toFixed(0)}%
-                      </div>
-                      <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
-                        {t("bullish")}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xl font-semibold text-[var(--muted)]">
-                        {neutral.toFixed(0)}%
-                      </div>
-                      <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
-                        {t("neutral")}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-xl font-semibold text-[var(--down)]">
-                        {bearish.toFixed(0)}%
-                      </div>
-                      <div className="text-xs tracking-wide text-[var(--muted)] uppercase">
-                        {t("bearish")}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="mt-4 text-xs leading-relaxed text-[var(--muted)]">
-                    {t("sentimentHint")}
-                  </p>
-                </>
-              )}
-            </div>
-          )}
-        </section>
+        <MarketsAsidePanels tab={tab} news={news} sentiment={sentiment} />
       )}
     </div>
   );

@@ -7,6 +7,13 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { displayName } from "@/lib/market-names";
 import type { PortfolioRow } from "@/components/portfolio/types";
 
+function pricePrefix(assetType: PortfolioRow["assetType"]): string {
+  if (assetType === "hk") return "HK$";
+  if (assetType === "cn") return "¥";
+  if (assetType === "crypto") return "";
+  return "$";
+}
+
 type Props = {
   rows: PortfolioRow[];
   loading: boolean;
@@ -22,8 +29,8 @@ type Props = {
     change: string;
     last24h: string;
     actions: string;
-    buy: string;
-    sell: string;
+    view: string;
+    alert: string;
   };
 };
 
@@ -37,7 +44,7 @@ export function PortfolioHoldingsTable({
   return (
     <section className="qt-panel overflow-hidden">
       <div className="flex h-11 items-center justify-between border-b border-[var(--border)] px-4">
-        <span className="text-[13px] font-medium sm:text-[14px]">
+        <span className="text-[13px] font-semibold tracking-tight sm:text-sm">
           {labels.holdings}
         </span>
         {loading && (
@@ -62,11 +69,17 @@ export function PortfolioHoldingsTable({
           <table className="min-w-[720px] w-full text-sm">
             <thead>
               <tr className="border-b border-[var(--border)] text-left text-[11px] tracking-wider text-[var(--muted)] uppercase">
-                <th className="px-4 py-3 font-semibold">{labels.symbol}</th>
-                <th className="px-4 py-3 font-semibold">{labels.price}</th>
-                <th className="px-4 py-3 font-semibold">{labels.change}</th>
-                <th className="px-4 py-3 font-semibold">{labels.last24h}</th>
-                <th className="px-4 py-3 font-semibold">{labels.actions}</th>
+                <th className="px-4 py-2.5 font-medium">{labels.symbol}</th>
+                <th className="px-4 py-2.5 text-right font-medium">
+                  {labels.price}
+                </th>
+                <th className="px-4 py-2.5 text-right font-medium">
+                  {labels.change}
+                </th>
+                <th className="px-4 py-2.5 font-medium">{labels.last24h}</th>
+                <th className="px-4 py-2.5 text-right font-medium">
+                  {labels.actions}
+                </th>
               </tr>
             </thead>
             <tbody>
@@ -78,26 +91,23 @@ export function PortfolioHoldingsTable({
                     key={item.id}
                     className="border-b border-[var(--border)]/70 last:border-0 hover:bg-[var(--sidebar-hover)]/60"
                   >
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-2.5">
                       <Link
                         href={`/symbol/${item.assetType}/${item.symbol}`}
-                        className="flex items-center gap-3"
+                        className="min-w-0"
                       >
-                        <span className="flex h-9 w-9 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--surface-2)] text-[11px] font-bold text-[var(--brand-text)]">
-                          {item.symbol.slice(0, 2)}
+                        <span className="block truncate text-[13px] font-semibold tracking-wide">
+                          {item.symbol}
                         </span>
-                        <span>
-                          <span className="block font-semibold">{item.symbol}</span>
-                          <span className="block text-xs text-[var(--muted)]">
-                            {displayName(item.symbol, item.assetType, q?.name)}
-                          </span>
+                        <span className="block truncate text-[11px] text-[var(--muted)]">
+                          {displayName(item.symbol, item.assetType, q?.name)}
                         </span>
                       </Link>
                     </td>
-                    <td className="px-4 py-3 font-medium tabular-nums">
+                    <td className="whitespace-nowrap px-4 py-2.5 text-right text-[13px] font-medium tabular-nums">
                       {q ? (
                         <>
-                          $
+                          {pricePrefix(item.assetType)}
                           <PriceText
                             value={q.price}
                             change={q.percentChange}
@@ -107,17 +117,10 @@ export function PortfolioHoldingsTable({
                         "-"
                       )}
                     </td>
-                    <td className="px-4 py-3">
-                      {q ? (
-                        <span className="inline-flex items-center gap-1">
-                          <span aria-hidden>{up ? "▲" : "▼"}</span>
-                          <ChangePct value={q.percentChange} />
-                        </span>
-                      ) : (
-                        "-"
-                      )}
+                    <td className="whitespace-nowrap px-4 py-2.5 text-right text-[13px] tabular-nums">
+                      {q ? <ChangePct value={q.percentChange} /> : "-"}
                     </td>
-                    <td className="px-4 py-3">
+                    <td className="px-4 py-2.5">
                       {q ? (
                         <Sparkline
                           open={q.open}
@@ -130,19 +133,19 @@ export function PortfolioHoldingsTable({
                         "-"
                       )}
                     </td>
-                    <td className="px-4 py-3">
-                      <div className="flex flex-wrap items-center gap-1.5">
+                    <td className="px-4 py-2.5">
+                      <div className="flex items-center justify-end gap-0.5">
                         <Link
                           href={`/symbol/${item.assetType}/${item.symbol}`}
                           className="qt-btn qt-btn-ghost inline-flex h-7 items-center px-2.5 text-[12px] font-medium leading-none"
                         >
-                          {labels.buy}
+                          {labels.view}
                         </Link>
                         <Link
                           href={`/alerts?symbol=${item.symbol}&assetType=${item.assetType}`}
                           className="qt-btn qt-btn-ghost inline-flex h-7 items-center px-2.5 text-[12px] font-medium leading-none"
                         >
-                          {labels.sell}
+                          {labels.alert}
                         </Link>
                       </div>
                     </td>

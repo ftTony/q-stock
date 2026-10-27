@@ -8,6 +8,13 @@ import { displayName } from "@/lib/market-names";
 import type { AssetType } from "@/lib/types";
 import type { RankQuote } from "@/components/market/markets-types";
 
+function pricePrefix(assetType: AssetType): string {
+  if (assetType === "hk") return "HK$";
+  if (assetType === "cn") return "¥";
+  if (assetType === "crypto") return "";
+  return "$";
+}
+
 export function RankBoardPanel({
   title,
   items,
@@ -15,6 +22,7 @@ export function RankBoardPanel({
   watched,
   onToggleWatch,
   t,
+  framed = true,
 }: {
   title: string;
   items: RankQuote[];
@@ -22,53 +30,54 @@ export function RankBoardPanel({
   watched: Set<string>;
   onToggleWatch: (symbol: string, assetType: AssetType) => void;
   t: ReturnType<typeof useTranslations<"market">>;
+  /** When false, parent provides the panel chrome (e.g. 3-up strip). */
+  framed?: boolean;
 }) {
-  return (
-    <div className="qt-panel overflow-hidden">
+  const body = (
+    <>
       {title ? (
         <div className="border-b border-[var(--border)] px-3 py-2.5">
-          <h2 className="text-sm font-semibold text-[var(--foreground)]">{title}</h2>
+          <h3 className="text-[13px] font-semibold text-[var(--foreground)]">
+            {title}
+          </h3>
         </div>
       ) : null}
       <div className="overflow-x-auto qt-scroll">
-        <table className="w-full min-w-[320px] text-sm">
+        <table className="w-full min-w-[280px] text-sm">
           <thead>
             <tr className="border-b border-[var(--border)] text-left text-[10px] tracking-wider text-[var(--muted)] uppercase">
-              <th className="px-3 py-2 font-semibold">{t("symbol")}</th>
-              <th className="px-2 py-2 font-semibold">{t("price")}</th>
-              <th className="px-2 py-2 font-semibold">{t("change")}</th>
-              <th className="px-3 py-2 text-right font-semibold">{t("actions")}</th>
+              <th className="px-3 py-2 font-medium">{t("symbol")}</th>
+              <th className="px-2 py-2 text-right font-medium">{t("price")}</th>
+              <th className="px-2 py-2 text-right font-medium">{t("change")}</th>
+              <th className="px-3 py-2 text-right font-medium">{t("actions")}</th>
             </tr>
           </thead>
           <tbody>
-            {loading && items.length === 0 &&
+            {loading &&
+              items.length === 0 &&
               Array.from({ length: 7 }).map((_, i) => (
                 <tr
                   key={`sk-${i}`}
                   className="border-b border-[var(--border)]/70 last:border-0"
                 >
                   <td className="px-3 py-2.5">
-                    <div className="flex items-center gap-2">
-                      <span className="h-7 w-7 animate-pulse rounded-md bg-[var(--surface-2)]" />
-                      <span className="space-y-1">
-                        <span className="block h-3 w-10 animate-pulse rounded bg-[var(--surface-2)]" />
-                        <span className="block h-2.5 w-16 animate-pulse rounded bg-[var(--surface-2)]" />
-                      </span>
-                    </div>
+                    <span className="space-y-1">
+                      <span className="block h-3 w-12 animate-pulse rounded bg-[var(--surface-2)]" />
+                      <span className="block h-2.5 w-20 animate-pulse rounded bg-[var(--surface-2)]" />
+                    </span>
                   </td>
-                  <td className="px-2 py-2.5">
+                  <td className="px-2 py-2.5 text-right">
                     <span className="inline-block h-3.5 w-12 animate-pulse rounded bg-[var(--surface-2)]" />
                   </td>
-                  <td className="px-2 py-2.5">
+                  <td className="px-2 py-2.5 text-right">
                     <span className="inline-block h-3.5 w-10 animate-pulse rounded bg-[var(--surface-2)]" />
                   </td>
                   <td className="px-3 py-2.5 text-right">
-                    <span className="inline-block h-3.5 w-16 animate-pulse rounded bg-[var(--surface-2)]" />
+                    <span className="inline-block h-3.5 w-10 animate-pulse rounded bg-[var(--surface-2)]" />
                   </td>
                 </tr>
               ))}
             {items.map((item) => {
-              const up = item.percentChange >= 0;
               const watchKey = `${item.assetType}:${item.symbol}`;
               const isWatched = watched.has(watchKey);
               return (
@@ -81,49 +90,39 @@ export function RankBoardPanel({
                   <td className="px-3 py-2.5">
                     <Link
                       href={`/symbol/${item.assetType}/${item.symbol}`}
-                      className="flex min-w-0 items-center gap-2"
+                      className="min-w-0"
                     >
-                      <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[var(--border)] bg-[var(--surface-2)] text-[10px] font-bold text-[var(--brand-text)]">
-                        {item.symbol.slice(0, 2)}
+                      <span className="block truncate text-[13px] font-semibold tracking-wide">
+                        {item.symbol}
                       </span>
-                      <span className="min-w-0">
-                        <span className="block truncate text-[13px] font-semibold tracking-wide">
-                          {item.symbol}
-                        </span>
-                        <span className="block truncate text-[11px] text-[var(--muted)]">
-                          {item.name || displayName(item.symbol, item.assetType)}
-                        </span>
+                      <span className="block truncate text-[11px] text-[var(--muted)]">
+                        {item.name ||
+                          displayName(item.symbol, item.assetType)}
                       </span>
                     </Link>
                   </td>
-                  <td className="whitespace-nowrap px-2 py-2.5 font-medium tabular-nums text-[13px]">
-                    <Link
-                      href={`/symbol/${item.assetType}/${item.symbol}`}
-                      className="block"
-                    >
-                      {item.assetType === "hk" ? "HK$" : "$"}
-                      <PriceText value={item.price} change={item.percentChange} />
+                  <td className="whitespace-nowrap px-2 py-2.5 text-right text-[13px] font-medium tabular-nums">
+                    <Link href={`/symbol/${item.assetType}/${item.symbol}`}>
+                      {pricePrefix(item.assetType)}
+                      <PriceText
+                        value={item.price}
+                        change={item.percentChange}
+                      />
                     </Link>
                   </td>
-                  <td className="whitespace-nowrap px-2 py-2.5 text-[13px]">
-                    <Link
-                      href={`/symbol/${item.assetType}/${item.symbol}`}
-                      className="inline-flex items-center gap-0.5 font-medium"
-                    >
-                      <span aria-hidden className="text-[10px]">
-                        {up ? "▲" : "▼"}
-                      </span>
+                  <td className="whitespace-nowrap px-2 py-2.5 text-right text-[13px] tabular-nums">
+                    <Link href={`/symbol/${item.assetType}/${item.symbol}`}>
                       <ChangePct value={item.percentChange} />
                     </Link>
                   </td>
                   <td className="px-3 py-2.5">
-                    <div className="flex items-center justify-end gap-1.5">
+                    <div className="flex items-center justify-end gap-0.5">
                       <button
                         type="button"
-                        className={`${
+                        className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${
                           isWatched
-                            ? "text-[var(--down)]"
-                            : "text-[var(--muted)] hover:text-[var(--down)]"
+                            ? "text-[var(--brand-text)]"
+                            : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
                         }`}
                         title={isWatched ? t("remove") : t("addWatch")}
                         aria-label={isWatched ? t("remove") : t("addWatch")}
@@ -134,23 +133,10 @@ export function RankBoardPanel({
                         <IconHeart filled={isWatched} className="h-3.5 w-3.5" />
                       </button>
                       <Link
-                        href={`/symbol/${item.assetType}/${item.symbol}`}
-                        className="qt-link-up text-[11px] font-bold tracking-wide hover:opacity-80"
-                      >
-                        {t("buy")}
-                      </Link>
-                      <Link
                         href={`/alerts?symbol=${item.symbol}&assetType=${item.assetType}`}
-                        className="qt-link-down text-[11px] font-bold tracking-wide hover:opacity-80"
+                        className="qt-btn qt-btn-ghost inline-flex h-7 items-center px-2 text-[11px] font-medium leading-none"
                       >
-                        {t("sell")}
-                      </Link>
-                      <Link
-                        href={`/symbol/${item.assetType}/${item.symbol}`}
-                        className="text-[var(--muted)] hover:text-[var(--foreground)]"
-                        aria-label="More"
-                      >
-                        ⋮
+                        {t("alert")}
                       </Link>
                     </div>
                   </td>
@@ -170,6 +156,9 @@ export function RankBoardPanel({
           </tbody>
         </table>
       </div>
-    </div>
+    </>
   );
+
+  if (!framed) return <div className="min-w-0">{body}</div>;
+  return <div className="qt-panel overflow-hidden">{body}</div>;
 }

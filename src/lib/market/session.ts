@@ -21,6 +21,27 @@ export function isAssetSessionOpen(
   return isUsRegularSessionOpen(now);
 }
 
+/**
+ * US equity clock phase (America/New_York, weekends → closed).
+ * Pre 04:00–09:30 · Regular 09:30–16:00 · Post 16:00–20:00 · Overnight 20:00–04:00.
+ */
+export type UsMarketPhase =
+  | "pre"
+  | "regular"
+  | "post"
+  | "overnight"
+  | "closed";
+
+export function getUsMarketPhase(now = new Date()): UsMarketPhase {
+  const { weekday, minutes } = zonedClock(now, "America/New_York");
+  if (!isWeekday(weekday)) return "closed";
+  if (minutes >= 4 * 60 && minutes < 9 * 60 + 30) return "pre";
+  if (minutes >= 9 * 60 + 30 && minutes < 16 * 60) return "regular";
+  if (minutes >= 16 * 60 && minutes < 20 * 60) return "post";
+  // 20:00–24:00 and 00:00–04:00 weekday overnight window
+  return "overnight";
+}
+
 function zonedClock(now: Date, timeZone: string) {
   const parts = new Intl.DateTimeFormat("en-US", {
     timeZone,

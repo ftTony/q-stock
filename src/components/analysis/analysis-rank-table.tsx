@@ -44,26 +44,24 @@ export function AnalysisRankTable({
 
   return (
     <div className="overflow-x-auto qt-scroll">
-      <table className="w-full min-w-[600px] text-[14px] leading-5">
+      <table className="w-full min-w-[560px] text-sm">
         <thead>
-          <tr className="border-b border-[var(--border)] text-left text-[14px] leading-5 text-[var(--muted)]">
-              <th className="w-9 px-2.5 py-2.5 font-semibold" />
-              <th className="px-2 py-2.5 font-semibold">{tMarket("symbol")}</th>
-              {showRange && (
-                <th className="hidden px-2 py-2.5 font-semibold sm:table-cell">
-                  {t("range")}
-                </th>
-              )}
-              <th className="px-2 py-2.5 text-right font-semibold">
-                {tMarket("price")}
+          <tr className="border-b border-[var(--border)] text-left text-[11px] tracking-wider text-[var(--muted)] uppercase">
+            <th className="w-9 px-2.5 py-2.5 font-medium" />
+            <th className="px-2 py-2.5 font-medium">{tMarket("symbol")}</th>
+            {showRange && (
+              <th className="hidden px-2 py-2.5 font-medium sm:table-cell">
+                {t("range")}
               </th>
-              <th className="px-2 py-2.5 text-right font-semibold">
-                {t("change")}
-              </th>
-              <th className="px-2.5 py-2.5 text-right font-semibold">
-                {tMarket("actions")}
-              </th>
-            </tr>
+            )}
+            <th className="px-2 py-2.5 text-right font-medium">
+              {tMarket("price")}
+            </th>
+            <th className="px-2 py-2.5 text-right font-medium">{t("change")}</th>
+            <th className="px-2.5 py-2.5 text-right font-medium">
+              {tMarket("actions")}
+            </th>
+          </tr>
         </thead>
         <tbody>
           {loading &&
@@ -73,7 +71,7 @@ export function AnalysisRankTable({
                 key={`sk-${i}`}
                 className="border-b border-[var(--border)]/70 last:border-0"
               >
-                <td className="px-2.5 py-2" colSpan={showRange ? 6 : 5}>
+                <td className="px-2.5 py-2.5" colSpan={showRange ? 6 : 5}>
                   <span className="block h-3.5 w-full animate-pulse rounded bg-[var(--surface-2)]" />
                 </td>
               </tr>
@@ -108,7 +106,7 @@ export function AnalysisRankTable({
                   onToggleBasket(basketItem);
                 }}
               >
-                <td className="px-2.5 py-2">
+                <td className="px-2.5 py-2.5">
                   <input
                     type="checkbox"
                     className="h-3.5 w-3.5 accent-[var(--brand)]"
@@ -122,28 +120,23 @@ export function AnalysisRankTable({
                     onChange={() => onToggleBasket(basketItem)}
                   />
                 </td>
-                <td className="px-2 py-2">
+                <td className="px-2 py-2.5">
                   <Link
                     href={`/symbol/${item.assetType}/${item.symbol}`}
-                    className="flex min-w-0 items-center gap-2"
+                    className="min-w-0"
                     onClick={(e) => e.stopPropagation()}
                   >
-                    <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded border border-[var(--border)] bg-[var(--surface-2)] text-[9px] font-bold text-[var(--brand-text)]">
-                      {item.symbol.slice(0, 2)}
+                    <span className="block truncate text-[13px] font-semibold tracking-wide">
+                      {item.symbol}
                     </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-[14px] font-semibold leading-5 tracking-wide">
-                        {item.symbol}
-                      </span>
-                      <span className="block truncate text-[12px] leading-4 text-[var(--muted)]">
-                        {item.name ||
-                          displayName(item.symbol, item.assetType)}
-                      </span>
+                    <span className="block truncate text-[11px] text-[var(--muted)]">
+                      {item.name ||
+                        displayName(item.symbol, item.assetType)}
                     </span>
                   </Link>
                 </td>
                 {showRange && (
-                  <td className="hidden px-2 py-2 sm:table-cell">
+                  <td className="hidden px-2 py-2.5 sm:table-cell">
                     {item.high != null &&
                     item.low != null &&
                     item.high !== item.low ? (
@@ -159,25 +152,25 @@ export function AnalysisRankTable({
                     )}
                   </td>
                 )}
-                <td className="whitespace-nowrap px-2 py-2 text-right text-[14px] font-medium leading-5 tabular-nums">
+                <td className="whitespace-nowrap px-2 py-2.5 text-right text-[13px] font-medium tabular-nums">
                   {currency}
                   <PriceText value={item.price} change={item.percentChange} />
                 </td>
-                <td className="whitespace-nowrap px-2 py-2 text-right text-[14px] leading-5">
+                <td className="whitespace-nowrap px-2 py-2.5 text-right text-[13px] tabular-nums">
                   <ChangePct value={item.percentChange} />
                 </td>
-                <td className="px-2.5 py-2">
+                <td className="px-2.5 py-2.5">
                   <div
-                    className="flex items-center justify-end gap-1"
+                    className="flex items-center justify-end gap-0.5"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <button
                       type="button"
-                      className={`rounded p-1 ${
+                      className={`inline-flex h-7 w-7 items-center justify-center rounded-full ${
                         isWatched
-                          ? "text-[var(--down)]"
-                          : "text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--down)]"
-                      }`}
+                          ? "text-[var(--brand-text)]"
+                          : "text-[var(--muted)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
+                      } disabled:opacity-40`}
                       title={
                         canWatch
                           ? isWatched
@@ -201,16 +194,10 @@ export function AnalysisRankTable({
                     </button>
                     <Link
                       href={`/alerts?symbol=${item.symbol}&assetType=${item.assetType}`}
-                      className="rounded px-1.5 py-1 text-[14px] leading-5 text-[var(--muted)] hover:bg-[var(--surface-2)] hover:text-[var(--foreground)]"
+                      className="qt-btn qt-btn-ghost inline-flex h-7 items-center px-2 text-[11px] font-medium leading-none"
                       title={t("alert")}
                     >
                       {t("alert")}
-                    </Link>
-                    <Link
-                      href={`/symbol/${item.assetType}/${item.symbol}`}
-                      className="rounded px-1.5 py-1 text-[14px] font-semibold leading-5 text-[var(--brand-text)] hover:bg-[var(--brand-soft)]/40"
-                    >
-                      {tMarket("view")}
                     </Link>
                   </div>
                 </td>
@@ -219,12 +206,12 @@ export function AnalysisRankTable({
           })}
           {!loading && items.length === 0 && (
             <tr>
-                <td
-                  colSpan={showRange ? 6 : 5}
-                  className="px-3 py-8 text-center text-[var(--muted)]"
-                >
-                  {t("emptyBoard")}
-                </td>
+              <td
+                colSpan={showRange ? 6 : 5}
+                className="px-3 py-8 text-center text-[var(--muted)]"
+              >
+                {t("emptyBoard")}
+              </td>
             </tr>
           )}
         </tbody>

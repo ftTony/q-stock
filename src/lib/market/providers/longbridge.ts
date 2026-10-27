@@ -9,6 +9,10 @@ import {
   getQuoteCtx,
   hasLongbridgeCreds,
 } from "@/lib/market/providers/longbridge-client";
+import {
+  applyActiveExtendedPrice,
+  mapLbExtendedFields,
+} from "@/lib/market/providers/longbridge-quote-map";
 import { resolveLongbridgeNames } from "@/lib/market/providers/longbridge-static-names";
 
 export {
@@ -64,6 +68,7 @@ export const longbridgeProvider: MarketDataProvider = {
           (q as { turnover?: { toNumber(): number } | null }).turnover,
         );
         const name = names.get(normalized);
+        const extended = mapLbExtendedFields(q);
         let bid: number | undefined;
         let ask: number | undefined;
         let bidSize: number | undefined;
@@ -85,7 +90,7 @@ export const longbridgeProvider: MarketDataProvider = {
         } catch {
           /* depth optional — LV1 may lack order book */
         }
-        return {
+        const base = {
           symbol: normalized,
           assetType,
           price,
@@ -103,8 +108,13 @@ export const longbridgeProvider: MarketDataProvider = {
           ...(bidSize != null ? { bidSize } : {}),
           ...(askSize != null ? { askSize } : {}),
           ...(name ? { name } : {}),
+          ...(extended.preMarket ? { preMarket: extended.preMarket } : {}),
+          ...(extended.postMarket ? { postMarket: extended.postMarket } : {}),
+          ...(extended.overnight ? { overnight: extended.overnight } : {}),
+          activeSession: extended.activeSession,
           source: "longbridge" as const,
         } satisfies QuoteWithSource;
+        return applyActiveExtendedPrice(base);
       });
     } catch (err) {
       throw new MarketDataError(
@@ -153,7 +163,8 @@ export const longbridgeProvider: MarketDataProvider = {
           (q as { turnover?: { toNumber(): number } | null }).turnover,
         );
         const name = names.get(meta.normalized);
-        out.push({
+        const extended = mapLbExtendedFields(q);
+        const base = {
           symbol: meta.normalized,
           assetType: meta.assetType,
           price,
@@ -167,8 +178,13 @@ export const longbridgeProvider: MarketDataProvider = {
           ...(volume > 0 ? { volume } : {}),
           ...(turnover > 0 ? { turnover } : {}),
           ...(name ? { name } : {}),
-          source: "longbridge",
-        });
+          ...(extended.preMarket ? { preMarket: extended.preMarket } : {}),
+          ...(extended.postMarket ? { postMarket: extended.postMarket } : {}),
+          ...(extended.overnight ? { overnight: extended.overnight } : {}),
+          activeSession: extended.activeSession,
+          source: "longbridge" as const,
+        } satisfies QuoteWithSource;
+        out.push(applyActiveExtendedPrice(base));
       }
       return out;
     } catch {

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
-import { formatDate, formatNumber } from "@/lib/format-number";
+import { SymbolShortChart } from "@/components/symbol/symbol-short-chart";
 import type { ShortRow } from "@/lib/market/providers/longbridge-research";
 import type { AssetType } from "@/lib/types";
 
@@ -59,17 +59,17 @@ export function SymbolShortPanel({
     );
   }
 
-  if (unavailable) {
+  if (unavailable || rows.length === 0) {
     return (
       <div className="space-y-2 py-6 text-center">
-        <p className="text-[14px] font-semibold leading-[1.29] tracking-[-0.224px]">
+        <p className="text-[12px] font-semibold tracking-tight">
           {t("shortTitle")}
         </p>
-        <p className="mx-auto max-w-md text-[12px] leading-[1.47] tracking-[-0.12px] text-[var(--muted)]">
+        <p className="mx-auto max-w-md text-[12px] leading-relaxed text-[var(--muted)]">
           {t("shortEmpty")}
         </p>
         {detail ? (
-          <p className="mx-auto max-w-lg break-all text-[12px] tracking-[-0.12px] text-[var(--muted)] opacity-80">
+          <p className="mx-auto max-w-lg break-all text-[11px] text-[var(--muted)] opacity-80">
             {detail}
           </p>
         ) : null}
@@ -84,48 +84,14 @@ export function SymbolShortPanel({
   }
 
   return (
-    <div className="space-y-3">
-      <p className="text-[12px] font-medium text-[var(--muted)]">
+    <div className="space-y-2">
+      <p className="text-[12px] font-semibold tracking-tight text-[var(--foreground)]">
         {t("shortTitle")}
       </p>
-      <div className="overflow-x-auto rounded-md border border-[var(--border)]">
-        <table className="w-full min-w-[28rem] text-left text-[12px]">
-          <thead>
-            <tr className="border-b border-[var(--border)] text-[var(--muted)]">
-              <th className="px-2 py-1.5 font-normal">{t("shortDate")}</th>
-              <th className="px-2 py-1.5 font-normal">{t("shortRate")}</th>
-              <th className="px-2 py-1.5 font-normal">{t("shortClose")}</th>
-              <th className="px-2 py-1.5 font-normal">{t("shortAmount")}</th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((r, i) => (
-              <tr key={`${r.timestamp}-${i}`} className="border-b border-[var(--border)]/50">
-                <td className="px-2 py-1.5 tabular-nums text-[var(--muted)]">
-                  {r.timestamp ? formatDate(r.timestamp) : "—"}
-                </td>
-                <td className="px-2 py-1.5 tabular-nums">
-                  {r.rate != null
-                    ? `${formatNumber(r.rate, { maximumFractionDigits: 2 })}%`
-                    : "—"}
-                </td>
-                <td className="px-2 py-1.5 tabular-nums">
-                  {r.close != null
-                    ? formatNumber(r.close, { maximumFractionDigits: 2 })
-                    : "—"}
-                </td>
-                <td className="px-2 py-1.5 tabular-nums">
-                  {r.totalAmount != null
-                    ? formatNumber(r.totalAmount, { maximumFractionDigits: 0 })
-                    : r.amount != null
-                      ? formatNumber(r.amount, { maximumFractionDigits: 0 })
-                      : "—"}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <SymbolShortChart
+        rows={rows}
+        labels={{ rate: t("shortRate"), close: t("shortClose") }}
+      />
     </div>
   );
 }

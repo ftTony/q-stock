@@ -69,18 +69,32 @@ export async function loadLb(): Promise<LbModule> {
   return G.lbPromise;
 }
 
+/** Overnight / extended US quotes — off only when env is explicitly false. */
+function longbridgeEnableOvernight(): boolean {
+  const v = process.env.LONGBRIDGE_ENABLE_OVERNIGHT?.trim().toLowerCase();
+  if (v === "0" || v === "false" || v === "no") return false;
+  return true;
+}
+
 function makeConfig(
   lb: LbModule,
   creds: LongbridgeCreds,
   language?: LbLanguageId,
 ) {
+  const extra: {
+    language?: number;
+    enableOvernight?: boolean;
+  } = {
+    enableOvernight: longbridgeEnableOvernight(),
+  };
+  if (language !== undefined && language !== "default") {
+    extra.language = language;
+  }
   return lb.Config.fromApikey(
     creds.appKey,
     creds.appSecret,
     creds.accessToken,
-    language === undefined || language === "default"
-      ? undefined
-      : { language },
+    extra,
   );
 }
 

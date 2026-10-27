@@ -20,8 +20,11 @@ export type IpoRow = {
 
 export function IpoPanel({
   assetType,
+  embedded = false,
 }: {
   assetType: Exclude<AssetType, "crypto">;
+  /** When true, skip outer qt-panel (parent already frames). */
+  embedded?: boolean;
 }) {
   const t = useTranslations("market");
   const tCommon = useTranslations("common");
@@ -64,9 +67,15 @@ export function IpoPanel({
   if (assetType !== "hk") return null;
 
   return (
-    <div className="qt-panel flex h-full flex-col p-4">
+    <div
+      className={
+        embedded
+          ? "flex h-full flex-col p-4"
+          : "qt-panel flex h-full flex-col p-4"
+      }
+    >
       <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h2 className="font-semibold">{t("ipo")}</h2>
+        <h2 className="text-sm font-semibold tracking-tight">{t("ipo")}</h2>
         <SegmentedControl
           value={status}
           onChange={setStatus}

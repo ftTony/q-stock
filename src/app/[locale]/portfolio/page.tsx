@@ -6,6 +6,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import type { Quote } from "@/lib/types";
+import { MarketsKpiStrip } from "@/components/market/markets-kpi-strip";
 import { PortfolioPaperSection } from "@/components/portfolio/portfolio-paper-section";
 import { PortfolioHoldingsTable } from "@/components/portfolio/portfolio-holdings-table";
 import { PortfolioAside } from "@/components/portfolio/portfolio-aside";
@@ -223,58 +224,37 @@ export default function PortfolioPage() {
         }}
       />
 
-      <section className="grid grid-cols-2 gap-3 xl:grid-cols-4">
-        {(
-          [
-            {
-              key: "watch",
-              label: t("watchlist"),
-              value: String(rows.length),
-              tone: "text-[var(--foreground)]",
-            },
-            {
-              key: "avg",
-              label: tMarket("kpiAvgChange"),
-              value: `${avgChange >= 0 ? "+" : ""}${avgChange.toFixed(2)}%`,
-              tone:
-                avgChange >= 0 ? "text-[var(--up)]" : "text-[var(--down)]",
-            },
-            {
-              key: "top",
-              label: tMarket("kpiTop"),
-              value: top
-                ? `${top.symbol} ${top.percentChange >= 0 ? "+" : ""}${top.percentChange.toFixed(1)}%`
-                : "—",
-              tone: "text-[var(--brand-text)]",
-            },
-          ] as const
-        ).map((card) => (
-          <div key={card.key} className="qt-panel px-4 py-3.5">
-            <div className="text-[11px] text-[var(--muted)] sm:text-[12px]">
-              {card.label}
-            </div>
-            <div
-              className={`mt-1.5 text-xl font-semibold tabular-nums tracking-tight sm:text-2xl ${card.tone}`}
-            >
-              {card.value}
-            </div>
-          </div>
-        ))}
-        <div className="qt-panel px-4 py-3.5">
-          <div className="flex items-center justify-between text-[11px] text-[var(--muted)] sm:text-[12px]">
-            <span>{t("activeAlerts")}</span>
-            {alertActive > 0 ? (
-              <span className="h-1.5 w-1.5 rounded-full bg-[var(--down)]" />
-            ) : null}
-          </div>
-          <div className="mt-1.5 text-xl font-semibold tabular-nums tracking-tight sm:text-2xl">
-            {alertActive}
-            <span className="ml-1.5 text-[12px] font-normal text-[var(--muted)] sm:text-[13px]">
-              / {alertTriggered} {t("triggeredAlerts")}
-            </span>
-          </div>
-        </div>
-      </section>
+      <MarketsKpiStrip
+        items={[
+          {
+            key: "watch",
+            label: t("watchlist"),
+            value: String(rows.length),
+          },
+          {
+            key: "avg",
+            label: tMarket("kpiAvgChange"),
+            value: `${avgChange >= 0 ? "+" : ""}${avgChange.toFixed(2)}%`,
+            valueClass:
+              avgChange >= 0 ? "text-[var(--up)]" : "text-[var(--down)]",
+          },
+          {
+            key: "top",
+            label: tMarket("kpiTop"),
+            value: top
+              ? `${top.symbol} ${top.percentChange >= 0 ? "+" : ""}${top.percentChange.toFixed(1)}%`
+              : "—",
+            valueClass: "text-[var(--brand-text)]",
+          },
+          {
+            key: "alerts",
+            label: t("activeAlerts"),
+            value: `${alertActive} / ${alertTriggered}`,
+            hint: t("triggeredAlerts"),
+            hintDot: alertActive > 0,
+          },
+        ]}
+      />
 
       <PortfolioHoldingsTable
         rows={rows}
@@ -291,8 +271,8 @@ export default function PortfolioPage() {
           change: tMarket("change"),
           last24h: tMarket("last24h"),
           actions: tMarket("actions"),
-          buy: tMarket("buy"),
-          sell: tMarket("sell"),
+          view: tMarket("view"),
+          alert: tMarket("alert"),
         }}
       />
 

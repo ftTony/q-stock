@@ -29,28 +29,37 @@ export function MarketsHeaderToolbar({
   onQueryChange,
 }: Props) {
   const t = useTranslations("market");
+  const tNav = useTranslations("nav");
   const router = useRouter();
 
+  const title =
+    tab === "crypto"
+      ? t("titleCrypto")
+      : tab === "hk"
+        ? t("titleHk")
+        : tab === "cn"
+          ? t("titleCn")
+          : t("titleStock");
+  const desc =
+    tab === "crypto"
+      ? t("descCrypto")
+      : tab === "hk"
+        ? t("descHk")
+        : tab === "cn"
+          ? t("descCn")
+          : t("descStock");
+
+  const headerBtn =
+    "qt-btn inline-flex h-8 items-center justify-center px-3 text-[13px] font-medium leading-none";
+
   return (
-    <section className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-      <div className="space-y-1">
-        <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
-          {tab === "crypto"
-            ? t("titleCrypto")
-            : tab === "hk"
-              ? t("titleHk")
-              : tab === "cn"
-                ? t("titleCn")
-                : t("titleStock")}
+    <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="min-w-0 space-y-1">
+        <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
+          {title}
         </h1>
-        <p className="text-xs text-[var(--muted)] sm:text-sm">
-          {tab === "crypto"
-            ? t("descCrypto")
-            : tab === "hk"
-              ? t("descHk")
-              : tab === "cn"
-                ? t("descCn")
-                : t("descStock")}
+        <p className="max-w-2xl text-[12px] leading-relaxed text-[var(--muted)] sm:text-[13px]">
+          {desc}
         </p>
       </div>
 
@@ -64,7 +73,7 @@ export function MarketsHeaderToolbar({
               key === "stock" ? "/markets" : `/markets?list=${key}`,
             );
           }}
-          className="rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1"
+          className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-0.5"
           buttonClassName="px-2.5 py-1 text-[11px] font-medium sm:text-xs"
           options={[
             { value: "stock", label: t("stocks") },
@@ -74,24 +83,26 @@ export function MarketsHeaderToolbar({
           ]}
         />
 
-        <div className="relative min-w-[220px] flex-1 sm:flex-none">
+        <div className="relative min-w-[200px] flex-1 sm:flex-none sm:w-56">
           <input
             value={q}
             onChange={(e) => onQueryChange(e.target.value)}
             placeholder={t("search")}
-            className="qt-input w-full px-3 py-2 text-xs sm:text-sm"
+            className="qt-input h-8 w-full px-3 text-xs sm:text-[13px]"
           />
           {results.length > 0 && (
-            <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl">
+            <ul className="absolute z-20 mt-1 max-h-64 w-full overflow-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] shadow-xl qt-scroll">
               {results.map((r) => (
                 <li key={`${r.assetType}-${r.symbol}`}>
                   <Link
                     href={`/symbol/${r.assetType}/${r.symbol}`}
-                    className="block px-3 py-2.5 text-sm hover:bg-[var(--sidebar-hover)]"
+                    className="block px-3 py-2 text-sm hover:bg-[var(--sidebar-hover)]"
                     onClick={() => onQueryChange("")}
                   >
                     <span className="font-semibold">{r.symbol}</span>
-                    <span className="ml-2 text-[var(--muted)]">{r.description}</span>
+                    <span className="ml-2 text-[var(--muted)]">
+                      {r.description}
+                    </span>
                   </Link>
                 </li>
               ))}
@@ -99,8 +110,8 @@ export function MarketsHeaderToolbar({
           )}
         </div>
 
-        <Link href="/watchlist" className="qt-btn qt-btn-primary h-9 px-3 text-xs">
-          + {t("addWatch")}
+        <Link href="/watchlist" className={`${headerBtn} qt-btn-ghost`}>
+          {tNav("watchlist")}
         </Link>
       </div>
     </section>

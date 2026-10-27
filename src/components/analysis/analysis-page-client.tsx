@@ -51,21 +51,19 @@ export function AnalysisPageClient({ initialIndustries }: Props) {
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div className="min-w-0 space-y-2">
-          <SegmentedControl
-            value={page.assetType}
-            onChange={(v) => page.setAssetType(v as AnalysisEquityType)}
-            className="w-fit rounded-lg border border-[var(--border)] bg-[var(--panel)] p-0.5"
-            buttonClassName="px-2.5 py-1 text-[14px] font-medium leading-5"
-            options={[
-              { value: "stock", label: tMarket("stocks") },
-              { value: "hk", label: tMarket("hk") },
-              { value: "cn", label: tMarket("cn") },
-            ]}
-          />
-        </div>
-        <div className="flex w-full items-center gap-2 lg:w-auto lg:min-w-[320px] lg:max-w-md">
+      <div className="flex flex-col gap-2.5 sm:flex-row sm:items-center sm:justify-between">
+        <SegmentedControl
+          value={page.assetType}
+          onChange={(v) => page.setAssetType(v as AnalysisEquityType)}
+          className="h-8 w-fit items-stretch rounded-lg border border-[var(--border)] bg-[var(--panel)] p-0.5"
+          buttonClassName="inline-flex items-center px-3 text-[13px] font-medium leading-none"
+          options={[
+            { value: "stock", label: tMarket("stocks") },
+            { value: "hk", label: tMarket("hk") },
+            { value: "cn", label: tMarket("cn") },
+          ]}
+        />
+        <div className="flex w-full min-w-0 items-center gap-2 sm:w-auto sm:min-w-[280px] sm:max-w-md">
           <AnalysisSearch
             assetType={page.assetType}
             recent={page.recent}
@@ -73,18 +71,19 @@ export function AnalysisPageClient({ initialIndustries }: Props) {
             onAddCompare={addFromSearch}
             onRecentOpen={page.pushRecent}
           />
-          <button
-            type="button"
-            className="qt-btn qt-btn-primary h-9 shrink-0 px-3 !text-[14px] leading-5 disabled:opacity-40"
-            disabled={page.basket.length < 2}
-            title={
-              page.basket.length < 2 ? t("basketHint") : t("openCompare")
-            }
-            onClick={() => page.setWorkspace("compare")}
-          >
-            {t("workspaceCompare")}
-            {page.basket.length > 0 ? ` ${page.basket.length}` : ""}
-          </button>
+          {page.basket.length > 0 ? (
+            <button
+              type="button"
+              className="qt-btn qt-btn-ghost h-8 shrink-0 px-3 text-[13px] font-medium leading-none disabled:opacity-40"
+              disabled={page.basket.length < 2}
+              title={
+                page.basket.length < 2 ? t("basketHint") : t("openCompare")
+              }
+              onClick={() => page.setWorkspace("compare")}
+            >
+              {t("workspaceCompare")} {page.basket.length}
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -114,10 +113,10 @@ export function AnalysisPageClient({ initialIndustries }: Props) {
             <div className="min-w-0">
               {page.selectedIndustry ? (
                 <>
-                  <div className="truncate text-[14px] font-semibold leading-5">
+                  <div className="truncate text-[13px] font-semibold tracking-tight">
                     {page.selectedIndustry.name}
                   </div>
-                  <div className="text-[14px] leading-5 text-[var(--muted)]">
+                  <div className="text-[12px] text-[var(--muted)]">
                     {t("industryStockCount", {
                       count: page.selectedIndustry.stocks.length,
                     })}
@@ -135,7 +134,7 @@ export function AnalysisPageClient({ initialIndustries }: Props) {
               value={page.sort}
               onChange={page.setSort}
               className="rounded-lg border border-[var(--border)] bg-[var(--surface-2)] p-0.5"
-              buttonClassName="px-2.5 py-1 text-[14px] font-medium leading-5"
+              buttonClassName="px-2.5 py-1 text-[11px] font-medium sm:text-xs"
               options={[
                 { value: "changeDesc", label: tMarket("gainers") },
                 { value: "changeAsc", label: tMarket("losers") },
