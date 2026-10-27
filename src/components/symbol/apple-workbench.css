@@ -48,6 +48,28 @@
   letter-spacing: -0.012em;
   background: var(--aw-parchment);
 }
+
+/* Align workbench tokens with globals.html.dark (panel / surface / brand). */
+html.dark .aw {
+  --aw-primary: #2997ff;
+  --aw-primary-focus: #64b5ff;
+  --aw-primary-on-dark: #2997ff;
+  --aw-ink: #edf2ff;
+  --aw-ink-muted-80: #c5cddb;
+  --aw-ink-muted-48: #8b97ad;
+  --aw-body-muted: #5a6578;
+  --aw-divider-soft: #161d2a;
+  --aw-hairline: #1c2433;
+  --aw-canvas: #0f1520;
+  --aw-parchment: #06090f;
+  --aw-pearl: #121925;
+  --aw-chip: #1c2433;
+  --aw-on-primary: #ffffff;
+  --brand: var(--aw-primary);
+  --brand-soft: rgba(41, 151, 255, 0.16);
+  --brand-text: #64b5ff;
+  --on-brand: var(--aw-on-primary);
+}
 .aw .qt-panel,
 .aw .qt-card {
   background: var(--aw-canvas);
@@ -59,7 +81,7 @@
 .aw input.qt-input,
 .aw textarea.qt-input,
 .aw select.qt-input {
-  border: 1px solid rgba(0, 0, 0, 0.08);
+  border: 1px solid color-mix(in srgb, var(--aw-ink) 8%, transparent);
   border-radius: var(--aw-radius-md);
   background: var(--aw-canvas);
   color: var(--aw-ink);
@@ -230,7 +252,7 @@
   border: none;
   border-radius: 0;
   border-left: 1px solid var(--aw-hairline, var(--border));
-  background: var(--aw-canvas, #fff);
+  background: var(--aw-canvas);
   box-shadow: none;
   min-height: 0;
 }
@@ -251,7 +273,7 @@
   width: 40px;
   height: 40px;
   border-radius: 6px;
-  color: #333;
+  color: var(--aw-ink-muted-80);
   background: transparent;
   border: none;
   opacity: 0.9;
@@ -588,7 +610,7 @@ html.aw-rail-resizing {
   width: 30px;
   height: 30px;
   border-radius: var(--aw-radius-full, 9999px);
-  background: rgba(210, 210, 215, 0.64);
+  background: color-mix(in srgb, var(--aw-chip) 64%, transparent);
   color: var(--aw-ink);
   border: none;
   transition: transform 0.12s ease;
@@ -665,14 +687,14 @@ html.aw-rail-resizing {
 }
 
 .aw-toolbar-btn[data-active="true"] {
-  background: rgba(0, 102, 204, 0.1);
+  background: var(--brand-soft);
   border-color: transparent;
   color: var(--aw-primary);
   font-weight: 600;
 }
 
 .aw-toolbar-btn:not([data-active="true"]):hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: color-mix(in srgb, var(--aw-ink) 6%, transparent);
   color: var(--aw-ink);
 }
 

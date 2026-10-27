@@ -98,7 +98,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
       <div
         className={
           isSymbol
-            ? "min-h-dvh bg-[#e6edf6] lg:flex lg:h-dvh lg:overflow-hidden"
+            ? "min-h-dvh bg-[var(--symbol-shell-bg,#e6edf6)] lg:flex lg:h-dvh lg:overflow-hidden"
             : "min-h-dvh lg:flex"
         }
         style={{ ["--sidebar-w" as string]: `${sidebarWidth}px` }}
@@ -113,14 +113,14 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
       <div
         className={
           isSymbol
-            ? "flex min-h-dvh min-w-0 flex-1 flex-col bg-[#e6edf6] lg:h-dvh lg:overflow-hidden"
+            ? "flex min-h-dvh min-w-0 flex-1 flex-col bg-[var(--symbol-shell-bg,#e6edf6)] lg:h-dvh lg:overflow-hidden"
             : "flex min-h-dvh min-w-0 flex-1 flex-col"
         }
       >
         <header
           className={`sticky top-0 z-40 shrink-0 border-b border-[var(--aw-hairline,var(--border))] backdrop-blur-xl ${
             isSymbol
-              ? "bg-[#e6edf6]/90"
+              ? "bg-[var(--symbol-shell-bg,#e6edf6)]/90"
               : "bg-[var(--background)]/85"
           }`}
         >

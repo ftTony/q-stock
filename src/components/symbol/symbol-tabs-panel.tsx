@@ -138,7 +138,7 @@ export function SymbolTabsPanel({
   aiRegenerateLabel,
 }: Props) {
   return (
-    <div className="aw-surface-flush flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--aw-canvas,#fff)]">
+    <div className="aw-surface-flush flex min-h-0 min-w-0 flex-1 flex-col bg-[var(--aw-canvas)]">
       {degraded && tab !== "chart" ? (
         <p className="aw-caption shrink-0 px-4 pt-3 sm:px-5">{degradedLabel}</p>
       ) : null}

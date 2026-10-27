@@ -62,7 +62,7 @@ export function SymbolAlertStrip({
         aria-haspopup="dialog"
         title={t("setAlert")}
         aria-label={t("setAlert")}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--aw-parchment,#eef2f7)] hover:text-[var(--foreground)]"
+        className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
       >
         <IconBell className="h-5 w-5" />
       </button>

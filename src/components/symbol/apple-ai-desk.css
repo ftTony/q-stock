@@ -157,7 +157,7 @@
 .aw-ai-desk .aw-ai-pearl-btn.qt-btn,
 .aw-ai-desk button.aw-ai-pearl-btn {
   background: var(--aw-primary, var(--brand)) !important;
-  color: #fff !important;
+  color: var(--aw-on-primary, var(--on-brand, #fff)) !important;
   border: none !important;
   border-radius: 6px !important;
   box-shadow: none !important;

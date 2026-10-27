@@ -38,7 +38,7 @@ export default async function DisclaimerPage({ params }: Props) {
             </h1>
           </header>
 
-          <article className="qt-panel mt-4 min-h-0 flex-1 overflow-y-auto overscroll-y-contain sm:mt-5">
+          <article className="qt-panel qt-scroll mt-4 min-h-0 flex-1 overflow-y-auto overscroll-y-contain sm:mt-5">
             <ol className="divide-y divide-[var(--border)]">
               {BODY_KEYS.map((key, i) => (
                 <li

@@ -23,6 +23,8 @@
   --down: #16a34a;
   --radius: 14px;
   --shadow: 0 10px 30px rgba(15, 23, 42, 0.06);
+  /* Symbol page shell (outside `.aw`); keep aligned with --aw-parchment. */
+  --symbol-shell-bg: #e6edf6;
   /* Local stacks — no Google Fonts download at build/dev time. */
   --font-geist-sans:
     ui-sans-serif, system-ui, -apple-system, "Segoe UI", "PingFang SC",
@@ -58,6 +60,7 @@ html.dark {
   --up: #e11d48;
   --down: #34d399;
   --shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+  --symbol-shell-bg: #06090f;
 }
 
 html.dark[data-change="us"] {
@@ -79,6 +82,41 @@ html.dark[data-change="us"] {
 html {
   /* Keep header/content width stable when a page gains/loses a vertical scrollbar. */
   scrollbar-gutter: stable;
+  /* Thin, token-colored document scrollbar (avoids Windows classic arrows). */
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--muted) 38%, transparent) transparent;
+}
+
+html::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+html::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+html::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted) 36%, transparent);
+  border-radius: 999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted) 55%, transparent);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+html::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+html::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 body {
@@ -280,6 +318,20 @@ a.qt-btn-ghost:hover,
 .qt-scroll::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--muted) 35%, transparent);
   border-radius: 999px;
+}
+
+.qt-scroll::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted) 52%, transparent);
+}
+
+.qt-scroll::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.qt-scroll::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 @keyframes qtFade {

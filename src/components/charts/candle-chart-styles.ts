@@ -22,6 +22,7 @@ export function toKLineData(bars: OhlcvBar[]) {
 
 function readThemeColors() {
   const styles = getComputedStyle(document.documentElement);
+  const dark = document.documentElement.classList.contains("dark");
   return {
     up: styles.getPropertyValue("--up").trim() || "#e11d48",
     down: styles.getPropertyValue("--down").trim() || "#16a34a",
@@ -29,8 +30,15 @@ function readThemeColors() {
     muted: styles.getPropertyValue("--muted").trim() || "#8b97ad",
     bg: styles.getPropertyValue("--panel").trim() || "#0f1520",
     border: styles.getPropertyValue("--border").trim() || "#1c2433",
-    grid: "rgba(100,116,139,0.18)",
+    grid: dark ? "rgba(148,163,184,0.12)" : "rgba(100,116,139,0.18)",
   };
+}
+
+/** Chart PNG export fill — follows current theme panel. */
+export function readChartExportBg(): string {
+  if (typeof document === "undefined") return "#ffffff";
+  const styles = getComputedStyle(document.documentElement);
+  return styles.getPropertyValue("--panel").trim() || "#ffffff";
 }
 
 /** 分时 uses area line; other periods use solid candles. */

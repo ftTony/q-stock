@@ -188,11 +188,17 @@ export function RegisterForm({
         </SubmitButton>
         <p className="text-center text-[12px] leading-relaxed text-[var(--muted)]">
           {t("consentLead")}{" "}
-          <Link href="/terms" className="text-[var(--brand-text)] hover:underline">
+          <Link
+            href="/terms"
+            className="font-medium !text-[var(--brand-text)] underline underline-offset-2 hover:opacity-90"
+          >
             {t("consentTerms")}
           </Link>{" "}
           {t("consentAnd")}{" "}
-          <Link href="/privacy" className="text-[var(--brand-text)] hover:underline">
+          <Link
+            href="/privacy"
+            className="font-medium !text-[var(--brand-text)] underline underline-offset-2 hover:opacity-90"
+          >
             {t("consentPrivacy")}
           </Link>
         </p>

@@ -19,11 +19,11 @@ const TONE: Record<
 > = {
   fomo: {
     idle: "border-[var(--border)] text-[var(--muted)]",
-    on: "border-[#f5a3b5] bg-[#fce8ec] text-[#b42345]",
+    on: "border-[var(--up)]/40 bg-[color-mix(in_srgb,var(--up)_12%,transparent)] text-[var(--up)]",
   },
   panic: {
     idle: "border-[var(--border)] text-[var(--muted)]",
-    on: "border-[#f5c07a] bg-[#fff1e0] text-[#9a6700]",
+    on: "border-[color-mix(in_srgb,#ca8a04_55%,var(--border))] bg-[color-mix(in_srgb,#ca8a04_14%,transparent)] text-[#ca8a04]",
   },
   revenge: {
     idle: "border-[var(--border)] text-[var(--muted)]",

@@ -122,7 +122,7 @@ export function SymbolQuoteBarSearch({ assetType, currentSymbol }: Props) {
           aria-autocomplete="list"
           aria-controls={mounted ? listId : undefined}
           aria-expanded={showList && results.length > 0 ? true : undefined}
-          className="h-7 w-full rounded-md border border-[var(--aw-hairline,var(--border))] bg-[var(--aw-parchment,var(--surface-2))] pl-7 pr-2 text-[12px] tracking-[-0.1px] text-[var(--foreground)] outline-none placeholder:text-[var(--muted)] focus:border-[var(--brand)]/40 focus:bg-[var(--aw-canvas,#fff)]"
+          className="h-7 w-full rounded-md border border-[var(--aw-hairline,var(--border))] bg-[var(--aw-parchment,var(--surface-2))] pl-7 pr-2 text-[12px] tracking-[-0.1px] text-[var(--foreground)] outline-none placeholder:text-[var(--muted)] focus:border-[var(--brand)]/40 focus:bg-[var(--aw-canvas)]"
         />
       </label>
 

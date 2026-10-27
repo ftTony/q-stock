@@ -62,7 +62,7 @@ export function SymbolQuoteBar({
     companyName.toUpperCase() !== symbol.toUpperCase();
 
   return (
-    <div className="aw-quote-bar flex h-10 min-h-10 items-stretch border-b border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas,#fff)] px-3 sm:px-4">
+    <div className="aw-quote-bar flex h-10 min-h-10 items-stretch border-b border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas)] px-3 sm:px-4">
       <div className="flex min-w-0 flex-1 items-stretch gap-0">
         <div className="flex shrink-0 items-center gap-2 sm:gap-3">
           {showWatchlistExpand && onExpandWatchlist ? (

@@ -22,7 +22,7 @@ export function SettingsAboutPanel() {
         <p className="pt-1">
           <Link
             href="/about"
-            className="text-[12px] font-medium text-[var(--brand-text)] hover:underline"
+            className="text-[12px] font-medium !text-[var(--brand-text)] underline underline-offset-2 hover:opacity-90"
           >
             {t("aboutPageLink")}
           </Link>
@@ -36,7 +36,7 @@ export function SettingsAboutPanel() {
           </h3>
           <Link
             href="/disclaimer"
-            className="text-[12px] font-medium text-[var(--brand-text)] hover:underline"
+            className="text-[12px] font-medium !text-[var(--brand-text)] underline underline-offset-2 hover:opacity-90"
           >
             {t("disclaimerPageLink")}
           </Link>
@@ -64,13 +64,13 @@ export function SettingsAboutPanel() {
         <div className="flex flex-wrap gap-x-4 gap-y-1 text-[12px]">
           <Link
             href="/terms"
-            className="font-medium text-[var(--brand-text)] hover:underline"
+            className="font-medium !text-[var(--brand-text)] underline underline-offset-2 hover:opacity-90"
           >
             {t("termsPageLink")}
           </Link>
           <Link
             href="/privacy"
-            className="font-medium text-[var(--brand-text)] hover:underline"
+            className="font-medium !text-[var(--brand-text)] underline underline-offset-2 hover:opacity-90"
           >
             {t("privacyPageLink")}
           </Link>

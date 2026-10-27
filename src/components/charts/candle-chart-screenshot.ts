@@ -1,5 +1,11 @@
 /** Chart PNG export with Futu-style brand marks (i18n brand from caller). */
 
+import {
+  buildChartStyles,
+  readChartExportBg,
+  type TipLabels,
+} from "@/components/charts/candle-chart-styles";
+
 const DEFAULT_DOMAIN = "q-stock.cn";
 const DEFAULT_LOGO_SRC = "/logo-light.png?v=2";
 const FONT =
@@ -13,6 +19,72 @@ export type ChartScreenshotOpts = {
   logoSrc?: string;
   filename?: string;
 };
+
+type ChartExportApi = {
+  setStyles: (styles: never) => void;
+  resize: () => void;
+  getConvertPictureUrl: (
+    includeOverlay: boolean,
+    type: string,
+    background: string,
+  ) => string;
+};
+
+/**
+ * Hide OHLC tip, rasterize main canvas, restore styles, then download
+ * with brand watermark. klinecharts needs 2 rAFs after setStyles to paint.
+ */
+export async function captureAndDownloadChart(opts: {
+  chart: ChartExportApi;
+  labels: TipLabels;
+  resolution: string;
+  liveSession: boolean;
+  flushEdge: boolean;
+  domain: string;
+  brand: string;
+  logoSrc: string;
+  filename: string;
+}) {
+  const { chart, labels, resolution } = opts;
+  const styleOpts = {
+    liveSession: opts.liveSession,
+    flushEdge: opts.flushEdge,
+  };
+  const restoreStyles = () => {
+    chart.setStyles(buildChartStyles(labels, resolution, styleOpts) as never);
+  };
+  const nextFrame = () =>
+    new Promise<void>((r) => requestAnimationFrame(() => r()));
+
+  try {
+    chart.setStyles(
+      buildChartStyles(labels, resolution, {
+        ...styleOpts,
+        hideCandleTooltip: true,
+      }) as never,
+    );
+    chart.resize();
+    await Promise.resolve();
+    await nextFrame();
+    await nextFrame();
+
+    const url = chart.getConvertPictureUrl(false, "png", readChartExportBg());
+    restoreStyles();
+    if (!url) return;
+    await downloadChartScreenshot(url, {
+      domain: opts.domain,
+      brand: opts.brand,
+      logoSrc: opts.logoSrc,
+      filename: opts.filename,
+    });
+  } catch {
+    try {
+      restoreStyles();
+    } catch {
+      /* ignore restore failure */
+    }
+  }
+}
 
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {

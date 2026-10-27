@@ -84,7 +84,7 @@ export default async function AboutPage({ params }: Props) {
 
           <div className="relative mt-4 flex min-h-0 flex-1 flex-col sm:mt-5">
             <div
-              className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain pr-1"
+              className="qt-scroll min-h-0 flex-1 overflow-y-auto overscroll-y-contain pr-1"
               style={{
                 maskImage:
                   "linear-gradient(to bottom, transparent 0, #000 14px, #000 calc(100% - 22px), transparent 100%)",

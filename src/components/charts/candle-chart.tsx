@@ -9,6 +9,7 @@ import {
   useState,
 } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { useTheme } from "next-themes";
 import type { OhlcvBar } from "@/lib/types";
 import { usePreference } from "@/components/providers/preference-provider";
 import type { DrawingTool } from "@/components/charts/chart-drawing-icons";
@@ -23,7 +24,7 @@ import {
   type TipLabels,
 } from "@/components/charts/candle-chart-styles";
 import type { ChartUiSettings } from "@/components/charts/candle-chart-settings";
-import { downloadChartScreenshot } from "@/components/charts/candle-chart-screenshot";
+import { captureAndDownloadChart } from "@/components/charts/candle-chart-screenshot";
 import {
   syncTradeMarkers,
   USER_DRAWINGS_GROUP,
@@ -111,6 +112,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     isAssetSessionOpen(assetType),
   );
   const { changeColorScheme } = usePreference();
+  const { resolvedTheme } = useTheme();
   const locale = useLocale();
   const t = useTranslations("symbol");
   const tApp = useTranslations("app");
@@ -315,7 +317,15 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
         flushEdge: fillParent,
       }) as never,
     );
-  }, [changeColorScheme, ready, locale, resolution, liveSession, fillParent]);
+  }, [
+    changeColorScheme,
+    resolvedTheme,
+    ready,
+    locale,
+    resolution,
+    liveSession,
+    fillParent,
+  ]);
 
   const tradeMarkersKey = tradeMarkers
     .map((m) => `${m.id}:${m.timeMs}:${m.price}:${m.side}`)
@@ -397,50 +407,17 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
   const captureScreenshot = () => {
     const chart = chartRef.current;
     if (!chart) return;
-
-    const styleOpts = { liveSession, flushEdge: fillParent };
-    const restoreStyles = () => {
-      chart.setStyles(
-        buildChartStyles(tipLabelsRef.current, resolution, styleOpts) as never,
-      );
-    };
-    const nextFrame = () =>
-      new Promise<void>((r) => requestAnimationFrame(() => r()));
-
-    void (async () => {
-      try {
-        // Full style replace (not a partial merge) so OHLC tip is off.
-        // klinecharts: setStyles → layout (microtask) → canvas draw (rAF).
-        chart.setStyles(
-          buildChartStyles(tipLabelsRef.current, resolution, {
-            ...styleOpts,
-            hideCandleTooltip: true,
-          }) as never,
-        );
-        chart.resize();
-        await Promise.resolve();
-        await nextFrame();
-        await nextFrame();
-
-        // false = skip overlay canvas (OHLC tip / crosshair live there).
-        // Main pane still has candles + MA lines; tip cannot leak into PNG.
-        const url = chart.getConvertPictureUrl(false, "png", "#ffffff");
-        restoreStyles();
-        if (!url) return;
-        await downloadChartScreenshot(url, {
-          domain: domainRef.current,
-          brand: brandRef.current,
-          logoSrc: logoSrcRef.current,
-          filename: `${symbol || "chart"}-${resolution || "D"}.png`,
-        });
-      } catch {
-        try {
-          restoreStyles();
-        } catch {
-          /* ignore restore failure */
-        }
-      }
-    })();
+    void captureAndDownloadChart({
+      chart,
+      labels: tipLabelsRef.current,
+      resolution,
+      liveSession,
+      flushEdge: fillParent,
+      domain: domainRef.current,
+      brand: brandRef.current,
+      logoSrc: logoSrcRef.current,
+      filename: `${symbol || "chart"}-${resolution || "D"}.png`,
+    });
   };
 
   useImperativeHandle(
