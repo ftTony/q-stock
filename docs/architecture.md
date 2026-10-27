@@ -1,5 +1,7 @@
 # Q-Stock 架构说明
 
+本文描述**当前生产架构**（Next.js BFF + Node Worker + PostgreSQL）。若规划 Python 统一 API、Redis、Kafka 与微服务演进，见 [python-backend-microservices.md](./python-backend-microservices.md)。
+
 ## 1. 总体架构
 
 ```text

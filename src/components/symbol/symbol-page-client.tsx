@@ -1,6 +1,5 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import {
   useCallback,
   useEffect,
@@ -9,6 +8,12 @@ import {
   type CSSProperties,
 } from "react";
 import { SymbolOrderRail } from "@/components/symbol/symbol-order-rail";
+import {
+  SymbolAiFab,
+  SymbolChartSection,
+  SymbolDockDrawers,
+  SymbolWatchlistPanel,
+} from "@/components/symbol/symbol-page-dynamics";
 import { SymbolQuoteBar } from "@/components/symbol/symbol-quote-bar";
 import { SymbolRailQuoteHeader } from "@/components/symbol/symbol-rail-quote-header";
 import { SymbolRailStats } from "@/components/symbol/symbol-rail-stats";
@@ -26,46 +31,6 @@ import { isMarketIndexSymbol } from "@/lib/market/indices";
 import type { AssetType, CandleResolution, Quote } from "@/lib/types";
 import "./apple-workbench.css";
 import "./apple-quote-chrome.css";
-
-function ChartFallback() {
-  return (
-    <div className="flex h-full min-h-[240px] items-center justify-center text-[12px] text-[var(--muted)]">
-      …
-    </div>
-  );
-}
-
-const SymbolChartSection = dynamic(
-  () =>
-    import("@/components/symbol/symbol-chart-section").then((m) => ({
-      default: m.SymbolChartSection,
-    })),
-  { ssr: false, loading: () => <ChartFallback /> },
-);
-
-const SymbolWatchlistPanel = dynamic(
-  () =>
-    import("@/components/symbol/symbol-watchlist-panel").then((m) => ({
-      default: m.SymbolWatchlistPanel,
-    })),
-  { ssr: false },
-);
-
-const SymbolDockDrawers = dynamic(
-  () =>
-    import("@/components/symbol/symbol-dock-drawers").then((m) => ({
-      default: m.SymbolDockDrawers,
-    })),
-  { ssr: false },
-);
-
-const SymbolAiFab = dynamic(
-  () =>
-    import("@/components/symbol/symbol-ai-fab").then((m) => ({
-      default: m.SymbolAiFab,
-    })),
-  { ssr: false },
-);
 
 type Props = {
   symbol: string;
@@ -90,7 +55,6 @@ export function SymbolPageClient({
   initialQuote = null,
 }: Props) {
   const isIndex = isMarketIndexSymbol(symbol);
-  const s = useSymbolPage(symbol, assetType, isIndex, initialQuote);
   const [aiOpen, setAiOpen] = useState(false);
   const [dock, setDock] = useState<DockId | null>(null);
   /** Keep chunk after first open so close animation / SideDrawer bodyLive still work. */
@@ -101,6 +65,9 @@ export function SymbolPageClient({
   const [planFocusKey, setPlanFocusKey] = useState(0);
   const rail = useRailResize();
   const watch = useWatchlistResize();
+  const s = useSymbolPage(symbol, assetType, isIndex, initialQuote, {
+    prefetchEarnings: rail.open,
+  });
 
   useEffect(() => {
     setBoundRuleName(null);
@@ -204,6 +171,10 @@ export function SymbolPageClient({
     [s.setFlags],
   );
 
+  const onToggleWatchlist = useCallback(() => {
+    void s.toggleWatchlist();
+  }, [s.toggleWatchlist]);
+
   const indicatorsLabel = s.t("indicators");
   const intradayUnavailableLabel = s.t("intradayUnavailable");
   const loadingLabel = s.tCommon("loading");
@@ -228,7 +199,7 @@ export function SymbolPageClient({
         hasMore={s.hasMoreCandles}
         inWatchlist={s.inWatchlist}
         watchBusy={s.watchBusy}
-        onToggleWatchlist={() => void s.toggleWatchlist()}
+        onToggleWatchlist={onToggleWatchlist}
       />
     ),
     [
@@ -249,7 +220,7 @@ export function SymbolPageClient({
       s.hasMoreCandles,
       s.inWatchlist,
       s.watchBusy,
-      s.toggleWatchlist,
+      onToggleWatchlist,
     ],
   );
 
@@ -359,20 +330,12 @@ export function SymbolPageClient({
                 commentsDelete={s.tComments("delete")}
                 errorLabel={s.tCommon("error")}
                 sentiment={s.sentiment}
-                aiAvailable={s.aiAvailable}
-                aiMessage={s.aiMessage}
-                aiAnalysis={s.aiAnalysis}
-                aiDisclaimer={s.aiDisclaimer}
-                aiCached={s.aiCached}
-                aiLoading={s.aiLoading}
-                aiRefreshing={s.aiRefreshing}
-                aiToast={s.aiToast}
-                aiToastKey={s.aiToastKey}
-                onClearAiToast={s.clearAiToast}
-                onRegenerateAi={
-                  s.session?.user ? () => void s.regenerateAi() : undefined
-                }
-                aiRegenerateLabel={s.t("aiRegenerate")}
+                aiAvailable={null}
+                aiMessage={null}
+                aiAnalysis={null}
+                aiDisclaimer={null}
+                aiCached={false}
+                aiLoading={false}
               />
             </div>
 
@@ -395,7 +358,7 @@ export function SymbolPageClient({
                       updatedAt={s.updatedAt}
                       inWatchlist={s.inWatchlist}
                       watchBusy={s.watchBusy}
-                      onToggleWatchlist={() => void s.toggleWatchlist()}
+                      onToggleWatchlist={onToggleWatchlist}
                       alert={{
                         condition: s.alertCondition,
                         onConditionChange: s.setAlertCondition,

@@ -139,6 +139,8 @@ type Args = {
   isIndex: boolean;
   locale: string;
   tab: SymbolTab;
+  /** When true (e.g. side rail open), idle-prefetch metrics-only for rail stats. */
+  prefetchEarnings?: boolean;
 };
 
 export function useSymbolTabData({
@@ -147,6 +149,7 @@ export function useSymbolTabData({
   isIndex,
   locale,
   tab,
+  prefetchEarnings = false,
 }: Args) {
   const [data, dispatch] = useReducer(reducer, INITIAL_STATE);
   const earningsLoadedRef = useRef(false);
@@ -162,28 +165,22 @@ export function useSymbolTabData({
   const loadEarningsMetrics = useCallback(async () => {
     if (isIndex || (assetType !== "stock" && assetType !== "hk")) {
       dispatch({ type: "set-earnings-metrics", metrics: [] });
-      earningsLoadedRef.current = false;
       return;
     }
+    // Full fundamentals already loaded — don't re-hit with lite scope.
+    if (earningsLoadedRef.current) return;
     const requestIdentity = identity;
     try {
+      // Lite: metrics only for rail stats (no calendar / statements fan-out).
       const res = await fetch(
-        `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+        `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&scope=metrics`,
       );
       const result = await res.json();
       if (!res.ok || !isCurrentIdentity(requestIdentity)) return;
       dispatch({
-        type: "set-earnings",
-        earnings: result.surprises ?? result.earnings ?? [],
-        upcoming: result.calendar?.upcoming ?? [],
-        recent: result.calendar?.recent ?? [],
+        type: "set-earnings-metrics",
         metrics: result.metrics ?? [],
-        statement: result.statement ?? null,
-        balance: result.balance ?? null,
-        cashflow: result.cashflow ?? null,
-        degraded: Boolean(result.degraded),
       });
-      earningsLoadedRef.current = true;
     } catch {
       // Earnings are optional for the quote panel.
     }
@@ -201,7 +198,7 @@ export function useSymbolTabData({
     try {
       if (tab === "news") {
         const res = await fetch(
-          `/api/news?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
+          `/api/news?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}&limit=24`,
         );
         const result = await res.json();
         if (!isCurrentIdentity(requestIdentity)) return;
@@ -289,7 +286,7 @@ export function useSymbolTabData({
           return;
         }
         const res = await fetch(
-          `/api/press?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
+          `/api/press?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}&limit=24`,
         );
         const result = await res.json();
         if (!isCurrentIdentity(requestIdentity)) return;
@@ -320,6 +317,7 @@ export function useSymbolTabData({
   }, [identity]);
 
   useEffect(() => {
+    if (!prefetchEarnings) return;
     let cancelled = false;
     const run = () => {
       if (!cancelled) void loadEarningsMetrics();
@@ -338,7 +336,7 @@ export function useSymbolTabData({
       }
       if (timeoutId != null) clearTimeout(timeoutId);
     };
-  }, [loadEarningsMetrics]);
+  }, [loadEarningsMetrics, prefetchEarnings]);
 
   useEffect(() => {
     if (tab !== "sentiment") return;

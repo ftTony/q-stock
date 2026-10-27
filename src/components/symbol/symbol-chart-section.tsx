@@ -32,6 +32,7 @@ import {
   SymbolChartContextMenu,
   type ChartContextMenuState,
 } from "@/components/symbol/symbol-chart-context-menu";
+import { ChartLoadingOverlay } from "@/components/ui/panel-skeleton";
 import { TopToast } from "@/components/ui/top-toast";
 import { useTradingOrders } from "@/hooks/query/use-trading";
 import {
@@ -106,11 +107,38 @@ export const SymbolChartSection = memo(function SymbolChartSection({
     setChartSettings(readChartUiSettings());
   }, []);
 
+  /** Defer fills until first bars paint — keep chart critical path lean. */
+  const [markersArmed, setMarkersArmed] = useState(false);
+  useEffect(() => {
+    setMarkersArmed(false);
+  }, [symbol, assetType]);
+  useEffect(() => {
+    if (markersArmed || loadingChart || bars.length === 0) return;
+    let cancelled = false;
+    const arm = () => {
+      if (!cancelled) setMarkersArmed(true);
+    };
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(arm, { timeout: 2500 });
+    } else {
+      timeoutId = setTimeout(arm, 600);
+    }
+    return () => {
+      cancelled = true;
+      if (idleId != null && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId != null) clearTimeout(timeoutId);
+    };
+  }, [markersArmed, loadingChart, bars.length]);
+
   const fillsQuery = useTradingOrders({
     status: "filled",
     symbol,
     assetType,
-    enabled: signedIn && chartSettings.showTradeMarkers,
+    enabled: signedIn && chartSettings.showTradeMarkers && markersArmed,
   });
   const tradeMarkers = useMemo(() => {
     const orders =
@@ -242,13 +270,6 @@ export const SymbolChartSection = memo(function SymbolChartSection({
         >
           <EmptyStateBlock art="chart" label={intradayUnavailableLabel} />
         </div>
-      ) : bars.length === 0 && loadingChart ? (
-        <div className="flex min-h-[280px] flex-1 items-center justify-center lg:min-h-0">
-          <div
-            className="h-full min-h-[280px] w-full animate-pulse bg-[color-mix(in_srgb,var(--aw-hairline,var(--border))_35%,transparent)] lg:min-h-0"
-            aria-label={loadingLabel}
-          />
-        </div>
       ) : (
         <div
           className="relative min-h-0 flex-1 [&_>div]:h-full [&_>div]:rounded-none [&_>div]:border-0"
@@ -262,7 +283,8 @@ export const SymbolChartSection = memo(function SymbolChartSection({
             indicatorsLabel={indicatorsLabel}
             showFloatingIndicators={false}
             showFloatingChrome={false}
-            resetKey={`${assetType}:${symbol}:${resolution}`}
+            // Remount only on symbol change — resolution uses setPeriod.
+            resetKey={`${assetType}:${symbol}`}
             resolution={resolution}
             symbol={symbol}
             assetType={assetType}
@@ -276,12 +298,7 @@ export const SymbolChartSection = memo(function SymbolChartSection({
             chartSettings={chartSettings}
             onFullscreenChange={setFullscreen}
           />
-          {loadingChart ? (
-            <div
-              className="pointer-events-none absolute inset-0 animate-pulse bg-[color-mix(in_srgb,var(--aw-hairline,var(--border))_28%,transparent)]"
-              aria-label={loadingLabel}
-            />
-          ) : null}
+          {loadingChart ? <ChartLoadingOverlay label={loadingLabel} /> : null}
         </div>
       )}
     </div>

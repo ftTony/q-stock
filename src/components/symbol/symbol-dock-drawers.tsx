@@ -5,6 +5,10 @@ import { Suspense, type FormEvent } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
+import {
+  InlineLoading,
+  PanelSkeleton,
+} from "@/components/ui/panel-skeleton";
 import { SideDrawer } from "@/components/ui/side-drawer";
 import type { AssetType } from "@/lib/types";
 import type {
@@ -25,7 +29,14 @@ const TradePanel = dynamic(
     import("@/components/trading/trade-panel").then((m) => ({
       default: m.TradePanel,
     })),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => (
+      <div className="p-4">
+        <PanelSkeleton rows={5} />
+      </div>
+    ),
+  },
 );
 
 const SymbolPaperRiskBar = dynamic(
@@ -133,9 +144,9 @@ export function SymbolDockDrawers({
       {dock === "trade" ? (
         <div className="aw-dock-scroll flex min-h-0 flex-1 flex-col overflow-y-auto">
           {authStatus === "loading" ? (
-            <p className="aw-caption flex flex-1 items-center justify-center px-4 py-8 text-center">
-              {loadingLabel}
-            </p>
+            <div className="flex flex-1 flex-col items-center justify-center px-4 py-8">
+              <InlineLoading label={loadingLabel} />
+            </div>
           ) : !tradeAuthed ? (
             <div className="flex flex-1 flex-col items-center justify-center px-4 py-8">
               <AuthLoginGate
@@ -188,7 +199,9 @@ export function SymbolDockDrawers({
               )}
               <Suspense
                 fallback={
-                  <p className="aw-caption p-4">{loadingLabel}</p>
+                  <div className="p-4">
+                    <PanelSkeleton rows={5} label={loadingLabel} />
+                  </div>
                 }
               >
                 <TradePanel

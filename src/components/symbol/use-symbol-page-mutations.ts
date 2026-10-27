@@ -1,11 +1,19 @@
 "use client";
 
-import { type FormEvent, type Dispatch, type SetStateAction } from "react";
+import {
+  useCallback,
+  type FormEvent,
+  type Dispatch,
+  type SetStateAction,
+} from "react";
 import type { Session } from "next-auth";
 import type { AssetType } from "@/lib/types";
 
 type MutateWatch = {
-  mutateAsync: (vars: { symbol: string; assetType: AssetType }) => Promise<unknown>;
+  mutateAsync: (vars: {
+    symbol: string;
+    assetType: AssetType;
+  }) => Promise<unknown>;
 };
 
 type MutateAlert = {
@@ -55,58 +63,89 @@ type Args = {
   deleteCommentMut: MutateDeleteComment;
 };
 
-/** Comment / alert / watchlist write paths for the symbol page. */
-export function symbolPageMutations(a: Args) {
-  async function postComment(e: FormEvent) {
-    e.preventDefault();
-    if (!a.commentText.trim() || a.commentBusy) return;
-    a.setCommentBusy(true);
-    try {
-      await a.createCommentMut.mutateAsync({
-        symbol: a.symbol,
-        assetType: a.assetType,
-        content: a.commentText,
-      });
-      a.setCommentText("");
+/** Comment / alert / watchlist write paths for the symbol page (stable callbacks). */
+export function useSymbolPageMutations(a: Args) {
+  const postComment = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      if (!a.commentText.trim() || a.commentBusy) return;
+      a.setCommentBusy(true);
+      try {
+        await a.createCommentMut.mutateAsync({
+          symbol: a.symbol,
+          assetType: a.assetType,
+          content: a.commentText,
+        });
+        a.setCommentText("");
+        await a.loadTab();
+      } catch {
+        /* ignore */
+      } finally {
+        a.setCommentBusy(false);
+      }
+    },
+    [
+      a.commentText,
+      a.commentBusy,
+      a.setCommentBusy,
+      a.createCommentMut,
+      a.symbol,
+      a.assetType,
+      a.setCommentText,
+      a.loadTab,
+    ],
+  );
+
+  const deleteComment = useCallback(
+    async (id: string) => {
+      await a.deleteCommentMut.mutateAsync(id);
       await a.loadTab();
-    } catch {
-      /* ignore */
-    } finally {
-      a.setCommentBusy(false);
-    }
-  }
+    },
+    [a.deleteCommentMut, a.loadTab],
+  );
 
-  async function deleteComment(id: string) {
-    await a.deleteCommentMut.mutateAsync(id);
-    await a.loadTab();
-  }
+  const createAlert = useCallback(
+    async (e: FormEvent) => {
+      e.preventDefault();
+      a.setAlertMsg(null);
+      if (!a.session?.user) {
+        a.setAlertMsg(a.tAlerts("loginRequired"));
+        return;
+      }
+      if (a.alertBusy) return;
+      a.setAlertBusy(true);
+      try {
+        await a.createAlertMut.mutateAsync({
+          symbol: a.symbol,
+          assetType: a.assetType,
+          condition: a.alertCondition,
+          triggerPrice: Number(a.alertPrice),
+        });
+        a.setAlertMsg("OK");
+        a.setAlertPrice("");
+      } catch {
+        a.setAlertMsg(a.tCommon("error"));
+      } finally {
+        a.setAlertBusy(false);
+      }
+    },
+    [
+      a.setAlertMsg,
+      a.session?.user,
+      a.tAlerts,
+      a.alertBusy,
+      a.setAlertBusy,
+      a.createAlertMut,
+      a.symbol,
+      a.assetType,
+      a.alertCondition,
+      a.alertPrice,
+      a.setAlertPrice,
+      a.tCommon,
+    ],
+  );
 
-  async function createAlert(e: FormEvent) {
-    e.preventDefault();
-    a.setAlertMsg(null);
-    if (!a.session?.user) {
-      a.setAlertMsg(a.tAlerts("loginRequired"));
-      return;
-    }
-    if (a.alertBusy) return;
-    a.setAlertBusy(true);
-    try {
-      await a.createAlertMut.mutateAsync({
-        symbol: a.symbol,
-        assetType: a.assetType,
-        condition: a.alertCondition,
-        triggerPrice: Number(a.alertPrice),
-      });
-      a.setAlertMsg("OK");
-      a.setAlertPrice("");
-    } catch {
-      a.setAlertMsg(a.tCommon("error"));
-    } finally {
-      a.setAlertBusy(false);
-    }
-  }
-
-  async function toggleWatchlist() {
+  const toggleWatchlist = useCallback(async () => {
     if (!a.session?.user) {
       a.setAlertMsg(a.tAlerts("loginRequired"));
       return;
@@ -127,7 +166,17 @@ export function symbolPageMutations(a: Args) {
     } finally {
       a.setWatchBusy(false);
     }
-  }
+  }, [
+    a.session?.user,
+    a.setAlertMsg,
+    a.tAlerts,
+    a.setWatchBusy,
+    a.inWatchlist,
+    a.removeWatch,
+    a.addWatch,
+    a.symbol,
+    a.assetType,
+  ]);
 
   return { postComment, deleteComment, createAlert, toggleWatchlist };
 }

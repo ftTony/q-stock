@@ -41,6 +41,8 @@ export function useSymbolCandlesQuery(
       setHasMoreCandles(next.length > 0 && data.hasMore !== false);
       return next;
     },
+    // Daily+ bars change slowly; intraday stays on global 30s default.
+    staleTime: isIntradayResolution(resolution) ? 30_000 : 90_000,
   });
 
   const loadMoreCandles = useCallback(
@@ -104,9 +106,11 @@ export function useSymbolCandlesQuery(
     [symbol, assetType, resolution, hasMoreCandles, qc, key],
   );
 
+  const bars = query.data ?? [];
   return {
-    bars: query.data ?? [],
-    loadingChart: query.isLoading,
+    bars,
+    // Overlay while fetching a period with no bars yet (avoids empty remount flash).
+    loadingChart: query.isFetching && bars.length === 0,
     loadingMoreCandles,
     hasMoreCandles,
     loadMoreCandles,

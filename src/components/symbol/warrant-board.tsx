@@ -3,6 +3,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { useMarketWarrants } from "@/hooks/query/use-market-warrants";
+import { ListPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { formatNumber } from "@/lib/format-number";
 import type { WarrantKind } from "@/lib/market/providers/longbridge-warrants";
 import type { AssetType } from "@/lib/types";
@@ -137,9 +138,9 @@ export function WarrantBoard({
       </div>
 
       {query.isLoading ? (
-        <p className="aw-caption flex min-h-0 flex-1 items-center justify-center">
-          …
-        </p>
+        <div className="min-h-0 flex-1 overflow-y-auto p-3">
+          <ListPanelSkeleton rows={8} />
+        </div>
       ) : unavailable || !rows.length ? (
         <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-3 px-4 py-8 text-center">
           {emptyArt}

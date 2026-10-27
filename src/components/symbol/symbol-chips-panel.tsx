@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { SymbolChipsChart } from "@/components/symbol/symbol-chips-chart";
+import { RailPanelSkeleton } from "@/components/ui/panel-skeleton";
 import {
   buildVolumeProfile,
   type VolumeProfile,
@@ -74,9 +75,7 @@ export function SymbolChipsPanel({
   }, [vp]);
 
   if (loading) {
-    return (
-      <div className="py-8 text-center text-[12px] text-[var(--muted)]">…</div>
-    );
+    return <RailPanelSkeleton rows={4} />;
   }
 
   if (unavailable || !vp) {

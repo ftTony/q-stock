@@ -13,11 +13,15 @@ export async function GET(req: Request) {
       const symbol = searchParams.get("symbol");
       const assetType = parseAssetType(searchParams.get("assetType"));
       const locale = searchParams.get("locale") ?? undefined;
+      const rawLimit = Number(searchParams.get("limit") ?? 40);
+      const limit = Number.isFinite(rawLimit)
+        ? Math.min(60, Math.max(1, Math.floor(rawLimit)))
+        : 40;
 
       if (!symbol) {
-        const news = await getMarketNews(
+        const news = (await getMarketNews(
           assetType === "crypto" ? "crypto" : "general",
-        );
+        )).slice(0, limit);
         return NextResponse.json({ news });
       }
 
@@ -26,7 +30,11 @@ export async function GET(req: Request) {
         assetType,
         locale,
       );
-      return NextResponse.json({ news, source, degraded });
+      return NextResponse.json({
+        news: news.slice(0, limit),
+        source,
+        degraded,
+      });
     });
   } catch (err) {
     console.error("news", err);

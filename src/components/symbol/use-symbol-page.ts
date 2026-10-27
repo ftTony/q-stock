@@ -6,13 +6,12 @@ import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { type IndicatorFlags } from "@/components/charts/candle-chart";
 import type { SymbolTab } from "@/components/symbol/symbol-tabs-panel";
-import { useSymbolAiAnalysis } from "@/components/symbol/use-symbol-ai-analysis";
 import { useSymbolCandles } from "@/components/symbol/use-symbol-candles";
 import {
   buildSymbolTabs,
   fallbackSymbolTab,
 } from "@/components/symbol/symbol-page-tabs";
-import { symbolPageMutations } from "@/components/symbol/use-symbol-page-mutations";
+import { useSymbolPageMutations } from "@/components/symbol/use-symbol-page-mutations";
 import { useSymbolTabData } from "@/components/symbol/use-symbol-tab-data";
 import { useCreateAlert } from "@/hooks/query/use-alerts";
 import {
@@ -46,7 +45,9 @@ export function useSymbolPage(
   assetType: AssetType,
   isIndex: boolean,
   initialQuote: Quote | null = null,
+  opts?: { prefetchEarnings?: boolean },
 ) {
+  const prefetchEarnings = opts?.prefetchEarnings ?? false;
   const locale = useLocale();
   const t = useTranslations("symbol");
   const tCommon = useTranslations("common");
@@ -66,9 +67,14 @@ export function useSymbolPage(
   });
   const candles = useSymbolCandles(symbol, assetType, resolution);
   const [tab, setTab] = useState<SymbolTab>("chart");
-  /** Trend AI tab removed from secondary; desk is QuoteBar / FAB drawer. */
-  const ai = useSymbolAiAnalysis(symbol, assetType, false);
-  const tabData = useSymbolTabData({ symbol, assetType, isIndex, locale, tab });
+  const tabData = useSymbolTabData({
+    symbol,
+    assetType,
+    isIndex,
+    locale,
+    tab,
+    prefetchEarnings,
+  });
   const [commentText, setCommentText] = useState("");
   const [alertPrice, setAlertPrice] = useState("");
   const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
@@ -188,7 +194,7 @@ export function useSymbolPage(
   }, [quoteQuery]);
 
   const { postComment, deleteComment, createAlert, toggleWatchlist } =
-    symbolPageMutations({
+    useSymbolPageMutations({
       session: session ?? null,
       symbol,
       assetType,
@@ -247,7 +253,6 @@ export function useSymbolPage(
     officers: tabData.officers,
     tabLoading: tabData.tabLoading,
     sentiment: tabData.sentiment,
-    ...ai,
     loadingChart: candles.loadingChart,
     loadingMoreCandles: candles.loadingMoreCandles,
     hasMoreCandles: candles.hasMoreCandles,
@@ -259,7 +264,7 @@ export function useSymbolPage(
     alertMsg,
     alertBusy,
     commentBusy,
-    degraded: tabData.degraded || ai.aiDegraded,
+    degraded: tabData.degraded,
     inWatchlist,
     watchBusy,
     updatedAt,

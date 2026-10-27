@@ -6,6 +6,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
+import { RailPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { useStrategiesList } from "@/hooks/query/use-strategies";
 import { useTradingOrders } from "@/hooks/query/use-trading";
 import { formatNumber, formatTime } from "@/lib/format-number";
@@ -105,11 +106,7 @@ export function SymbolReviewRail({
   }, [orders, filter, t]);
 
   if (status === "loading") {
-    return (
-      <div className="flex min-h-full flex-1 items-center justify-center p-3">
-        <p className="aw-caption">{t("reviewLoading")}</p>
-      </div>
-    );
+    return <RailPanelSkeleton rows={6} label={t("reviewLoading")} />;
   }
 
   if (!session?.user) {
@@ -155,9 +152,7 @@ export function SymbolReviewRail({
       </div>
 
       {loading ? (
-        <div className="flex flex-1 items-center justify-center py-10">
-          <p className="aw-caption">{t("reviewLoading")}</p>
-        </div>
+        <RailPanelSkeleton rows={5} label={t("reviewLoading")} className="flex-1 px-0" />
       ) : null}
 
       {empty ? (

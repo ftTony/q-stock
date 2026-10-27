@@ -15,6 +15,7 @@ import type {
   PressRow,
   SymbolTab,
 } from "@/components/symbol/symbol-tabs-types";
+import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
 import type { EarningsStatement } from "@/lib/earnings/types";
 import type { AssetType } from "@/lib/types";
@@ -31,7 +32,14 @@ const SymbolDerivativesPanel = dynamic(
     import("@/components/symbol/symbol-derivatives-panel").then((m) => ({
       default: m.SymbolDerivativesPanel,
     })),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => (
+      <div className="p-4 sm:p-5">
+        <PanelSkeleton rows={6} />
+      </div>
+    ),
+  },
 );
 
 type Props = {
@@ -165,8 +173,8 @@ export function SymbolTabsPanel({
       {tab === "derivatives" ? (
         <div className="aw-tab-fill flex min-h-0 flex-1 flex-col overflow-hidden">
           {tabLoading ? (
-            <div className="flex min-h-0 flex-1 items-center justify-center text-[12px] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
-              {loadingLabel}
+            <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
+              <PanelSkeleton rows={6} label={loadingLabel} />
             </div>
           ) : (
             <SymbolDerivativesPanel

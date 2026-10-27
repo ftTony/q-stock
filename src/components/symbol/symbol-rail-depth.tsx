@@ -4,6 +4,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
 import { useRailDepth } from "@/components/symbol/use-rail-depth";
+import { RailPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { formatNumber, formatTime } from "@/lib/format-number";
 import type { DepthBook, TradeTick } from "@/lib/market/book-types";
 import type { AssetType } from "@/lib/types";
@@ -226,11 +227,7 @@ export function SymbolRailDepth({
   );
 
   if (loading && unavailable === false && !book && !trades.length) {
-    return (
-      <div className="flex min-h-[200px] items-center justify-center px-3 text-[12px] text-[var(--muted)]">
-        …
-      </div>
-    );
+    return <RailPanelSkeleton rows={8} className="min-h-[200px]" />;
   }
 
   if (unavailable) {

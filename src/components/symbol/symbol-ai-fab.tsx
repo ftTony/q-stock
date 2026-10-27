@@ -13,6 +13,7 @@ import { AiChatHistoryPanel } from "@/components/market/ai-chat-history-panel";
 import { AiChatPanel } from "@/components/market/ai-chat-panel";
 import { useAiChartRead } from "@/components/market/use-ai-chart-read";
 import { IconRobot } from "@/components/ui/icon-robot";
+import { InlineLoading, PanelSkeleton } from "@/components/ui/panel-skeleton";
 import { SideDrawer } from "@/components/ui/side-drawer";
 import type { AssetType } from "@/lib/types";
 import "./apple-workbench.css";
@@ -110,7 +111,10 @@ export function SymbolAiFab({
         headerTrailing={deskTrailing}
       >
         {status === "loading" ? (
-          <p className="p-6 text-[14px] text-[var(--muted)]">…</p>
+          <div className="flex min-h-[12rem] flex-col gap-4 p-5">
+            <InlineLoading label={t("openAi")} />
+            <PanelSkeleton rows={4} />
+          </div>
         ) : status === "unauthenticated" ? (
           <AiLoginGate className="min-h-full py-16" />
         ) : view === "history" ? (

@@ -6,6 +6,7 @@ import { Link } from "@/i18n/routing";
 import { formatNumber } from "@/lib/format-number";
 import { SymbolFundsBars } from "@/components/symbol/symbol-funds-bars";
 import { SymbolFundsDonut } from "@/components/symbol/symbol-funds-donut";
+import { RailPanelSkeleton } from "@/components/ui/panel-skeleton";
 import type { CapitalSnapshot } from "@/lib/market/providers/longbridge-research";
 import type { AssetType } from "@/lib/types";
 
@@ -86,9 +87,7 @@ export function SymbolFundsPanel({
   }, [data, zh]);
 
   if (loading) {
-    return (
-      <div className="py-8 text-center text-[12px] text-[var(--muted)]">…</div>
-    );
+    return <RailPanelSkeleton rows={4} />;
   }
 
   if (unavailable || !data || !summary || !(summary.total > 0)) {

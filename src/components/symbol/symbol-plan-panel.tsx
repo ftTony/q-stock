@@ -7,6 +7,7 @@ import { Link } from "@/i18n/routing";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { EmptyReviewArt } from "@/components/symbol/symbol-empty-art";
 import { StrategyRulesSummary } from "@/components/strategy/strategy-rules-summary";
+import { RailPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import {
@@ -211,9 +212,7 @@ export function SymbolPlanPanel({
   }, [mine, t]);
 
   if (status === "loading" || loading) {
-    return (
-      <div className="p-3 text-[12px] text-[var(--muted)]">{tSt("loading")}</div>
-    );
+    return <RailPanelSkeleton rows={6} label={tSt("loading")} />;
   }
 
   if (!session?.user) {

@@ -3,6 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
+import { InlineLoading } from "@/components/ui/panel-skeleton";
 import { useSymbolSearch } from "@/hooks/query/use-symbol-search";
 import { useMounted } from "@/hooks/use-mounted";
 import type { AssetType } from "@/lib/types";
@@ -133,7 +134,9 @@ export function SymbolQuoteBarSearch({ assetType, currentSymbol }: Props) {
           className="absolute left-0 right-0 top-[calc(100%+4px)] z-40 max-h-64 overflow-auto rounded-lg border border-[var(--border)] bg-[var(--panel)] py-1 shadow-lg"
         >
           {search.isFetching && results.length === 0 ? (
-            <li className="px-3 py-2 text-[11px] text-[var(--muted)]">…</li>
+            <li className="flex items-center px-3 py-2.5">
+              <InlineLoading />
+            </li>
           ) : results.length === 0 ? (
             <li className="px-3 py-2 text-[11px] text-[var(--muted)]">
               {t("searchEmpty")}

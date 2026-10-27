@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { ListPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { formatNumber } from "@/lib/format-number";
 import type { OptionRow } from "@/lib/market/providers/longbridge-research";
 
@@ -371,9 +372,9 @@ export function OptionChainBoard({
 
       <div className="min-h-0 flex-1 overflow-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
         {loading ? (
-          <p className="aw-caption flex min-h-[12rem] items-center justify-center">
-            …
-          </p>
+          <div className="p-3">
+            <ListPanelSkeleton rows={8} />
+          </div>
         ) : empty && !filtered.length ? (
           <p className="flex min-h-[12rem] items-center justify-center px-4 text-center text-[13px] text-[var(--muted)]">
             {empty}

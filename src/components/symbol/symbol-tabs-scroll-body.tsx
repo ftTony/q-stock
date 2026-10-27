@@ -5,6 +5,10 @@ import { useTranslations } from "next-intl";
 import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
 import type { SymbolTabsScrollBodyProps } from "@/components/symbol/symbol-tabs-types";
 import { PaginatedList } from "@/components/ui/paginated-list";
+import {
+  ListPanelSkeleton,
+  PanelSkeleton,
+} from "@/components/ui/panel-skeleton";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { TopToast } from "@/components/ui/top-toast";
 import { formatDate, formatDateTime } from "@/lib/format-number";
@@ -14,7 +18,10 @@ const SymbolFundamentalsPanel = dynamic(
     import("@/components/symbol/symbol-fundamentals-panel").then((m) => ({
       default: m.SymbolFundamentalsPanel,
     })),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => <PanelSkeleton rows={5} />,
+  },
 );
 
 const AiAnalysisPanel = dynamic(
@@ -22,7 +29,10 @@ const AiAnalysisPanel = dynamic(
     import("@/components/market/ai-analysis-panel").then((m) => ({
       default: m.AiAnalysisPanel,
     })),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => <PanelSkeleton rows={4} />,
+  },
 );
 
 /** Scrollable non-chart / non-derivatives tab bodies. */
@@ -86,9 +96,11 @@ export function SymbolTabsScrollBody({
       }
     >
       {tabLoading ? (
-        <div className="flex h-40 items-center justify-center text-[12px] tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))]">
-          {loadingLabel}
-        </div>
+        tab === "news" || tab === "press" || tab === "comments" ? (
+          <ListPanelSkeleton rows={6} label={loadingLabel} />
+        ) : (
+          <PanelSkeleton rows={5} label={loadingLabel} />
+        )
       ) : (
         <>
           {tab === "news" && (

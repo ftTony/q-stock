@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { SymbolShortChart } from "@/components/symbol/symbol-short-chart";
+import { RailPanelSkeleton } from "@/components/ui/panel-skeleton";
 import type { ShortRow } from "@/lib/market/providers/longbridge-research";
 import type { AssetType } from "@/lib/types";
 
@@ -54,9 +55,7 @@ export function SymbolShortPanel({
   }, [symbol, assetType]);
 
   if (loading) {
-    return (
-      <div className="py-8 text-center text-[12px] text-[var(--muted)]">…</div>
-    );
+    return <RailPanelSkeleton rows={4} />;
   }
 
   if (unavailable || rows.length === 0) {

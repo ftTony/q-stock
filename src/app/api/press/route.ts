@@ -12,6 +12,10 @@ export async function GET(req: Request) {
       const symbol = searchParams.get("symbol");
       const assetType = parseAssetType(searchParams.get("assetType"));
       const locale = searchParams.get("locale") ?? undefined;
+      const rawLimit = Number(searchParams.get("limit") ?? 40);
+      const limit = Number.isFinite(rawLimit)
+        ? Math.min(60, Math.max(1, Math.floor(rawLimit)))
+        : 40;
       if (!symbol) {
         return NextResponse.json({ error: "symbol required" }, { status: 400 });
       }
@@ -23,7 +27,11 @@ export async function GET(req: Request) {
         assetType,
         locale,
       );
-      return NextResponse.json({ press, source, degraded });
+      return NextResponse.json({
+        press: press.slice(0, limit),
+        source,
+        degraded,
+      });
     });
   } catch (err) {
     console.error("press", err);

@@ -295,7 +295,9 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     // eslint-disable-next-line react-hooks/exhaustive-deps -- remount on resetKey
   }, [resetKey]);
 
-  // When bars first arrive / replace after reset, re-trigger loader via setPeriod
+  // Period / symbol change: setPeriod reloads via dataLoader (barsRef is current).
+  // Also re-fire when bars go from empty → data without remounting the chart.
+  const hasBars = bars.length > 0;
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart || !ready) return;
@@ -305,7 +307,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       volumePrecision: 2,
     });
     chart.setPeriod(periodFromResolution(resolution));
-  }, [bars.length > 0, ready, symbol, resolution]);
+  }, [hasBars, ready, symbol, resolution]);
 
   useEffect(() => {
     const chart = chartRef.current;

@@ -3,6 +3,7 @@
 import type { FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
+import { ListPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { formatDateTime } from "@/lib/format-number";
 import type { CommentRow } from "@/components/symbol/symbol-tabs-panel";
@@ -115,9 +116,7 @@ export function SymbolDockCommentsPanel({
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-3">
         {tabLoading ? (
-          <p className="aw-caption flex min-h-[12rem] items-center justify-center">
-            {loadingLabel}
-          </p>
+          <ListPanelSkeleton rows={5} label={loadingLabel} />
         ) : comments.length === 0 ? (
           <div className="flex min-h-[min(42vh,16rem)] flex-col items-center justify-center gap-3 px-2 py-8 text-center">
             <EmptyCommentsArt />

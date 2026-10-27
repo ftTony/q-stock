@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { setBoundStrategyId } from "@/components/symbol/symbol-plan-binding";
 import { SymbolRailGuide } from "@/components/symbol/symbol-rail-guide";
+import { RailPanelSkeleton } from "@/components/ui/panel-skeleton";
 import type { AssetType } from "@/lib/types";
 
 const SymbolPlanPanel = dynamic(
@@ -12,7 +13,7 @@ const SymbolPlanPanel = dynamic(
     import("@/components/symbol/symbol-plan-panel").then((m) => ({
       default: m.SymbolPlanPanel,
     })),
-  { ssr: false },
+  { ssr: false, loading: () => <RailPanelSkeleton rows={6} /> },
 );
 
 const SymbolReviewRail = dynamic(
@@ -20,7 +21,7 @@ const SymbolReviewRail = dynamic(
     import("@/components/symbol/symbol-review-rail").then((m) => ({
       default: m.SymbolReviewRail,
     })),
-  { ssr: false },
+  { ssr: false, loading: () => <RailPanelSkeleton rows={5} /> },
 );
 
 const SymbolRailMarket = dynamic(
@@ -28,7 +29,7 @@ const SymbolRailMarket = dynamic(
     import("@/components/symbol/symbol-rail-market").then((m) => ({
       default: m.SymbolRailMarket,
     })),
-  { ssr: false },
+  { ssr: false, loading: () => <RailPanelSkeleton rows={8} /> },
 );
 
 export type RailTab = "market" | "plan" | "review";

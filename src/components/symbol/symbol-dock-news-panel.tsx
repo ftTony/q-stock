@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
+import { ListPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { formatDate } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 import type { NewsRow, PressRow } from "@/components/symbol/symbol-tabs-panel";
@@ -67,9 +68,7 @@ export function SymbolDockNewsPanel({
       <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4 pt-0">
         {feedTab === "news" ? (
           tabLoading ? (
-            <p className="aw-caption flex min-h-[12rem] items-center justify-center">
-              {loadingLabel}
-            </p>
+            <ListPanelSkeleton rows={6} label={loadingLabel} className="pt-2" />
           ) : news.length === 0 ? (
             <EmptyStateBlock
               art="news"
@@ -111,9 +110,7 @@ export function SymbolDockNewsPanel({
             N/A
           </p>
         ) : tabLoading ? (
-          <p className="aw-caption flex min-h-[12rem] items-center justify-center">
-            {loadingLabel}
-          </p>
+          <ListPanelSkeleton rows={6} label={loadingLabel} className="pt-2" />
         ) : press.length === 0 ? (
           <EmptyStateBlock art="news" label={degradedLabel} />
         ) : (

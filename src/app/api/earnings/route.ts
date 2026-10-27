@@ -228,11 +228,76 @@ export async function GET(req: Request) {
       const { searchParams } = new URL(req.url);
       const symbol = searchParams.get("symbol");
       const assetType = parseAssetType(searchParams.get("assetType"));
+      const metricsOnly = searchParams.get("scope") === "metrics";
       if (!symbol) {
         return NextResponse.json({ error: "symbol required" }, { status: 400 });
       }
 
       const sym = symbol.toUpperCase();
+
+      /** Rail stats only — skip calendar / statements / Finnhub enrich fan-out. */
+      if (metricsOnly && (assetType === "hk" || assetType === "stock")) {
+        if (isProviderEnabled("longbridge")) {
+          try {
+            const lb = await getLongbridgeEarnings(sym, assetType);
+            if (lb?.metrics?.length) {
+              return NextResponse.json({
+                symbol: sym,
+                surprises: [],
+                calendar: { upcoming: [], recent: [] },
+                metrics: lb.metrics,
+                statement: null,
+                balance: null,
+                cashflow: null,
+                source: "longbridge",
+                degraded: false,
+              });
+            }
+          } catch (err) {
+            console.warn(
+              "[earnings] longbridge metrics failed:",
+              err instanceof Error ? err.message : err,
+            );
+          }
+        }
+        if (isProviderEnabled("futu")) {
+          try {
+            const futu = await getFutuEarnings(sym, assetType);
+            if (futu?.metrics?.length) {
+              return NextResponse.json({
+                symbol: sym,
+                surprises: [],
+                calendar: { upcoming: [], recent: [] },
+                metrics: futu.metrics,
+                statement: null,
+                balance: null,
+                cashflow: null,
+                source: "futu",
+                degraded: false,
+              });
+            }
+          } catch (err) {
+            console.warn(
+              "[earnings] futu metrics failed:",
+              err instanceof Error ? err.message : err,
+            );
+          }
+        }
+        const fh = isProviderEnabled("finnhub")
+          ? await loadFinnhubFinBundle(sym)
+          : { metrics: [] as MetricRow[], series: [] as SeriesLike[] };
+        return NextResponse.json({
+          symbol: sym,
+          surprises: [],
+          calendar: { upcoming: [], recent: [] },
+          metrics: fh.metrics,
+          statement: null,
+          balance: null,
+          cashflow: null,
+          source: fh.metrics.length ? "finnhub" : null,
+          degraded: !fh.metrics.length,
+        });
+      }
 
       if (assetType === "hk" || assetType === "stock") {
         if (isProviderEnabled("longbridge")) {

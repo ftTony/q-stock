@@ -13,6 +13,7 @@ import {
 } from "@/components/symbol/watchlist-toggle-icons";
 import { SymbolWatchlistSettingsModal } from "@/components/symbol/symbol-watchlist-settings-modal";
 import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
+import { RailPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { useWatchlist } from "@/hooks/query/use-watchlist";
 import { queryKeys } from "@/lib/query/keys";
 import { displayName } from "@/lib/market-names";
@@ -105,17 +106,13 @@ export function SymbolWatchlistPanel({
 
       <div className="qt-scroll flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain">
         {status === "loading" ? (
-          <p className="aw-caption flex flex-1 items-center justify-center px-3 py-8 text-center">
-            {tCommon("loading")}
-          </p>
+          <RailPanelSkeleton rows={8} label={tCommon("loading")} className="flex-1" />
         ) : status === "unauthenticated" ? (
           <div className="flex flex-1 flex-col items-center justify-center px-3 py-6">
             <AuthLoginGate compact />
           </div>
         ) : loading && rows.length === 0 ? (
-          <p className="aw-caption flex flex-1 items-center justify-center px-3 py-8 text-center">
-            {tCommon("loading")}
-          </p>
+          <RailPanelSkeleton rows={8} label={tCommon("loading")} className="flex-1" />
         ) : error ? (
           <p className="aw-caption flex flex-1 items-center justify-center px-3 py-8 text-center text-[var(--down)]">
             {error}

@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { OptionChainBoard } from "@/components/symbol/option-chain-board";
 import { WarrantBoard } from "@/components/symbol/warrant-board";
+import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import {
   useMarketOptionsChain,
   useMarketOptionsMeta,
@@ -116,9 +117,9 @@ function OptionsDerivativesBody({
 
   if (loadingMeta) {
     return (
-      <p className="aw-caption flex min-h-0 flex-1 items-center justify-center">
-        …
-      </p>
+      <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
+        <PanelSkeleton rows={6} />
+      </div>
     );
   }
 
