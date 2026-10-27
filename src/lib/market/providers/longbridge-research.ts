@@ -354,7 +354,7 @@ export async function fetchLbOptionChain(
   if (!parts) {
     throw new MarketDataError("Invalid option expiry", "longbridge");
   }
-  const key = `lb:opt-chain:v3:${lbSym}:${expiryYmd}:${Math.round(spot * 100)}`;
+  const key = `lb:opt-chain:v4:${lbSym}:${expiryYmd}:${Math.round(spot * 100)}`;
 
   return cachedFetch(key, 120_000, async () => {
     const lb = await loadLb();
@@ -394,8 +394,8 @@ export async function fetchLbOptionChain(
       );
     }
 
-    const callsPick = pickNearSpot(callsRaw, spot, 12);
-    const putsPick = pickNearSpot(putsRaw, spot, 12);
+    const callsPick = pickNearSpot(callsRaw, spot, 18);
+    const putsPick = pickNearSpot(putsRaw, spot, 18);
     const symbols = [...callsPick, ...putsPick].map((c) => c.symbol);
     const quoteMap = new Map<string, OptionRow>();
 

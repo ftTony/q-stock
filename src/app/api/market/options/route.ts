@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import {
+  fetchFutuOptionChain,
+  fetchFutuOptionExpiries,
+} from "@/lib/market/providers/futu-options";
+import {
   fetchLbOptionChain,
   fetchLbOptionExpiries,
 } from "@/lib/market/providers/longbridge-research";
@@ -8,6 +12,16 @@ import { withUserMarket } from "@/lib/market/with-user-market";
 import { parseAssetType } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
+
+function classifyError(msg: string): string | undefined {
+  if (/connections (limitation|exhausted)/i.test(msg)) return "LB_CONN_LIMIT";
+  if (/no option-chain access|USOption|404000|api not found/i.test(msg)) {
+    return "LB_OPTION_PACKAGE";
+  }
+  if (/Futu credentials not configured/i.test(msg)) return "FUTU_NO_CREDS";
+  if (/Futu .*unsupported|market not in/i.test(msg)) return "FUTU_UNSUPPORTED";
+  return undefined;
+}
 
 export async function GET(req: Request) {
   try {
@@ -25,34 +39,65 @@ export async function GET(req: Request) {
         return NextResponse.json({ unavailable: true });
       }
 
-      try {
-        if (!expiry) {
+      const errors: string[] = [];
+      const spotN = Number.isFinite(spot) ? spot : 0;
+
+      if (!expiry) {
+        try {
           const expiries = await fetchLbOptionExpiries(symbol, assetType);
-          return NextResponse.json({ expiries });
+          return NextResponse.json({ expiries, source: "longbridge" });
+        } catch (err) {
+          errors.push(
+            `longbridge: ${err instanceof Error ? err.message : String(err)}`,
+          );
         }
-        const chain = await fetchLbOptionChain(
-          symbol,
-          assetType,
-          expiry,
-          Number.isFinite(spot) ? spot : 0,
-        );
-        return NextResponse.json(chain);
-      } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        console.warn("[options]", msg);
-        const conn = /connections (limitation|exhausted)/i.test(msg);
-        const noPkg =
-          /no option-chain access|USOption|404000|api not found/i.test(msg);
-        return NextResponse.json({
-          unavailable: true,
-          detail: msg,
-          code: conn
-            ? "LB_CONN_LIMIT"
-            : noPkg
-              ? "LB_OPTION_PACKAGE"
-              : undefined,
-        });
+        try {
+          const expiries = await fetchFutuOptionExpiries(symbol, assetType);
+          return NextResponse.json({ expiries, source: "futu" });
+        } catch (err) {
+          errors.push(
+            `futu: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+      } else {
+        try {
+          const chain = await fetchLbOptionChain(
+            symbol,
+            assetType,
+            expiry,
+            spotN,
+          );
+          return NextResponse.json({ ...chain, source: "longbridge" });
+        } catch (err) {
+          errors.push(
+            `longbridge: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
+        try {
+          const chain = await fetchFutuOptionChain(
+            symbol,
+            assetType,
+            expiry,
+            spotN,
+          );
+          return NextResponse.json({ ...chain, source: "futu" });
+        } catch (err) {
+          errors.push(
+            `futu: ${err instanceof Error ? err.message : String(err)}`,
+          );
+        }
       }
+
+      const detail = errors.join(" | ");
+      console.warn("[options]", detail);
+      const code =
+        classifyError(errors.find((e) => e.startsWith("longbridge:")) ?? "") ??
+        classifyError(errors.find((e) => e.startsWith("futu:")) ?? "");
+      return NextResponse.json({
+        unavailable: true,
+        detail,
+        code,
+      });
     });
   } catch (err) {
     const msg = err instanceof Error ? err.message : "options failed";
