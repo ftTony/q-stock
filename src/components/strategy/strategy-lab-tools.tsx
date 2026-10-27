@@ -1,15 +1,21 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
-import { SubmitButton } from "@/components/ui/submit-button";
-import { QtSelect } from "@/components/ui/qt-select";
 import {
   StrategyLabResults,
   type BasketRow,
   type CompareLeg,
   type GridRow,
 } from "@/components/strategy/strategy-lab-results";
+import {
+  LabBasketPanel,
+  LabChip,
+  LabComparePanel,
+  LabGridPanel,
+} from "@/components/strategy/strategy-lab-tools-panels";
+import { SideDrawer } from "@/components/ui/side-drawer";
+import { TopToast, type ToastTone } from "@/components/ui/top-toast";
 import { useStrategiesList } from "@/hooks/query/use-strategies";
 import {
   useLabReport,
@@ -24,33 +30,52 @@ import { replayErrorMessage } from "@/lib/strategy/replay-errors";
 
 type StrategyOpt = { id: string; name: string };
 type Quota = { used: number; limit: number };
+type TabId = "compare" | "grid" | "basket";
+
+function errPayload(err: unknown) {
+  return err && typeof err === "object" && "payload" in err
+    ? (err as { payload: Parameters<typeof replayErrorMessage>[0] }).payload
+    : err instanceof Error
+      ? { error: err.message }
+      : {};
+}
 
 export function StrategyLabTools({
   strategyId,
+  strategyName,
   symbol,
   assetType,
   rangeFrom,
   rangeTo,
   quota,
   onQuota,
+  /** Compact trigger for embedding under the replay form. */
+  compact = false,
 }: {
   strategyId: string;
+  strategyName?: string;
   symbol: string;
   assetType: string;
   rangeFrom: string;
   rangeTo: string;
   quota: Quota | null;
   onQuota?: (q: Quota) => void;
+  compact?: boolean;
 }) {
   const t = useTranslations("strategies");
   const locale = useLocale();
   const [open, setOpen] = useState(false);
-  const [tab, setTab] = useState<"compare" | "grid" | "basket">("compare");
+  const [tab, setTab] = useState<TabId>("compare");
   const [otherId, setOtherId] = useState("");
   const [paramId, setParamId] = useState("");
-  const [valuesText, setValuesText] = useState("10,20,60");
-  const [basketText, setBasketText] = useState("AAPL,MSFT,GOOGL");
+  const [selectedValues, setSelectedValues] = useState<number[]>([]);
+  const [customValue, setCustomValue] = useState("");
+  const [symbols, setSymbols] = useState<string[]>(["AAPL", "MSFT", "GOOGL"]);
+  const [symbolDraft, setSymbolDraft] = useState("");
   const [msg, setMsg] = useState<string | null>(null);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastTone, setToastTone] = useState<ToastTone>("neutral");
+  const [toastKey, setToastKey] = useState(0);
   const [compare, setCompare] = useState<CompareLeg[] | null>(null);
   const [grid, setGrid] = useState<GridRow[] | null>(null);
   const [basket, setBasket] = useState<BasketRow[] | null>(null);
@@ -88,7 +113,7 @@ export function StrategyLabTools({
     setParamId((prev) => {
       if (prev && params.some((p) => p.id === prev)) return prev;
       const first = params[0]!;
-      setValuesText(first.presets.join(","));
+      setSelectedValues(first.presets.slice(0, 3));
       return first.id;
     });
   }, [params]);
@@ -118,6 +143,27 @@ export function StrategyLabTools({
     basketMut.isPending ||
     shareMut.isPending;
 
+  const rangeBody = {
+    symbol,
+    assetType,
+    rangeFrom: `${rangeFrom}T00:00:00.000Z`,
+    rangeTo: `${rangeTo}T23:59:59.000Z`,
+  };
+
+  function clearResults() {
+    setCompare(null);
+    setGrid(null);
+    setBasket(null);
+    setShareToken(null);
+    setMsg(null);
+  }
+
+  function showToast(message: string, tone: ToastTone = "neutral") {
+    setToastTone(tone);
+    setToastMsg(message);
+    setToastKey((k) => k + 1);
+  }
+
   async function shareReport() {
     if (!reportId) return;
     setMsg(null);
@@ -136,33 +182,24 @@ export function StrategyLabTools({
         );
         try {
           await navigator.clipboard.writeText(url);
-          setMsg(t("shareCopied"));
+          showToast(t("shareCopied"), "success");
         } catch {
-          setMsg(url);
+          showToast(url, "neutral");
         }
       } else {
-        setMsg(t("shareRevoked"));
+        showToast(t("shareRevoked"), "neutral");
       }
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : t("shareFailed"));
+      showToast(
+        err instanceof Error ? err.message : t("shareFailed"),
+        "error",
+      );
     }
   }
 
-  const rangeBody = {
-    symbol,
-    assetType,
-    rangeFrom: `${rangeFrom}T00:00:00.000Z`,
-    rangeTo: `${rangeTo}T23:59:59.000Z`,
-  };
-
-  async function runCompare(e: FormEvent) {
-    e.preventDefault();
+  async function runCompare() {
     if (!otherId) return;
-    setMsg(null);
-    setCompare(null);
-    setGrid(null);
-    setBasket(null);
-    setShareToken(null);
+    clearResults();
     try {
       const data = await compareMut.mutateAsync({
         strategyIdA: strategyId,
@@ -175,33 +212,19 @@ export function StrategyLabTools({
         setCompare(data.report.result.legs as CompareLeg[]);
       }
     } catch (err) {
-      const payload =
-        err && typeof err === "object" && "payload" in err
-          ? (err as { payload: Parameters<typeof replayErrorMessage>[0] })
-              .payload
-          : err instanceof Error
-            ? { error: err.message }
-            : {};
-      setMsg(replayErrorMessage(payload, t));
+      setMsg(replayErrorMessage(errPayload(err), t));
     }
   }
 
-  async function runGrid(e: FormEvent) {
-    e.preventDefault();
-    const values = valuesText
-      .split(/[,，\s]+/)
-      .map((s) => Number(s.trim()))
+  async function runGrid() {
+    const values = [...selectedValues]
       .filter((n) => Number.isFinite(n) && n > 0)
       .slice(0, 5);
     if (!paramId || values.length < 2) {
       setMsg(t("paramValuesHint"));
       return;
     }
-    setMsg(null);
-    setGrid(null);
-    setCompare(null);
-    setBasket(null);
-    setShareToken(null);
+    clearResults();
     try {
       const data = await gridMut.mutateAsync({
         paramId,
@@ -214,40 +237,21 @@ export function StrategyLabTools({
         setGrid(data.report.result.rows as GridRow[]);
       }
     } catch (err) {
-      const payload =
-        err && typeof err === "object" && "payload" in err
-          ? (err as { payload: Parameters<typeof replayErrorMessage>[0] })
-              .payload
-          : err instanceof Error
-            ? { error: err.message }
-            : {};
-      setMsg(replayErrorMessage(payload, t));
+      setMsg(replayErrorMessage(errPayload(err), t));
     }
   }
 
-  async function runBasket(e: FormEvent) {
-    e.preventDefault();
-    const symbols = [
-      ...new Set(
-        basketText
-          .split(/[,，\s]+/)
-          .map((s) => s.trim().toUpperCase())
-          .filter(Boolean),
-      ),
-    ].slice(0, 10);
-    if (symbols.length < 2) {
+  async function runBasket() {
+    const list = [...new Set(symbols.map((s) => s.toUpperCase()))].slice(0, 10);
+    if (list.length < 2) {
       setMsg(t("basketHint"));
       return;
     }
-    setMsg(null);
-    setBasket(null);
-    setCompare(null);
-    setGrid(null);
-    setShareToken(null);
+    clearResults();
     try {
       const data = await basketMut.mutateAsync({
         strategyId,
-        symbols,
+        symbols: list,
         assetType,
         rangeFrom: rangeBody.rangeFrom,
         rangeTo: rangeBody.rangeTo,
@@ -256,34 +260,83 @@ export function StrategyLabTools({
       setReportId(data.report?.id ?? null);
       setMsg(t("basketQueued"));
     } catch (err) {
-      const payload =
-        err && typeof err === "object" && "payload" in err
-          ? (err as { payload: Parameters<typeof replayErrorMessage>[0] })
-              .payload
-          : err instanceof Error
-            ? { error: err.message }
-            : {};
-      setMsg(replayErrorMessage(payload, t));
+      setMsg(replayErrorMessage(errPayload(err), t));
     }
   }
 
+  function toggleValue(n: number) {
+    setSelectedValues((prev) => {
+      if (prev.includes(n)) return prev.filter((x) => x !== n);
+      if (prev.length >= 5) return prev;
+      return [...prev, n].sort((a, b) => a - b);
+    });
+  }
+
+  function addSymbol() {
+    const s = symbolDraft.trim().toUpperCase();
+    if (!s) return;
+    setSymbols((prev) =>
+      prev.includes(s) || prev.length >= 10 ? prev : [...prev, s],
+    );
+    setSymbolDraft("");
+  }
+
+  const otherName =
+    strategies.find((s) => s.id === otherId)?.name ?? t("labPickStrategy");
+
   return (
-    <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3">
+    <>
       <button
         type="button"
-        className="flex w-full items-center justify-between text-left"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen(true)}
+        className={
+          compact
+            ? "flex w-full items-center justify-between rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)]/30 px-2.5 py-2 text-left transition hover:border-[var(--brand)] hover:bg-[var(--brand-soft)]/40"
+            : "flex w-full items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2.5 text-left transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))]"
+        }
       >
-        <h2 className="text-[13px] font-medium">{t("labTools")}</h2>
-        <span className="text-[11px] text-[var(--muted)]">
-          {open ? t("labCollapse") : t("labExpand")}
+        <div className="min-w-0">
+          <p
+            className={
+              compact
+                ? "text-[12px] font-medium text-[var(--foreground)]"
+                : "text-[13px] font-medium text-[var(--foreground)]"
+            }
+          >
+            {t("labTools")}
+          </p>
+          <p className="mt-0.5 truncate text-[10px] text-[var(--muted)]">
+            {compact ? t("labToolsSubShort") : t("labToolsSub")}
+          </p>
+        </div>
+        <span className="ml-2 shrink-0 text-[11px] tabular-nums text-[var(--brand-text)]">
+          {t("labOpenDrawer")}
           {quota ? ` · ${quota.used}/${quota.limit}` : ""}
         </span>
       </button>
 
-      {open ? (
-        <div className="mt-3 space-y-3 border-t border-[var(--border)] pt-3">
-          <div className="flex flex-wrap gap-1">
+      <TopToast
+        key={toastKey}
+        message={toastMsg}
+        tone={toastTone}
+        onDismiss={() => setToastMsg(null)}
+      />
+      <SideDrawer
+        open={open}
+        onClose={() => setOpen(false)}
+        title={t("labTools")}
+        subtitle={`${symbol} · ${rangeFrom.slice(0, 10)} → ${rangeTo.slice(0, 10)}`}
+        subtitleAside={
+          quota ? (
+            <span className="text-[11px] tabular-nums text-[var(--muted)]">
+              {quota.used}/{quota.limit}
+            </span>
+          ) : null
+        }
+        widthClassName="w-full max-w-[min(100vw,28rem)] sm:max-w-[28rem]"
+      >
+        <div className="space-y-4 px-4 py-4 sm:px-5">
+          <div className="flex flex-wrap gap-1.5">
             {(
               [
                 ["compare", t("labCompare")],
@@ -291,109 +344,82 @@ export function StrategyLabTools({
                 ["basket", t("labBasket")],
               ] as const
             ).map(([id, label]) => (
-              <button
+              <LabChip
                 key={id}
-                type="button"
-                className={`rounded px-2 py-1 text-[11px] ${
-                  tab === id
-                    ? "bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                    : "text-[var(--muted)] hover:bg-[var(--surface-2)]"
-                }`}
+                active={tab === id}
                 onClick={() => setTab(id)}
               >
                 {label}
-              </button>
+              </LabChip>
             ))}
           </div>
 
           {tab === "compare" ? (
-            <form onSubmit={(e) => void runCompare(e)} className="space-y-2">
-              <p className="text-[11px] text-[var(--muted)]">
-                {t("labCompareHint")}
-              </p>
-              <QtSelect
-                value={otherId}
-                onChange={setOtherId}
-                options={
-                  strategies.length > 0
-                    ? strategies.map((s) => ({
-                        value: s.id,
-                        label: s.name,
-                      }))
-                    : [{ value: "", label: t("labPickStrategy") }]
-                }
-                aria-label={t("labPickStrategy")}
-              />
-              <SubmitButton
-                type="submit"
-                loading={busy}
-                loadingLabel={t("loading")}
-                className="qt-btn qt-btn-primary h-8 w-full text-xs"
-              >
-                {t("labRunCompare")}
-              </SubmitButton>
-            </form>
+            <LabComparePanel
+              strategyName={strategyName || ""}
+              thisLabel={t("labThisStrategy")}
+              leftLabel={t("labCompareLeft")}
+              rightLabel={t("labCompareRight")}
+              pickLabel={t("labComparePick")}
+              emptyLabel={t("labNoOtherStrategies")}
+              hint={t("labCompareHint")}
+              runLabel={t("labRunCompare")}
+              loadingLabel={t("loading")}
+              otherId={otherId}
+              otherName={otherName}
+              strategies={strategies}
+              busy={busy}
+              onPick={setOtherId}
+              onRun={() => void runCompare()}
+            />
           ) : null}
 
           {tab === "grid" ? (
-            <form onSubmit={(e) => void runGrid(e)} className="space-y-2">
-              <p className="text-[11px] text-[var(--muted)]">
-                {t("labParamHint")}
-              </p>
-              <QtSelect
-                value={paramId}
-                onChange={(id) => {
-                  setParamId(id);
-                  const p = params.find((x) => x.id === id);
-                  if (p) setValuesText(p.presets.join(","));
-                }}
-                options={
-                  params.length > 0
-                    ? params.map((p) => ({
-                        value: p.id,
-                        label: p.label,
-                      }))
-                    : [{ value: "", label: t("labPickParam") }]
+            <LabGridPanel
+              params={params}
+              paramId={paramId}
+              selectedValues={selectedValues}
+              customValue={customValue}
+              pickParamLabel={t("labPickParam")}
+              valuesLabel={t("labParamValues")}
+              hint={t("labParamHint")}
+              runLabel={t("labRunGrid")}
+              loadingLabel={t("loading")}
+              busy={busy}
+              onPickParam={(id, presets) => {
+                setParamId(id);
+                setSelectedValues(presets);
+              }}
+              onToggleValue={toggleValue}
+              onCustomChange={setCustomValue}
+              onCustomCommit={() => {
+                const n = Number(customValue);
+                if (Number.isFinite(n) && n > 0) {
+                  toggleValue(n);
+                  setCustomValue("");
                 }
-                aria-label={t("labPickParam")}
-              />
-              <input
-                className="qt-input h-8 w-full px-2 text-[12px]"
-                value={valuesText}
-                onChange={(e) => setValuesText(e.target.value)}
-                placeholder="10,20,60"
-              />
-              <SubmitButton
-                type="submit"
-                loading={busy}
-                loadingLabel={t("loading")}
-                className="qt-btn qt-btn-primary h-8 w-full text-xs"
-              >
-                {t("labRunGrid")}
-              </SubmitButton>
-            </form>
+              }}
+              onRun={() => void runGrid()}
+            />
           ) : null}
 
           {tab === "basket" ? (
-            <form onSubmit={(e) => void runBasket(e)} className="space-y-2">
-              <p className="text-[11px] text-[var(--muted)]">
-                {t("labBasketHint")}
-              </p>
-              <textarea
-                className="qt-input w-full px-2 py-1.5 text-[12px]"
-                rows={2}
-                value={basketText}
-                onChange={(e) => setBasketText(e.target.value)}
-              />
-              <SubmitButton
-                type="submit"
-                loading={busy}
-                loadingLabel={t("loading")}
-                className="qt-btn qt-btn-primary h-8 w-full text-xs"
-              >
-                {t("labRunBasket")}
-              </SubmitButton>
-            </form>
+            <LabBasketPanel
+              symbols={symbols}
+              draft={symbolDraft}
+              symbolsLabel={t("labBasketSymbols")}
+              addPlaceholder={t("labAddSymbol")}
+              hint={t("labBasketHint")}
+              runLabel={t("labRunBasket")}
+              loadingLabel={t("loading")}
+              busy={busy}
+              onRemove={(s) =>
+                setSymbols((prev) => prev.filter((x) => x !== s))
+              }
+              onDraftChange={setSymbolDraft}
+              onAdd={addSymbol}
+              onRun={() => void runBasket()}
+            />
           ) : null}
 
           {msg ? (
@@ -410,7 +436,7 @@ export function StrategyLabTools({
             onShare={() => void shareReport()}
           />
         </div>
-      ) : null}
-    </section>
+      </SideDrawer>
+    </>
   );
 }

@@ -8,15 +8,13 @@ import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
+import { SymbolSearchField } from "@/components/ui/symbol-search-field";
 import {
   StrategyDetailRulesPanel,
   type RulesMode,
 } from "@/components/strategy/strategy-detail-rules-panel";
-import {
-  StrategyReplayPanel,
-  type ReplayResultView,
-} from "@/components/strategy/strategy-replay-panel";
-import { StrategyReplayActions } from "@/components/strategy/strategy-replay-actions";
+import { type ReplayResultView } from "@/components/strategy/strategy-replay-panel";
+import { StrategyReplayResultDrawer } from "@/components/strategy/strategy-replay-result-drawer";
 import { StrategyLabTools } from "@/components/strategy/strategy-lab-tools";
 import { StrategyDetailHeader } from "@/components/strategy/strategy-detail-header";
 import { replayErrorMessage } from "@/lib/strategy/replay-errors";
@@ -24,6 +22,7 @@ import {
   strategyRulesSchema,
   type StrategyRules,
 } from "@/lib/strategy/rules";
+import type { AssetType } from "@/lib/types";
 import { queryKeys } from "@/lib/query/keys";
 import {
   useDeleteStrategy,
@@ -72,7 +71,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
   const [description, setDescription] = useState("");
   const [rulesJson, setRulesJson] = useState("");
   const [symbol, setSymbol] = useState("AAPL");
-  const [assetType, setAssetType] = useState("stock");
+  const [assetType, setAssetType] = useState<AssetType>("stock");
   const [rangeFrom, setRangeFrom] = useState(() => {
     const d = new Date();
     d.setFullYear(d.getFullYear() - 2);
@@ -140,6 +139,16 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
     router.replace(`/strategies/${strategyId}?replayId=${r.id}`);
   }
 
+  function patchShareToken(replayId: string, token: string | null) {
+    qc.setQueryData(
+      ["strategies", "replay", strategyId, replayId],
+      (prev: { replay?: Replay } | undefined) =>
+        prev?.replay
+          ? { ...prev, replay: { ...prev.replay, shareToken: token } }
+          : prev,
+    );
+  }
+
   function applyRules(next: StrategyRules) {
     setRules(next);
     setRulesJson(JSON.stringify(next, null, 2));
@@ -173,18 +182,37 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
     setMsg(null);
     try {
       let nextRules: StrategyRules;
+      // Prefer structured rules from blocks / Python preview; JSON textarea
+      // is only authoritative when it still parses (advanced edit).
       if (rulesMode === "code") {
         try {
           const parsed = JSON.parse(rulesJson) as unknown;
           const checked = strategyRulesSchema.safeParse(parsed);
-          if (!checked.success) {
+          if (checked.success) {
+            nextRules = checked.data;
+          } else if (rules) {
+            const fromBlocks = strategyRulesSchema.safeParse(rules);
+            if (!fromBlocks.success) {
+              setMsg(t("rulesInvalid"));
+              return;
+            }
+            nextRules = fromBlocks.data;
+          } else {
             setMsg(t("rulesInvalid"));
             return;
           }
-          nextRules = checked.data;
         } catch {
-          setMsg(t("rulesInvalid"));
-          return;
+          if (rules) {
+            const fromBlocks = strategyRulesSchema.safeParse(rules);
+            if (!fromBlocks.success) {
+              setMsg(t("rulesInvalid"));
+              return;
+            }
+            nextRules = fromBlocks.data;
+          } else {
+            setMsg(t("rulesInvalid"));
+            return;
+          }
         }
       } else if (rules) {
         const checked = strategyRulesSchema.safeParse(rules);
@@ -301,24 +329,25 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
             onSubmit={(e) => void startReplay(e)}
             className="space-y-2"
           >
-            <div>
-              <label className="mb-1 block text-[10px] text-[var(--muted)]">
-                {t("symbol")}
-              </label>
-              <input
-                className="qt-input h-8 w-full px-2 text-sm uppercase"
-                value={symbol}
-                onChange={(e) => setSymbol(e.target.value)}
-                required
-              />
-            </div>
+            <SymbolSearchField
+              value={symbol}
+              assetType={assetType}
+              onChange={setSymbol}
+              onSelect={(r) => {
+                setSymbol(r.symbol);
+                setAssetType(r.assetType);
+              }}
+              label={t("symbol")}
+              placeholder={t("symbolPlaceholder")}
+              required
+            />
             <div>
               <label className="mb-1 block text-[10px] text-[var(--muted)]">
                 {t("market")}
               </label>
               <QtSelect
                 value={assetType}
-                onChange={setAssetType}
+                onChange={(v) => setAssetType(v as AssetType)}
                 options={[
                   { value: "stock", label: "US" },
                   { value: "hk", label: "HK" },
@@ -363,74 +392,105 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
             </SubmitButton>
           </form>
 
+          {session?.user ? (
+            <div className="mt-3 border-t border-[var(--border)] pt-3">
+              <StrategyLabTools
+                compact
+                strategyId={strategyId}
+                strategyName={name}
+                symbol={symbol}
+                assetType={assetType}
+                rangeFrom={rangeFrom}
+                rangeTo={rangeTo}
+                quota={quota}
+                onQuota={(next) => {
+                  qc.setQueryData(
+                    queryKeys.strategies.replays(strategyId),
+                    (prev: { replays?: Replay[]; quota?: Quota } | undefined) =>
+                      prev ? { ...prev, quota: next } : prev,
+                  );
+                }}
+              />
+            </div>
+          ) : null}
+
           {replays.length > 0 ? (
-            <ul className="mt-3 space-y-1 border-t border-[var(--border)] pt-2">
-              {replays.slice(0, 5).map((r) => (
-                <li key={r.id}>
-                  <button
-                    type="button"
-                    className={`w-full rounded px-1.5 py-1 text-left text-[11px] tabular-nums hover:bg-[var(--surface-2)] ${
-                      active?.id === r.id
-                        ? "bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                        : "text-[var(--muted)]"
-                    }`}
-                    onClick={() => selectReplay(r)}
-                  >
-                    {r.symbol} · {r.status}
-                  </button>
-                </li>
-              ))}
-            </ul>
+            <div className="mt-3 border-t border-[var(--border)] pt-3">
+              <p className="mb-1.5 text-[12px] text-[var(--muted)]">
+                {t("recentReplays")}
+              </p>
+              <ul className="overflow-hidden rounded-md border border-[var(--border)] divide-y divide-[var(--border)]">
+                {replays.slice(0, 5).map((r) => {
+                  const on = active?.id === r.id;
+                  const statusKey =
+                    r.status === "done"
+                      ? "statusDone"
+                      : r.status === "failed"
+                        ? "statusFailed"
+                        : r.status === "running"
+                          ? "statusRunning"
+                          : "statusPending";
+                  const statusTone =
+                    r.status === "done"
+                      ? "text-[var(--brand-text)]"
+                      : r.status === "failed"
+                        ? "text-[var(--down)]"
+                        : "text-[var(--muted)]";
+                  const ret = r.result?.totalReturnPct;
+                  return (
+                    <li key={r.id}>
+                      <button
+                        type="button"
+                        onClick={() => selectReplay(r)}
+                        className={`flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left text-[13px] transition ${
+                          on
+                            ? "bg-[var(--brand-soft)]"
+                            : "bg-[var(--panel)] hover:bg-[var(--surface-2)]/70"
+                        }`}
+                      >
+                        <span className="flex min-w-0 items-baseline gap-2">
+                          <span className="font-medium tabular-nums text-[var(--foreground)]">
+                            {r.symbol}
+                          </span>
+                          <span className={`text-[12px] ${statusTone}`}>
+                            {t(statusKey)}
+                          </span>
+                        </span>
+                        <span
+                          className={`shrink-0 tabular-nums text-[12px] ${
+                            typeof ret === "number"
+                              ? ret >= 0
+                                ? "text-[var(--up)]"
+                                : "text-[var(--down)]"
+                              : "text-[var(--muted)]"
+                          }`}
+                        >
+                          {typeof ret === "number"
+                            ? `${ret > 0 ? "+" : ""}${ret.toFixed(1)}%`
+                            : "—"}
+                        </span>
+                      </button>
+                    </li>
+                  );
+                })}
+              </ul>
+            </div>
+          ) : null}
+
+          {active ? (
+            <div className="mt-3 border-t border-[var(--border)] pt-3">
+              <StrategyReplayResultDrawer
+                replay={active}
+                onShareChange={
+                  session?.user
+                    ? (token) => patchShareToken(active.id, token)
+                    : undefined
+                }
+              />
+            </div>
           ) : null}
         </section>
       </div>
-
-      {active ? (
-        <div className="space-y-3">
-          <StrategyReplayPanel
-            status={active.status}
-            error={active.error}
-            result={active.result}
-          />
-          {session?.user ? (
-            <StrategyReplayActions
-              replayId={active.id}
-              status={active.status}
-              shareToken={active.shareToken ?? null}
-              onShareChange={(token) => {
-                qc.setQueryData(
-                  ["strategies", "replay", strategyId, active.id],
-                  (prev: { replay?: Replay; quota?: Quota } | undefined) =>
-                    prev?.replay
-                      ? {
-                          ...prev,
-                          replay: { ...prev.replay, shareToken: token },
-                        }
-                      : prev,
-                );
-              }}
-            />
-          ) : null}
-        </div>
-      ) : null}
-
-      {session?.user ? (
-        <StrategyLabTools
-          strategyId={strategyId}
-          symbol={symbol}
-          assetType={assetType}
-          rangeFrom={rangeFrom}
-          rangeTo={rangeTo}
-          quota={quota}
-          onQuota={(next) => {
-            qc.setQueryData(
-              queryKeys.strategies.replays(strategyId),
-              (prev: { replays?: Replay[]; quota?: Quota } | undefined) =>
-                prev ? { ...prev, quota: next } : prev,
-            );
-          }}
-        />
-      ) : null}
     </div>
   );
 }

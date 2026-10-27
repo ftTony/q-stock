@@ -1,6 +1,9 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { PaginatedList } from "@/components/ui/paginated-list";
+
+const TRADE_PAGE_SIZE = 10;
 
 export type ReplayResultView = {
   totalReturnPct?: number;
@@ -8,6 +11,8 @@ export type ReplayResultView = {
   tradeCount?: number;
   winRate?: number | null;
   buyHoldReturnPct?: number;
+  sharpeRatio?: number | null;
+  calmarRatio?: number | null;
   assumptions?: Record<string, unknown>;
   equityCurve?: Array<{ t: number; equity: number; buyHold: number }>;
   trades?: Array<{
@@ -22,6 +27,11 @@ function fmtPct(n?: number) {
   if (n == null || !Number.isFinite(n)) return "—";
   const s = `${n.toFixed(2)}%`;
   return n > 0 ? `+${s}` : s;
+}
+
+function fmtRatio(n?: number | null) {
+  if (n == null || !Number.isFinite(n)) return "—";
+  return n.toFixed(2);
 }
 
 function Metric({
@@ -119,62 +129,64 @@ export function StrategyReplayPanel({
 
   return (
     <div className="space-y-3">
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3">
-          <div className="mb-2 flex items-center justify-between">
-            <h3 className="text-[13px] font-medium">{t("equityCurve")}</h3>
-            <span className="text-[10px] text-[var(--muted)]">
-              {t("vsBuyHold")}
-            </span>
-          </div>
-          {result.equityCurve && result.equityCurve.length > 1 ? (
-            <EquityChart
-              equity={result.equityCurve.map((p) => p.equity)}
-              buyHold={result.equityCurve.map((p) => p.buyHold)}
-            />
-          ) : (
-            <p className="py-8 text-center text-xs text-[var(--muted)]">—</p>
-          )}
-          <p className="mt-2 rounded-md bg-[var(--brand-soft)] px-2.5 py-1.5 text-[11px] text-[var(--brand-text)]">
-            {t("maxDd")}: {fmtPct(dd)}
-          </p>
+      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3">
+        <div className="mb-2 flex items-center justify-between">
+          <h3 className="text-[13px] font-medium">{t("equityCurve")}</h3>
+          <span className="text-[10px] text-[var(--muted)]">
+            {t("vsBuyHold")}
+          </span>
         </div>
+        {result.equityCurve && result.equityCurve.length > 1 ? (
+          <EquityChart
+            equity={result.equityCurve.map((p) => p.equity)}
+            buyHold={result.equityCurve.map((p) => p.buyHold)}
+          />
+        ) : (
+          <p className="py-8 text-center text-xs text-[var(--muted)]">—</p>
+        )}
+        <p className="mt-2 rounded-md bg-[var(--brand-soft)] px-2.5 py-1.5 text-[11px] text-[var(--brand-text)]">
+          {t("maxDd")}: {fmtPct(dd)}
+        </p>
+      </div>
 
-        <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
-          <div className="grid grid-cols-2">
-            <Metric
-              label={t("return")}
-              value={fmtPct(result.totalReturnPct)}
-              tone={ret >= 0 ? "up" : "down"}
-            />
-            <Metric
-              label={t("maxDd")}
-              value={fmtPct(result.maxDrawdownPct)}
-              tone="down"
-            />
-            <Metric
-              label={t("winRate")}
-              value={
-                result.winRate != null ? `${result.winRate.toFixed(1)}%` : "—"
-              }
-            />
-            <Metric
-              label={t("trades")}
-              value={String(result.tradeCount ?? 0)}
-            />
-          </div>
-          <div className="border-t border-[var(--border)] px-3 py-2 text-[11px] text-[var(--muted)]">
-            {t("buyHold")}:{" "}
-            <span
-              className={`font-medium tabular-nums ${
-                (result.buyHoldReturnPct ?? 0) >= 0
-                  ? "text-[var(--up)]"
-                  : "text-[var(--down)]"
-              }`}
-            >
-              {fmtPct(result.buyHoldReturnPct)}
-            </span>
-          </div>
+      <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+        <div className="grid grid-cols-2 sm:grid-cols-3">
+          <Metric
+            label={t("return")}
+            value={fmtPct(result.totalReturnPct)}
+            tone={ret >= 0 ? "up" : "down"}
+          />
+          <Metric
+            label={t("maxDd")}
+            value={fmtPct(result.maxDrawdownPct)}
+            tone="down"
+          />
+          <Metric
+            label={t("winRate")}
+            value={
+              result.winRate != null ? `${result.winRate.toFixed(1)}%` : "—"
+            }
+          />
+          <Metric
+            label={t("trades")}
+            value={String(result.tradeCount ?? 0)}
+          />
+          <Metric label={t("sharpe")} value={fmtRatio(result.sharpeRatio)} />
+          <Metric label={t("calmar")} value={fmtRatio(result.calmarRatio)} />
+        </div>
+        <div className="border-t border-[var(--border)] px-3 py-2 text-[11px] text-[var(--muted)]">
+          {t("buyHold")}:{" "}
+          <span
+            className={`font-medium tabular-nums ${
+              (result.buyHoldReturnPct ?? 0) >= 0
+                ? "text-[var(--up)]"
+                : "text-[var(--down)]"
+            }`}
+          >
+            {fmtPct(result.buyHoldReturnPct)}
+          </span>
+          <span className="mx-1.5 text-[var(--border)]">·</span>
+          {t("riskRatioHint")}
         </div>
       </div>
 
@@ -189,41 +201,49 @@ export function StrategyReplayPanel({
 
       {result.trades && result.trades.length > 0 ? (
         <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
-          <div className="border-b border-[var(--border)] px-3 py-2 text-[13px] font-medium">
+          <div className="border-b border-[var(--border)] px-3 py-2.5 text-[14px] font-medium">
             {t("tradeList")}
-            <span className="ml-2 text-[11px] font-normal text-[var(--muted)]">
-              {result.tradeCount ?? result.trades.length}
+            <span className="ml-2 text-[13px] font-normal text-[var(--muted)]">
+              {result.trades.length}
             </span>
           </div>
-          <div className="qt-scroll max-h-56 overflow-auto">
-            <table className="w-full text-left text-[12px]">
-              <thead className="sticky top-0 bg-[var(--panel)] text-[var(--muted)]">
-                <tr>
-                  <th className="px-3 py-2 font-medium">#</th>
-                  <th className="px-3 py-2 font-medium">{t("side")}</th>
-                  <th className="px-3 py-2 font-medium">{t("price")}</th>
-                  <th className="px-3 py-2 font-medium">{t("qty")}</th>
-                  <th className="px-3 py-2 font-medium">{t("time")}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {result.trades.slice(0, 50).map((tr, i) => (
-                  <tr key={i} className="border-t border-[var(--border)]/70">
-                    <td className="px-3 py-1.5 tabular-nums text-[var(--muted)]">
-                      {String(i + 1).padStart(3, "0")}
-                    </td>
-                    <td className="px-3 py-1.5">{tr.side}</td>
-                    <td className="px-3 py-1.5 tabular-nums">
-                      {tr.price.toFixed(2)}
-                    </td>
-                    <td className="px-3 py-1.5 tabular-nums">{tr.qty}</td>
-                    <td className="px-3 py-1.5 tabular-nums text-[var(--muted)]">
+          <div className="px-1 pb-2 pt-0 sm:px-2">
+            <PaginatedList
+              items={result.trades}
+              pageSize={TRADE_PAGE_SIZE}
+              resetKey={`${result.trades.length}-${result.trades[0]?.time ?? 0}`}
+              variant="compact"
+              dense
+              listClassName="divide-y divide-[var(--border)]"
+              renderItem={(tr, i) => {
+                const isBuy = tr.side.toLowerCase() === "buy";
+                return (
+                  <li
+                    key={`${tr.time}-${tr.side}-${i}`}
+                    className="flex items-baseline justify-between gap-3 px-2 py-2.5 text-[13px] sm:px-3"
+                  >
+                    <div className="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
+                      <span className="w-7 shrink-0 tabular-nums text-[var(--muted)]">
+                        {String(i + 1).padStart(2, "0")}
+                      </span>
+                      <span
+                        className={
+                          isBuy ? "text-[var(--up)]" : "text-[var(--down)]"
+                        }
+                      >
+                        {isBuy ? t("sideBuy") : t("sideSell")}
+                      </span>
+                      <span className="tabular-nums text-[var(--muted)]">
+                        {tr.qty} @ {tr.price.toFixed(2)}
+                      </span>
+                    </div>
+                    <span className="shrink-0 tabular-nums text-[12px] text-[var(--muted)]">
                       {new Date(tr.time).toISOString().slice(0, 10)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                    </span>
+                  </li>
+                );
+              }}
+            />
           </div>
         </div>
       ) : null}

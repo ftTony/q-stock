@@ -3,7 +3,10 @@ import {
   listProvidersForCandles,
   withProviderFailover,
 } from "@/lib/market/router";
-import type { QuoteWithSource } from "@/lib/market/types";
+import {
+  MarketDataError,
+  type QuoteWithSource,
+} from "@/lib/market/types";
 import type { AssetType, OhlcvBar, SearchResult } from "@/lib/types";
 import { normalizeSymbol } from "@/lib/types";
 
@@ -129,13 +132,63 @@ export async function getIntradayCandles(
   );
 }
 
+function isSyntheticBrokerHit(providerId: string, results: SearchResult[]) {
+  if (results.length !== 1) return false;
+  if (providerId !== "longbridge" && providerId !== "futu") return false;
+  const d = results[0]?.description ?? "";
+  return /\(Longbridge\)|\(Futu\)$/i.test(d);
+}
+
+/**
+ * Symbol search prefers real multi-hit providers (Finnhub for US).
+ * Longbridge/Futu only echo the typed ticker — keep as last resort.
+ */
 export async function searchSymbols(
   q: string,
   assetType: AssetType,
 ): Promise<SearchResult[]> {
-  return withProviderFailover(
-    assetType,
-    (p) => p.searchSymbols(q, assetType),
-    `search ${q}`,
-  );
+  const query = q.trim();
+  if (!query) return [];
+
+  const providers = listProvidersFor(assetType);
+  const ordered =
+    assetType === "stock"
+      ? [
+          ...providers.filter((p) => p.id === "finnhub"),
+          ...providers.filter((p) => p.id !== "finnhub"),
+        ]
+      : providers;
+
+  if (!ordered.length) {
+    throw new MarketDataError(
+      "No market data providers configured. Set broker/crypto keys in Settings, or FINNHUB_API_KEY.",
+    );
+  }
+
+  const errors: string[] = [];
+  let fallback: SearchResult[] | null = null;
+
+  for (const p of ordered) {
+    try {
+      const results = await p.searchSymbols(query, assetType);
+      if (!results.length) continue;
+      if (isSyntheticBrokerHit(p.id, results)) {
+        fallback = results;
+        continue;
+      }
+      return results;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      errors.push(`${p.id}: ${msg}`);
+      console.warn(`[market] search ${query} via ${p.id} failed:`, msg);
+    }
+  }
+
+  if (fallback?.length) return fallback;
+  if (errors.length) {
+    throw new MarketDataError(
+      `All providers failed for search ${query}: ${errors.join(" | ")}`,
+    );
+  }
+  return [];
 }

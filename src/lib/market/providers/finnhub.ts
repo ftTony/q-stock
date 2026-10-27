@@ -243,20 +243,45 @@ export const finnhubProvider: MarketDataProvider = {
           },
         ] satisfies SearchResult[];
       }
-      const data = await finnhubFetch<{ count: number; result: { description: string; displaySymbol: string; symbol: string; type: string }[] }>(
-        "/search",
-        { q: query },
-      );
-      return (data.result ?? [])
-        .filter((r) => r.type === "Common Stock" || r.symbol.includes("."))
-        .slice(0, 20)
-        .map((r) => ({
-          symbol: r.symbol.split(".")[0],
-          displaySymbol: r.displaySymbol,
-          description: r.description,
-          assetType: "stock" as const,
-          type: r.type,
-        }));
+      const data = await finnhubFetch<{
+        count: number;
+        result: {
+          description: string;
+          displaySymbol: string;
+          symbol: string;
+          type: string;
+        }[];
+      }>("/search", { q: query });
+
+      const seen = new Set<string>();
+      const out: SearchResult[] = [];
+      for (const r of data.result ?? []) {
+        const type = (r.type || "").trim();
+        // US equity search: skip warrants/bonds and foreign listings.
+        if (
+          type &&
+          type !== "Common Stock" &&
+          type !== "ETP" &&
+          !/^ETF/i.test(type)
+        ) {
+          continue;
+        }
+        if (/\.(HK|L|TO|T|AX|SS|SZ|TWO|KS|KQ|NS|BO|NS)$/i.test(r.symbol)) {
+          continue;
+        }
+        const symbol = r.symbol.split(".")[0]?.toUpperCase();
+        if (!symbol || seen.has(symbol)) continue;
+        seen.add(symbol);
+        out.push({
+          symbol,
+          displaySymbol: r.displaySymbol || symbol,
+          description: r.description || symbol,
+          assetType: "stock",
+          type: type || "Common Stock",
+        });
+        if (out.length >= 12) break;
+      }
+      return out;
     });
   },
 };

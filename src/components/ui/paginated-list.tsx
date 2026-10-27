@@ -22,6 +22,8 @@ type Props<T> = {
    * `compact` — centered cluster, no redundant “n / total” (marketing grids).
    */
   variant?: "spread" | "compact";
+  /** Smaller controls for tight panels / drawers. */
+  dense?: boolean;
   /**
    * Stretch in a flex parent and keep the pager pinned to the bottom
    * (does not sit right under short card grids).
@@ -63,6 +65,7 @@ export function PaginatedList<T>({
   empty,
   listClassName = "space-y-3",
   variant = "spread",
+  dense = false,
   pinPager = false,
   renderItem,
 }: Props<T>) {
@@ -93,7 +96,7 @@ export function PaginatedList<T>({
     requestAnimationFrame(() => {
       if (pinPager) {
         listRef.current?.scrollTo({ top: 0, behavior: "smooth" });
-      } else {
+      } else if (!dense) {
         rootRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
       }
     });
@@ -108,10 +111,22 @@ export function PaginatedList<T>({
 
   const pages = pageWindow(page, totalPages);
   const showPager = totalPages > 1;
+  const btnH = dense
+    ? "h-7 min-w-7 px-2 text-[12px]"
+    : "h-8 min-w-8 px-2 text-[12px]";
+  const navH = dense
+    ? "h-7 shrink-0 px-2 text-[12px]"
+    : "h-8 shrink-0 px-2.5 text-[12px] sm:px-3";
 
   const rootClass = pinPager
     ? "flex min-h-0 flex-1 flex-col scroll-mt-24"
-    : `scroll-mt-24 ${variant === "compact" ? "space-y-8" : "space-y-3"}`;
+    : `scroll-mt-24 ${
+        variant === "compact"
+          ? dense
+            ? "space-y-2"
+            : "space-y-8"
+          : "space-y-3"
+      }`;
 
   const listClass = pinPager
     ? `min-h-0 flex-1 overflow-y-auto ${listClassName}`
@@ -119,7 +134,7 @@ export function PaginatedList<T>({
 
   const pagerClass =
     variant === "compact"
-      ? `flex shrink-0 items-center justify-center gap-1${pinPager ? " mt-auto pt-2" : ""}`
+      ? `flex shrink-0 items-center justify-center gap-0.5${pinPager ? " mt-auto pt-2" : dense ? " pt-1.5" : ""}`
       : `${pinPager ? "mt-auto pt-2" : "mt-2"} grid shrink-0 grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2`;
 
   return (
@@ -131,13 +146,17 @@ export function PaginatedList<T>({
         <div className={pagerClass}>
           <button
             type="button"
-            className="qt-btn qt-btn-ghost h-8 shrink-0 px-2.5 text-[12px] leading-none tracking-[-0.12px] disabled:opacity-40 sm:px-3"
+            className={`qt-btn qt-btn-ghost leading-none tracking-[-0.12px] disabled:opacity-40 ${navH}`}
             disabled={page <= 1}
             onClick={() => goTo(page - 1)}
             aria-label={labels.prev}
           >
-            {variant === "compact" ? (
-              labels.prev
+            {dense || variant === "compact" ? (
+              dense ? (
+                <span aria-hidden>‹</span>
+              ) : (
+                labels.prev
+              )
             ) : (
               <>
                 <span className="sm:hidden" aria-hidden>
@@ -150,27 +169,33 @@ export function PaginatedList<T>({
           <div
             className={
               variant === "compact"
-                ? "flex items-center gap-1"
+                ? "flex items-center gap-0.5"
                 : "flex min-w-0 items-center justify-center gap-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
             }
           >
-            {pages.map((p) => (
-              <button
-                key={p}
-                type="button"
-                aria-label={`${p} / ${totalPages}`}
-                aria-current={p === page ? "page" : undefined}
-                className={`qt-btn h-8 min-w-8 shrink-0 px-2 text-[12px] tabular-nums leading-none tracking-[-0.12px] ${
-                  p === page
-                    ? "qt-btn-primary"
-                    : "qt-btn-ghost text-[var(--aw-ink-muted-48,var(--muted))]"
-                }`}
-                onClick={() => goTo(p)}
-              >
-                {p}
-              </button>
-            ))}
-            {variant === "spread" ? (
+            {dense ? (
+              <span className="px-2 text-[12px] tabular-nums text-[var(--muted)]">
+                {page} / {totalPages}
+              </span>
+            ) : (
+              pages.map((p) => (
+                <button
+                  key={p}
+                  type="button"
+                  aria-label={`${p} / ${totalPages}`}
+                  aria-current={p === page ? "page" : undefined}
+                  className={`qt-btn shrink-0 leading-none tracking-[-0.12px] ${btnH} ${
+                    p === page
+                      ? "qt-btn-primary"
+                      : "qt-btn-ghost text-[var(--aw-ink-muted-48,var(--muted))]"
+                  }`}
+                  onClick={() => goTo(p)}
+                >
+                  {p}
+                </button>
+              ))
+            )}
+            {!dense && variant === "spread" ? (
               <span className="ml-1 hidden shrink-0 text-[12px] tabular-nums tracking-[-0.12px] text-[var(--aw-ink-muted-48,var(--muted))] sm:inline">
                 {page} / {totalPages}
               </span>
@@ -178,13 +203,17 @@ export function PaginatedList<T>({
           </div>
           <button
             type="button"
-            className="qt-btn qt-btn-ghost h-8 shrink-0 px-2.5 text-[12px] leading-none tracking-[-0.12px] disabled:opacity-40 sm:px-3"
+            className={`qt-btn qt-btn-ghost leading-none tracking-[-0.12px] disabled:opacity-40 ${navH}`}
             disabled={page >= totalPages}
             onClick={() => goTo(page + 1)}
             aria-label={labels.next}
           >
-            {variant === "compact" ? (
-              labels.next
+            {dense || variant === "compact" ? (
+              dense ? (
+                <span aria-hidden>›</span>
+              ) : (
+                labels.next
+              )
             ) : (
               <>
                 <span className="sm:hidden" aria-hidden>

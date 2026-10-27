@@ -10,6 +10,8 @@ export type CompareLeg = {
     maxDrawdownPct: number;
     tradeCount: number;
     winRate: number | null;
+    sharpeRatio?: number | null;
+    calmarRatio?: number | null;
   };
   equityCurve: Array<{ equity: number; buyHold: number }>;
 };
@@ -21,6 +23,8 @@ export type GridRow = {
     maxDrawdownPct: number;
     tradeCount: number;
     winRate: number | null;
+    sharpeRatio?: number | null;
+    calmarRatio?: number | null;
   };
 };
 
@@ -32,6 +36,8 @@ export type BasketRow =
         totalReturnPct: number;
         maxDrawdownPct: number;
         tradeCount: number;
+        sharpeRatio?: number | null;
+        calmarRatio?: number | null;
       };
     }
   | { symbol: string; ok: false; error: string };
@@ -40,6 +46,11 @@ function fmtPct(n: number | null | undefined) {
   if (n == null || Number.isNaN(n)) return "—";
   const sign = n > 0 ? "+" : "";
   return `${sign}${n.toFixed(1)}%`;
+}
+
+function fmtRatio(n: number | null | undefined) {
+  if (n == null || !Number.isFinite(n)) return "—";
+  return n.toFixed(2);
 }
 
 function DualEquity({
@@ -80,16 +91,33 @@ function DualEquity({
           strokeDasharray="4 3"
         />
       </svg>
-      <div className="flex gap-3 text-[10px] text-[var(--muted)]">
+      <div className="flex gap-3 text-[12px] text-[var(--muted)]">
         <span>
-          <span className="mr-1 inline-block h-1.5 w-3 rounded bg-[var(--brand)]" />
+          <span className="mr-1.5 inline-block h-1.5 w-3 rounded bg-[var(--brand)]" />
           {labelA}
         </span>
         <span>
-          <span className="mr-1 inline-block h-1.5 w-3 rounded border border-dashed border-[var(--muted)]" />
+          <span className="mr-1.5 inline-block h-1.5 w-3 rounded border border-dashed border-[var(--muted)]" />
           {labelB}
         </span>
       </div>
+    </div>
+  );
+}
+
+function MetricLine({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}) {
+  return (
+    <div className="flex items-baseline justify-between gap-2 py-0.5 text-[13px] leading-relaxed">
+      <span className="text-[var(--muted)]">{label}</span>
+      <span className="font-medium tabular-nums text-[var(--foreground)]">
+        {value}
+      </span>
     </div>
   );
 }
@@ -116,26 +144,39 @@ export function StrategyLabResults({
   return (
     <>
       {compare && compare.length >= 2 ? (
-        <div className="space-y-2 rounded-md border border-[var(--border)] p-2">
+        <div className="space-y-3 rounded-md border border-[var(--border)] p-3">
           <DualEquity
             a={compare[0]!.equityCurve.map((p) => p.equity)}
             b={compare[1]!.equityCurve.map((p) => p.equity)}
             labelA={compare[0]!.name}
             labelB={compare[1]!.name}
           />
-          <div className="grid grid-cols-2 gap-2 text-[11px]">
+          <div className="grid grid-cols-2 gap-3 border-t border-[var(--border)] pt-2">
             {compare.map((leg) => (
-              <div key={leg.name}>
-                <div className="font-medium">{leg.name}</div>
-                <div>
-                  {t("return")}: {fmtPct(leg.metrics.totalReturnPct)}
-                </div>
-                <div>
-                  {t("maxDd")}: {fmtPct(leg.metrics.maxDrawdownPct)}
-                </div>
-                <div>
-                  {t("trades")}: {leg.metrics.tradeCount}
-                </div>
+              <div key={leg.name} className="min-w-0">
+                <p className="mb-1 truncate text-[13px] font-semibold text-[var(--foreground)]">
+                  {leg.name}
+                </p>
+                <MetricLine
+                  label={t("return")}
+                  value={fmtPct(leg.metrics.totalReturnPct)}
+                />
+                <MetricLine
+                  label={t("maxDd")}
+                  value={fmtPct(leg.metrics.maxDrawdownPct)}
+                />
+                <MetricLine
+                  label={t("sharpe")}
+                  value={fmtRatio(leg.metrics.sharpeRatio)}
+                />
+                <MetricLine
+                  label={t("calmar")}
+                  value={fmtRatio(leg.metrics.calmarRatio)}
+                />
+                <MetricLine
+                  label={t("trades")}
+                  value={String(leg.metrics.tradeCount)}
+                />
               </div>
             ))}
           </div>
@@ -144,26 +185,34 @@ export function StrategyLabResults({
 
       {grid ? (
         <div className="overflow-hidden rounded-md border border-[var(--border)]">
-          <table className="w-full text-left text-[11px]">
-            <thead className="text-[var(--muted)]">
+          <table className="w-full text-left text-[13px]">
+            <thead className="text-[12px] text-[var(--muted)]">
               <tr>
-                <th className="px-2 py-1.5">{t("labParamValue")}</th>
-                <th className="px-2 py-1.5">{t("return")}</th>
-                <th className="px-2 py-1.5">{t("maxDd")}</th>
-                <th className="px-2 py-1.5">{t("trades")}</th>
+                <th className="px-2.5 py-2">{t("labParamValue")}</th>
+                <th className="px-2.5 py-2">{t("return")}</th>
+                <th className="px-2.5 py-2">{t("maxDd")}</th>
+                <th className="px-2.5 py-2">{t("sharpe")}</th>
+                <th className="px-2.5 py-2">{t("calmar")}</th>
+                <th className="px-2.5 py-2">{t("trades")}</th>
               </tr>
             </thead>
             <tbody>
               {grid.map((row) => (
                 <tr key={row.value} className="border-t border-[var(--border)]">
-                  <td className="px-2 py-1.5 tabular-nums">{row.value}</td>
-                  <td className="px-2 py-1.5 tabular-nums">
+                  <td className="px-2.5 py-2 tabular-nums">{row.value}</td>
+                  <td className="px-2.5 py-2 tabular-nums">
                     {fmtPct(row.metrics.totalReturnPct)}
                   </td>
-                  <td className="px-2 py-1.5 tabular-nums">
+                  <td className="px-2.5 py-2 tabular-nums">
                     {fmtPct(row.metrics.maxDrawdownPct)}
                   </td>
-                  <td className="px-2 py-1.5 tabular-nums">
+                  <td className="px-2.5 py-2 tabular-nums">
+                    {fmtRatio(row.metrics.sharpeRatio)}
+                  </td>
+                  <td className="px-2.5 py-2 tabular-nums">
+                    {fmtRatio(row.metrics.calmarRatio)}
+                  </td>
+                  <td className="px-2.5 py-2 tabular-nums">
                     {row.metrics.tradeCount}
                   </td>
                 </tr>
@@ -175,33 +224,41 @@ export function StrategyLabResults({
 
       {basket ? (
         <div className="overflow-hidden rounded-md border border-[var(--border)]">
-          <table className="w-full text-left text-[11px]">
-            <thead className="text-[var(--muted)]">
+          <table className="w-full text-left text-[13px]">
+            <thead className="text-[12px] text-[var(--muted)]">
               <tr>
-                <th className="px-2 py-1.5">{t("symbol")}</th>
-                <th className="px-2 py-1.5">{t("return")}</th>
-                <th className="px-2 py-1.5">{t("maxDd")}</th>
-                <th className="px-2 py-1.5">{t("trades")}</th>
+                <th className="px-2.5 py-2">{t("symbol")}</th>
+                <th className="px-2.5 py-2">{t("return")}</th>
+                <th className="px-2.5 py-2">{t("maxDd")}</th>
+                <th className="px-2.5 py-2">{t("sharpe")}</th>
+                <th className="px-2.5 py-2">{t("calmar")}</th>
+                <th className="px-2.5 py-2">{t("trades")}</th>
               </tr>
             </thead>
             <tbody>
               {basket.map((row) => (
                 <tr key={row.symbol} className="border-t border-[var(--border)]">
-                  <td className="px-2 py-1.5">{row.symbol}</td>
+                  <td className="px-2.5 py-2">{row.symbol}</td>
                   {row.ok ? (
                     <>
-                      <td className="px-2 py-1.5 tabular-nums">
+                      <td className="px-2.5 py-2 tabular-nums">
                         {fmtPct(row.metrics.totalReturnPct)}
                       </td>
-                      <td className="px-2 py-1.5 tabular-nums">
+                      <td className="px-2.5 py-2 tabular-nums">
                         {fmtPct(row.metrics.maxDrawdownPct)}
                       </td>
-                      <td className="px-2 py-1.5 tabular-nums">
+                      <td className="px-2.5 py-2 tabular-nums">
+                        {fmtRatio(row.metrics.sharpeRatio)}
+                      </td>
+                      <td className="px-2.5 py-2 tabular-nums">
+                        {fmtRatio(row.metrics.calmarRatio)}
+                      </td>
+                      <td className="px-2.5 py-2 tabular-nums">
                         {row.metrics.tradeCount}
                       </td>
                     </>
                   ) : (
-                    <td className="px-2 py-1.5 text-[var(--down)]" colSpan={3}>
+                    <td className="px-2.5 py-2 text-[var(--down)]" colSpan={5}>
                       {row.error}
                     </td>
                   )}
@@ -217,7 +274,7 @@ export function StrategyLabResults({
           type="button"
           loading={busy}
           loadingLabel={t("loading")}
-          className="qt-btn h-8 px-3 text-xs"
+          className="qt-btn h-9 px-3 text-[13px]"
           onClick={onShare}
         >
           {shareToken ? t("shareRevoke") : t("shareResult")}

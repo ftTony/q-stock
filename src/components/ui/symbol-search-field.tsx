@@ -126,9 +126,12 @@ export function SymbolSearchField({
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => pick(r)}
               >
-                <span className="min-w-0">
-                  <span className="font-semibold">{r.displaySymbol || r.symbol}</span>
-                  {r.description ? (
+                <span className="min-w-0 truncate">
+                  <span className="font-semibold tabular-nums">
+                    {r.symbol}
+                  </span>
+                  {r.description &&
+                  r.description.toUpperCase() !== r.symbol.toUpperCase() ? (
                     <span className="ml-2 text-[var(--muted)]">
                       {r.description}
                     </span>

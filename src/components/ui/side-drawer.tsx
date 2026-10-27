@@ -12,6 +12,8 @@ export function SideDrawer(props: {
   open: boolean;
   onClose: () => void;
   title: string;
+  /** Inline after title on the same row (keeps header short). */
+  titleAside?: ReactNode;
   subtitle?: string;
   /** Inline after subtitle (e.g. AI quota). */
   subtitleAside?: ReactNode;
@@ -106,9 +108,16 @@ export function SideDrawer(props: {
       >
         <header className="aw-drawer-header flex w-full shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-2.5 sm:px-5">
           <div className="min-w-0 flex-1">
-            <h2 className="aw-drawer-title truncate text-left text-[16px] font-semibold tracking-tight">
-              {props.title}
-            </h2>
+            <div className="flex min-w-0 items-center gap-2">
+              <h2 className="aw-drawer-title truncate text-left text-[16px] font-semibold tracking-tight">
+                {props.title}
+              </h2>
+              {props.titleAside ? (
+                <div className="min-w-0 truncate text-[11px] font-normal leading-none text-[var(--muted)]">
+                  {props.titleAside}
+                </div>
+              ) : null}
+            </div>
             {props.subtitle || props.subtitleAside ? (
               <div className="aw-drawer-subtitle-row mt-0.5 flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
                 {props.subtitle ? (

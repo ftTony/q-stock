@@ -97,7 +97,7 @@ export function SubmitButton({
       {...rest}
     >
       {loading && <Spinner />}
-      <span>{label}</span>
+      <span className="inline-flex items-center leading-none">{label}</span>
     </button>
   );
 }

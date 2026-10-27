@@ -9,6 +9,8 @@ export type LabMetrics = {
   buyHoldReturnPct: number;
   winRate: number | null;
   tradeCount: number;
+  sharpeRatio: number | null;
+  calmarRatio: number | null;
 };
 
 export function pickMetrics(result: ReplayResult): LabMetrics {
@@ -18,6 +20,8 @@ export function pickMetrics(result: ReplayResult): LabMetrics {
     buyHoldReturnPct: result.buyHoldReturnPct,
     winRate: result.winRate,
     tradeCount: result.tradeCount,
+    sharpeRatio: result.sharpeRatio,
+    calmarRatio: result.calmarRatio,
   };
 }
 

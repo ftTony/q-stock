@@ -48,7 +48,7 @@ export function TopToast({
 
   return createPortal(
     <div
-      className="pointer-events-none fixed inset-x-0 top-16 z-[60] flex justify-center px-4 sm:top-[4.25rem]"
+      className="pointer-events-none fixed inset-x-0 top-16 z-[80] flex justify-center px-4 sm:top-[4.25rem]"
       role="status"
       aria-live="polite"
     >

@@ -29,9 +29,59 @@ export type ReplayResult = {
   winRate: number | null;
   avgWinLossRatio: number | null;
   buyHoldReturnPct: number;
+  /** Annualized Sharpe from daily equity returns; rf = 0, 252 trading days. */
+  sharpeRatio: number | null;
+  /** CAGR / max drawdown (decimal); null if drawdown ≈ 0. */
+  calmarRatio: number | null;
   trades: ReplayTrade[];
   equityCurve: Array<{ t: number; equity: number; buyHold: number }>;
 };
+
+const TRADING_DAYS = 252;
+
+/** Daily-equity Sharpe (rf=0) and Calmar from curve + terminal stats. */
+export function riskRatios(opts: {
+  equity: number[];
+  times: number[];
+  initialCash: number;
+  finalEquity: number;
+  maxDrawdownPct: number;
+}): { sharpeRatio: number | null; calmarRatio: number | null } {
+  const { equity, times, initialCash, finalEquity, maxDrawdownPct } = opts;
+  const rets: number[] = [];
+  for (let i = 1; i < equity.length; i++) {
+    const prev = equity[i - 1]!;
+    const cur = equity[i]!;
+    if (prev > 0) rets.push(cur / prev - 1);
+  }
+
+  let sharpeRatio: number | null = null;
+  if (rets.length >= 2) {
+    const mean = rets.reduce((a, b) => a + b, 0) / rets.length;
+    let varSum = 0;
+    for (const r of rets) varSum += (r - mean) ** 2;
+    const std = Math.sqrt(varSum / (rets.length - 1));
+    if (std > 1e-12) {
+      sharpeRatio = (mean / std) * Math.sqrt(TRADING_DAYS);
+    }
+  }
+
+  let calmarRatio: number | null = null;
+  const dd = maxDrawdownPct / 100;
+  if (dd > 1e-8 && initialCash > 0 && finalEquity > 0 && times.length >= 2) {
+    const ms = times[times.length - 1]! - times[0]!;
+    const years = Math.max(ms / (365.25 * 86_400_000), 1 / TRADING_DAYS);
+    const cagr = (finalEquity / initialCash) ** (1 / years) - 1;
+    calmarRatio = cagr / dd;
+  }
+
+  return {
+    sharpeRatio:
+      sharpeRatio != null && Number.isFinite(sharpeRatio) ? sharpeRatio : null,
+    calmarRatio:
+      calmarRatio != null && Number.isFinite(calmarRatio) ? calmarRatio : null,
+  };
+}
 
 export type ReplayAssumptions = {
   fill: "signal_close";
@@ -290,6 +340,14 @@ export function runReplay(
   const avgWinLossRatio =
     avgLoss > 0 ? avgWin / avgLoss : wins.length ? null : null;
 
+  const { sharpeRatio, calmarRatio } = riskRatios({
+    equity: equityCurve.map((p) => p.equity),
+    times: equityCurve.map((p) => p.t),
+    initialCash: assumptions.initialCash,
+    finalEquity,
+    maxDrawdownPct: maxDd,
+  });
+
   return {
     initialCash: assumptions.initialCash,
     finalEquity,
@@ -299,6 +357,8 @@ export function runReplay(
     winRate,
     avgWinLossRatio,
     buyHoldReturnPct,
+    sharpeRatio,
+    calmarRatio,
     trades,
     equityCurve,
   };

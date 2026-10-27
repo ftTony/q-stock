@@ -1,14 +1,37 @@
 "use client";
 
-import { useRef } from "react";
-import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-  BlockAccentText,
-  BlockFlowArrow,
-  StrategyRulesBlockCard,
-} from "@/components/strategy/strategy-rules-block-card";
+  Background,
+  BackgroundVariant,
+  Controls,
+  MiniMap,
+  ReactFlow,
+  ReactFlowProvider,
+  MarkerType,
+  addEdge,
+  useEdgesState,
+  useNodesState,
+  type Connection,
+  type Node,
+  type OnNodeDrag,
+  type XYPosition,
+} from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
+import { useTranslations } from "next-intl";
 import { StrategyRulesBlockEditModal } from "@/components/strategy/strategy-rules-block-edit-modal";
 import { defaultClause } from "@/components/strategy/strategy-rules-clause-card";
+import {
+  StrategyAddFlowNode,
+  StrategyBlockFlowNode,
+} from "@/components/strategy/strategy-rules-flow-nodes";
+import {
+  buildFlowElements,
+  moveClause,
+  parseListNodeId,
+  rulesLayoutKey,
+  type BlockNodeData,
+} from "@/components/strategy/strategy-rules-flow-model";
 import {
   clauseSentenceParts,
   sizingSentenceParts,
@@ -37,32 +60,20 @@ const EXIT_TYPES: RuleClause["type"][] = [
   "price_vs_ma",
 ];
 
-/** Building-block canvas for StrategyRules (entry / exit / sizing). */
-export function StrategyRulesEditor({ value, disabled, onChange }: Props) {
+const nodeTypes = {
+  block: StrategyBlockFlowNode,
+  add: StrategyAddFlowNode,
+};
+
+function StrategyRulesFlowCanvas({ value, disabled, onChange }: Props) {
   const t = useTranslations("strategies");
-  const dragRef = useRef<null | { list: "entry" | "exit"; index: number }>(
-    null,
-  );
   const edit = useStrategyBlocksStore((s) => s.edit);
   const openEdit = useStrategyBlocksStore((s) => s.openEdit);
   const closeEdit = useStrategyBlocksStore((s) => s.closeEdit);
 
-  function patch(partial: Partial<StrategyRules>) {
-    onChange({ ...value, ...partial });
-  }
-
-  function updateList(list: "entry" | "exit", next: RuleClause[]) {
-    patch({ [list]: next });
-  }
-
-  function reorder(list: "entry" | "exit", from: number, to: number) {
-    if (from === to) return;
-    const arr = [...value[list]];
-    const [item] = arr.splice(from, 1);
-    if (!item) return;
-    arr.splice(to, 0, item);
-    updateList(list, arr);
-  }
+  const [positions, setPositions] = useState<Record<string, XYPosition>>({});
+  const layoutKeyRef = useRef("");
+  const layoutKey = rulesLayoutKey(value);
 
   const marketLabel =
     value.market === "hk"
@@ -73,6 +84,130 @@ export function StrategyRulesEditor({ value, disabled, onChange }: Props) {
           ? t("marketCrypto")
           : t("marketStock");
 
+  const labels = useMemo(
+    () => ({
+      startTitle: t("blockStartTitle"),
+      startBody: t("blockStartBody"),
+      market: marketLabel,
+      addEntry: t("rulesAddEntry"),
+      addExit: t("rulesAddExit"),
+      sizingTitle: t("rulesSizing"),
+      entryAnd: t("rulesEntryHint"),
+      exitOr: t("rulesExitHint"),
+      clauseTitle: (c: RuleClause) =>
+        t(`clauseType_${c.type}` as "clauseType_ma_cross"),
+      clauseParts: (c: RuleClause) =>
+        clauseSentenceParts(c, (k) => t(k as "blockSentMa1")),
+      sizingParts: sizingSentenceParts(value.sizing, (k) =>
+        t(k as "blockSentSizeCap"),
+      ),
+    }),
+    [t, marketLabel, value.sizing],
+  );
+
+  const built = useMemo(
+    () =>
+      buildFlowElements({
+        rules: value,
+        positions,
+        labels,
+        disabled,
+      }),
+    [value, positions, labels, disabled],
+  );
+
+  const [nodes, setNodes, onNodesChange] = useNodesState(built.nodes);
+  const [edges, setEdges, onEdgesChange] = useEdgesState(built.edges);
+
+  useEffect(() => {
+    if (layoutKeyRef.current && layoutKeyRef.current !== layoutKey) {
+      // Structure changed — drop stale positions for removed ids.
+      setPositions((prev) => {
+        const keep = new Set(built.nodes.map((n) => n.id));
+        const next: Record<string, XYPosition> = {};
+        for (const [id, p] of Object.entries(prev)) {
+          if (keep.has(id)) next[id] = p;
+        }
+        return next;
+      });
+    }
+    layoutKeyRef.current = layoutKey;
+    setNodes(built.nodes);
+    setEdges(built.edges);
+  }, [built, layoutKey, setNodes, setEdges]);
+
+  function patch(partial: Partial<StrategyRules>) {
+    onChange({ ...value, ...partial });
+  }
+
+  function updateList(list: "entry" | "exit", next: RuleClause[]) {
+    patch({ [list]: next });
+  }
+
+  const onNodeDragStop: OnNodeDrag = useCallback((_e, node) => {
+    setPositions((prev) => ({
+      ...prev,
+      [node.id]: { ...node.position },
+    }));
+  }, []);
+
+  const onConnect = useCallback(
+    (conn: Connection) => {
+      if (disabled || !conn.source || !conn.target) return;
+      const src = parseListNodeId(conn.source);
+      const tgt = parseListNodeId(conn.target);
+      // Same-lane reconnect → reorder clauses (source of truth stays StrategyRules).
+      if (src && tgt && src.list === tgt.list && src.index !== tgt.index) {
+        updateList(
+          src.list,
+          moveClause(value[src.list], src.index, tgt.index),
+        );
+        return;
+      }
+      setEdges((eds) =>
+        addEdge(
+          {
+            ...conn,
+            type: "smoothstep",
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              width: 14,
+              height: 14,
+              color: "var(--border)",
+            },
+            style: { stroke: "var(--border)", strokeWidth: 1.5 },
+          },
+          eds,
+        ),
+      );
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- value lists via closure
+    [disabled, value.entry, value.exit],
+  );
+
+  const onNodeClick = useCallback(
+    (_: React.MouseEvent, node: Node) => {
+      if (disabled) return;
+      if (node.id === "add-entry") {
+        updateList("entry", [...value.entry, defaultClause("ma_cross")]);
+        return;
+      }
+      if (node.id === "add-exit") {
+        updateList("exit", [...value.exit, defaultClause("stop_pct")]);
+        return;
+      }
+      if (node.id === "sizing") {
+        openEdit({ kind: "sizing" });
+        return;
+      }
+      if (node.id === "start") return;
+      const parsed = parseListNodeId(node.id);
+      if (parsed) openEdit({ kind: parsed.list, index: parsed.index });
+    },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [disabled, value.entry, value.exit, openEdit],
+  );
+
   const editingClause =
     edit?.kind === "entry"
       ? value.entry[edit.index]
@@ -82,161 +217,52 @@ export function StrategyRulesEditor({ value, disabled, onChange }: Props) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
-      <div
-        className="relative min-h-[min(68dvh,640px)] flex-1 overflow-auto rounded-md border border-[var(--border)] bg-[var(--surface-2)]/25 qt-scroll"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--border) 70%, transparent) 1px, transparent 0)",
-          backgroundSize: "16px 16px",
-        }}
-      >
-        <div className="flex min-h-full min-w-max flex-col justify-center gap-8 p-5 sm:gap-10 sm:p-7">
-          {/* Row 1: Start → Entry blocks */}
-          <div className="flex items-stretch gap-0">
-            <StrategyRulesBlockCard
-              tone="start"
-              title={t("blockStartTitle")}
-              disabled
-            >
-              <BlockAccentText
-                parts={[
-                  { text: t("blockStartBody") },
-                  { text: marketLabel, accent: true },
-                ]}
-              />
-            </StrategyRulesBlockCard>
-            <BlockFlowArrow />
-
-            {value.entry.map((c, i) => (
-              <div key={`entry-${i}-${c.type}`} className="flex items-stretch">
-                {i > 0 ? (
-                  <BlockFlowArrow label={t("rulesEntryHint")} />
-                ) : null}
-                <StrategyRulesBlockCard
-                  tone="entry"
-                  title={t(`clauseType_${c.type}` as "clauseType_ma_cross")}
-                  disabled={disabled}
-                  draggable={!disabled}
-                  onDragStart={() => {
-                    dragRef.current = { list: "entry", index: i };
-                  }}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={() => {
-                    const from = dragRef.current;
-                    dragRef.current = null;
-                    if (!from || from.list !== "entry") return;
-                    reorder("entry", from.index, i);
-                  }}
-                  onClick={() =>
-                    !disabled && openEdit({ kind: "entry", index: i })
-                  }
-                >
-                  <BlockAccentText
-                    parts={clauseSentenceParts(c, (k) =>
-                      t(k as "blockSentMa1"),
-                    )}
-                  />
-                </StrategyRulesBlockCard>
-              </div>
-            ))}
-
-            {!disabled && value.entry.length < 6 ? (
-              <>
-                <BlockFlowArrow />
-                <button
-                  type="button"
-                  onClick={() =>
-                    updateList("entry", [
-                      ...value.entry,
-                      defaultClause("ma_cross"),
-                    ])
-                  }
-                  className="flex h-auto w-[120px] shrink-0 items-center justify-center self-center rounded-md border border-dashed border-[var(--border)] bg-[var(--panel)]/60 px-2 py-6 text-[12px] text-[var(--brand-text)] hover:border-[var(--brand)]"
-                >
-                  + {t("rulesAddEntry")}
-                </button>
-              </>
-            ) : null}
-          </div>
-
-          {/* Row 2: Exit blocks */}
-          <div className="flex items-stretch gap-0 pl-8">
-            <div className="mr-2 flex w-6 shrink-0 flex-col items-center self-stretch">
-              <div className="w-px flex-1 bg-[var(--border)]" />
-              <span className="py-1 text-[9px] text-[var(--muted)]">
-                {t("rulesExitHint")}
-              </span>
-              <div className="w-px flex-1 bg-[var(--border)]" />
-            </div>
-
-            {value.exit.map((c, i) => (
-              <div key={`exit-${i}-${c.type}`} className="flex items-stretch">
-                {i > 0 ? (
-                  <BlockFlowArrow label={t("blockOr")} />
-                ) : null}
-                <StrategyRulesBlockCard
-                  tone="exit"
-                  title={t(`clauseType_${c.type}` as "clauseType_ma_cross")}
-                  disabled={disabled}
-                  draggable={!disabled}
-                  onDragStart={() => {
-                    dragRef.current = { list: "exit", index: i };
-                  }}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={() => {
-                    const from = dragRef.current;
-                    dragRef.current = null;
-                    if (!from || from.list !== "exit") return;
-                    reorder("exit", from.index, i);
-                  }}
-                  onClick={() =>
-                    !disabled && openEdit({ kind: "exit", index: i })
-                  }
-                >
-                  <BlockAccentText
-                    parts={clauseSentenceParts(c, (k) =>
-                      t(k as "blockSentMa1"),
-                    )}
-                  />
-                </StrategyRulesBlockCard>
-              </div>
-            ))}
-
-            {!disabled && value.exit.length < 6 ? (
-              <>
-                <BlockFlowArrow />
-                <button
-                  type="button"
-                  onClick={() =>
-                    updateList("exit", [
-                      ...value.exit,
-                      defaultClause("stop_pct"),
-                    ])
-                  }
-                  className="flex h-auto w-[120px] shrink-0 items-center justify-center self-center rounded-md border border-dashed border-[var(--border)] bg-[var(--panel)]/60 px-2 py-6 text-[12px] text-[var(--brand-text)] hover:border-[var(--brand)]"
-                >
-                  + {t("rulesAddExit")}
-                </button>
-              </>
-            ) : null}
-          </div>
-
-          {/* Row 3: Sizing */}
-          <div className="flex items-stretch gap-0 pl-8">
-            <StrategyRulesBlockCard
-              tone="sizing"
-              title={t("rulesSizing")}
-              disabled={disabled}
-              onClick={() => !disabled && openEdit({ kind: "sizing" })}
-            >
-              <BlockAccentText
-                parts={sizingSentenceParts(value.sizing, (k) =>
-                  t(k as "blockSentSizeCap"),
-                )}
-              />
-            </StrategyRulesBlockCard>
-          </div>
-        </div>
+      <div className="relative min-h-[min(68dvh,640px)] flex-1 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)]/25">
+        <ReactFlow
+          nodes={nodes}
+          edges={edges}
+          onNodesChange={disabled ? undefined : onNodesChange}
+          onEdgesChange={disabled ? undefined : onEdgesChange}
+          onConnect={onConnect}
+          onNodeDragStop={onNodeDragStop}
+          onNodeClick={onNodeClick}
+          nodeTypes={nodeTypes}
+          fitView
+          fitViewOptions={{ padding: 0.2 }}
+          minZoom={0.4}
+          maxZoom={1.6}
+          nodesDraggable={!disabled}
+          nodesConnectable={!disabled}
+          elementsSelectable
+          proOptions={{ hideAttribution: true }}
+          defaultEdgeOptions={{
+            type: "smoothstep",
+            markerEnd: {
+              type: MarkerType.ArrowClosed,
+              width: 14,
+              height: 14,
+              color: "var(--border)",
+            },
+            style: { stroke: "var(--border)", strokeWidth: 1.5 },
+          }}
+        >
+          <Background
+            variant={BackgroundVariant.Dots}
+            gap={16}
+            size={1}
+            color="color-mix(in srgb, var(--border) 70%, transparent)"
+          />
+          <Controls
+            showInteractive={false}
+            className="!shadow-sm !border-[var(--border)] !bg-[var(--panel)]"
+          />
+          <MiniMap
+            pannable
+            zoomable
+            className="!border-[var(--border)] !bg-[var(--panel)]"
+            maskColor="color-mix(in srgb, var(--foreground) 8%, transparent)"
+          />
+        </ReactFlow>
       </div>
 
       <p className="text-[10px] text-[var(--muted)]">{t("rulesBlocksHint")}</p>
@@ -245,9 +271,7 @@ export function StrategyRulesEditor({ value, disabled, onChange }: Props) {
         open={edit?.kind === "entry" || edit?.kind === "exit"}
         title={
           editingClause
-            ? t(
-                `clauseType_${editingClause.type}` as "clauseType_ma_cross",
-              )
+            ? t(`clauseType_${editingClause.type}` as "clauseType_ma_cross")
             : t("rules")
         }
         clause={editingClause}
@@ -285,5 +309,14 @@ export function StrategyRulesEditor({ value, disabled, onChange }: Props) {
         onSizingChange={(sizing) => patch({ sizing })}
       />
     </div>
+  );
+}
+
+/** Building-block canvas — draggable nodes with connectable edges. */
+export function StrategyRulesEditor(props: Props) {
+  return (
+    <ReactFlowProvider>
+      <StrategyRulesFlowCanvas {...props} />
+    </ReactFlowProvider>
   );
 }
