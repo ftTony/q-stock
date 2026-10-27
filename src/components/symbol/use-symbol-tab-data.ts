@@ -14,6 +14,7 @@ import type {
   SymbolTab,
 } from "@/components/symbol/symbol-tabs-panel";
 import type { SymbolSentiment } from "@/components/symbol/symbol-sentiment-chip";
+import type { EarningsStatement } from "@/lib/earnings/types";
 import type { AssetType } from "@/lib/types";
 
 const TAB_LOADING: ReadonlySet<SymbolTab> = new Set([
@@ -30,6 +31,9 @@ type State = {
   earningsUpcoming: EarningsCalendarRow[];
   earningsRecent: EarningsCalendarRow[];
   earningsMetrics: EarningsMetric[];
+  earningsStatement: EarningsStatement | null;
+  earningsBalance: EarningsStatement | null;
+  earningsCashflow: EarningsStatement | null;
   earningsLoading: boolean;
   press: PressRow[];
   comments: CommentRow[];
@@ -52,6 +56,9 @@ type Action =
       upcoming: EarningsCalendarRow[];
       recent: EarningsCalendarRow[];
       metrics: EarningsMetric[];
+      statement: EarningsStatement | null;
+      balance: EarningsStatement | null;
+      cashflow: EarningsStatement | null;
       degraded: boolean;
     }
   | { type: "set-earnings-metrics"; metrics: EarningsMetric[] }
@@ -71,6 +78,9 @@ const INITIAL_STATE: State = {
   earningsUpcoming: [],
   earningsRecent: [],
   earningsMetrics: [],
+  earningsStatement: null,
+  earningsBalance: null,
+  earningsCashflow: null,
   earningsLoading: false,
   press: [],
   comments: [],
@@ -100,6 +110,9 @@ function reducer(state: State, action: Action): State {
         earningsUpcoming: action.upcoming,
         earningsRecent: action.recent,
         earningsMetrics: action.metrics,
+        earningsStatement: action.statement,
+        earningsBalance: action.balance,
+        earningsCashflow: action.cashflow,
         degraded: state.degraded || action.degraded,
       };
     case "set-earnings-metrics":
@@ -165,6 +178,9 @@ export function useSymbolTabData({
         upcoming: result.calendar?.upcoming ?? [],
         recent: result.calendar?.recent ?? [],
         metrics: result.metrics ?? [],
+        statement: result.statement ?? null,
+        balance: result.balance ?? null,
+        cashflow: result.cashflow ?? null,
         degraded: Boolean(result.degraded),
       });
       earningsLoadedRef.current = true;
@@ -202,6 +218,9 @@ export function useSymbolTabData({
             upcoming: [],
             recent: [],
             metrics: [],
+            statement: null,
+            balance: null,
+            cashflow: null,
             degraded: false,
           });
           dispatch({
@@ -231,6 +250,9 @@ export function useSymbolTabData({
                   upcoming: result.calendar?.upcoming ?? [],
                   recent: result.calendar?.recent ?? [],
                   metrics: result.metrics ?? [],
+                  statement: result.statement ?? null,
+                  balance: result.balance ?? null,
+                  cashflow: result.cashflow ?? null,
                   degraded: Boolean(result.degraded),
                 });
                 earningsLoadedRef.current = true;

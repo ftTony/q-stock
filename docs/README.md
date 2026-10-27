@@ -29,6 +29,7 @@
 | [排障手册](./troubleshooting.md) | 启动、行情、鉴权、提醒排错 |
 | [Longbridge 网页交易端技术整理](./longbridge-web-trade-tech.md) | 外部参考：trade.longbridge.com 技术观察 |
 | [金融图表常用技术](./financial-chart-tech.md) | K 线选型与渲染参考 |
+| [图表 Canvas vs SVG](./chart-canvas-vs-svg.md) | 主图/附属图渲染选型与项目对照 |
 
 快速入口：复制 [.env.example](../.env.example) → `.env`，再按《启动与环境》启动。根目录 [README](../README.md) 含功能总览与三语版本。
 

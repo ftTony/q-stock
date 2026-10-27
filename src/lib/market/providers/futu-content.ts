@@ -1,4 +1,5 @@
 import { cachedFetch } from "@/lib/cache";
+import { buildStatementFromReports } from "@/lib/earnings/from-reports";
 import {
   futuRequest,
   isFutuConfigured,
@@ -6,6 +7,11 @@ import {
 import { normalizeSymbol, toFutuSymbol } from "@/lib/market/symbols";
 import type { AssetType } from "@/lib/types";
 import type { LongbridgeEarningsBundle } from "@/lib/market/providers/longbridge-content";
+
+/** Futu FinancialStatementsType: 1 Income, 2 Balance, 3 CashFlow, 4 MainIndex. */
+const FUTU_STMT_BALANCE = 2;
+const FUTU_STMT_CASHFLOW = 3;
+const FUTU_STMT_MAIN = 4;
 
 /** Soft-fail Futu content calls (-10 no_data, network, etc.). */
 async function softFutu<T>(fn: () => Promise<T>, fallback: T): Promise<T> {
@@ -315,48 +321,62 @@ export async function getFutuEarnings(
 
   const normalized = normalizeSymbol(symbol, assetType);
   const code = toFutuSymbol(normalized, assetType);
-  const key = `futu:earnings:v1:${normalized}`;
+  const key = `futu:earnings:v3:${normalized}`;
 
   return softFutu(
     () =>
       cachedFetch(key, 300_000, async () => {
         const pathBase = `/api/v1.0/quote/${encodeURIComponent(code)}`;
 
-        const [stmtRes, histRes, snapRes] = await Promise.all([
+        const fetchStmt = (statementType: number) =>
           softFutu(
             () =>
-              futuRequest<{ report_list?: StmtReport[] }>("GET", `${pathBase}/financials/statements`, {
-                query: { statement_type: 4, limit: 12 },
-              }),
-            { data: { report_list: [] } },
-          ),
-          softFutu(
-            () =>
-              futuRequest<{ records?: EarnHistRow[] }>(
+              futuRequest<{ report_list?: StmtReport[] }>(
                 "GET",
-                `${pathBase}/financials/earnings-price-history`,
+                `${pathBase}/financials/statements`,
+                { query: { statement_type: statementType, limit: 12 } },
               ),
-            { data: { records: [] } },
-          ),
-          softFutu(
-            () =>
-              futuRequest<{
-                snapshot_list?: Array<{
-                  pe_ratio?: number;
-                  pe_ttm_ratio?: number;
-                  pb_ratio?: number;
-                  highest52weeks_price?: number;
-                  lowest52weeks_price?: number;
-                  total_market_val?: number;
-                }>;
-              }>("POST", "/api/v1.0/quote/snapshot", {
-                body: { code_list: [code] },
-              }),
-            { data: { snapshot_list: [] } },
-          ),
-        ]);
+            { data: { report_list: [] } },
+          );
+
+        const [stmtRes, balanceRes, cashflowRes, histRes, snapRes] =
+          await Promise.all([
+            fetchStmt(FUTU_STMT_MAIN),
+            fetchStmt(FUTU_STMT_BALANCE),
+            fetchStmt(FUTU_STMT_CASHFLOW),
+            softFutu(
+              () =>
+                futuRequest<{ records?: EarnHistRow[] }>(
+                  "GET",
+                  `${pathBase}/financials/earnings-price-history`,
+                ),
+              { data: { records: [] } },
+            ),
+            softFutu(
+              () =>
+                futuRequest<{
+                  snapshot_list?: Array<{
+                    pe_ratio?: number;
+                    pe_ttm_ratio?: number;
+                    pb_ratio?: number;
+                    highest52weeks_price?: number;
+                    lowest52weeks_price?: number;
+                    total_market_val?: number;
+                  }>;
+                }>("POST", "/api/v1.0/quote/snapshot", {
+                  body: { code_list: [code] },
+                }),
+              { data: { snapshot_list: [] } },
+            ),
+          ]);
 
         const reports = stmtRes.data.report_list ?? [];
+        const balance = buildStatementFromReports(
+          balanceRes.data.report_list ?? [],
+        );
+        const cashflow = buildStatementFromReports(
+          cashflowRes.data.report_list ?? [],
+        );
         const metrics: { key: string; value: number | null }[] = [];
         const latest = reports[0];
         if (latest?.item_list) {
@@ -408,6 +428,7 @@ export async function getFutuEarnings(
           const period =
             r.period_text ||
             (year && quarter ? `${year}-Q${quarter}` : String(year || ""));
+          // Do not map item.yoy → surprisePercent: YoY ≠ EPS surprise vs estimate.
           surprises.push({
             actual,
             estimate: null,
@@ -415,9 +436,7 @@ export async function getFutuEarnings(
             quarter,
             year,
             surprise: null,
-            surprisePercent: Number.isFinite(Number(epsItem?.yoy))
-              ? Number(epsItem?.yoy)
-              : null,
+            surprisePercent: null,
           });
         }
 
@@ -454,7 +473,9 @@ export async function getFutuEarnings(
           !metrics.length &&
           !surprises.length &&
           !recent.length &&
-          !upcoming.length
+          !upcoming.length &&
+          !balance &&
+          !cashflow
         ) {
           return null;
         }
@@ -466,6 +487,8 @@ export async function getFutuEarnings(
             recent: recent.slice(0, 8),
           },
           metrics,
+          balance: balance ?? null,
+          cashflow: cashflow ?? null,
         };
       }),
     null,

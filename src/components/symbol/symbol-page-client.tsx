@@ -315,6 +315,9 @@ export function SymbolPageClient({
                 earningsUpcoming={s.earningsUpcoming}
                 earningsRecent={s.earningsRecent}
                 earningsMetrics={s.earningsMetrics}
+                earningsStatement={s.earningsStatement}
+                earningsBalance={s.earningsBalance}
+                earningsCashflow={s.earningsCashflow}
                 earningsLoading={s.earningsLoading}
                 earningsCryptoNa={s.tEarnings("cryptoNa")}
                 company={s.company}

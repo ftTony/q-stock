@@ -1,4 +1,5 @@
 import { cachedFetch } from "@/lib/cache";
+import { buildStatementFromLbReport } from "@/lib/earnings/from-longbridge-report";
 import { toLongbridgeSymbol, normalizeSymbol } from "@/lib/market/symbols";
 import type { AssetType } from "@/lib/types";
 import {
@@ -7,6 +8,7 @@ import {
   getQuoteCtx,
   hasLongbridgeCreds,
   lbLanguage,
+  loadLb,
   strOrUndef,
 } from "@/lib/market/providers/longbridge-client";
 
@@ -243,6 +245,9 @@ export type LongbridgeEarningsBundle = {
     }[];
   };
   metrics: { key: string; value: number | null }[];
+  /** Optional multi-period statements (Futu etc.). */
+  balance?: import("@/lib/earnings/types").EarningsStatement | null;
+  cashflow?: import("@/lib/earnings/types").EarningsStatement | null;
 };
 
 function numOrNull(v: string | number | null | undefined): number | null {
@@ -303,19 +308,26 @@ export async function getLongbridgeEarnings(
 
   const normalized = normalizeSymbol(symbol, assetType);
   const lbSym = toLongbridgeSymbol(normalized, assetType);
-  // v3: also fill marketCap from staticInfo
-  const key = `lb:earnings:v3:${assetType}:${normalized}`;
+  // v4: financialReport → balance / cashflow statements
+  const key = `lb:earnings:v4:${assetType}:${normalized}`;
 
   return cachedFetch(key, 600_000, async () => {
-    const fund = await getFundamentalCtx();
-    const quoteCtx = await getQuoteCtx();
+    const [fund, quoteCtx, lb] = await Promise.all([
+      getFundamentalCtx(),
+      getQuoteCtx(),
+      loadLb(),
+    ]);
 
-    const [valuationRes, consensusRes, staticRes, quoteRes] =
+    const reportKind = lb.FinancialReportKind.All;
+    const reportPeriod = lb.FinancialReportPeriod.QuarterlyFull;
+
+    const [valuationRes, consensusRes, staticRes, quoteRes, reportRes] =
       await Promise.allSettled([
         fund.valuation(lbSym),
         fund.consensus(lbSym),
         quoteCtx.staticInfo([lbSym]),
         quoteCtx.quote([lbSym]),
+        fund.financialReport(lbSym, reportKind, reportPeriod),
       ]);
 
     if (valuationRes.status === "rejected") {
@@ -323,6 +335,9 @@ export async function getLongbridgeEarnings(
     }
     if (consensusRes.status === "rejected") {
       console.warn("[longbridge] consensus", consensusRes.reason);
+    }
+    if (reportRes.status === "rejected") {
+      console.warn("[longbridge] financialReport", reportRes.reason);
     }
 
     const metrics: { key: string; value: number | null }[] = [];
@@ -432,7 +447,39 @@ export async function getLongbridgeEarnings(
       a.year !== b.year ? b.year - a.year : b.quarter - a.quarter,
     );
 
-    if (!metrics.length && !surprises.length && !upcoming.length && !recent.length) {
+    let balance = null;
+    let cashflow = null;
+    if (reportRes.status === "fulfilled") {
+      const list = reportRes.value?.list;
+      balance = buildStatementFromLbReport(list, "BS");
+      cashflow = buildStatementFromLbReport(list, "CF");
+      // QuarterlyFull empty → try Annual once
+      if (!balance && !cashflow) {
+        try {
+          const annual = await fund.financialReport(
+            lbSym,
+            reportKind,
+            lb.FinancialReportPeriod.Annual,
+          );
+          balance = buildStatementFromLbReport(annual?.list, "BS");
+          cashflow = buildStatementFromLbReport(annual?.list, "CF");
+        } catch (err) {
+          console.warn(
+            "[longbridge] financialReport annual",
+            err instanceof Error ? err.message : err,
+          );
+        }
+      }
+    }
+
+    if (
+      !metrics.length &&
+      !surprises.length &&
+      !upcoming.length &&
+      !recent.length &&
+      !balance &&
+      !cashflow
+    ) {
       return null;
     }
 
@@ -443,6 +490,8 @@ export async function getLongbridgeEarnings(
         recent: recent.slice(0, 8),
       },
       metrics,
+      balance,
+      cashflow,
     };
   });
 }

@@ -16,6 +16,7 @@ import type {
   SymbolTab,
 } from "@/components/symbol/symbol-tabs-types";
 import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
+import type { EarningsStatement } from "@/lib/earnings/types";
 import type { AssetType } from "@/lib/types";
 
 export type {
@@ -51,6 +52,9 @@ type Props = {
   earningsUpcoming: EarningsCalendarRow[];
   earningsRecent: EarningsCalendarRow[];
   earningsMetrics: EarningsMetric[];
+  earningsStatement: EarningsStatement | null;
+  earningsBalance: EarningsStatement | null;
+  earningsCashflow: EarningsStatement | null;
   earningsLoading: boolean;
   earningsCryptoNa: string;
   company: CompanyProfile | null;
@@ -105,6 +109,9 @@ export function SymbolTabsPanel({
   earningsUpcoming,
   earningsRecent,
   earningsMetrics,
+  earningsStatement,
+  earningsBalance,
+  earningsCashflow,
   earningsLoading,
   earningsCryptoNa,
   company,
@@ -185,6 +192,9 @@ export function SymbolTabsPanel({
           earningsUpcoming={earningsUpcoming}
           earningsRecent={earningsRecent}
           earningsMetrics={earningsMetrics}
+          earningsStatement={earningsStatement}
+          earningsBalance={earningsBalance}
+          earningsCashflow={earningsCashflow}
           earningsLoading={earningsLoading}
           earningsCryptoNa={earningsCryptoNa}
           company={company}

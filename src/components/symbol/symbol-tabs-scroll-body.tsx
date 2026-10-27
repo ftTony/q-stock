@@ -41,6 +41,9 @@ export function SymbolTabsScrollBody({
   earningsUpcoming,
   earningsRecent,
   earningsMetrics,
+  earningsStatement,
+  earningsBalance,
+  earningsCashflow,
   earningsLoading,
   earningsCryptoNa,
   company,
@@ -140,6 +143,9 @@ export function SymbolTabsScrollBody({
                 earningsUpcoming={earningsUpcoming}
                 earningsRecent={earningsRecent}
                 earningsMetrics={earningsMetrics}
+                earningsStatement={earningsStatement}
+                earningsBalance={earningsBalance}
+                earningsCashflow={earningsCashflow}
                 earningsLoading={earningsLoading}
                 degraded={degraded}
                 company={company}

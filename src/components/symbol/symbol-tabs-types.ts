@@ -6,6 +6,7 @@ import type {
   EarningsSurprise,
 } from "@/components/market/earnings-panel";
 import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
+import type { EarningsStatement } from "@/lib/earnings/types";
 import type { AssetType } from "@/lib/types";
 
 export type SymbolTab =
@@ -65,6 +66,9 @@ export type SymbolTabsScrollBodyProps = {
   earningsUpcoming: EarningsCalendarRow[];
   earningsRecent: EarningsCalendarRow[];
   earningsMetrics: EarningsMetric[];
+  earningsStatement: EarningsStatement | null;
+  earningsBalance: EarningsStatement | null;
+  earningsCashflow: EarningsStatement | null;
   earningsLoading: boolean;
   earningsCryptoNa: string;
   company: CompanyProfile | null;

@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { EarningsCharts } from "@/components/market/earnings-charts";
 import { formatNumber } from "@/lib/format-number";
+import type { EarningsStatement } from "@/lib/earnings/types";
 
 export type EarningsSurprise = {
   actual: number | null;
@@ -93,20 +94,26 @@ function hourLabel(hour: string, t: (key: string) => string): string {
   return hour || "-";
 }
 
+export type EarningsPanelView = "all" | "metrics" | "income" | "calendar";
+
 export function EarningsPanel({
   surprises,
   upcoming,
   recent,
   metrics,
+  statement,
   degraded,
   loading,
+  view = "all",
 }: {
   surprises: EarningsSurprise[];
   upcoming: EarningsCalendarRow[];
   recent: EarningsCalendarRow[];
   metrics: EarningsMetric[];
+  statement?: EarningsStatement | null;
   degraded?: boolean;
   loading?: boolean;
+  view?: EarningsPanelView;
 }) {
   const t = useTranslations("earnings");
   const tCommon = useTranslations("common");
@@ -116,12 +123,16 @@ export function EarningsPanel({
   }
 
   const knownMetrics = metrics.filter((m) => METRIC_LABEL_KEYS[m.key]);
+  const showMetrics = view === "all" || view === "metrics";
+  const showIncome = view === "all" || view === "income";
+  const showCalendar = view === "all" || view === "calendar";
 
   const empty =
     surprises.length === 0 &&
     upcoming.length === 0 &&
     recent.length === 0 &&
-    knownMetrics.length === 0;
+    knownMetrics.length === 0 &&
+    !statement;
 
   if (empty) {
     return (
@@ -129,6 +140,10 @@ export function EarningsPanel({
         {degraded ? tCommon("degraded") : t("empty")}
       </p>
     );
+  }
+
+  if (view === "metrics" && knownMetrics.length === 0) {
+    return <p className="aw-caption">{t("empty")}</p>;
   }
 
   const sectionTitle =
@@ -142,22 +157,45 @@ export function EarningsPanel({
 
   return (
     <div className="space-y-6">
-      <EarningsCharts
-        surprises={surprises}
-        recent={recent}
-        labels={{
-          chartEps: t("chartEps"),
-          chartSurprise: t("chartSurprise"),
-          chartRevenue: t("chartRevenue"),
-          actual: t("epsActual"),
-          estimate: t("epsEst"),
-        }}
-      />
+      {showIncome ? (
+        <EarningsCharts
+          surprises={surprises}
+          recent={recent}
+          statement={statement}
+          labels={{
+            chartEps: t("chartEps"),
+            chartSurprise: t("chartSurprise"),
+            actual: t("epsActual"),
+            estimate: t("epsEst"),
+            statementTitle: t("statementTitle"),
+            showYoy: t("showYoy"),
+            hideYoy: t("hideYoy"),
+            collapseChart: t("collapseChart"),
+            expandChart: t("expandChart"),
+            currency: t("currencyNote"),
+            yoy: t("yoy"),
+            rowRevenue: t("rowRevenue"),
+            rowEps: t("rowEps"),
+            rowGrossMargin: t("rowGrossMargin"),
+            rowOpMargin: t("rowOpMargin"),
+            rowNetMargin: t("rowNetMargin"),
+            rowRoe: t("rowRoe"),
+          }}
+        />
+      ) : null}
 
-      {knownMetrics.length > 0 && (
+      {showMetrics && knownMetrics.length > 0 && (
         <section>
-          <h3 className={sectionTitle}>{t("metrics")}</h3>
-          <div className="grid grid-cols-2 gap-x-6 gap-y-3.5 border-t border-[var(--aw-hairline,var(--border))] pt-3 sm:grid-cols-3 lg:grid-cols-4">
+          {view === "all" ? (
+            <h3 className={sectionTitle}>{t("metrics")}</h3>
+          ) : null}
+          <div
+            className={`grid grid-cols-2 gap-x-6 gap-y-3.5 sm:grid-cols-3 lg:grid-cols-4 ${
+              view === "all"
+                ? "border-t border-[var(--aw-hairline,var(--border))] pt-3"
+                : ""
+            }`}
+          >
             {knownMetrics.map((m) => (
               <div key={m.key} className="min-w-0 space-y-1">
                 <div className="text-[11px] leading-[1.3] tracking-[-0.08px] text-[var(--muted)]">
@@ -172,7 +210,7 @@ export function EarningsPanel({
         </section>
       )}
 
-      {upcoming.length > 0 && (
+      {showCalendar && upcoming.length > 0 && (
         <section>
           <h3 className={sectionTitle}>{t("upcoming")}</h3>
           <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -220,7 +258,7 @@ export function EarningsPanel({
         </section>
       )}
 
-      {surprises.length > 0 && (
+      {showCalendar && surprises.length > 0 && (
         <section>
           <h3 className={sectionTitle}>{t("surprises")}</h3>
           <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -278,7 +316,7 @@ export function EarningsPanel({
         </section>
       )}
 
-      {recent.length > 0 && surprises.length === 0 && (
+      {showCalendar && recent.length > 0 && surprises.length === 0 && (
         <section>
           <h3 className={sectionTitle}>{t("recent")}</h3>
           <ul>

@@ -38,6 +38,8 @@ Q-Stock 一期图表选型见 [需求文档](./requirements.md)：TradingView **
 - **同屏多图、Level-2 极密、科研级回放**：再考虑 WebGL/WASM。
 - **不要**因为“金融”就默认上 WebGL；很多顶级网页终端主路径仍是 Canvas 2D。
 
+Q-Stock 内「何时用 Canvas、何时用 SVG」的决策清单与现网对照见 [图表 Canvas vs SVG](./chart-canvas-vs-svg.md)。
+
 ### 2.2 Canvas 2D 常见优化
 
 - 按帧合并重绘（`requestAnimationFrame`），禁止“每个 tick 清屏重画全量历史”。

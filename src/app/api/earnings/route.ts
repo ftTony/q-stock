@@ -1,19 +1,20 @@
 import { NextResponse } from "next/server";
 import { format, subMonths, addMonths } from "date-fns";
 import { auth } from "@/lib/auth";
+import { getEarnings, getEarningsCalendar } from "@/lib/finnhub/client";
 import {
-  BASIC_METRIC_KEYS,
-  getBasicFinancials,
-  getCompanyProfile2,
-  getEarnings,
-  getEarningsCalendar,
-} from "@/lib/finnhub/client";
+  buildStatementPayload,
+  loadFinnhubFinBundle,
+} from "@/lib/earnings/finnhub-bundle";
+import { loadFinnhubStatements } from "@/lib/earnings/finnhub-statements";
 import { getLongbridgeEarnings } from "@/lib/market/providers/longbridge";
 import { getFutuEarnings } from "@/lib/market/providers/futu-content";
 import { getDailyCandles } from "@/lib/market";
 import { isProviderEnabled } from "@/lib/market/router";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import { parseAssetType, type AssetType } from "@/lib/types";
+import type { SeriesLike } from "@/lib/earnings/build-statement";
+import type { EarningsStatement } from "@/lib/earnings/types";
 
 type MetricRow = { key: string; value: number | null };
 
@@ -26,95 +27,6 @@ function mergeMetrics(primary: MetricRow[], secondary: MetricRow[]): MetricRow[]
     if (m.value != null && !map.has(m.key)) map.set(m.key, m.value);
   }
   return [...map.entries()].map(([key, value]) => ({ key, value }));
-}
-
-type SeriesPoint = { period?: string; v?: number };
-
-function latestSeriesValue(
-  series: unknown,
-  key: string,
-  bucket: "annual" | "quarterly" = "annual",
-): number | null {
-  const arr = (
-    series as
-      | { annual?: Record<string, SeriesPoint[]>; quarterly?: Record<string, SeriesPoint[]> }
-      | undefined
-  )?.[bucket]?.[key];
-  if (!Array.isArray(arr) || arr.length === 0) return null;
-  // Finnhub usually returns newest-first; fall back to max period
-  const sorted = [...arr].sort((a, b) =>
-    String(b.period ?? "").localeCompare(String(a.period ?? "")),
-  );
-  const v = sorted[0]?.v;
-  return typeof v === "number" && Number.isFinite(v) ? v : null;
-}
-
-/**
- * Free-tier Finnhub `/stock/metric` series has ratios + per-share figures,
- * but not absolute revenue / totalAssets. Derive them from:
- * - quarterly salesPerShare × sharesOutstanding(millions) → 近季营收
- * - annual salesPerShare × shares / assetTurnoverTTM → 总资产
- * - totalDebtToTotalAsset → 资产负债率
- */
-async function finnhubBasicMetrics(sym: string): Promise<MetricRow[]> {
-  try {
-    const [basic, profile] = await Promise.all([
-      getBasicFinancials(sym),
-      getCompanyProfile2(sym),
-    ]);
-    const metric = basic?.metric ?? {};
-    const rows: MetricRow[] = BASIC_METRIC_KEYS.map((key) => ({
-      key,
-      value: typeof metric[key] === "number" ? metric[key]! : null,
-    })).filter((m) => m.value != null);
-
-    const series = basic?.series;
-    const sharesMil = profile?.shareOutstanding; // Finnhub: millions of shares
-
-    if (sharesMil != null && sharesMil > 0) {
-      rows.push({ key: "shareOutstanding", value: sharesMil });
-    }
-
-    const salesQ = latestSeriesValue(series, "salesPerShare", "quarterly");
-    const salesA = latestSeriesValue(series, "salesPerShare", "annual");
-    const turnover =
-      latestSeriesValue(series, "assetTurnoverTTM", "quarterly") ??
-      latestSeriesValue(series, "assetTurnoverTTM", "annual");
-    const debtToAsset =
-      latestSeriesValue(series, "totalDebtToTotalAsset", "annual") ??
-      latestSeriesValue(series, "totalDebtToTotalAsset", "quarterly") ??
-      latestSeriesValue(series, "longtermDebtTotalAsset", "annual");
-
-    if (salesQ != null && sharesMil != null && sharesMil > 0) {
-      rows.push({
-        key: "revenueLatest",
-        value: salesQ * sharesMil * 1e6,
-      });
-    }
-
-    if (
-      salesA != null &&
-      sharesMil != null &&
-      sharesMil > 0 &&
-      turnover != null &&
-      turnover > 0
-    ) {
-      const revTtm = salesA * sharesMil * 1e6;
-      rows.push({ key: "totalAssets", value: revTtm / turnover });
-    }
-
-    if (debtToAsset != null) {
-      rows.push({
-        key: "debtToAssetRatio",
-        // series values are ratios (0.41); metric map sometimes uses percent
-        value: debtToAsset <= 1.5 ? debtToAsset * 100 : debtToAsset,
-      });
-    }
-
-    return rows;
-  } catch {
-    return [];
-  }
 }
 
 async function week52FromCandles(
@@ -218,7 +130,6 @@ function mergeCalendarRevenue(
     };
   }
 
-  // LB/Futu never fill revenue — prefer Finnhub calendar when present
   if (fh.recent.length || fh.upcoming.length) {
     return {
       upcoming: fh.upcoming.length ? fh.upcoming : primary.upcoming,
@@ -229,26 +140,42 @@ function mergeCalendarRevenue(
   return primary;
 }
 
+function withStatement(
+  surprises: EarningsBundle["surprises"],
+  recent: CalRow[],
+  series: SeriesLike[],
+): EarningsStatement | null {
+  return buildStatementPayload(surprises, recent, series);
+}
+
 async function enrichBundle(
   bundle: EarningsBundle,
   sym: string,
   assetType: AssetType,
   source: string,
 ) {
-  const [fh, fhCal] = await Promise.all([
-    finnhubBasicMetrics(sym),
+  const needFhStmt =
+    isProviderEnabled("finnhub") &&
+    (!bundle.balance?.rows.length || !bundle.cashflow?.rows.length);
+
+  const [fhBundle, fhCal, fhStmt] = await Promise.all([
+    isProviderEnabled("finnhub")
+      ? loadFinnhubFinBundle(sym)
+      : Promise.resolve({ metrics: [] as MetricRow[], series: [] as SeriesLike[] }),
     finnhubCalendarRows(sym),
+    needFhStmt
+      ? loadFinnhubStatements(sym)
+      : Promise.resolve({ balance: null, cashflow: null }),
   ]);
-  let metrics = mergeMetrics(bundle.metrics, fh);
+  let metrics = mergeMetrics(bundle.metrics, fhBundle.metrics);
   const needWeek =
     !metrics.some((m) => m.key === "52WeekHigh") ||
     !metrics.some((m) => m.key === "52WeekLow");
-  // Skip year-of-daily candles on 1GB hosts unless explicitly enabled.
   if (needWeek && process.env.EARNINGS_WEEK52_CANDLES === "1") {
     metrics = mergeMetrics(metrics, await week52FromCandles(sym, assetType));
   }
 
-  // Surface latest calendar revenue as a metric for compare UI
+  const calendar = mergeCalendarRevenue(bundle.calendar, fhCal);
   const calRev =
     [...fhCal.recent, ...bundle.calendar.recent].find(
       (r) => r.revenueActual != null,
@@ -257,12 +184,29 @@ async function enrichBundle(
     metrics = mergeMetrics(metrics, [{ key: "revenueLatest", value: calRev }]);
   }
 
+  const balance = bundle.balance?.rows.length
+    ? bundle.balance
+    : fhStmt.balance;
+  const cashflow = bundle.cashflow?.rows.length
+    ? bundle.cashflow
+    : fhStmt.cashflow;
+
   return {
     symbol: sym,
     surprises: bundle.surprises,
-    calendar: mergeCalendarRevenue(bundle.calendar, fhCal),
+    calendar,
     metrics,
-    source: fh.length || fhCal.recent.length ? `${source}+finnhub` : source,
+    statement: withStatement(
+      bundle.surprises,
+      calendar.recent,
+      fhBundle.series,
+    ),
+    balance,
+    cashflow,
+    source:
+      fhBundle.metrics.length || fhCal.recent.length || fhStmt.balance || fhStmt.cashflow
+        ? `${source}+finnhub`
+        : source,
     degraded: false,
   };
 }
@@ -325,15 +269,18 @@ export async function GET(req: Request) {
 
         if (assetType === "hk") {
           const fh = isProviderEnabled("finnhub")
-            ? await finnhubBasicMetrics(sym)
-            : [];
+            ? await loadFinnhubFinBundle(sym)
+            : { metrics: [] as MetricRow[], series: [] as SeriesLike[] };
           const week = await week52FromCandles(sym, assetType);
           return NextResponse.json({
             symbol: sym,
             surprises: [],
             calendar: { upcoming: [], recent: [] },
-            metrics: mergeMetrics(fh, week),
-            source: fh.length || week.length ? "fallback" : null,
+            metrics: mergeMetrics(fh.metrics, week),
+            statement: withStatement([], [], fh.series),
+            balance: null,
+            cashflow: null,
+            source: fh.metrics.length || week.length ? "fallback" : null,
             degraded: true,
           });
         }
@@ -345,6 +292,9 @@ export async function GET(req: Request) {
           surprises: [],
           calendar: { upcoming: [], recent: [] },
           metrics: await week52FromCandles(sym, assetType),
+          statement: null,
+          balance: null,
+          cashflow: null,
           source: null,
           degraded: true,
         });
@@ -358,18 +308,19 @@ export async function GET(req: Request) {
         await Promise.allSettled([
           getEarnings(sym),
           getEarningsCalendar(sym, from, to),
-          finnhubBasicMetrics(sym),
+          loadFinnhubFinBundle(sym),
         ]);
 
       const surprises =
         surprisesResult.status === "fulfilled" ? surprisesResult.value : [];
       const calendar =
         calendarResult.status === "fulfilled" ? calendarResult.value : [];
+      const fhBundle =
+        metricsResult.status === "fulfilled"
+          ? metricsResult.value
+          : { metrics: [] as MetricRow[], series: [] as SeriesLike[] };
 
-      // Full Finnhub metric extraction (series revenue / assets / etc.)
-      let metrics =
-        metricsResult.status === "fulfilled" ? metricsResult.value : [];
-
+      let metrics = fhBundle.metrics;
       if (
         !metrics.some((m) => m.key === "52WeekHigh") ||
         !metrics.some((m) => m.key === "52WeekLow")
@@ -399,6 +350,8 @@ export async function GET(req: Request) {
         calendarResult.status === "rejected" &&
         metricsResult.status === "rejected";
 
+      const fhStmt = await loadFinnhubStatements(sym);
+
       return NextResponse.json({
         symbol: sym,
         surprises,
@@ -407,6 +360,9 @@ export async function GET(req: Request) {
           recent: recentCalendar,
         },
         metrics,
+        statement: withStatement(surprises, recentCalendar, fhBundle.series),
+        balance: fhStmt.balance,
+        cashflow: fhStmt.cashflow,
         source: degraded ? null : "finnhub",
         degraded,
       });
@@ -419,6 +375,9 @@ export async function GET(req: Request) {
         surprises: [],
         calendar: { upcoming: [], recent: [] },
         metrics: [],
+        statement: null,
+        balance: null,
+        cashflow: null,
         degraded: true,
       },
       { status: 200 },

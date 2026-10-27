@@ -208,6 +208,8 @@ export default function PortfolioPage() {
           marketValue: tTrade("marketValue"),
           equity: tTrade("equity"),
           positions: tTrade("positions"),
+          chartPnl: tTrade("chartPnl"),
+          chartAllocation: tTrade("chartAllocation"),
           emptyPositions: tTrade("emptyPositions"),
           symbol: tMarket("symbol"),
           qty: tTrade("qty"),

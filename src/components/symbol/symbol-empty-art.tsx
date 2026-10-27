@@ -200,13 +200,53 @@ export function EmptyHistoryArt() {
   );
 }
 
+/** Spreadsheet / statement placeholder for 资产负债 & 现金流 empty states. */
+export function EmptyStatementArt() {
+  return (
+    <Frame>
+      <rect
+        x="28"
+        y="14"
+        width="104"
+        height="72"
+        rx="0"
+        fill="var(--panel)"
+        stroke="currentColor"
+        strokeOpacity="0.28"
+        strokeWidth="1.5"
+      />
+      <path
+        d="M28 32h104M52 14v72M88 14v72"
+        stroke="currentColor"
+        strokeWidth="1.25"
+        opacity="0.28"
+      />
+      <path
+        d="M36 24h10M60 24h20M96 24h28"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="square"
+        opacity="0.4"
+      />
+      <path
+        d="M36 44h10M60 44h18M96 44h22M36 56h10M60 56h14M96 56h26M36 68h10M60 68h20M96 68h16"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="square"
+        opacity="0.55"
+      />
+    </Frame>
+  );
+}
+
 export type EmptyArtKind =
   | "news"
   | "watchlist"
   | "review"
   | "chart"
   | "depth"
-  | "history";
+  | "history"
+  | "statement";
 
 function Art({ kind }: { kind: EmptyArtKind }) {
   switch (kind) {
@@ -222,6 +262,8 @@ function Art({ kind }: { kind: EmptyArtKind }) {
       return <EmptyDepthArt />;
     case "history":
       return <EmptyHistoryArt />;
+    case "statement":
+      return <EmptyStatementArt />;
   }
 }
 
@@ -239,14 +281,14 @@ export function EmptyStateBlock({
 }) {
   return (
     <div
-      className={`flex flex-1 flex-col items-center justify-center gap-3 px-3 text-center ${
+      className={`flex w-full flex-1 flex-col items-center justify-center gap-3 px-4 text-center ${
         compact
           ? "min-h-[8rem] py-6"
-          : "min-h-[min(42vh,16rem)] py-8"
+          : "min-h-[min(56vh,24rem)] py-12"
       }`}
     >
       <Art kind={art} />
-      <p className="max-w-sm text-[13px] tracking-[-0.08px] text-[var(--muted)]">
+      <p className="max-w-md text-[13px] leading-relaxed tracking-[-0.08px] text-[var(--muted)]">
         {label}
       </p>
       {children}

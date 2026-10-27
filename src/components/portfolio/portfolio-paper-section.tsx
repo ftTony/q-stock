@@ -3,6 +3,7 @@
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { fmtMoney } from "@/components/portfolio/format";
+import { PortfolioPositionsCharts } from "@/components/portfolio/portfolio-positions-charts";
 import type { PaperOrder, PaperPosition } from "@/components/portfolio/types";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
 
@@ -27,6 +28,8 @@ type Props = {
     marketValue: string;
     equity: string;
     positions: string;
+    chartPnl: string;
+    chartAllocation: string;
     emptyPositions: string;
     symbol: string;
     qty: string;
@@ -119,6 +122,16 @@ export function PortfolioPaperSection({
           </div>
         </div>
       </div>
+
+      {positions.length > 0 ? (
+        <PortfolioPositionsCharts
+          positions={positions}
+          labels={{
+            chartPnl: labels.chartPnl,
+            chartAllocation: labels.chartAllocation,
+          }}
+        />
+      ) : null}
 
       <div className="border-t border-[var(--border)] pt-4">
         <h3 className="mb-2 text-sm font-semibold tracking-tight">
