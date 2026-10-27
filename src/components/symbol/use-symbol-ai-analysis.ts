@@ -76,7 +76,7 @@ export function useSymbolAiAnalysis(
           return { degraded: false };
         }
         if (res.status === 429) {
-          setAiToast(tAi("quotaExceeded"));
+          setAiToast(tAi("quotaExceededToast"));
           setAiToastKey((k) => k + 1);
           setAiAvailable(null);
           setAiMessage(null);

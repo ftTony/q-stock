@@ -278,6 +278,11 @@
     "chartSettings": "Chart settings",
     "chartSettingsDisplay": "Display",
     "chartShowTradeMarks": "Show trade marks",
+    "chartTypeLabel": "Chart type",
+    "chartTypeCandle": "Candlestick",
+    "chartTypeCandleShort": "Candle",
+    "chartTypeArea": "Area",
+    "chartTypeAreaShort": "Area",
     "chartSettingsColors": "Up / down colors",
     "chartColorCn": "Red up",
     "chartColorUs": "Green up",
@@ -329,7 +334,17 @@
       "status": "Status",
       "type": "Type"
     },
-    "derivativesNoPackage": "Longbridge option package missing; Futu also unavailable."
+    "derivativesNoPackage": "Longbridge option package missing; Futu also unavailable.",
+    "chartCtxMenu": "Chart menu",
+    "chartCtxAddWatch": "Add to watchlist",
+    "chartCtxRemoveWatch": "Remove from watchlist",
+    "chartCtxAddToGroup": "Add to group",
+    "chartCtxLogin": "Sign in to manage groups",
+    "chartCtxNoGroups": "No groups yet",
+    "chartCtxRangeStats": "Range statistics",
+    "chartCtxOverlay": "Overlay symbol",
+    "chartCtxRangeStatsSoon": "Range statistics coming soon",
+    "chartCtxOverlaySoon": "Symbol overlay coming soon"
   },
   "company": {
     "na": "No hay perfil de empresa para este activo",
@@ -533,7 +548,15 @@
     "aboutPageLink": "Página Acerca de completa",
     "disclaimerPageLink": "Abrir aviso legal",
     "termsPageLink": "Términos del servicio",
-    "privacyPageLink": "Política de privacidad"
+    "privacyPageLink": "Política de privacidad",
+    "freemiumTitle": "How to keep using AI",
+    "freemiumBody": "When free uses run out, you are not stuck. Three exits:",
+    "freemiumFree": "Free allowance",
+    "freemiumFreeBody": "5 uses for new accounts; +5 per successful invite.",
+    "freemiumInvite": "Invite",
+    "freemiumInviteBody": "Copy a code or link below for a friend.",
+    "freemiumByok": "Your own key",
+    "freemiumByokBody": "Add an AI API key — it does not use platform quota."
   },
   "alerts": {
     "title": "Alertas de precio",
@@ -712,13 +735,24 @@
     "disclaimer": "Generado por IA a partir de noticias y resultados públicos. Solo referencia; no es consejo de inversión.",
     "loginRequired": "Sign in to use AI features.",
     "loginLink": "Sign in",
-    "quotaExceeded": "AI uses exhausted. Invite a friend who registers to get 5 more.",
+    "quotaExceeded": "AI uses exhausted. Invite a friend (+5) or add your own AI key (BYOK) in Settings.",
     "quotaRemaining": "AI uses left: {remaining} / {limit}",
     "inviteForMore": "Invite friends",
     "loginTitle": "Sign in to unlock AI",
     "loginBody": "Chart reads, Q&A, compare, and review need an account. New users get 5 uses; invite a friend who registers and you get 5 more.",
     "loginHint": "AI output is for reference only and is not investment advice.",
-    "elapsed": "{seconds}s"
+    "elapsed": "{seconds}s",
+    "quotaExceededToast": "AI uses exhausted. Invite friends or add your own AI key in Settings.",
+    "quotaExhaustedTitle": "Platform AI uses exhausted",
+    "quotaExhaustedShort": "Uses exhausted.",
+    "pathFreeLabel": "Free allowance",
+    "pathFreeBody": "New accounts get 5 uses; +5 per successful invite.",
+    "pathInviteLabel": "Invite friends",
+    "pathInviteBody": "When a friend registers with your code, you get more uses.",
+    "pathInviteCta": "Invite",
+    "pathByokLabel": "Bring your own key",
+    "pathByokBody": "Add your API key in Settings — it does not use platform quota.",
+    "pathByokCta": "Add AI key"
   },
   "common": {
     "loading": "Cargando…",
@@ -1433,7 +1467,18 @@
     "advancedQuotes": "Advanced quotes",
     "bid": "Bid",
     "ask": "Ask",
-    "price": "Price"
+    "price": "Price",
+    "guideTitle": "Three steps here",
+    "guideDismiss": "Got it",
+    "guidePlanTitle": "Plan",
+    "guidePlanBody": "Bind a rule; replay to see drawdown first.",
+    "guideOrderTitle": "Order",
+    "guideOrderBody": "Paper trade with a strategy tag.",
+    "guideReviewTitle": "Review",
+    "guideReviewBody": "Compare fills with your rule.",
+    "guidePrev": "Back",
+    "guideNext": "Next",
+    "guideDone": "Done"
   },
   "symbolEmotion": {
     "title": "Emotion check",
@@ -1703,5 +1748,21 @@
     "statusOk": "Risk OK",
     "statusWarn": "Circuit active",
     "disclaimer": "Applies to in-app paper trading only. Not investment advice."
+  },
+  "pathGuide": {
+    "title": "Meet the workspace",
+    "body": "",
+    "dismiss": "Got it",
+    "stepWatchTitle": "Watchlist",
+    "stepWatchBody": "Left rail · Markets: search and add to watchlist.",
+    "stepAlertTitle": "Alert or AI",
+    "stepAlertBody": "Top-right bell: price alerts, or open a symbol for AI.",
+    "stepPaperTitle": "Paper trade",
+    "stepPaperBody": "Left rail · Portfolio: place a paper trade.",
+    "stepReviewTitle": "Review",
+    "stepReviewBody": "Left rail · Review: check fills vs your plan.",
+    "prev": "Back",
+    "next": "Next",
+    "done": "Done"
   }
 }

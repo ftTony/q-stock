@@ -331,6 +331,7 @@ export function SymbolPlanPanel({
               <button
                 type="button"
                 onClick={onGoOrder}
+                data-tour="rail-order"
                 className="aw-btn-pill min-w-0 flex-1 !h-9 !px-3 !text-[13px]"
               >
                 {t("planGoOrder")}

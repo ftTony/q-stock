@@ -308,6 +308,11 @@
     "chartSettings": "圖表設定",
     "chartSettingsDisplay": "顯示",
     "chartShowTradeMarks": "顯示買賣打點",
+    "chartTypeLabel": "圖表形態",
+    "chartTypeCandle": "蠟燭圖",
+    "chartTypeCandleShort": "蠟燭",
+    "chartTypeArea": "面積圖",
+    "chartTypeAreaShort": "面積",
     "chartSettingsColors": "漲跌色",
     "chartColorCn": "紅漲綠跌",
     "chartColorUs": "綠漲紅跌",
@@ -342,7 +347,17 @@
       "balance": "打和點",
       "status": "狀態",
       "type": "類型"
-    }
+    },
+    "chartCtxMenu": "圖表選單",
+    "chartCtxAddWatch": "加自選",
+    "chartCtxRemoveWatch": "取消自選",
+    "chartCtxAddToGroup": "加入其他分組",
+    "chartCtxLogin": "登入後管理分組",
+    "chartCtxNoGroups": "暫無分組",
+    "chartCtxRangeStats": "開啟區間統計",
+    "chartCtxOverlay": "股票疊加",
+    "chartCtxRangeStatsSoon": "區間統計即將支援",
+    "chartCtxOverlaySoon": "股票疊加即將支援"
   },
   "company": {
     "na": "該資產暫無公司概況",
@@ -546,7 +561,15 @@
     "aboutPageLink": "查看完整關於頁",
     "disclaimerPageLink": "打開免責聲明頁",
     "termsPageLink": "服務條款",
-    "privacyPageLink": "隱私政策"
+    "privacyPageLink": "隱私政策",
+    "freemiumTitle": "AI 額度怎麼續",
+    "freemiumBody": "平台免費次數用完後，不會被堵死。三條出路：",
+    "freemiumFree": "免費額度",
+    "freemiumFreeBody": "新帳戶 5 次；邀請好友成功註冊再 +5。",
+    "freemiumInvite": "邀請",
+    "freemiumInviteBody": "下方複製邀請碼或連結發給好友。",
+    "freemiumByok": "自帶 Key",
+    "freemiumByokBody": "填寫自己的 AI API Key，不占用平台次數。"
   },
   "alerts": {
     "title": "價格提醒",
@@ -725,13 +748,24 @@
     "disclaimer": "本分析由 AI 根據公開新聞與財報自動生成，僅供參考，不構成投資建議。",
     "loginRequired": "Sign in to use AI features.",
     "loginLink": "Sign in",
-    "quotaExceeded": "AI uses exhausted. Invite a friend who registers to get 5 more.",
+    "quotaExceeded": "AI 次數已用完。可用：邀請好友 +5，或在設定裡填寫自己的 AI Key（BYOK）。",
     "quotaRemaining": "AI uses left: {remaining} / {limit}",
     "inviteForMore": "Invite friends",
     "loginTitle": "登入後解鎖 AI 看盤",
     "loginBody": "讀圖、問答、對比與復盤需登入。新帳戶贈送 5 次；邀請一位好友成功註冊，你再獲得 5 次。",
     "loginHint": "內容由 AI 根據公開資料生成，僅供參考，不構成投資建議。",
-    "elapsed": "{seconds}秒"
+    "elapsed": "{seconds}秒",
+    "quotaExceededToast": "AI 次數已用完。可去設定邀請好友，或填寫自己的 AI Key。",
+    "quotaExhaustedTitle": "平台 AI 次數已用完",
+    "quotaExhaustedShort": "次數已用完。",
+    "pathFreeLabel": "免費額度",
+    "pathFreeBody": "新帳戶贈送 5 次；每成功邀請一人再 +5。",
+    "pathInviteLabel": "邀請好友",
+    "pathInviteBody": "好友用你的邀請碼註冊成功後，你立即獲得額外次數。",
+    "pathInviteCta": "去邀請",
+    "pathByokLabel": "自帶 Key（BYOK）",
+    "pathByokBody": "在設定填寫自己的 API Key，不占用平台免費次數。",
+    "pathByokCta": "去設定 AI Key"
   },
   "common": {
     "loading": "載入中…",
@@ -1493,7 +1527,18 @@
     "reviewRevise": "修正規則",
     "reviewOpenDesk": "過程復盤",
     "ruleBadgeBound": "規則：{name}",
-    "ruleBadgeUnbound": "未綁定規則"
+    "ruleBadgeUnbound": "未綁定規則",
+    "guideTitle": "本頁三步",
+    "guideDismiss": "知道了",
+    "guidePlanTitle": "定計劃",
+    "guidePlanBody": "綁定規則，必要時先回放看回撤。",
+    "guideOrderTitle": "去下單",
+    "guideOrderBody": "模擬下單並掛上規則標籤。",
+    "guideReviewTitle": "看復盤",
+    "guideReviewBody": "對照本標的成交與規則偏差。",
+    "guidePrev": "上一步",
+    "guideNext": "下一步",
+    "guideDone": "完成"
   },
   "symbolEmotion": {
     "title": "情绪自检",
@@ -1763,5 +1808,21 @@
     "statusOk": "風控正常",
     "statusWarn": "熔斷生效",
     "disclaimer": "僅作用於站內模擬盤，不構成投資建議，與真實券商風控無關。"
+  },
+  "pathGuide": {
+    "title": "認識主介面",
+    "body": "",
+    "dismiss": "知道了",
+    "stepWatchTitle": "加自選",
+    "stepWatchBody": "左側「行情」：搜尋並加自選。",
+    "stepAlertTitle": "提醒或 AI",
+    "stepAlertBody": "右上角鈴鐺：設價格提醒，或進個股試 AI。",
+    "stepPaperTitle": "模擬一筆",
+    "stepPaperBody": "左側「資產」：去模擬盤練習一筆。",
+    "stepReviewTitle": "復盤過程",
+    "stepReviewBody": "左側「復盤」：對照成交看執行過程。",
+    "prev": "上一步",
+    "next": "下一步",
+    "done": "完成"
   }
 }

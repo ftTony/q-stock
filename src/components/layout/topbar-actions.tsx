@@ -190,6 +190,7 @@ export function TopBarActions({
             type="button"
             className="qt-btn qt-btn-ghost relative h-9 w-9"
             aria-label={t("alerts")}
+            data-tour="nav-alerts"
             onClick={() => {
               setNotifOpen((v) => !v);
               setMenuOpen(false);

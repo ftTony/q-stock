@@ -2,6 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { usePathname } from "@/i18n/routing";
+import { ConsoleWelcome } from "@/components/brand/console-welcome";
 import { MarketingAppShell } from "@/components/layout/marketing-app-shell";
 
 const MainAppShell = dynamic(
@@ -62,19 +63,25 @@ function isAppPath(pathname: string) {
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
+  let body: React.ReactNode;
   if (isAuthPath(pathname)) {
-    return (
+    body = (
       <div className="min-h-dvh">
         <div className="mx-auto flex min-h-dvh max-w-lg flex-col justify-center px-4 py-8">
           {children}
         </div>
       </div>
     );
+  } else if (isMarketingPath(pathname) || !isAppPath(pathname)) {
+    body = <MarketingAppShell>{children}</MarketingAppShell>;
+  } else {
+    body = <MainAppShell>{children}</MainAppShell>;
   }
 
-  if (isMarketingPath(pathname) || !isAppPath(pathname)) {
-    return <MarketingAppShell>{children}</MarketingAppShell>;
-  }
-
-  return <MainAppShell>{children}</MainAppShell>;
+  return (
+    <>
+      <ConsoleWelcome />
+      {body}
+    </>
+  );
 }

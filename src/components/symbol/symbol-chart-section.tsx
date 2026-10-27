@@ -1,8 +1,16 @@
 "use client";
 
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from "react";
 import { useSession } from "next-auth/react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   CandleChart,
   type CandleChartHandle,
@@ -11,12 +19,20 @@ import {
 import { INDICATOR_KEYS } from "@/components/charts/candle-chart-overlays";
 import {
   readChartUiSettings,
+  resolveCandleType,
   writeChartUiSettings,
+  type ChartCandleType,
   type ChartUiSettings,
 } from "@/components/charts/candle-chart-settings";
+import { CandleChartTypeMenu } from "@/components/charts/candle-chart-type-menu";
 import { CandleChartToolbarActions } from "@/components/charts/candle-chart-toolbar-actions";
 import { ordersToTradeMarkers } from "@/components/charts/candle-chart-trade-markers";
 import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
+import {
+  SymbolChartContextMenu,
+  type ChartContextMenuState,
+} from "@/components/symbol/symbol-chart-context-menu";
+import { TopToast } from "@/components/ui/top-toast";
 import { useTradingOrders } from "@/hooks/query/use-trading";
 import {
   isIntradayResolution,
@@ -43,6 +59,9 @@ type Props = {
   onLoadMore: (earliestTime: number) => Promise<OhlcvBar[]>;
   loadingMore: boolean;
   hasMore: boolean;
+  inWatchlist: boolean;
+  watchBusy?: boolean;
+  onToggleWatchlist: () => void | Promise<void>;
 };
 
 export const SymbolChartSection = memo(function SymbolChartSection({
@@ -61,15 +80,27 @@ export const SymbolChartSection = memo(function SymbolChartSection({
   onLoadMore,
   loadingMore,
   hasMore,
+  inWatchlist,
+  watchBusy,
+  onToggleWatchlist,
 }: Props) {
   const locale = useLocale();
+  const t = useTranslations("symbol");
   const { data: session } = useSession();
   const signedIn = Boolean(session?.user);
   const chartRef = useRef<CandleChartHandle>(null);
   const [fullscreen, setFullscreen] = useState(false);
+  const [ctxMenu, setCtxMenu] = useState<ChartContextMenuState>(null);
+  const [soonToast, setSoonToast] = useState<string | null>(null);
   const [chartSettings, setChartSettings] = useState<ChartUiSettings>({
     showTradeMarkers: true,
   });
+
+  const onChartContextMenu = useCallback((e: ReactMouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setCtxMenu({ x: e.clientX, y: e.clientY });
+  }, []);
 
   useEffect(() => {
     setChartSettings(readChartUiSettings());
@@ -103,6 +134,7 @@ export const SymbolChartSection = memo(function SymbolChartSection({
     });
   }, [fillsQuery.data, locale]);
   const periods: CandleResolution[] = ["T", "1", "5", "D", "Q", "Y"];
+  const activeChartType = resolveCandleType(chartSettings, resolution);
   const primaryKeys = INDICATOR_KEYS.filter(([k]) => PRIMARY_INDICATORS.has(k));
   const moreKeys = INDICATOR_KEYS.filter(([k]) => !PRIMARY_INDICATORS.has(k));
   const intradayEmpty =
@@ -113,9 +145,34 @@ export const SymbolChartSection = memo(function SymbolChartSection({
     writeChartUiSettings(next);
   };
 
+  const onChartTypeChange = (type: ChartCandleType) => {
+    onChartSettingsChange({ ...chartSettings, chartType: type });
+  };
+
   return (
     <div className="aw-surface-flush flex h-full min-h-0 flex-col">
-      <div className="aw-chart-toolbar flex shrink-0 flex-nowrap items-center gap-0.5 border-b border-[var(--border)] bg-[var(--surface)] px-2">
+      <TopToast
+        message={soonToast}
+        tone="neutral"
+        onDismiss={() => setSoonToast(null)}
+      />
+      <SymbolChartContextMenu
+        open={ctxMenu}
+        onClose={() => setCtxMenu(null)}
+        symbol={symbol}
+        assetType={assetType}
+        inWatchlist={inWatchlist}
+        watchBusy={watchBusy}
+        onToggleWatchlist={onToggleWatchlist}
+        onSoon={(feature) =>
+          setSoonToast(
+            feature === "rangeStats"
+              ? t("chartCtxRangeStatsSoon")
+              : t("chartCtxOverlaySoon"),
+          )
+        }
+      />
+      <div className="aw-chart-toolbar relative z-20 flex shrink-0 flex-nowrap items-center gap-0.5 border-b border-[var(--border)] bg-[var(--surface)] px-2">
         {periods.map((key) => (
           <button
             key={key}
@@ -127,6 +184,13 @@ export const SymbolChartSection = memo(function SymbolChartSection({
             {resolutionLabels[key]}
           </button>
         ))}
+
+        <span className="mx-1.5 h-3 w-px bg-[var(--border)]" aria-hidden />
+
+        <CandleChartTypeMenu
+          value={activeChartType}
+          onChange={onChartTypeChange}
+        />
 
         <span className="mx-1.5 h-3 w-px bg-[var(--border)]" aria-hidden />
 
@@ -163,6 +227,7 @@ export const SymbolChartSection = memo(function SymbolChartSection({
           onFlagToggle={onFlagToggle}
           settings={chartSettings}
           onSettingsChange={onChartSettingsChange}
+          resolution={resolution}
           onClearDrawings={() => chartRef.current?.clearDrawings()}
           fullscreen={fullscreen}
           onToggleFullscreen={() => chartRef.current?.toggleFullscreen()}
@@ -171,7 +236,10 @@ export const SymbolChartSection = memo(function SymbolChartSection({
       </div>
 
       {intradayEmpty ? (
-        <div className="flex min-h-[280px] flex-1 items-center justify-center lg:min-h-0">
+        <div
+          className="flex min-h-[280px] flex-1 items-center justify-center lg:min-h-0"
+          onContextMenu={onChartContextMenu}
+        >
           <EmptyStateBlock art="chart" label={intradayUnavailableLabel} />
         </div>
       ) : bars.length === 0 && loadingChart ? (
@@ -182,7 +250,10 @@ export const SymbolChartSection = memo(function SymbolChartSection({
           />
         </div>
       ) : (
-        <div className="relative min-h-0 flex-1 [&_>div]:h-full [&_>div]:rounded-none [&_>div]:border-0">
+        <div
+          className="relative min-h-0 flex-1 [&_>div]:h-full [&_>div]:rounded-none [&_>div]:border-0"
+          onContextMenuCapture={onChartContextMenu}
+        >
           <CandleChart
             ref={chartRef}
             bars={bars}

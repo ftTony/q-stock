@@ -265,6 +265,37 @@ export function SettingsPanel({
             ) : null}
           </div>
         </form>
+        <section className="space-y-1.5 border-t border-[var(--aw-hairline,var(--border))] pt-4">
+          <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
+            {t("freemiumTitle")}
+          </h2>
+          <p className="text-[13px] leading-relaxed text-[var(--muted)]">
+            {t("freemiumBody")}
+          </p>
+          <ul className="space-y-1 text-[13px] leading-relaxed text-[var(--muted)]">
+            <li>
+              <span className="font-medium text-[var(--foreground)]">
+                {t("freemiumFree")}
+              </span>
+              {" — "}
+              {t("freemiumFreeBody")}
+            </li>
+            <li>
+              <span className="font-medium text-[var(--foreground)]">
+                {t("freemiumInvite")}
+              </span>
+              {" — "}
+              {t("freemiumInviteBody")}
+            </li>
+            <li>
+              <span className="font-medium text-[var(--foreground)]">
+                {t("freemiumByok")}
+              </span>
+              {" — "}
+              {t("freemiumByokBody")}
+            </li>
+          </ul>
+        </section>
         <InvitePanel />
         <AiCredentialsForm />
       </div>

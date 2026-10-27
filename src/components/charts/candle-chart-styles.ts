@@ -1,3 +1,5 @@
+import type { ChartCandleType } from "@/components/charts/candle-chart-settings";
+import { resolveCandleType } from "@/components/charts/candle-chart-settings";
 import type { OhlcvBar } from "@/lib/types";
 
 export type TipLabels = {
@@ -41,11 +43,18 @@ export function readChartExportBg(): string {
   return styles.getPropertyValue("--panel").trim() || "#ffffff";
 }
 
-/** 分时 uses area line; other periods use solid candles. */
+/** Map product chart type → klinecharts candle.type. */
+export function toKlineCandleType(
+  type: ChartCandleType,
+): "area" | "candle_solid" {
+  return type === "area" ? "area" : "candle_solid";
+}
+
+/** @deprecated Prefer resolveCandleType + toKlineCandleType */
 export function candleTypeFromResolution(
   resolution: string,
 ): "area" | "candle_solid" {
-  return resolution === "T" ? "area" : "candle_solid";
+  return toKlineCandleType(resolveCandleType({}, resolution));
 }
 
 export function buildChartStyles(
@@ -57,6 +66,8 @@ export function buildChartStyles(
     flushEdge?: boolean;
     /** Hide OHLC tip (e.g. while exporting a PNG). */
     hideCandleTooltip?: boolean;
+    /** Explicit product chart type; falls back to resolution default. */
+    chartType?: ChartCandleType;
   },
 ) {
   const c = readThemeColors();
@@ -95,7 +106,9 @@ export function buildChartStyles(
       vertical: { color: c.grid },
     },
     candle: {
-      type: candleTypeFromResolution(resolution),
+      type: toKlineCandleType(
+        opts?.chartType ?? resolveCandleType({}, resolution),
+      ),
       bar: {
         upColor: c.up,
         downColor: c.down,

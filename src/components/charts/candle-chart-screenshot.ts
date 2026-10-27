@@ -1,5 +1,6 @@
 /** Chart PNG export with Futu-style brand marks (i18n brand from caller). */
 
+import type { ChartCandleType } from "@/components/charts/candle-chart-settings";
 import {
   buildChartStyles,
   readChartExportBg,
@@ -44,11 +45,13 @@ export async function captureAndDownloadChart(opts: {
   brand: string;
   logoSrc: string;
   filename: string;
+  chartType?: ChartCandleType;
 }) {
   const { chart, labels, resolution } = opts;
   const styleOpts = {
     liveSession: opts.liveSession,
     flushEdge: opts.flushEdge,
+    chartType: opts.chartType,
   };
   const restoreStyles = () => {
     chart.setStyles(buildChartStyles(labels, resolution, styleOpts) as never);

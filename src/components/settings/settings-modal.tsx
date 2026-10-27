@@ -12,6 +12,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   setupKeys?: boolean;
+  initialSection?: SettingsSection;
   onSetupKeysDone?: () => void;
 };
 
@@ -82,20 +83,21 @@ export function SettingsModal({
   open,
   onClose,
   setupKeys = false,
+  initialSection = "general",
   onSetupKeysDone,
 }: Props) {
   const t = useTranslations("settings");
   const [mounted, setMounted] = useState(false);
   const [section, setSection] = useState<SettingsSection>(
-    setupKeys ? "market" : "general",
+    setupKeys ? "market" : initialSection,
   );
 
   useEffect(() => setMounted(true), []);
 
   useEffect(() => {
     if (!open) return;
-    setSection(setupKeys ? "market" : "general");
-  }, [open, setupKeys]);
+    setSection(setupKeys ? "market" : initialSection);
+  }, [open, setupKeys, initialSection]);
 
   useEffect(() => {
     if (!open) return;

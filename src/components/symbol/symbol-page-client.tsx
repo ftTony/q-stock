@@ -110,6 +110,17 @@ export function SymbolPageClient({
   }, [symbol, assetType]);
 
   useEffect(() => {
+    try {
+      const q = new URLSearchParams(window.location.search);
+      const v = q.get("guide") ?? q.get("onboarding");
+      if (v === "1" || v === "true") rail.setOpen(true);
+    } catch {
+      /* ignore */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- open once on mount / symbol
+  }, [symbol, assetType]);
+
+  useEffect(() => {
     if (dock) setDockReady(true);
   }, [dock]);
 
@@ -215,6 +226,9 @@ export function SymbolPageClient({
         onLoadMore={s.loadMoreCandles}
         loadingMore={s.loadingMoreCandles}
         hasMore={s.hasMoreCandles}
+        inWatchlist={s.inWatchlist}
+        watchBusy={s.watchBusy}
+        onToggleWatchlist={() => void s.toggleWatchlist()}
       />
     ),
     [
@@ -233,11 +247,19 @@ export function SymbolPageClient({
       s.loadMoreCandles,
       s.loadingMoreCandles,
       s.hasMoreCandles,
+      s.inWatchlist,
+      s.watchBusy,
+      s.toggleWatchlist,
     ],
   );
 
   return (
-    <div className="aw aw-stack flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--aw-canvas)] lg:overflow-hidden">
+    <div
+      className="aw aw-stack flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--aw-canvas)] lg:overflow-hidden"
+      onContextMenu={(e) => {
+        e.preventDefault();
+      }}
+    >
       {/* Watchlist is full-height left; quote bar only over main workbench */}
       <div
         className="aw-symbol-shell relative flex min-h-0 flex-1 overflow-hidden"

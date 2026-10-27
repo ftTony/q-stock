@@ -5,6 +5,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AiLoginGate } from "@/components/ai/ai-login-gate";
 import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
+import { AiQuotaExhaustedHint } from "@/components/ai/ai-quota-exhausted";
 import { useAiAccess } from "@/components/ai/use-ai-access";
 import { ReviewAiBody } from "@/components/review/review-ai-body";
 import {
@@ -189,7 +190,9 @@ export function ReviewDesk() {
             <div>
               <h2 className="text-lg font-semibold">{t("generateTitle")}</h2>
               <p className="text-sm text-[var(--muted)]">{t("generateHint")}</p>
-              <AiQuotaBadge className="mt-1" />
+              {access.quota && access.quota.remaining > 0 ? (
+                <AiQuotaBadge className="mt-1" />
+              ) : null}
             </div>
             <SubmitButton
               type="button"
@@ -197,10 +200,15 @@ export function ReviewDesk() {
               showElapsed={(s) => tAi("elapsed", { seconds: s })}
               onClick={() => void runReview()}
               className="qt-btn-primary h-9 px-3"
+              disabled={Boolean(access.quota && access.quota.remaining <= 0)}
             >
               {t("run")}
             </SubmitButton>
           </div>
+
+          {access.quota && access.quota.remaining <= 0 ? (
+            <AiQuotaExhaustedHint />
+          ) : null}
 
           {error && <p className="text-sm text-[var(--down)]">{error}</p>}
 

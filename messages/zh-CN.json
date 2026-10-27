@@ -308,6 +308,11 @@
     "chartSettings": "图表设置",
     "chartSettingsDisplay": "显示",
     "chartShowTradeMarks": "显示买卖打点",
+    "chartTypeLabel": "图表形态",
+    "chartTypeCandle": "蜡烛图",
+    "chartTypeCandleShort": "蜡烛",
+    "chartTypeArea": "面积图",
+    "chartTypeAreaShort": "面积",
     "chartSettingsColors": "涨跌色",
     "chartColorCn": "红涨绿跌",
     "chartColorUs": "绿涨红跌",
@@ -342,7 +347,17 @@
       "balance": "打和点",
       "status": "状态",
       "type": "类型"
-    }
+    },
+    "chartCtxMenu": "图表菜单",
+    "chartCtxAddWatch": "加自选",
+    "chartCtxRemoveWatch": "取消自选",
+    "chartCtxAddToGroup": "加入其他分组",
+    "chartCtxLogin": "登录后管理分组",
+    "chartCtxNoGroups": "暂无分组",
+    "chartCtxRangeStats": "开启区间统计",
+    "chartCtxOverlay": "股票叠加",
+    "chartCtxRangeStatsSoon": "区间统计即将支持",
+    "chartCtxOverlaySoon": "股票叠加即将支持"
   },
   "company": {
     "na": "该资产暂无公司概况",
@@ -552,7 +567,15 @@
     "aboutPageLink": "查看完整关于页",
     "disclaimerPageLink": "打开免责声明页",
     "termsPageLink": "服务条款",
-    "privacyPageLink": "隐私政策"
+    "privacyPageLink": "隐私政策",
+    "freemiumTitle": "AI 额度怎么续",
+    "freemiumBody": "平台免费次数用完后，不会被堵死。三条出路：",
+    "freemiumFree": "免费额度",
+    "freemiumFreeBody": "新账户 5 次；邀请好友成功注册再 +5。",
+    "freemiumInvite": "邀请",
+    "freemiumInviteBody": "下方复制邀请码或链接发给好友。",
+    "freemiumByok": "自带 Key",
+    "freemiumByokBody": "填写自己的 AI API Key，不占用平台次数。"
   },
   "alerts": {
     "title": "价格提醒",
@@ -718,7 +741,7 @@
     "loginBody": "读图、问答、对比与复盘需登录。新账户赠送 5 次；邀请一位好友成功注册，你再获得 5 次。",
     "loginHint": "内容由 AI 根据公开数据生成，仅供参考，不构成投资建议。",
     "loginLink": "去登录",
-    "quotaExceeded": "AI 次数已用完。邀请好友成功注册可再获得 5 次。",
+    "quotaExceeded": "AI 次数已用完。可用：邀请好友 +5，或在设置里填写自己的 AI Key（BYOK）。",
     "quotaRemaining": "AI 剩余 {remaining} / {limit} 次",
     "inviteForMore": "去邀请好友",
     "unavailable": "AI 分析不可用。请在设置中填写 API Key，或由管理员配置服务器 DEEPSEEK_API_KEY。",
@@ -737,7 +760,18 @@
     "sources": "数据：新闻 {news} 条 · 财报相关 {earnings} · 指标 {metrics}",
     "withQuote": "含实时报价",
     "disclaimer": "本分析由 AI 根据公开新闻与财报自动生成，仅供参考，不构成投资建议。",
-    "elapsed": "{seconds}秒"
+    "elapsed": "{seconds}秒",
+    "quotaExceededToast": "AI 次数已用完。可去设置邀请好友，或填写自己的 AI Key。",
+    "quotaExhaustedTitle": "平台 AI 次数已用完",
+    "quotaExhaustedShort": "次数已用完。",
+    "pathFreeLabel": "免费额度",
+    "pathFreeBody": "新账户赠送 5 次；每成功邀请一人再 +5。",
+    "pathInviteLabel": "邀请好友",
+    "pathInviteBody": "好友用你的邀请码注册成功后，你立即获得额外次数。",
+    "pathInviteCta": "去邀请",
+    "pathByokLabel": "自带 Key（BYOK）",
+    "pathByokBody": "在设置填写自己的 API Key，不占用平台免费次数。",
+    "pathByokCta": "去配置 AI Key"
   },
   "common": {
     "loading": "加载中…",
@@ -1493,7 +1527,18 @@
     "reviewRevise": "修正规则",
     "reviewOpenDesk": "过程复盘",
     "ruleBadgeBound": "规则：{name}",
-    "ruleBadgeUnbound": "未绑定规则"
+    "ruleBadgeUnbound": "未绑定规则",
+    "guideTitle": "本页三步",
+    "guideDismiss": "知道了",
+    "guidePlanTitle": "定计划",
+    "guidePlanBody": "绑定规则，必要时先回放看回撤。",
+    "guideOrderTitle": "去下单",
+    "guideOrderBody": "模拟下单并挂上规则标签。",
+    "guideReviewTitle": "看复盘",
+    "guideReviewBody": "对照本标的成交与规则偏差。",
+    "guidePrev": "上一步",
+    "guideNext": "下一步",
+    "guideDone": "完成"
   },
   "symbolEmotion": {
     "title": "情绪自检",
@@ -1763,5 +1808,21 @@
     "statusOk": "风控正常",
     "statusWarn": "熔断生效",
     "disclaimer": "仅作用于站内模拟盘，不构成投资建议，与真实券商风控无关。"
+  },
+  "pathGuide": {
+    "title": "认识主界面",
+    "body": "",
+    "dismiss": "知道了",
+    "stepWatchTitle": "加自选",
+    "stepWatchBody": "左侧「行情」：搜索并加自选。",
+    "stepAlertTitle": "提醒或 AI",
+    "stepAlertBody": "右上角铃铛：设价格提醒，或进个股试 AI。",
+    "stepPaperTitle": "模拟一笔",
+    "stepPaperBody": "左侧「资产」：去模拟盘练习一笔。",
+    "stepReviewTitle": "复盘过程",
+    "stepReviewBody": "左侧「复盘」：对照成交看执行过程。",
+    "prev": "上一步",
+    "next": "下一步",
+    "done": "完成"
   }
 }

@@ -23,7 +23,10 @@ import {
   toKLineData,
   type TipLabels,
 } from "@/components/charts/candle-chart-styles";
-import type { ChartUiSettings } from "@/components/charts/candle-chart-settings";
+import {
+  resolveCandleType,
+  type ChartUiSettings,
+} from "@/components/charts/candle-chart-settings";
 import { captureAndDownloadChart } from "@/components/charts/candle-chart-screenshot";
 import {
   syncTradeMarkers,
@@ -93,6 +96,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     },
     ref,
   ) {
+  const chartType = resolveCandleType(chartSettings, resolution);
   const shellRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ChartInstance | null>(null);
@@ -224,6 +228,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
         styles: buildChartStyles(tipLabelsRef.current, resolution, {
           liveSession: isAssetSessionOpen(assetType),
           flushEdge: fillParent,
+          chartType: resolveCandleType(chartSettingsRef.current, resolution),
         }) as never,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
@@ -315,6 +320,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       buildChartStyles(tipLabelsRef.current, resolution, {
         liveSession,
         flushEdge: fillParent,
+        chartType,
       }) as never,
     );
   }, [
@@ -325,6 +331,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     resolution,
     liveSession,
     fillParent,
+    chartType,
   ]);
 
   const tradeMarkersKey = tradeMarkers
@@ -413,6 +420,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       resolution,
       liveSession,
       flushEdge: fillParent,
+      chartType: resolveCandleType(chartSettingsRef.current, resolution),
       domain: domainRef.current,
       brand: brandRef.current,
       logoSrc: logoSrcRef.current,

@@ -189,6 +189,7 @@ export function SymbolSideIconRail({
               aria-label={t(item.labelKey)}
               aria-pressed={selected}
               data-active={selected}
+              data-tour={item.id === "trade" ? "rail-order" : undefined}
               onClick={() => onSelect(item.id)}
               className="aw-side-icon-btn"
             >

@@ -4,20 +4,18 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { Link } from "@/i18n/routing";
+import { AiQuotaExhaustedHint } from "@/components/ai/ai-quota-exhausted";
 import { AI_QUOTA_CHANGED } from "@/lib/ai/quota-events";
 import { useAiQuota } from "@/hooks/query/use-ai-quota";
 import { queryKeys } from "@/lib/query/keys";
-import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
 
-/** Remaining AI uses for signed-in users. */
+/** Remaining AI uses for signed-in users; expands exits when exhausted. */
 export function AiQuotaBadge(props: {
   className?: string;
   refreshKey?: number;
 }) {
   const { status } = useSession();
   const t = useTranslations("ai");
-  const settingsModal = useSettingsModalOptional();
   const qc = useQueryClient();
   const authenticated = status === "authenticated";
   const { data: quota } = useAiQuota(authenticated);
@@ -44,30 +42,21 @@ export function AiQuotaBadge(props: {
     return null;
   }
 
+  if (quota.remaining === 0) {
+    return (
+      <AiQuotaExhaustedHint
+        compact
+        className={props.className ?? "mt-1"}
+      />
+    );
+  }
+
   return (
     <p className={props.className ?? "text-sm text-[var(--muted)]"}>
       {t("quotaRemaining", {
         remaining: quota.remaining,
         limit: quota.limit,
       })}
-      {quota.remaining === 0 ? (
-        <>
-          {" "}
-          {settingsModal ? (
-            <button
-              type="button"
-              className="text-[var(--brand-text)] underline"
-              onClick={() => settingsModal.openSettings()}
-            >
-              {t("inviteForMore")}
-            </button>
-          ) : (
-            <Link href="/settings" className="text-[var(--brand-text)] underline">
-              {t("inviteForMore")}
-            </Link>
-          )}
-        </>
-      ) : null}
     </p>
   );
 }

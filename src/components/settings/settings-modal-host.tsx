@@ -27,11 +27,12 @@ const LoginModal = dynamic(
 );
 
 function SettingsModalBridge() {
-  const { open, setupKeys, closeSettings } = useSettingsModal();
+  const { open, setupKeys, section, closeSettings } = useSettingsModal();
   return (
     <SettingsModal
       open={open}
       setupKeys={setupKeys}
+      initialSection={section}
       onClose={closeSettings}
       onSetupKeysDone={closeSettings}
     />

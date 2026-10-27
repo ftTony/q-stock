@@ -56,7 +56,7 @@ export function useAiAccess() {
         return true;
       }
       if (httpStatus === 429) {
-        showToast(tAi("quotaExceeded"), "error");
+        showToast(tAi("quotaExceededToast"), "error");
         void refreshQuota();
         return true;
       }
@@ -70,7 +70,7 @@ export function useAiAccess() {
     if (!loggedIn) return false;
     const q = quota ?? (await refreshQuota());
     if (q && q.remaining <= 0) {
-      showToast(tAi("quotaExceeded"), "error");
+      showToast(tAi("quotaExceededToast"), "error");
       return false;
     }
     return true;

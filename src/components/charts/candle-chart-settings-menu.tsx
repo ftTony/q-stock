@@ -1,10 +1,25 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import type { IndicatorFlags } from "@/components/charts/candle-chart-overlays";
 import { usePreference } from "@/components/providers/preference-provider";
-import type { ChartUiSettings } from "@/components/charts/candle-chart-settings";
+import {
+  resolveCandleType,
+  type ChartUiSettings,
+} from "@/components/charts/candle-chart-settings";
+import { ChartTypeIcon } from "@/components/charts/candle-chart-type-icons";
+import {
+  CHART_TYPE_LABEL_KEY,
+  CHART_TYPE_OPTIONS,
+} from "@/components/charts/candle-chart-type-options";
 
 const INDICATOR_KEYS = [
   ["ma", "MA"],
@@ -19,6 +34,8 @@ type Props = {
   onFlagToggle?: (key: keyof IndicatorFlags) => void;
   settings: ChartUiSettings;
   onSettingsChange: (next: ChartUiSettings) => void;
+  /** Current period — used for smart default when chartType unset. */
+  resolution?: string;
   onClearDrawings: () => void;
   fullscreen: boolean;
   onToggleFullscreen: () => void;
@@ -45,6 +62,21 @@ function GearIcon({ className = "h-[18px] w-[18px]" }: { className?: string }) {
     </svg>
   );
 }
+
+function SectionLabel({ children }: { children: ReactNode }) {
+  return (
+    <p className="px-3 pb-1.5 pt-2.5 text-[11px] font-medium tracking-wide text-[var(--muted)]">
+      {children}
+    </p>
+  );
+}
+
+function SectionDivider() {
+  return <div className="mx-3 my-1 border-t border-[var(--border)]" />;
+}
+
+const chipClass =
+  "rounded-md border px-2 py-1.5 text-[11px] border-[var(--border)] text-[var(--muted)] data-[active=true]:border-[var(--brand)] data-[active=true]:bg-[var(--brand-soft)] data-[active=true]:text-[var(--brand-text)]";
 
 function ToggleRow({
   label,
@@ -83,6 +115,7 @@ export function CandleChartSettingsMenu({
   onFlagToggle,
   settings,
   onSettingsChange,
+  resolution = "D",
   onClearDrawings,
   fullscreen,
   onToggleFullscreen,
@@ -92,20 +125,54 @@ export function CandleChartSettingsMenu({
   const t = useTranslations("symbol");
   const { changeColorScheme, setChangeColorScheme } = usePreference();
   const [open, setOpen] = useState(false);
-  const rootRef = useRef<HTMLDivElement>(null);
+  const [mounted, setMounted] = useState(false);
+  const [pos, setPos] = useState<{ top: number; right: number } | null>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const activeChartType = resolveCandleType(settings, resolution);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  useLayoutEffect(() => {
+    if (!open || !btnRef.current) {
+      setPos(null);
+      return;
+    }
+    function place() {
+      const r = btnRef.current?.getBoundingClientRect();
+      if (!r) return;
+      setPos({
+        top: r.bottom + 6,
+        right: Math.max(8, window.innerWidth - r.right),
+      });
+    }
+    place();
+    window.addEventListener("resize", place);
+    window.addEventListener("scroll", place, true);
+    return () => {
+      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", place, true);
+    };
+  }, [open]);
 
   useEffect(() => {
     if (!open) return;
     function onDoc(e: MouseEvent) {
-      if (!rootRef.current?.contains(e.target as Node)) setOpen(false);
+      const node = e.target as Node;
+      if (btnRef.current?.contains(node) || panelRef.current?.contains(node)) {
+        return;
+      }
+      setOpen(false);
     }
     function onKey(e: KeyboardEvent) {
       if (e.key === "Escape") setOpen(false);
     }
-    document.addEventListener("mousedown", onDoc);
+    document.addEventListener("click", onDoc);
     document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onDoc);
+      document.removeEventListener("click", onDoc);
       document.removeEventListener("keydown", onKey);
     };
   }, [open]);
@@ -122,11 +189,130 @@ export function CandleChartSettingsMenu({
           : "border-[var(--border)]/80 bg-[var(--panel)]/90 text-[var(--muted)] hover:text-[var(--foreground)]"
       }`;
 
+  const panel =
+    mounted && open && pos
+      ? createPortal(
+          <div
+            ref={panelRef}
+            role="dialog"
+            aria-label={t("chartSettings")}
+            style={{ top: pos.top, right: pos.right }}
+            className="fixed z-[90] w-[15.5rem] overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)] py-1 shadow-lg"
+          >
+            <SectionLabel>{t("chartSettingsDisplay")}</SectionLabel>
+            <ToggleRow
+              label={t("chartShowTradeMarks")}
+              checked={settings.showTradeMarkers}
+              onChange={(v) =>
+                onSettingsChange({ ...settings, showTradeMarkers: v })
+              }
+            />
+
+            <SectionDivider />
+            <SectionLabel>{t("chartTypeLabel")}</SectionLabel>
+            <div className="flex flex-col pb-1">
+              {CHART_TYPE_OPTIONS.map((type) => {
+                const keys = CHART_TYPE_LABEL_KEY[type];
+                const selected = activeChartType === type;
+                return (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() =>
+                      onSettingsChange({ ...settings, chartType: type })
+                    }
+                    className={`flex w-full items-center gap-2 px-3 py-1.5 text-left text-[12px] hover:bg-[var(--surface-2)] ${
+                      selected
+                        ? "bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]"
+                        : "text-[var(--foreground)]"
+                    }`}
+                  >
+                    <ChartTypeIcon
+                      type={type}
+                      className="h-3.5 w-3.5 shrink-0 opacity-90"
+                    />
+                    {t(keys.full)}
+                  </button>
+                );
+              })}
+            </div>
+
+            <SectionDivider />
+            <SectionLabel>{t("chartSettingsColors")}</SectionLabel>
+            <div className="flex gap-1.5 px-3 pb-2">
+              <button
+                type="button"
+                onClick={() => setChangeColorScheme("cn")}
+                data-active={changeColorScheme === "cn"}
+                className={`flex-1 ${chipClass}`}
+              >
+                {t("chartColorCn")}
+              </button>
+              <button
+                type="button"
+                onClick={() => setChangeColorScheme("us")}
+                data-active={changeColorScheme === "us"}
+                className={`flex-1 ${chipClass}`}
+              >
+                {t("chartColorUs")}
+              </button>
+            </div>
+
+            {onFlagToggle ? (
+              <>
+                <SectionDivider />
+                <SectionLabel>{t("indicators")}</SectionLabel>
+                <div className="flex flex-wrap gap-1 px-3 pb-2">
+                  {INDICATOR_KEYS.map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => onFlagToggle(key)}
+                      data-active={flags[key]}
+                      className={chipClass}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : null}
+
+            <SectionDivider />
+            <button
+              type="button"
+              onClick={() => {
+                onClearDrawings();
+                setOpen(false);
+              }}
+              className="flex w-full px-3 py-2 text-left text-[12px] text-[var(--foreground)] hover:bg-[var(--surface-2)]"
+            >
+              {t("drawClear")}
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                onToggleFullscreen();
+                setOpen(false);
+              }}
+              className="flex w-full px-3 py-2 text-left text-[12px] text-[var(--foreground)] hover:bg-[var(--surface-2)]"
+            >
+              {fullscreen ? t("exitFullscreen") : t("fullscreen")}
+            </button>
+          </div>,
+          document.body,
+        )
+      : null;
+
   return (
-    <div ref={rootRef} className="pointer-events-auto relative">
+    <div className="pointer-events-auto relative">
       <button
+        ref={btnRef}
         type="button"
-        onClick={() => setOpen((v) => !v)}
+        onClick={(e) => {
+          e.stopPropagation();
+          setOpen((v) => !v);
+        }}
         aria-label={t("chartSettings")}
         title={t("chartSettings")}
         aria-expanded={open}
@@ -134,92 +320,7 @@ export function CandleChartSettingsMenu({
       >
         <GearIcon className={iconClassName} />
       </button>
-
-      {open ? (
-        <div
-          role="dialog"
-          aria-label={t("chartSettings")}
-          className="absolute right-0 top-[calc(100%+6px)] z-40 w-[15.5rem] overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)] py-1 shadow-lg"
-        >
-          <p className="px-3 pb-1 pt-2 text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
-            {t("chartSettingsDisplay")}
-          </p>
-          <ToggleRow
-            label={t("chartShowTradeMarks")}
-            checked={settings.showTradeMarkers}
-            onChange={(v) =>
-              onSettingsChange({ ...settings, showTradeMarkers: v })
-            }
-          />
-
-          <div className="my-1 border-t border-[var(--border)]" />
-          <p className="px-3 pb-1 pt-1.5 text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
-            {t("chartSettingsColors")}
-          </p>
-          <div className="flex gap-1.5 px-3 pb-2">
-            <button
-              type="button"
-              onClick={() => setChangeColorScheme("cn")}
-              data-active={changeColorScheme === "cn"}
-              className="flex-1 rounded-md border px-2 py-1.5 text-[11px] data-[active=true]:border-[var(--brand)] data-[active=true]:bg-[var(--brand-soft)] data-[active=true]:text-[var(--brand-text)] border-[var(--border)] text-[var(--muted)]"
-            >
-              {t("chartColorCn")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setChangeColorScheme("us")}
-              data-active={changeColorScheme === "us"}
-              className="flex-1 rounded-md border px-2 py-1.5 text-[11px] data-[active=true]:border-[var(--brand)] data-[active=true]:bg-[var(--brand-soft)] data-[active=true]:text-[var(--brand-text)] border-[var(--border)] text-[var(--muted)]"
-            >
-              {t("chartColorUs")}
-            </button>
-          </div>
-
-          {onFlagToggle ? (
-            <>
-              <div className="my-1 border-t border-[var(--border)]" />
-              <p className="px-3 pb-1 pt-1.5 text-[10px] font-medium uppercase tracking-wide text-[var(--muted)]">
-                {t("indicators")}
-              </p>
-              <div className="flex flex-wrap gap-1 px-3 pb-2">
-                {INDICATOR_KEYS.map(([key, label]) => (
-                  <button
-                    key={key}
-                    type="button"
-                    onClick={() => onFlagToggle(key)}
-                    data-active={flags[key]}
-                    className="rounded-md border px-2 py-1 text-[11px] data-[active=true]:border-[var(--brand)] data-[active=true]:bg-[var(--brand-soft)] data-[active=true]:text-[var(--brand-text)] border-[var(--border)] text-[var(--muted)]"
-                  >
-                    {label}
-                  </button>
-                ))}
-              </div>
-            </>
-          ) : null}
-
-          <div className="my-1 border-t border-[var(--border)]" />
-          <button
-            type="button"
-            onClick={() => {
-              onClearDrawings();
-              setOpen(false);
-            }}
-            className="flex w-full px-3 py-2 text-left text-[12px] text-[var(--foreground)] hover:bg-[var(--surface-2)]"
-          >
-            {t("drawClear")}
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              onToggleFullscreen();
-              setOpen(false);
-            }}
-            className="flex w-full px-3 py-2 text-left text-[12px] text-[var(--foreground)] hover:bg-[var(--surface-2)]"
-          >
-            {fullscreen ? t("exitFullscreen") : t("fullscreen")}
-          </button>
-        </div>
-      ) : null}
+      {panel}
     </div>
   );
 }

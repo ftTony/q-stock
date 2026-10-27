@@ -10,6 +10,7 @@ type Props = {
   onFlagToggle: (key: keyof IndicatorFlags) => void;
   settings: ChartUiSettings;
   onSettingsChange: (next: ChartUiSettings) => void;
+  resolution?: string;
   onClearDrawings: () => void;
   fullscreen: boolean;
   onToggleFullscreen: () => void;
@@ -32,6 +33,7 @@ export function CandleChartToolbarActions({
   onFlagToggle,
   settings,
   onSettingsChange,
+  resolution,
   onClearDrawings,
   fullscreen,
   onToggleFullscreen,
@@ -68,6 +70,7 @@ export function CandleChartToolbarActions({
         onFlagToggle={onFlagToggle}
         settings={settings}
         onSettingsChange={onSettingsChange}
+        resolution={resolution}
         onClearDrawings={onClearDrawings}
         fullscreen={fullscreen}
         onToggleFullscreen={onToggleFullscreen}

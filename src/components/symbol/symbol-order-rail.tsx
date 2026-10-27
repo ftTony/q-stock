@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { setBoundStrategyId } from "@/components/symbol/symbol-plan-binding";
+import { SymbolRailGuide } from "@/components/symbol/symbol-rail-guide";
 import type { AssetType } from "@/lib/types";
 
 const SymbolPlanPanel = dynamic(
@@ -129,6 +130,13 @@ export function SymbolOrderRail({
             role="tab"
             aria-selected={tab === opt.value}
             data-active={tab === opt.value}
+            data-tour={
+              opt.value === "plan"
+                ? "rail-plan"
+                : opt.value === "review"
+                  ? "rail-review"
+                  : undefined
+            }
             onClick={() => setTab(opt.value)}
             className="aw-tab flex-1 justify-center"
           >
@@ -136,6 +144,12 @@ export function SymbolOrderRail({
           </button>
         ))}
       </div>
+
+      <SymbolRailGuide
+        onGoPlan={() => setTab("plan")}
+        onGoOrder={() => setTab("plan")}
+        onGoReview={() => setTab("review")}
+      />
 
       {tab === "market" && showMarket ? (
         <RailScroll>

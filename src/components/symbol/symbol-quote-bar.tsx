@@ -186,6 +186,7 @@ export function SymbolQuoteBar({
             onClick={onOpenTrade}
             className="aw-btn-pill"
             title={t("tradeDock")}
+            data-tour="rail-order"
           >
             {t("tradeDock")}
           </button>

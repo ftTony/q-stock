@@ -76,6 +76,7 @@ function RailItem({
   onNavigate,
   hard,
   onClick,
+  tourId,
 }: {
   href?: string;
   active?: boolean;
@@ -86,12 +87,15 @@ function RailItem({
   hard?: boolean;
   /** Prefer over href when set (e.g. settings modal). */
   onClick?: () => void;
+  /** Spotlight tour target. */
+  tourId?: string;
 }) {
   const className = `flex h-10 w-10 items-center justify-center rounded-lg transition ${
     active
       ? "bg-[var(--sidebar-active)] text-[var(--brand-text)]"
       : "text-[color-mix(in_srgb,var(--muted)_88%,transparent)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
   }`;
+  const tourProps = tourId ? { "data-tour": tourId } : {};
 
   if (onClick) {
     return (
@@ -100,6 +104,7 @@ function RailItem({
         title={label}
         aria-label={label}
         className={className}
+        {...tourProps}
         onClick={() => {
           onClick();
           onNavigate?.();
@@ -112,7 +117,13 @@ function RailItem({
 
   if (hard && href) {
     return (
-      <a href={href} title={label} aria-label={label} className={className}>
+      <a
+        href={href}
+        title={label}
+        aria-label={label}
+        className={className}
+        {...tourProps}
+      >
         {icon}
       </a>
     );
@@ -125,6 +136,7 @@ function RailItem({
       aria-label={label}
       onClick={onNavigate}
       className={className}
+      {...tourProps}
     >
       {icon}
     </Link>
@@ -177,6 +189,7 @@ export function AppSidebar({ onNavigate }: Props) {
           icon={<IconGrid />}
           label={t("markets")}
           onNavigate={onNavigate}
+          tourId="nav-watchlist"
         />
         <RailItem
           href="/analysis"
@@ -191,6 +204,7 @@ export function AppSidebar({ onNavigate }: Props) {
           icon={<IconBag />}
           label={t("portfolio")}
           onNavigate={onNavigate}
+          tourId="nav-portfolio"
         />
         <RailItem
           href="/review"
@@ -198,6 +212,7 @@ export function AppSidebar({ onNavigate }: Props) {
           icon={<IconDoc />}
           label={t("review")}
           onNavigate={onNavigate}
+          tourId="nav-review"
         />
         <RailItem
           href="/strategies"
