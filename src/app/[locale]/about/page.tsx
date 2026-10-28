@@ -1,12 +1,13 @@
-import Image from "next/image";
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { getTranslations, setRequestLocale } from "next-intl/server";
+import {
+  AboutSupportPayments,
+  CONTACT_EMAIL,
+} from "@/components/about/about-support-payments";
 import { MarketingCtaBand } from "@/components/marketing/marketing-cta-band";
 import { ScopedMessages } from "@/components/providers/scoped-messages";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
-
-const CONTACT_EMAIL = "172993974@qq.com";
 
 type Props = { params: Promise<{ locale: string }> };
 
@@ -225,35 +226,11 @@ export default async function AboutPage({ params }: Props) {
                         </p>
                       </div>
 
-                      <div className="grid gap-5 sm:grid-cols-2">
-                        <figure className="flex flex-col items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
-                          <Image
-                            src="/about/wechat-qr.jpg"
-                            alt={t("wechatQrAlt")}
-                            width={200}
-                            height={200}
-                            className="h-[200px] w-[200px] rounded-lg bg-white object-contain"
-                            unoptimized
-                          />
-                          <figcaption className="text-sm font-medium">
-                            {t("wechat")}
-                          </figcaption>
-                        </figure>
-                        <figure className="flex flex-col items-center gap-3 rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4">
-                          <Image
-                            src="/about/alipay-qr.jpg"
-                            alt={t("alipayQrAlt")}
-                            width={200}
-                            height={200}
-                            className="h-[200px] w-[200px] rounded-lg bg-white object-contain"
-                            unoptimized
-                          />
-                          <figcaption className="text-sm font-medium">
-                            {t("alipay")}
-                          </figcaption>
-                        </figure>
-                      </div>
-                      <p className="text-xs text-[var(--muted)]">{t("qrHint")}</p>
+                      <AboutSupportPayments
+                        intlFirst={
+                          locale !== "zh-CN" && locale !== "zh-TW"
+                        }
+                      />
                     </div>
                   </div>
                 </Section>

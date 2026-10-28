@@ -820,7 +820,7 @@
     "alipay": "Alipay",
     "wechatQrAlt": "WeChat QR",
     "alipayQrAlt": "Alipay QR",
-    "qrHint": "Scan to tip, or email for collaboration.",
+    "qrHint": "Scan WeChat / Alipay in mainland China; overseas users use PayPal, card, or email.",
     "mainlandNotice": "中国本土の方向け：現在、海外株・BTC への投資は違法とされています。本サイトは学習用であり、現地の法令を遵守してください。",
     "platformTitle": "銭力股について",
     "platformBody": "銭力股のプロダクト理念は単純です。銘柄推奨も「買う／売る」の結論も出しません。AI とルールで、相場観察・注文前の冷静さ・取引後の振り返りをつなぎ、強欲と恐怖が次の判断を左右しにくくします。相場とコンテンツは学習用であり、いかなる投資助言でもありません。",
@@ -854,7 +854,16 @@
     "quote": "記録がなければ振り返れず、振り返らなければ同じ誤りが繰り返されるだけです。",
     "originP4": "まず不均衡そのものについて。機関には業種を担当するアナリスト、自動で執行するシステム、強制的に損切りさせるリスク管理があります。個人にあるのは断片的な時間とスマホだけです。これは努力の差ではなく構造の差で、構造的に不利な側が「相手より速く正確に」を狙っても、大抵は負けます。",
     "originP5": "次に、道具が変えられるもの。道具は情報を対称にはできませんが、手順は対称にできます。資金の大小に関わらず、同じ場所に仮説を書き、建玉を制限し、結果を記録できる。この層では、個人と機関の差は埋められます。",
-    "originP6": "最後に、なぜ「振り返り」から始めたのか。売買報告書を眺めていて分かったのは、最も大きく損した取引ほど、後からでは買った理由すら説明できないということでした。逆に利益が出た取引は、たいてい「どんな条件なら売るか」を事前に書いていました。だから記録を、後付けの機能ではなく製品の土台にしました。"
+    "originP6": "最後に、なぜ「振り返り」から始めたのか。売買報告書を眺めていて分かったのは、最も大きく損した取引ほど、後からでは買った理由すら説明できないということでした。逆に利益が出た取引は、たいてい「どんな条件なら売るか」を事前に書いていました。だから記録を、後付けの機能ではなく製品の土台にしました。",
+    "payCnTitle": "Mainland China",
+    "payIntlTitle": "Outside mainland China",
+    "payIntlHint": "PayPal or card works worldwide. You can also email for wire or other options.",
+    "paypal": "PayPal",
+    "paypalHint": "Open PayPal to send a tip",
+    "stripeTip": "Card (Stripe)",
+    "stripeTipHint": "Visa / Mastercard and more",
+    "intlEmailCta": "Email to tip",
+    "intlEmailHint": "Set PayPal / Stripe tip links in env, or write to arrange payment"
   },
   "aiChart": {
     "title": "AI chart read",

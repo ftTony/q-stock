@@ -820,7 +820,7 @@
     "alipay": "Alipay",
     "wechatQrAlt": "WeChat QR",
     "alipayQrAlt": "Alipay QR",
-    "qrHint": "Scan to tip, or email for collaboration.",
+    "qrHint": "Scan WeChat / Alipay in mainland China; overseas users use PayPal, card, or email.",
     "mainlandNotice": "Aviso para amigos en China continental: invertir en acciones extranjeras o BTC es actualmente ilegal. Este sitio es solo para aprendizaje — cumplan las leyes locales.",
     "platformTitle": "Sobre Qianli Gu",
     "platformBody": "La idea de Qianli Gu es simple: sin tips de acciones ni veredictos de «compra / vende». Usamos IA y reglas para unir el análisis, una pausa más serena antes de ordenar y la revisión tras el trade —para que miedo y codicia dirijan menos la siguiente decisión. Datos y contenidos son solo para aprendizaje, no asesoramiento de inversión.",
@@ -854,7 +854,16 @@
     "quote": "Sin registro no hay revisión; sin revisión, el mismo error solo se repite.",
     "originP4": "Primero la asimetría en sí. Las instituciones tienen analistas por sector, sistemas que ejecutan y controles de riesgo que obligan a cerrar; un particular tiene tiempo fragmentado y un teléfono. No es una diferencia de esfuerzo, es de estructura: intentar ser más rápido y más preciso que el otro lado desde una desventaja estructural suele salir caro.",
     "originP5": "Luego, qué puede cambiar una herramienta. No hace simétrica la información, pero sí el proceso: sea cual sea el capital, puedes escribir la tesis, limitar la posición y registrar el resultado en el mismo sitio. En esa capa, la distancia entre un particular y una institución sí se puede cerrar.",
-    "originP6": "Y por último, por qué empecé por la revisión. Al mirar mis confirmaciones, las mayores pérdidas eran operaciones en las que ya no sabía explicar por qué había comprado; las ganancias solían venir de operaciones donde había escrito de antemano bajo qué condición vendería. Por eso el registro se volvió la base del producto, no un extra."
+    "originP6": "Y por último, por qué empecé por la revisión. Al mirar mis confirmaciones, las mayores pérdidas eran operaciones en las que ya no sabía explicar por qué había comprado; las ganancias solían venir de operaciones donde había escrito de antemano bajo qué condición vendería. Por eso el registro se volvió la base del producto, no un extra.",
+    "payCnTitle": "Mainland China",
+    "payIntlTitle": "Outside mainland China",
+    "payIntlHint": "PayPal or card works worldwide. You can also email for wire or other options.",
+    "paypal": "PayPal",
+    "paypalHint": "Open PayPal to send a tip",
+    "stripeTip": "Card (Stripe)",
+    "stripeTipHint": "Visa / Mastercard and more",
+    "intlEmailCta": "Email to tip",
+    "intlEmailHint": "Set PayPal / Stripe tip links in env, or write to arrange payment"
   },
   "aiChart": {
     "title": "AI chart read",

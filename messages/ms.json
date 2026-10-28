@@ -820,7 +820,7 @@
     "alipay": "Alipay",
     "wechatQrAlt": "WeChat QR",
     "alipayQrAlt": "Alipay QR",
-    "qrHint": "Scan to tip, or email for collaboration.",
+    "qrHint": "Scan WeChat / Alipay in mainland China; overseas users use PayPal, card, or email.",
     "mainlandNotice": "Peringatan untuk rakan di tanah besar China: melabur saham luar negara atau BTC kini adalah haram. Laman ini hanya untuk pembelajaran — patuhi undang-undang setempat.",
     "platformTitle": "Tentang Qianli Gu",
     "platformBody": "Idea di sebalik Qianli Gu mudah: tiada tip saham, tiada keputusan «beli / jual». Kami guna AI dan peraturan untuk menghubungkan penyelidikan, jeda lebih tenang sebelum order, dan semakan selepas dagangan—supaya takut dan ketamakan kurang mengemudi keputusan seterusnya. Data dan kandungan hanya untuk pembelajaran, bukan nasihat pelaburan.",
@@ -854,7 +854,16 @@
     "quote": "Tanpa rekod, tiada semakan. Tanpa semakan, kesilapan yang sama berulang.",
     "originP4": "Mulakan dengan ketaksamaan itu sendiri. Institusi ada penganalisis bagi setiap sektor, sistem yang melaksanakan pesanan, dan kawalan risiko yang memaksa tutup posisi; individu hanya ada masa terpecah dan sebuah telefon. Ini bukan perbezaan usaha, tetapi perbezaan struktur — dan cuba menjadi lebih pantas serta lebih tepat daripada pihak lawan dari kedudukan yang lemah biasanya merugikan.",
     "originP5": "Seterusnya, apa yang alat boleh ubah. Alat tidak boleh menjadikan maklumat simetri, tetapi boleh menjadikan proses simetri: berapa pun modal, anda boleh menulis tesis, mengehadkan posisi dan merekod hasil di tempat yang sama. Pada lapisan ini, jurang antara individu dan institusi boleh dirapatkan.",
-    "originP6": "Akhir sekali, mengapa saya mula dengan semakan. Semasa meneliti penyata dagangan, kerugian terbesar ialah dagangan yang selepas itu saya sendiri tidak dapat menjelaskan mengapa saya beli; keuntungan pula biasanya datang daripada dagangan yang saya sudah tulis lebih awal bila saya akan jual. Jadi rekod menjadi asas produk, bukan ciri tambahan."
+    "originP6": "Akhir sekali, mengapa saya mula dengan semakan. Semasa meneliti penyata dagangan, kerugian terbesar ialah dagangan yang selepas itu saya sendiri tidak dapat menjelaskan mengapa saya beli; keuntungan pula biasanya datang daripada dagangan yang saya sudah tulis lebih awal bila saya akan jual. Jadi rekod menjadi asas produk, bukan ciri tambahan.",
+    "payCnTitle": "Mainland China",
+    "payIntlTitle": "Outside mainland China",
+    "payIntlHint": "PayPal or card works worldwide. You can also email for wire or other options.",
+    "paypal": "PayPal",
+    "paypalHint": "Open PayPal to send a tip",
+    "stripeTip": "Card (Stripe)",
+    "stripeTipHint": "Visa / Mastercard and more",
+    "intlEmailCta": "Email to tip",
+    "intlEmailHint": "Set PayPal / Stripe tip links in env, or write to arrange payment"
   },
   "aiChart": {
     "title": "AI chart read",

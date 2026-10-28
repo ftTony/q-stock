@@ -820,7 +820,7 @@
     "alipay": "Alipay",
     "wechatQrAlt": "WeChat QR",
     "alipayQrAlt": "Alipay QR",
-    "qrHint": "Scan to tip, or email for collaboration.",
+    "qrHint": "Scan WeChat / Alipay in mainland China; overseas users use PayPal, card, or email.",
     "mainlandNotice": "Rappel aux amis en Chine continentale : investir dans des actions étrangères ou le BTC est actuellement illégal. Ce site est uniquement pédagogique — respectez les lois locales.",
     "platformTitle": "À propos de Qianli Gu",
     "platformBody": "L’idée de Qianli Gu est simple : pas de tips boursiers, pas de verdict « achetez / vendez ». IA et règles relient l’analyse, une pause plus calme avant l’ordre, et la revue après le trade — pour que peur et cupidité dirigent moins la décision suivante. Données et contenus sont pédagogiques, pas un conseil en investissement.",
@@ -854,7 +854,16 @@
     "quote": "Sans trace, pas de relecture ; sans relecture, la même erreur se répète.",
     "originP4": "D’abord l’asymétrie elle-même. Les institutions ont des analystes par secteur, des systèmes qui exécutent, des contrôles de risque qui coupent la position ; un particulier a du temps fragmenté et un téléphone. Ce n’est pas une différence d’effort, c’est une différence de structure — et vouloir être plus rapide et plus juste que l’autre camp depuis une position structurellement défavorable est le plus souvent perdant.",
     "originP5": "Ensuite ce qu’un outil peut changer. Il ne rend pas l’information symétrique, mais il peut rendre la procédure symétrique : quel que soit le capital, on peut écrire la thèse, plafonner la position et consigner le résultat au même endroit. Sur cette couche, l’écart entre un particulier et une institution peut se combler.",
-    "originP6": "Enfin, pourquoi j’ai commencé par le débriefing. En relisant mes relevés, les plus grosses pertes étaient celles dont je ne savais plus, après coup, expliquer l’achat ; les gains venaient souvent de trades où j’avais écrit d’avance à quelle condition je vendrais. La trace est donc devenue la base du produit, pas une option ajoutée."
+    "originP6": "Enfin, pourquoi j’ai commencé par le débriefing. En relisant mes relevés, les plus grosses pertes étaient celles dont je ne savais plus, après coup, expliquer l’achat ; les gains venaient souvent de trades où j’avais écrit d’avance à quelle condition je vendrais. La trace est donc devenue la base du produit, pas une option ajoutée.",
+    "payCnTitle": "Mainland China",
+    "payIntlTitle": "Outside mainland China",
+    "payIntlHint": "PayPal or card works worldwide. You can also email for wire or other options.",
+    "paypal": "PayPal",
+    "paypalHint": "Open PayPal to send a tip",
+    "stripeTip": "Card (Stripe)",
+    "stripeTipHint": "Visa / Mastercard and more",
+    "intlEmailCta": "Email to tip",
+    "intlEmailHint": "Set PayPal / Stripe tip links in env, or write to arrange payment"
   },
   "aiChart": {
     "title": "AI chart read",

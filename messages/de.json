@@ -820,7 +820,7 @@
     "alipay": "Alipay",
     "wechatQrAlt": "WeChat QR",
     "alipayQrAlt": "Alipay QR",
-    "qrHint": "Scan to tip, or email for collaboration.",
+    "qrHint": "Scan WeChat / Alipay in mainland China; overseas users use PayPal, card, or email.",
     "mainlandNotice": "Hinweis für Freunde in Festlandchina: Anlagen in ausländische Aktien oder BTC sind derzeit rechtswidrig. Diese Seite dient nur dem Lernen — bitte geltendes Recht beachten.",
     "platformTitle": "Über Qianli Gu",
     "platformBody": "Die Idee hinter Qianli Gu ist einfach: keine Aktientipps, keine Urteile „kaufen / verkaufen“. KI und Regeln verbinden Research, eine ruhige Pause vor der Order und das Review danach — damit Angst und Gier die nächste Entscheidung weniger steuern. Marktdaten und Inhalte dienen nur dem Lernen, nicht der Anlageberatung.",
@@ -854,7 +854,16 @@
     "quote": "Ohne Notiz kein Rückblick. Ohne Rückblick wiederholt sich nur derselbe Fehler.",
     "originP4": "Zuerst die Asymmetrie selbst. Institute haben Analysten je Branche, Systeme, die ausführen, und Risikokontrollen, die zwangsweise schließen; ein Privatanleger hat zerstückelte Zeit und ein Telefon. Das ist kein Unterschied im Einsatz, sondern in der Struktur — und aus einer strukturellen Unterlegenheit heraus schneller und genauer sein zu wollen als die Gegenseite, geht meistens schief.",
     "originP5": "Dann, was ein Werkzeug ändern kann. Es macht Informationen nicht symmetrisch, aber den Ablauf: unabhängig von der Kontogröße lassen sich an derselben Stelle die These notieren, die Position begrenzen und das Ergebnis festhalten. Auf dieser Ebene lässt sich der Abstand zwischen Privatanleger und Institut schließen.",
-    "originP6": "Und schließlich, warum ich beim Nachbereiten angefangen habe. Beim Durchsehen meiner Abrechnungen waren die größten Verluste die, für die ich hinterher nicht mehr sagen konnte, warum ich gekauft hatte; die Gewinne kamen meist aus Trades, bei denen ich vorher notiert hatte, wann ich verkaufe. Also wurde die Aufzeichnung das Fundament des Produkts — keine Zusatzfunktion."
+    "originP6": "Und schließlich, warum ich beim Nachbereiten angefangen habe. Beim Durchsehen meiner Abrechnungen waren die größten Verluste die, für die ich hinterher nicht mehr sagen konnte, warum ich gekauft hatte; die Gewinne kamen meist aus Trades, bei denen ich vorher notiert hatte, wann ich verkaufe. Also wurde die Aufzeichnung das Fundament des Produkts — keine Zusatzfunktion.",
+    "payCnTitle": "Mainland China",
+    "payIntlTitle": "Outside mainland China",
+    "payIntlHint": "PayPal or card works worldwide. You can also email for wire or other options.",
+    "paypal": "PayPal",
+    "paypalHint": "Open PayPal to send a tip",
+    "stripeTip": "Card (Stripe)",
+    "stripeTipHint": "Visa / Mastercard and more",
+    "intlEmailCta": "Email to tip",
+    "intlEmailHint": "Set PayPal / Stripe tip links in env, or write to arrange payment"
   },
   "aiChart": {
     "title": "AI chart read",

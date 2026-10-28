@@ -833,7 +833,7 @@
     "alipay": "Alipay",
     "wechatQrAlt": "WeChat pay QR code",
     "alipayQrAlt": "Alipay QR code",
-    "qrHint": "Scan to tip, or email for collaboration.",
+    "qrHint": "Scan WeChat / Alipay in mainland China; overseas users use PayPal, card, or email.",
     "mainlandNotice": "Note for friends in mainland China: investing in overseas stocks or BTC is currently illegal. This site is for learning only — please follow local laws.",
     "platformTitle": "About Qianli Gu",
     "platformBody": "The idea behind Qianli Gu is simple: no stock tips, no “buy this / sell that” verdicts. We use AI and rules to connect research, a calmer pause before you order, and post-trade review—so fear and greed have less room to steer the next decision. Market data and content are for learning only, not investment advice.",
@@ -867,7 +867,16 @@
     "quote": "No record, no review. No review, and the same mistake simply repeats.",
     "originP4": "Start with the asymmetry itself. Institutions have analysts covering sectors, systems that execute for them, and risk controls that force a stop; an individual has fragmented time and a phone. That is not a difference in effort, it is a difference in structure — and trying to be faster and more accurate than the other side from a structurally weaker position is, most of the time, a losing game.",
     "originP5": "Then what a tool can change. It cannot make information symmetric, but it can make the process symmetric: whatever the account size, the thesis, the position cap and the outcome can all live in the same place. On that layer, the gap between an individual and an institution can actually be closed.",
-    "originP6": "And finally, why I started from review. Going through my trade confirmations, the biggest losses were the ones where I could no longer explain, afterwards, why I had bought; the gains usually came from trades where I had written down in advance what would make me sell. So the record became the foundation of the product rather than a feature on top."
+    "originP6": "And finally, why I started from review. Going through my trade confirmations, the biggest losses were the ones where I could no longer explain, afterwards, why I had bought; the gains usually came from trades where I had written down in advance what would make me sell. So the record became the foundation of the product rather than a feature on top.",
+    "payCnTitle": "Mainland China",
+    "payIntlTitle": "Outside mainland China",
+    "payIntlHint": "PayPal or card works worldwide. You can also email for wire or other options.",
+    "paypal": "PayPal",
+    "paypalHint": "Open PayPal to send a tip",
+    "stripeTip": "Card (Stripe)",
+    "stripeTipHint": "Visa / Mastercard and more",
+    "intlEmailCta": "Email to tip",
+    "intlEmailHint": "Set PayPal / Stripe tip links in env, or write to arrange payment"
   },
   "aiChart": {
     "title": "AI chart read",

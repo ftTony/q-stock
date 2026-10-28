@@ -820,7 +820,7 @@
     "alipay": "Alipay",
     "wechatQrAlt": "WeChat QR",
     "alipayQrAlt": "Alipay QR",
-    "qrHint": "Scan to tip, or email for collaboration.",
+    "qrHint": "Scan WeChat / Alipay in mainland China; overseas users use PayPal, card, or email.",
     "mainlandNotice": "중국 본토 이용자 안내: 현재 해외 주식·BTC 투자는 불법입니다. 본 사이트는 학습용이며 현지 법령을 지켜 주세요.",
     "platformTitle": "Qianli Gu 소개",
     "platformBody": "전리구의 제품 철학은 단순합니다. 종목을 추천하지 않고 ‘사라/팔라’ 결론도 내지 않습니다. AI와 규칙으로 시세 보기, 주문 전의 침착함, 거래 후 복기를 이으며 탐욕과 공포가 다음 판단을 덜 흔들게 합니다. 시세와 콘텐츠는 학습용이며 어떠한 투자 권유도 아닙니다.",
@@ -854,7 +854,16 @@
     "quote": "기록이 없으면 복기도 없다. 복기가 없으면 같은 실수만 반복된다.",
     "originP4": "먼저 비대칭 자체부터. 기관에는 업종을 담당하는 애널리스트, 자동으로 집행하는 시스템, 강제로 손절시키는 리스크 관리가 있습니다. 개인에게는 조각난 시간과 스마트폰뿐입니다. 이는 노력의 차이가 아니라 구조의 차이이고, 구조적으로 불리한 쪽이 ‘상대보다 빠르고 정확하게’를 노리면 대개 집니다.",
     "originP5": "다음은 도구가 바꿀 수 있는 것. 도구는 정보를 대칭으로 만들 수는 없지만 과정은 대칭으로 만들 수 있습니다. 자금 규모와 무관하게 같은 곳에 가설을 적고, 포지션을 제한하고, 결과를 기록할 수 있습니다. 이 층에서는 개인과 기관의 차이를 좁힐 수 있습니다.",
-    "originP6": "마지막으로 왜 ‘복기’에서 시작했는지. 거래 내역을 넘겨 보며 알게 된 것은, 가장 크게 손실한 거래일수록 나중에는 매수 이유조차 설명할 수 없다는 점이었습니다. 반대로 수익이 난 거래는 대개 ‘어떤 조건이면 팔겠다’를 미리 적어 두었습니다. 그래서 기록을 부가 기능이 아니라 제품의 토대로 삼았습니다."
+    "originP6": "마지막으로 왜 ‘복기’에서 시작했는지. 거래 내역을 넘겨 보며 알게 된 것은, 가장 크게 손실한 거래일수록 나중에는 매수 이유조차 설명할 수 없다는 점이었습니다. 반대로 수익이 난 거래는 대개 ‘어떤 조건이면 팔겠다’를 미리 적어 두었습니다. 그래서 기록을 부가 기능이 아니라 제품의 토대로 삼았습니다.",
+    "payCnTitle": "Mainland China",
+    "payIntlTitle": "Outside mainland China",
+    "payIntlHint": "PayPal or card works worldwide. You can also email for wire or other options.",
+    "paypal": "PayPal",
+    "paypalHint": "Open PayPal to send a tip",
+    "stripeTip": "Card (Stripe)",
+    "stripeTipHint": "Visa / Mastercard and more",
+    "intlEmailCta": "Email to tip",
+    "intlEmailHint": "Set PayPal / Stripe tip links in env, or write to arrange payment"
   },
   "aiChart": {
     "title": "AI chart read",
