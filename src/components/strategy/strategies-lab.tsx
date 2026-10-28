@@ -26,25 +26,40 @@ import {
   StrategyLabHistoryHeader,
   StrategyLabHistoryRow,
 } from "@/components/strategy/strategy-lab-history";
+import { StrategyLabEmpty } from "@/components/strategy/strategy-lab-empty";
 import {
   StrategyLabCardGridSkeleton,
-  StrategyLabEmptyPanel,
   StrategyLabHistorySkeleton,
 } from "@/components/strategy/strategy-lab-skeletons";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import {
   useStrategiesLabStore,
   type StrategiesLabTab,
 } from "@/stores/strategies-lab-store";
+import {
+  LAB_TALL_MIN,
+  SM_MIN,
+  XL_MIN,
+  useMinHeight,
+  useMinWidth,
+} from "@/hooks/use-min-width";
 
-/** 3 cols × 3 rows on desktop. */
-const PAGE_TEMPLATES = 9;
-const PAGE_MINE = 9;
 const PAGE_HISTORY = 9;
 const PAGE_SIDEBAR = 8;
 
 /** content/items-start: cards keep natural height; pinPager fills space below, not inside cards. */
 const CARD_GRID =
   "grid w-full content-start items-start gap-3 sm:grid-cols-2 xl:grid-cols-3";
+
+/** Rows by viewport height; cols follow the card grid breakpoints. */
+function useLabCardPageSize(): number {
+  const wide = useMinWidth(XL_MIN);
+  const sm = useMinWidth(SM_MIN);
+  const tall = useMinHeight(LAB_TALL_MIN);
+  const cols = wide ? 3 : sm ? 2 : 1;
+  const rows = tall ? 4 : 2;
+  return cols * rows;
+}
 
 function formatDate(iso?: string) {
   if (!iso) return "";
@@ -57,6 +72,7 @@ function formatDate(iso?: string) {
 
 export function StrategiesLab() {
   const t = useTranslations("strategies");
+  const tNav = useTranslations("nav");
   const locale = useLocale();
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -65,6 +81,8 @@ export function StrategiesLab() {
   const setTab = useStrategiesLabStore((s) => s.setTab);
   const setQuery = useStrategiesLabStore((s) => s.setQuery);
   const [error, setError] = useState<string | null>(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const cardPageSize = useLabCardPageSize();
 
   const listQuery = useStrategiesList(locale);
   const replaysQuery = useStrategyReplays(
@@ -133,11 +151,17 @@ export function StrategiesLab() {
     }
   }
 
-  async function removeMine(id: string) {
-    if (!window.confirm(t("deleteConfirm"))) return;
+  function requestRemoveMine(id: string) {
+    setPendingDeleteId(id);
+  }
+
+  async function confirmRemoveMine() {
+    if (!pendingDeleteId) return;
+    const id = pendingDeleteId;
     setError(null);
     try {
       await deleteMutation.mutateAsync(id);
+      setPendingDeleteId(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : t("deleteFailed"));
     }
@@ -176,9 +200,20 @@ export function StrategiesLab() {
               variant="spread"
               listClassName="space-y-0.5"
               empty={
-                <p className="px-2 py-4 text-[11px] text-[var(--muted)]">
-                  {t("emptyMine")}
-                </p>
+                <StrategyLabEmpty
+                  art="strategy"
+                  label={t("emptyMine")}
+                  compact
+                  action={
+                    <button
+                      type="button"
+                      onClick={() => setTab("templates")}
+                      className="aw-text-link text-[12px]"
+                    >
+                      {t("emptyMineAction")}
+                    </button>
+                  }
+                />
               }
               renderItem={(s) => (
                 <li
@@ -203,7 +238,7 @@ export function StrategiesLab() {
                     disabled={deletingId === s.id}
                     title={t("delete")}
                     aria-label={t("delete")}
-                    onClick={() => void removeMine(s.id)}
+                    onClick={() => requestRemoveMine(s.id)}
                     className="flex w-9 shrink-0 items-center justify-center self-stretch text-[var(--muted)] opacity-0 hover:text-[var(--down)] group-hover:opacity-100 disabled:opacity-40"
                   >
                     {deletingId === s.id ? (
@@ -235,7 +270,7 @@ export function StrategiesLab() {
             type="button"
             disabled={creating}
             onClick={() => void createBlank()}
-            className="flex h-8 w-full shrink-0 items-center justify-center rounded-md border border-dashed border-[var(--border)] text-[12px] text-[var(--muted)] hover:border-[var(--brand)] hover:text-[var(--brand-text)] disabled:opacity-60"
+            className="qt-btn qt-btn-primary h-8 w-full shrink-0 text-[12px] disabled:opacity-60"
           >
             + {t("newStrategy")}
           </button>
@@ -243,9 +278,9 @@ export function StrategiesLab() {
         </div>
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-2.5 overflow-hidden">
-        <div className="flex shrink-0 flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
-          <div className="flex flex-wrap items-center gap-1 border-b border-[var(--border)] sm:border-0">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+        <div className="flex shrink-0 flex-col gap-2 border-b border-[var(--border)] px-3 pt-1 sm:flex-row sm:items-center sm:justify-between sm:px-4">
+          <div className="flex flex-wrap items-center gap-0.5">
             {(
               [
                 ["templates", t("templates")],
@@ -257,15 +292,15 @@ export function StrategiesLab() {
                 key={id}
                 type="button"
                 onClick={() => setTab(id as StrategiesLabTab)}
-                className={`px-3 py-2 text-[13px] ${
+                className={`px-2.5 py-2.5 text-[13px] ${
                   tab === id
                     ? "border-b-2 border-[var(--brand)] font-medium text-[var(--foreground)]"
-                    : "text-[var(--muted)] hover:text-[var(--foreground)]"
+                    : "border-b-2 border-transparent text-[var(--muted)] hover:text-[var(--foreground)]"
                 }`}
               >
                 {label}
                 {id === "mine" ? (
-                  <span className="ml-1 text-[11px] text-[var(--muted)]">
+                  <span className="ml-1 text-[11px] tabular-nums text-[var(--muted)]">
                     {mine.length}
                   </span>
                 ) : null}
@@ -277,44 +312,63 @@ export function StrategiesLab() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder={t("searchPlaceholder")}
-              className="h-8 w-full rounded-md border border-[var(--border)] bg-[var(--panel)] px-2.5 text-[12px] sm:max-w-[16rem]"
+              className="qt-input mb-2 h-8 w-full px-2.5 text-[12px] sm:mb-0 sm:max-w-[16rem]"
             />
           ) : null}
         </div>
 
-        <p className="shrink-0 text-[11px] leading-relaxed text-[var(--muted)] sm:text-[12px]">
+        <p className="shrink-0 px-3 pt-2.5 text-[11px] leading-relaxed text-[var(--muted)] sm:px-4 sm:text-[12px]">
           {t("disclaimer")}
         </p>
 
         {error ? (
-          <p className="shrink-0 text-sm text-[var(--down)]">{error}</p>
+          <p className="shrink-0 px-3 text-sm text-[var(--danger)] sm:px-4">
+            {error}
+          </p>
         ) : null}
 
-        <div className="flex min-h-0 flex-1 flex-col">
+        <div className="flex min-h-0 flex-1 flex-col px-3 pb-3 pt-2.5 sm:px-4 sm:pb-4">
           {tab === "templates" ? (
             listLoading ? (
-              <StrategyLabCardGridSkeleton />
+              <StrategyLabCardGridSkeleton count={cardPageSize} />
             ) : listError ? (
-              <StrategyLabEmptyPanel>
-                <span className="block">{t("loadFailed")}</span>
-                <button
-                  type="button"
-                  className="mt-3 text-[12px] font-medium text-[var(--brand-text)] hover:underline"
-                  onClick={() => void listQuery.refetch()}
-                >
-                  {t("retry")}
-                </button>
-              </StrategyLabEmptyPanel>
+              <StrategyLabEmpty
+                art="strategy"
+                label={t("loadFailed")}
+                action={
+                  <button
+                    type="button"
+                    className="aw-text-link text-[12px]"
+                    onClick={() => void listQuery.refetch()}
+                  >
+                    {t("retry")}
+                  </button>
+                }
+              />
             ) : (
               <PaginatedList
                 items={filteredTemplates}
-                pageSize={PAGE_TEMPLATES}
-                resetKey={`templates:${query.trim()}`}
+                pageSize={cardPageSize}
+                resetKey={`templates:${query.trim()}:${cardPageSize}`}
                 variant="spread"
                 pinPager
                 listClassName={CARD_GRID}
                 empty={
-                  <StrategyLabEmptyPanel>{t("searchEmpty")}</StrategyLabEmptyPanel>
+                  <StrategyLabEmpty
+                    art="search"
+                    label={t("searchEmpty")}
+                    action={
+                      query.trim() ? (
+                        <button
+                          type="button"
+                          className="aw-text-link text-[12px]"
+                          onClick={() => setQuery("")}
+                        >
+                          {t("searchClear")}
+                        </button>
+                      ) : null
+                    }
+                  />
                 }
                 renderItem={(s) => (
                   <StrategyTemplateCard
@@ -331,26 +385,49 @@ export function StrategiesLab() {
 
           {tab === "mine" ? (
             status === "loading" || listLoading ? (
-              <StrategyLabCardGridSkeleton count={6} />
+              <StrategyLabCardGridSkeleton count={cardPageSize} />
             ) : !session?.user ? (
-              <StrategyLabEmptyPanel>{t("loginHint")}</StrategyLabEmptyPanel>
+              <StrategyLabEmpty
+                art="auth"
+                label={t("loginHint")}
+                action={
+                  <Link
+                    href="/login"
+                    className="qt-btn qt-btn-primary h-8 px-3.5 text-[12px]"
+                  >
+                    {tNav("login")}
+                  </Link>
+                }
+              />
             ) : (
               <PaginatedList
                 items={mine}
-                pageSize={PAGE_MINE}
-                resetKey="mine"
+                pageSize={cardPageSize}
+                resetKey={`mine:${cardPageSize}`}
                 variant="spread"
                 pinPager
                 listClassName={CARD_GRID}
                 empty={
-                  <StrategyLabEmptyPanel>{t("emptyMine")}</StrategyLabEmptyPanel>
+                  <StrategyLabEmpty
+                    art="strategy"
+                    label={t("emptyMine")}
+                    action={
+                      <button
+                        type="button"
+                        onClick={() => setTab("templates")}
+                        className="qt-btn qt-btn-primary h-8 px-3.5 text-[12px]"
+                      >
+                        {t("emptyMineAction")}
+                      </button>
+                    }
+                  />
                 }
                 renderItem={(s) => (
                   <StrategyMineCard
                     key={s.id}
                     row={s}
                     deleting={deletingId === s.id}
-                    onDelete={() => void removeMine(s.id)}
+                    onDelete={() => requestRemoveMine(s.id)}
                   />
                 )}
               />
@@ -361,36 +438,71 @@ export function StrategiesLab() {
             status === "loading" ? (
               <StrategyLabHistorySkeleton />
             ) : !session?.user ? (
-              <StrategyLabEmptyPanel>{t("loginHint")}</StrategyLabEmptyPanel>
+              <StrategyLabEmpty
+                art="auth"
+                label={t("loginHint")}
+                action={
+                  <Link
+                    href="/login"
+                    className="qt-btn qt-btn-primary h-8 px-3.5 text-[12px]"
+                  >
+                    {tNav("login")}
+                  </Link>
+                }
+              />
             ) : replaysQuery.isLoading ? (
               <StrategyLabHistorySkeleton />
             ) : replays.length === 0 ? (
-              <StrategyLabEmptyPanel>
-                {t("emptyHistory")}
-              </StrategyLabEmptyPanel>
+              <StrategyLabEmpty
+                art="history"
+                label={t("emptyHistory")}
+                action={
+                  <button
+                    type="button"
+                    onClick={() => setTab(mine.length ? "mine" : "templates")}
+                    className="qt-btn qt-btn-primary h-8 px-3.5 text-[12px]"
+                  >
+                    {mine.length
+                      ? t("emptyHistoryActionMine")
+                      : t("emptyMineAction")}
+                  </button>
+                }
+              />
             ) : (
-              <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
-                <div className="flex min-h-0 flex-1 flex-col overflow-x-auto">
-                  <div className="flex min-h-0 min-w-[44rem] flex-1 flex-col">
-                    <StrategyLabHistoryHeader />
-                    <PaginatedList
-                      items={replays}
-                      pageSize={PAGE_HISTORY}
-                      resetKey="history"
-                      variant="spread"
-                      pinPager
-                      listClassName=""
-                      renderItem={(r) => (
-                        <StrategyLabHistoryRow key={r.id} row={r} />
-                      )}
-                    />
-                  </div>
+              <div className="flex min-h-0 flex-1 flex-col overflow-x-auto">
+                <div className="flex min-h-0 min-w-[44rem] flex-1 flex-col border border-[var(--border)]">
+                  <StrategyLabHistoryHeader />
+                  <PaginatedList
+                    items={replays}
+                    pageSize={PAGE_HISTORY}
+                    resetKey="history"
+                    variant="spread"
+                    pinPager
+                    listClassName=""
+                    renderItem={(r) => (
+                      <StrategyLabHistoryRow key={r.id} row={r} />
+                    )}
+                  />
                 </div>
               </div>
             )
           ) : null}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={pendingDeleteId != null}
+        title={t("deleteConfirmTitle")}
+        description={t("deleteConfirm")}
+        cancelLabel={t("blockModalCancel")}
+        confirmLabel={t("delete")}
+        tone="danger"
+        busy={deleteMutation.isPending}
+        onCancel={() => {
+          if (!deleteMutation.isPending) setPendingDeleteId(null);
+        }}
+        onConfirm={() => void confirmRemoveMine()}
+      />
     </div>
   );
 }

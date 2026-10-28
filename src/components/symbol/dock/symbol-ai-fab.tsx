@@ -57,14 +57,14 @@ export function SymbolAiFab({
   const label = t("openAi");
   const close = useCallback(() => setOpen(false), [setOpen]);
 
-  // Reset only when the symbol changes after mount (not first mount / open).
-  // Skip first run so deferred mount can open with controlled `open={true}`.
-  const symbolBootRef = useRef(true);
+  // Close only when symbol/asset actually changes — not on mount.
+  // (Strict Mode re-runs effects; a "skip first" boot flag would close on the
+  // second run and swallow the first open after deferred AI mount.)
+  const symbolKeyRef = useRef(`${assetType}:${symbol}`);
   useEffect(() => {
-    if (symbolBootRef.current) {
-      symbolBootRef.current = false;
-      return;
-    }
+    const key = `${assetType}:${symbol}`;
+    if (symbolKeyRef.current === key) return;
+    symbolKeyRef.current = key;
     onOpenChange?.(false);
     if (!controlled) setInnerOpen(false);
     setView("desk");

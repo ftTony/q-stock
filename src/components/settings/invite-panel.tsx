@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { InlineLoading } from "@/components/ui/panel-skeleton";
 import { useInvites } from "@/hooks/query/use-invites";
+import { trackBillingClick } from "@/lib/billing/client-events";
 
 type InviteRow = {
   code: string;
@@ -37,6 +38,7 @@ export function InvitePanel() {
     try {
       await navigator.clipboard.writeText(text);
       setCopiedKey(key);
+      void trackBillingClick("click_invite");
     } catch {
       /* ignore */
     }

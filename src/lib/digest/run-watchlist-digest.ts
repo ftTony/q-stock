@@ -39,8 +39,13 @@ export async function tickWatchlistDigest(prisma: PrismaClient): Promise<void> {
 
   const tradeDate = usTradeDate(now);
 
+  // Pro email digest only (Free keeps in-product research cards / light UX).
   const users = await prisma.user.findMany({
-    where: { watchlist: { some: {} } },
+    where: {
+      plan: "pro",
+      OR: [{ planExpiresAt: null }, { planExpiresAt: { gt: now } }],
+      watchlist: { some: {} },
+    },
     select: {
       id: true,
       email: true,
@@ -55,7 +60,7 @@ export async function tickWatchlistDigest(prisma: PrismaClient): Promise<void> {
   });
 
   if (!users.length) {
-    console.info(`[digest] no watchlist users @ ${tradeDate}`);
+    console.info(`[digest] no Pro watchlist users @ ${tradeDate}`);
     return;
   }
 

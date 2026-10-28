@@ -74,6 +74,7 @@ export default async function SymbolPage({ params }: Props) {
           "strategies",
           "trading",
           "watchlist",
+          "researchCard",
         ]}
       >
         <SymbolPageClient

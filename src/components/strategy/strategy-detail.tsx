@@ -6,6 +6,7 @@ import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { SymbolSearchField } from "@/components/ui/symbol-search-field";
@@ -80,6 +81,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
   const [rangeTo, setRangeTo] = useState(() => isoDate(new Date()));
   const [activeId, setActiveId] = useState<string | null>(replayIdParam);
   const [msg, setMsg] = useState<string | null>(null);
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const [rulesMode, setRulesMode] = useState<RulesMode>("blocks");
   const [rules, setRules] = useState<StrategyRules | null>(null);
 
@@ -266,12 +268,17 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
     }
   }
 
-  async function removeStrategy() {
+  function requestRemoveStrategy() {
     if (!canEdit) return;
-    if (!window.confirm(t("deleteConfirm"))) return;
+    setDeleteOpen(true);
+  }
+
+  async function confirmRemoveStrategy() {
+    if (!canEdit) return;
     setMsg(null);
     try {
       await deleteMut.mutateAsync(strategyId);
+      setDeleteOpen(false);
       setTab("mine");
       router.push("/strategies");
     } catch (err) {
@@ -295,7 +302,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
         onNameChange={setName}
         onDescriptionChange={setDescription}
         onSave={(e) => void save(e)}
-        onDelete={() => void removeStrategy()}
+        onDelete={requestRemoveStrategy}
       />
 
       {msg ? (
@@ -491,6 +498,20 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
           ) : null}
         </section>
       </div>
+
+      <ConfirmDialog
+        open={deleteOpen}
+        title={t("deleteConfirmTitle")}
+        description={t("deleteConfirm")}
+        cancelLabel={t("blockModalCancel")}
+        confirmLabel={t("delete")}
+        tone="danger"
+        busy={deleting}
+        onCancel={() => {
+          if (!deleting) setDeleteOpen(false);
+        }}
+        onConfirm={() => void confirmRemoveStrategy()}
+      />
     </div>
   );
 }

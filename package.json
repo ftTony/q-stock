@@ -20,6 +20,8 @@
     "seo:sitemap": "tsx scripts/generate-sitemap.ts",
     "learn:import": "tsx scripts/import-learn.ts",
     "learn:seed": "tsx scripts/import-learn.ts --seed",
+    "billing:grant-pro": "tsx scripts/grant-pro.ts",
+    "billing:create-code": "tsx scripts/create-redeem-code.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
@@ -44,6 +46,7 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "resend": "^6.28.0",
+    "stripe": "^23.0.1",
     "tsx": "^4.23.13",
     "ws": "^8.22.0",
     "zod": "^4.6.5",

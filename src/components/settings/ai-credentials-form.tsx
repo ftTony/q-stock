@@ -15,6 +15,7 @@ import {
   useSaveServiceCredentials,
   useServiceCredentials,
 } from "@/hooks/query/use-credentials";
+import { trackBillingClick } from "@/lib/billing/client-events";
 
 const CUSTOM = "__custom__";
 
@@ -101,6 +102,7 @@ export function AiCredentialsForm() {
       setApiKey("");
       setMessageKind("ok");
       setMessage(t("aiSaved"));
+      void trackBillingClick("click_byok");
     } catch (err) {
       setMessageKind("error");
       setMessage(err instanceof Error ? err.message : t("aiSaveError"));

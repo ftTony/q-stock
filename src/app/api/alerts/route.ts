@@ -1,6 +1,10 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
+import {
+  getEntitlements,
+  limitExceededResponse,
+} from "@/lib/billing/entitlements";
 import { prisma } from "@/lib/db";
 import { normalizeSymbol } from "@/lib/types";
 
@@ -40,6 +44,14 @@ export async function POST(req: Request) {
   const parsed = createSchema.safeParse(await req.json());
   if (!parsed.success) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  }
+
+  const entitlements = await getEntitlements(session.user.id);
+  const count = await prisma.priceAlert.count({
+    where: { userId: session.user.id },
+  });
+  if (count >= entitlements.alertLimit) {
+    return limitExceededResponse("alerts", entitlements.alertLimit);
   }
 
   const alert = await prisma.priceAlert.create({

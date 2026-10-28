@@ -16,6 +16,7 @@ import { MarketCredentialsForm } from "@/components/settings/market-credentials-
 import { MarketOkxCredentialsForm } from "@/components/settings/market-okx-credentials-form";
 import { MarketVendorPrefs } from "@/components/settings/market-vendor-prefs";
 import { AiCredentialsForm } from "@/components/settings/ai-credentials-form";
+import { BillingPanel } from "@/components/settings/billing-panel";
 import { InvitePanel } from "@/components/settings/invite-panel";
 import { PaperRiskSettingsForm } from "@/components/settings/paper-risk-settings-form";
 import { SettingsAboutPanel } from "@/components/settings/settings-about-panel";
@@ -275,13 +276,6 @@ export function SettingsPanel({
           <ul className="space-y-1 text-[13px] leading-relaxed text-[var(--muted)]">
             <li>
               <span className="font-medium text-[var(--foreground)]">
-                {t("freemiumFree")}
-              </span>
-              {" — "}
-              {t("freemiumFreeBody")}
-            </li>
-            <li>
-              <span className="font-medium text-[var(--foreground)]">
                 {t("freemiumInvite")}
               </span>
               {" — "}
@@ -294,8 +288,16 @@ export function SettingsPanel({
               {" — "}
               {t("freemiumByokBody")}
             </li>
+            <li>
+              <span className="font-medium text-[var(--foreground)]">
+                {t("freemiumPro")}
+              </span>
+              {" — "}
+              {t("freemiumProBody")}
+            </li>
           </ul>
         </section>
+        <BillingPanel />
         <InvitePanel />
         <AiCredentialsForm />
       </div>

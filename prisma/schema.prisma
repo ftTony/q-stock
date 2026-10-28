@@ -70,6 +70,11 @@ enum CryptoMarketVendor {
   okx
 }
 
+enum UserPlan {
+  free
+  pro
+}
+
 model User {
   id                String             @id @default(cuid())
   email             String             @unique
@@ -85,10 +90,19 @@ model User {
   cryptoVendor      CryptoMarketVendor @default(binance)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
-  /** Lifetime AI calls used (chat / analyze / compare / …). */
+  /** Lifetime AI calls used (chat / analyze / compare / …). Free plan. */
   aiUsageCount      Int                @default(0)
-  /** Lifetime AI call allowance (starts at 5; +5 per successful invite). */
+  /** Lifetime AI call allowance (starts at 5; +5 per successful invite). Free plan. */
   aiUsageLimit      Int                @default(5)
+  /** Hosted plan: free | pro (active when planExpiresAt is null or in the future). */
+  plan                 UserPlan  @default(free)
+  planExpiresAt        DateTime?
+  stripeCustomerId     String?   @unique
+  stripeSubscriptionId String?   @unique
+  /** Pro monthly AI period key, e.g. "2026-10". */
+  aiUsagePeriod        String?
+  /** Platform AI uses within the current Pro period. */
+  aiPeriodUsageCount   Int       @default(0)
 
   watchlist          WatchlistItem[]
   watchlistGroups    WatchlistGroup[]
@@ -110,6 +124,10 @@ model User {
   inviteCodesOwned    InviteCode[]         @relation("InviteOwned")
   inviteCodeUsed      InviteCode?          @relation("InviteUsed")
   aiChatSessions      AiChatSession[]
+  researchCards       ResearchCard[]
+  redeemRedemptions   RedeemRedemption[]
+  conversionEvents    ConversionEvent[]
+  entitlementGrants   EntitlementGrant[]
 }
 
 /** AI 问股 conversation for a symbol (durable history). */
@@ -522,4 +540,81 @@ model LearnArticleLocale {
 
   @@unique([articleId, locale])
   @@index([locale])
+}
+
+/** Per-symbol research notes (Free: 1 card; Pro: unlimited within entitlement). */
+model ResearchCard {
+  id              String    @id @default(cuid())
+  userId          String
+  symbol          String
+  assetType       AssetType
+  whyWatch        String    @default("") @db.Text
+  question        String    @default("") @db.Text
+  watchConditions String    @default("") @db.Text
+  risks           String    @default("") @db.Text
+  reviewAt        DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, symbol, assetType])
+  @@index([userId, updatedAt])
+}
+
+/** One-time or limited Pro redeem codes (pre-Stripe / comps). */
+model RedeemCode {
+  id              String    @id @default(cuid())
+  code            String    @unique
+  plan            UserPlan  @default(pro)
+  days            Int       @default(30)
+  maxRedemptions  Int       @default(1)
+  redemptionCount Int       @default(0)
+  expiresAt       DateTime?
+  note            String?
+  createdAt       DateTime  @default(now())
+
+  redemptions RedeemRedemption[]
+}
+
+model RedeemRedemption {
+  id        String   @id @default(cuid())
+  codeId    String
+  userId    String
+  createdAt DateTime @default(now())
+
+  code RedeemCode @relation(fields: [codeId], references: [id], onDelete: Cascade)
+  user User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([codeId, userId])
+  @@index([userId])
+}
+
+/** Manual / Stripe entitlement audit trail. */
+model EntitlementGrant {
+  id        String   @id @default(cuid())
+  userId    String
+  plan      UserPlan
+  source    String
+  days      Int?
+  note      String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+/** Lightweight funnel counters (no third-party analytics required). */
+model ConversionEvent {
+  id        String   @id @default(cuid())
+  userId    String?
+  event     String
+  meta      Json?
+  createdAt DateTime @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([event, createdAt])
+  @@index([userId, createdAt])
 }

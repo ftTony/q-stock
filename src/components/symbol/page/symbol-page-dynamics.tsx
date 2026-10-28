@@ -11,7 +11,12 @@ export const SymbolChartSection = dynamic(
     import("@/components/symbol/chart/symbol-chart-section").then((m) => ({
       default: m.SymbolChartSection,
     })),
-  { ssr: false, loading: () => <ChartAreaSkeleton /> },
+  {
+    ssr: false,
+    loading: () => (
+      <ChartAreaSkeleton className="h-full min-h-0 w-full flex-1" />
+    ),
+  },
 );
 
 export const SymbolWatchlistPanel = dynamic(

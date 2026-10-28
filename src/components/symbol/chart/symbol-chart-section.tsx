@@ -32,7 +32,10 @@ import {
   SymbolChartContextMenu,
   type ChartContextMenuState,
 } from "@/components/symbol/chart/symbol-chart-context-menu";
-import { ChartLoadingOverlay } from "@/components/ui/panel-skeleton";
+import {
+  ChartAreaSkeleton,
+  ChartLoadingOverlay,
+} from "@/components/ui/panel-skeleton";
 import { TopToast } from "@/components/ui/top-toast";
 import { useTradingOrders } from "@/hooks/query/use-trading";
 import {
@@ -274,6 +277,10 @@ export const SymbolChartSection = memo(function SymbolChartSection({
           onContextMenu={onChartContextMenu}
         >
           <EmptyStateBlock art="chart" label={intradayUnavailableLabel} />
+        </div>
+      ) : loadingChart && bars.length === 0 ? (
+        <div className="relative min-h-0 w-full flex-1 overflow-hidden max-lg:min-h-[200px]">
+          <ChartAreaSkeleton hideToolbar label={loadingLabel} />
         </div>
       ) : (
         <div

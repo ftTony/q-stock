@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import {
   MarketingPricing,
+  type OnlinePlanCopy,
   type PricingPlanCopy,
 } from "@/components/marketing/marketing-pricing";
 import { ScopedMessages } from "@/components/providers/scoped-messages";
@@ -19,12 +20,45 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function PricingPage({ params }: Props) {
-  // 必须显式声明 locale，否则 `getTranslations()` 会回落到读请求头，
-  // 整个路由被判为动态渲染（响应头变成 no-store，CDN 无法缓存）。
   const { locale } = await params;
   setRequestLocale(locale);
 
   const t = await getTranslations("pricing");
+
+  const onlinePlans: [OnlinePlanCopy, OnlinePlanCopy] = [
+    {
+      name: t("online.free.name"),
+      price: t("online.free.price"),
+      priceNote: t("online.free.priceNote"),
+      description: t("online.free.description"),
+      features: [
+        t("online.free.f1"),
+        t("online.free.f2"),
+        t("online.free.f3"),
+        t("online.free.f4"),
+        t("online.free.f5"),
+      ],
+      cta: t("online.free.cta"),
+      href: "/register",
+    },
+    {
+      name: t("online.pro.name"),
+      price: t("online.pro.price"),
+      priceNote: t("online.pro.priceNote"),
+      description: t("online.pro.description"),
+      features: [
+        t("online.pro.f1"),
+        t("online.pro.f2"),
+        t("online.pro.f3"),
+        t("online.pro.f4"),
+        t("online.pro.f5"),
+      ],
+      cta: t("online.pro.cta"),
+      highlighted: true,
+      href: "/settings",
+      trackUpgrade: true,
+    },
+  ];
 
   const plans: [PricingPlanCopy, PricingPlanCopy, PricingPlanCopy] = [
     {
@@ -73,10 +107,15 @@ export default async function PricingPage({ params }: Props) {
   ];
 
   return (
-    <ScopedMessages namespaces={["marketing"]}>
+    <ScopedMessages namespaces={["marketing", "pricing"]}>
       <MarketingPricing
         title={t("title")}
         subtitle={t("subtitle")}
+        onlineTitle={t("onlineTitle")}
+        onlineSubtitle={t("onlineSubtitle")}
+        onlinePlans={onlinePlans}
+        sourceTitle={t("sourceTitle")}
+        sourceSubtitle={t("sourceSubtitle")}
         plans={plans}
         footnote={t("footnote")}
       />

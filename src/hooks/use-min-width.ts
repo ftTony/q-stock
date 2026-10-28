@@ -1,20 +1,38 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
-/** True when viewport ≥ `px` (Tailwind `lg` = 1024). SSR / first paint = false. */
+function useMediaQuery(query: string, serverSnapshot = false): boolean {
+  const subscribe = useCallback(
+    (onChange: () => void) => {
+      const mq = window.matchMedia(query);
+      mq.addEventListener("change", onChange);
+      return () => mq.removeEventListener("change", onChange);
+    },
+    [query],
+  );
+  const getSnapshot = useCallback(
+    () => window.matchMedia(query).matches,
+    [query],
+  );
+  return useSyncExternalStore(subscribe, getSnapshot, () => serverSnapshot);
+}
+
+/**
+ * True when viewport ≥ `px` (Tailwind `lg` = 1024).
+ * SSR / hydration snapshot is false; client updates via useSyncExternalStore.
+ */
 export function useMinWidth(px: number): boolean {
-  const [matches, setMatches] = useState(false);
+  return useMediaQuery(`(min-width: ${px}px)`);
+}
 
-  useEffect(() => {
-    const mq = window.matchMedia(`(min-width: ${px}px)`);
-    const sync = () => setMatches(mq.matches);
-    sync();
-    mq.addEventListener("change", sync);
-    return () => mq.removeEventListener("change", sync);
-  }, [px]);
-
-  return matches;
+/** True when viewport height ≥ `px`. */
+export function useMinHeight(px: number): boolean {
+  return useMediaQuery(`(min-height: ${px}px)`);
 }
 
 export const LG_MIN = 1024;
+/** Tall lab viewport — enough room for 4 card rows + chrome. */
+export const LAB_TALL_MIN = 900;
+export const SM_MIN = 640;
+export const XL_MIN = 1280;

@@ -87,56 +87,87 @@ export function ListPanelSkeleton({
 }
 
 /**
- * Chart / workbench fill — toolbar chips + pane shimmer.
- * Used for dynamic-import fallback and empty-bar first paint.
+ * Chart / workbench fill — toolbar chips + candle shimmer (no wash / center spinner).
+ * Must stretch with the desktop chart column (`h-full` / `flex-1`).
  */
 export function ChartAreaSkeleton({
   label,
   className = "",
+  /** When embedded under a real toolbar, hide the fake chip row. */
+  hideToolbar = false,
 }: {
   label?: string;
   className?: string;
+  hideToolbar?: boolean;
 }) {
   return (
     <div
       role="status"
       aria-busy="true"
       aria-label={label}
-      className={`flex h-full min-h-[240px] flex-col bg-[var(--aw-canvas,var(--surface))] ${className}`}
+      className={`flex h-full min-h-0 w-full flex-1 flex-col bg-[var(--aw-canvas,var(--surface))] ${className}`}
     >
-      <div className="flex h-9 shrink-0 items-center gap-1.5 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--surface)] px-2">
-        {Array.from({ length: 6 }, (_, i) => (
-          <Skel
-            key={i}
-            className="h-6 rounded-md"
-            style={{ width: i < 4 ? 28 : 36 }}
-          />
-        ))}
-        <span className="mx-1 h-3 w-px bg-[var(--border)]" aria-hidden />
-        {Array.from({ length: 3 }, (_, i) => (
-          <Skel key={`ind-${i}`} className="h-6 w-9 rounded-md" />
-        ))}
-      </div>
-      <div className="relative min-h-0 flex-1 overflow-hidden">
-        <Skel className="absolute inset-0 rounded-none" />
-        <div className="pointer-events-none absolute inset-x-6 bottom-8 top-6 flex items-end justify-between gap-1 opacity-40">
-          {Array.from({ length: 18 }, (_, i) => (
+      {hideToolbar ? null : (
+        <div className="flex h-9 shrink-0 items-center gap-1.5 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--surface)] px-2">
+          {Array.from({ length: 6 }, (_, i) => (
             <Skel
               key={i}
-              className="w-[3%] min-w-[4px] rounded-sm"
-              style={{
-                height: `${28 + ((i * 17) % 55)}%`,
-                animationDelay: `${(i % 6) * 80}ms`,
-              }}
+              className="h-6 rounded-md"
+              style={{ width: i < 4 ? 28 : 36 }}
+            />
+          ))}
+          <span className="mx-1 hidden h-3 w-px bg-[var(--border)] lg:block" aria-hidden />
+          {Array.from({ length: 3 }, (_, i) => (
+            <Skel
+              key={`ind-${i}`}
+              className="hidden h-6 w-9 rounded-md lg:block"
             />
           ))}
         </div>
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <InlineLoading
-            label={label}
-            className="rounded-full bg-[color-mix(in_srgb,var(--aw-canvas,var(--surface))_82%,transparent)] px-3 py-1.5"
-          />
+      )}
+      <div className="relative min-h-0 flex-1 overflow-hidden bg-[var(--panel,var(--surface))]">
+        {/* Grid suggestion — keeps pane from reading as empty white. */}
+        <div
+          className="pointer-events-none absolute inset-0 opacity-[0.35]"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, var(--aw-hairline,var(--border)) 1px, transparent 1px), linear-gradient(to top, var(--aw-hairline,var(--border)) 1px, transparent 1px)",
+            backgroundSize: "12.5% 20%",
+          }}
+          aria-hidden
+        />
+        <div className="pointer-events-none absolute inset-x-4 bottom-6 top-5 flex items-end justify-between gap-0.5 sm:inset-x-6 sm:gap-1">
+          {Array.from({ length: 24 }, (_, i) => {
+            const h = 22 + ((i * 37) % 62);
+            const wick = Math.min(12, 8 + (i % 5));
+            return (
+              <div
+                key={i}
+                className="flex w-[2.8%] min-w-[3px] max-w-[10px] flex-col items-center justify-end"
+                style={{ height: `${h + wick}%` }}
+              >
+                <Skel
+                  className="w-px flex-1 rounded-none opacity-70"
+                  style={{ animationDelay: `${(i % 8) * 60}ms` }}
+                />
+                <Skel
+                  className="w-full rounded-[1px]"
+                  style={{
+                    height: `${(h / (h + wick)) * 100}%`,
+                    animationDelay: `${(i % 8) * 60}ms`,
+                  }}
+                />
+              </div>
+            );
+          })}
         </div>
+        {label ? (
+          <p className="pointer-events-none absolute bottom-2 left-1/2 -translate-x-1/2 text-[11px] text-[var(--muted)]">
+            {label}
+          </p>
+        ) : (
+          <span className="sr-only">Loading</span>
+        )}
       </div>
     </div>
   );
@@ -175,20 +206,18 @@ export function RailPanelSkeleton({
   );
 }
 
-/** Soft wash overlay while chart stays mounted (period switch). */
+/** Quiet corner mark while chart stays mounted (period / symbol refresh). */
 export function ChartLoadingOverlay({ label }: { label?: string }) {
   return (
     <div
-      className="pointer-events-none absolute inset-0 z-[1] flex items-center justify-center bg-[color-mix(in_srgb,var(--aw-canvas,var(--surface))_55%,transparent)]"
+      className="pointer-events-none absolute inset-0 z-[1]"
       role="status"
       aria-busy="true"
       aria-label={label}
     >
-      <div className="aw-skel absolute inset-0 opacity-50" aria-hidden />
-      <InlineLoading
-        label={label}
-        className="relative rounded-full bg-[color-mix(in_srgb,var(--aw-canvas,var(--surface))_88%,transparent)] px-3 py-1.5"
-      />
+      <div className="absolute right-3 top-3 rounded-md border border-[var(--aw-hairline,var(--border))] bg-[var(--panel,var(--surface))]/92 px-2 py-1 shadow-sm backdrop-blur-[2px]">
+        <InlineLoading label={label} />
+      </div>
     </div>
   );
 }

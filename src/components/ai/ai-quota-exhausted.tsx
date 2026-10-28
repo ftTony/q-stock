@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
+import { trackBillingClick } from "@/lib/billing/client-events";
 
 /** Three clear exits when platform AI quota is used up. */
 export function AiQuotaExhaustedHint({
@@ -23,12 +24,19 @@ export function AiQuotaExhaustedHint({
     <button
       type="button"
       className="font-medium text-[var(--brand-text)] underline"
-      onClick={openAccount}
+      onClick={() => {
+        void trackBillingClick("click_invite");
+        openAccount();
+      }}
     >
       {t("pathInviteCta")}
     </button>
   ) : (
-    <Link href="/settings" className="font-medium text-[var(--brand-text)] underline">
+    <Link
+      href="/settings"
+      className="font-medium text-[var(--brand-text)] underline"
+      onClick={() => void trackBillingClick("click_invite")}
+    >
       {t("pathInviteCta")}
     </Link>
   );
@@ -37,13 +45,41 @@ export function AiQuotaExhaustedHint({
     <button
       type="button"
       className="font-medium text-[var(--brand-text)] underline"
-      onClick={openAccount}
+      onClick={() => {
+        void trackBillingClick("click_byok");
+        openAccount();
+      }}
     >
       {t("pathByokCta")}
     </button>
   ) : (
-    <Link href="/settings" className="font-medium text-[var(--brand-text)] underline">
+    <Link
+      href="/settings"
+      className="font-medium text-[var(--brand-text)] underline"
+      onClick={() => void trackBillingClick("click_byok")}
+    >
       {t("pathByokCta")}
+    </Link>
+  );
+
+  const proBtn = settingsModal ? (
+    <button
+      type="button"
+      className="font-medium text-[var(--brand-text)] underline"
+      onClick={() => {
+        void trackBillingClick("click_upgrade");
+        openAccount();
+      }}
+    >
+      {t("pathProCta")}
+    </button>
+  ) : (
+    <Link
+      href="/pricing"
+      className="font-medium text-[var(--brand-text)] underline"
+      onClick={() => void trackBillingClick("click_upgrade")}
+    >
+      {t("pathProCta")}
     </Link>
   );
 
@@ -54,6 +90,8 @@ export function AiQuotaExhaustedHint({
         {inviteBtn}
         <span className="mx-1 text-[var(--border)]">·</span>
         {byokBtn}
+        <span className="mx-1 text-[var(--border)]">·</span>
+        {proBtn}
       </p>
     );
   }
@@ -68,13 +106,6 @@ export function AiQuotaExhaustedHint({
       <ul className="mt-2 space-y-1.5 text-[12px] leading-relaxed text-[var(--muted)]">
         <li>
           <span className="font-medium text-[var(--foreground)]">
-            {t("pathFreeLabel")}
-          </span>
-          {" — "}
-          {t("pathFreeBody")}
-        </li>
-        <li>
-          <span className="font-medium text-[var(--foreground)]">
             {t("pathInviteLabel")}
           </span>
           {" — "}
@@ -86,6 +117,13 @@ export function AiQuotaExhaustedHint({
           </span>
           {" — "}
           {t("pathByokBody")} {byokBtn}
+        </li>
+        <li>
+          <span className="font-medium text-[var(--foreground)]">
+            {t("pathProLabel")}
+          </span>
+          {" — "}
+          {t("pathProBody")} {proBtn}
         </li>
       </ul>
     </div>

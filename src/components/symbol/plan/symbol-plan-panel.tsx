@@ -25,6 +25,7 @@ import {
   setBoundStrategyId,
 } from "@/components/symbol/plan/symbol-plan-binding";
 import { replayErrorMessage } from "@/lib/strategy/replay-errors";
+import { ResearchCardPanel } from "@/components/research/research-card-panel";
 
 type StrategyRow = {
   id: string;
@@ -393,6 +394,8 @@ export function SymbolPlanPanel({
           </div>
         </div>
       ) : null}
+
+      <ResearchCardPanel symbol={symbol} assetType={assetType} />
     </div>
   );
 }

@@ -222,20 +222,11 @@ export function MarketCredentialsForm({
     return <PanelSkeleton rows={4} label={tCommon("loading")} />;
   }
 
-  const highlight =
-    setupKeys && !hasAnyBrokerCreds(status)
-      ? "ring-2 ring-[var(--brand)]"
-      : "";
-
   const equityVendor = status?.equityVendor ?? "longbridge";
   const cryptoVendor = status?.cryptoVendor ?? "binance";
 
   return (
-    <div
-      ref={panelRef}
-      id="market-credentials"
-      className={`w-full space-y-4 ${highlight}`}
-    >
+    <div ref={panelRef} id="market-credentials" className="w-full space-y-4">
       <div>
         <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
           {t("credsTitle")}

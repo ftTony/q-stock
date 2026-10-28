@@ -106,6 +106,9 @@ export async function POST(req: Request) {
       console.error("[register] welcome email failed:", err);
     });
 
+    const { trackConversionEvent } = await import("@/lib/billing/events");
+    void trackConversionEvent("register", { userId: user.id });
+
     return NextResponse.json({ user }, { status: 201 });
   } catch (err) {
     if (err instanceof Error && err.message === "INVITE_RACE") {

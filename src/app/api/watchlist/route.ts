@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
+import {
+  getEntitlements,
+  limitExceededResponse,
+} from "@/lib/billing/entitlements";
+import { trackConversionEvent } from "@/lib/billing/events";
 import { prisma } from "@/lib/db";
 import { getQuotes } from "@/lib/market";
 import { withUserMarket } from "@/lib/market/with-user-market";
@@ -75,6 +80,28 @@ export async function POST(req: Request) {
   }
 
   const symbol = normalizeSymbol(parsed.data.symbol, parsed.data.assetType);
+  const existing = await prisma.watchlistItem.findUnique({
+    where: {
+      userId_symbol_assetType: {
+        userId: session.user.id,
+        symbol,
+        assetType: parsed.data.assetType,
+      },
+    },
+  });
+  if (!existing) {
+    const entitlements = await getEntitlements(session.user.id);
+    const count = await prisma.watchlistItem.count({
+      where: { userId: session.user.id },
+    });
+    if (count >= entitlements.watchlistLimit) {
+      return limitExceededResponse("watchlist", entitlements.watchlistLimit);
+    }
+    if (count === 0) {
+      void trackConversionEvent("first_watchlist", { userId: session.user.id });
+    }
+  }
+
   const item = await prisma.watchlistItem.upsert({
     where: {
       userId_symbol_assetType: {
