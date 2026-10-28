@@ -24,6 +24,8 @@
 
 | 主题 | PRD | 说明 |
 |---|---|---|
+| 专业交易员能力边界 | [trader-capability-boundary.md](./trader-capability-boundary.md) | 波段/学习型：我们做 / 以后做 / 不做；需求砍伐与评审口径 |
+| 机构侧能力边界 | [institution-capability-boundary.md](./institution-capability-boundary.md) | 投教/白标/非 OMS：机构需求全景与裁剪；与 C 端分 SKU |
 | C 端付费闭环 | [c-end-billing.md](./c-end-billing.md) | Free/Pro/BYOK 权益、兑换码、Stripe、研究卡试用；与源码售卖分栏 |
 | 模拟盘风险控制 | [risk-control.md](./risk-control.md) | 下单前摘要、账户规则、与仓位工具/AI 衔接；作用于 paper，非真券商 OMS |
 | 交易策略与回测 | [strategy-and-backtest.md](./strategy-and-backtest.md) | 规则实验室：模板、单标的回放、模拟标签；非量化 IDE / 非实盘自动交易 |
