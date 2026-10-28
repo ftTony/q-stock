@@ -116,5 +116,17 @@ export function useWatchlistResize() {
     window.addEventListener("pointercancel", onUp);
   }, []);
 
-  return { width, open, setOpen, dragging, onResizeStart };
+  const nudgeWidth = useCallback((delta: number) => {
+    setWidth((prev) => {
+      const next = clamp(prev + delta);
+      try {
+        localStorage.setItem(STORAGE_KEY, String(next));
+      } catch {
+        /* ignore */
+      }
+      return next;
+    });
+  }, []);
+
+  return { width, open, setOpen, dragging, onResizeStart, nudgeWidth };
 }

@@ -103,14 +103,14 @@ export function ResearchCardPanel({
   }
 
   return (
-    <section className="space-y-2 border-t border-[var(--aw-hairline,var(--border))] pt-3">
+    <section className="space-y-2 border-t border-[var(--aw-hairline,var(--border))] pt-3 pb-1">
       <div className="flex items-baseline justify-between gap-2">
         <h3 className="text-[13px] font-semibold text-[var(--foreground)]">
           {t("title")}
         </h3>
         <Link
           href="/pricing"
-          className="text-[11px] text-[var(--brand-text)] underline"
+          className="shrink-0 text-[11px] text-[var(--brand-text)] underline"
         >
           {t("proHint")}
         </Link>
@@ -118,7 +118,7 @@ export function ResearchCardPanel({
       <p className="text-[12px] leading-relaxed text-[var(--muted)]">
         {t("body")}
       </p>
-      <form onSubmit={onSave} className="space-y-2">
+      <form onSubmit={onSave} className="flex flex-col gap-2">
         <Field
           label={t("whyWatch")}
           value={whyWatch}
@@ -143,34 +143,35 @@ export function ResearchCardPanel({
           onChange={setRisks}
           placeholder={t("risksPh")}
         />
+        {message ? (
+          <p
+            role="status"
+            className="text-[11px] leading-snug"
+            style={{
+              color: messageKind === "ok" ? "var(--up)" : "var(--down)",
+            }}
+          >
+            {messageKind === "err" && message.includes("limit") ? (
+              <>
+                {message}{" "}
+                <Link href="/pricing" className="underline">
+                  {t("upgrade")}
+                </Link>
+              </>
+            ) : (
+              message
+            )}
+          </p>
+        ) : null}
         <SubmitButton
           type="submit"
-          className="qt-btn qt-btn-ghost h-8 px-3 text-[12px]"
+          className="qt-btn-primary mt-0.5 h-8 w-full text-[12px]"
           disabled={busy}
+          loading={busy}
         >
           {t("save")}
         </SubmitButton>
       </form>
-      {message ? (
-        <p
-          role="status"
-          className="text-[11px]"
-          style={{
-            color: messageKind === "ok" ? "var(--up)" : "var(--down)",
-          }}
-        >
-          {messageKind === "err" && message.includes("limit") ? (
-            <>
-              {message}{" "}
-              <Link href="/pricing" className="underline">
-                {t("upgrade")}
-              </Link>
-            </>
-          ) : (
-            message
-          )}
-        </p>
-      ) : null}
     </section>
   );
 }
@@ -194,7 +195,7 @@ function Field({
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={2}
-        className="resize-y rounded-md border border-[var(--border)] bg-[var(--panel)] px-2 py-1.5 text-[12px] leading-relaxed text-[var(--foreground)]"
+        className="w-full resize-y rounded-md border border-[var(--border)] bg-[var(--panel)] px-2 py-1.5 text-[12px] leading-relaxed text-[var(--foreground)]"
       />
     </label>
   );

@@ -1,7 +1,9 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { SYMBOL_RAIL_GUIDE_STORAGE_KEY } from "@/components/symbol/rail/symbol-rail-guide";
 
 const DISCLAIMER_KEYS = ["p1", "p2", "p3", "p4", "p5", "p6"] as const;
 
@@ -9,6 +11,16 @@ const DISCLAIMER_KEYS = ["p1", "p2", "p3", "p4", "p5", "p6"] as const;
 export function SettingsAboutPanel() {
   const t = useTranslations("settings");
   const td = useTranslations("disclaimer");
+  const [guideHint, setGuideHint] = useState<string | null>(null);
+
+  function replaySymbolGuide() {
+    try {
+      localStorage.removeItem(SYMBOL_RAIL_GUIDE_STORAGE_KEY);
+      setGuideHint(t("aboutReplayGuideHint"));
+    } catch {
+      setGuideHint(null);
+    }
+  }
 
   return (
     <div className="settings-ui space-y-5">
@@ -27,6 +39,20 @@ export function SettingsAboutPanel() {
             {t("aboutPageLink")}
           </Link>
         </p>
+        <div className="pt-2">
+          <button
+            type="button"
+            onClick={replaySymbolGuide}
+            className="text-[12px] font-medium text-[var(--brand-text)] underline underline-offset-2 hover:opacity-90"
+          >
+            {t("aboutReplayGuide")}
+          </button>
+          {guideHint ? (
+            <p className="mt-1.5 text-[12px] text-[var(--muted)]" role="status">
+              {guideHint}
+            </p>
+          ) : null}
+        </div>
       </section>
 
       <section className="space-y-3">

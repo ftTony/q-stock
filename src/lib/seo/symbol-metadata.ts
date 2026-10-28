@@ -8,14 +8,14 @@ import {
   type AppLocale,
 } from "@/i18n/config";
 import { cachedFetch } from "@/lib/cache";
-import { getQuote } from "@/lib/market";
+import { getDailyCandles, getQuote } from "@/lib/market";
 import { displayName } from "@/lib/market-names";
 import { siteOrigin } from "@/lib/seo/site-url";
 import {
   isSitemapTicker,
   sitemapLocales,
 } from "@/lib/seo/sitemap-locales";
-import type { AssetType, Quote } from "@/lib/types";
+import type { AssetType, OhlcvBar, Quote } from "@/lib/types";
 
 function currencyFor(assetType: AssetType): string {
   if (assetType === "hk") return "HKD";
@@ -85,6 +85,34 @@ export const fetchSymbolQuote = cache(
     } catch (err) {
       console.warn(
         `[seo] symbol quote failed ${assetType}/${sym}:`,
+        err instanceof Error ? err.message : err,
+      );
+      return null;
+    }
+  },
+);
+
+/**
+ * Best-effort daily candles for SSR chart hydrate (short window, soft-fail).
+ * Caps history to keep 1GB hosts from spending the request budget on deep bars.
+ */
+export const fetchSymbolDailyCandles = cache(
+  async (symbol: string, assetType: AssetType): Promise<OhlcvBar[] | null> => {
+    const sym = symbol.toUpperCase();
+    try {
+      return await cachedFetch(
+        `seo:candles:v1:${assetType}:${sym}:D`,
+        60_000,
+        async () => {
+          const to = Math.floor(Date.now() / 1000);
+          const from = to - Math.floor(0.5 * 365 * 24 * 3600);
+          const bars = await getDailyCandles(sym, assetType, from, to);
+          return bars.length ? bars : [];
+        },
+      );
+    } catch (err) {
+      console.warn(
+        `[seo] symbol candles failed ${assetType}/${sym}:`,
         err instanceof Error ? err.message : err,
       );
       return null;

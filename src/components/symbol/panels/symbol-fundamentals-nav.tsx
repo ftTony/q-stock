@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 export type FundamentalsSection =
   | "metrics"
   | "income"
@@ -29,9 +31,10 @@ type Props = {
 
 /** Left rail for 基本面 — category + indented items; active in brand/orange accent. */
 export function SymbolFundamentalsNav({ groups, active, onSelect }: Props) {
+  const t = useTranslations("symbol");
   return (
     <nav
-      aria-label="fundamentals"
+      aria-label={t("fundamentalsNav")}
       className="flex w-full gap-1 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] sm:w-auto sm:flex-col sm:gap-4 sm:overflow-visible sm:pb-0 sm:pr-4 [&::-webkit-scrollbar]:hidden"
     >
       {groups.map((g) => (

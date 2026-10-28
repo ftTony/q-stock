@@ -24,12 +24,17 @@ export function useSymbolCandlesQuery(
   symbol: string,
   assetType: AssetType,
   resolution: CandleResolution,
+  opts?: { initialBars?: OhlcvBar[] | null },
 ) {
   const qc = useQueryClient();
   const key = queryKeys.symbol.candles(assetType, symbol, resolution);
   const loadMoreLock = useRef(false);
   const [loadingMoreCandles, setLoadingMoreCandles] = useState(false);
   const [hasMoreCandles, setHasMoreCandles] = useState(true);
+  const initialBars =
+    resolution === "D" && opts?.initialBars?.length
+      ? opts.initialBars
+      : undefined;
 
   const query = useQuery({
     queryKey: key,
@@ -41,6 +46,7 @@ export function useSymbolCandlesQuery(
       setHasMoreCandles(next.length > 0 && data.hasMore !== false);
       return next;
     },
+    initialData: initialBars,
     // Daily+ bars change slowly; intraday stays on global 30s default.
     staleTime: isIntradayResolution(resolution) ? 30_000 : 90_000,
   });

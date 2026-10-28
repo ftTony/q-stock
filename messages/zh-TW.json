@@ -357,7 +357,14 @@
     "chartCtxRangeStats": "開啟區間統計",
     "chartCtxOverlay": "股票疊加",
     "chartCtxRangeStatsSoon": "區間統計即將支援",
-    "chartCtxOverlaySoon": "股票疊加即將支援"
+    "chartCtxOverlaySoon": "股票疊加即將支援",
+    "feedLive": "即時",
+    "feedDelayed": "延遲 · 5s",
+    "feedOffline": "已斷線",
+    "resizeRail": "調整右側欄寬度",
+    "resizeWatchlist": "調整自選列寬度",
+    "fundamentalsNav": "基本面",
+    "chartEmpty": "暫無 K 線資料。請檢查行情憑證，或切換其他週期。"
   },
   "company": {
     "na": "該資產暫無公司概況",
@@ -594,7 +601,9 @@
     "billingRedeemError": "兑换失败。",
     "billingCheckoutError": "发起结账失败。",
     "billingPortalError": "无法打开账单门户。",
-    "billingStripeSoon": "尚未配置 Stripe — 请先兑换码，或邮件联系。"
+    "billingStripeSoon": "尚未配置 Stripe — 请先兑换码，或邮件联系。",
+    "aboutReplayGuide": "重新查看個股頁引導",
+    "aboutReplayGuideHint": "下次打開個股頁時會再次顯示引導。"
   },
   "alerts": {
     "title": "價格提醒",
@@ -808,7 +817,8 @@
     "providerFutu": "富途",
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
-    "providerOkx": "OKX"
+    "providerOkx": "OKX",
+    "close": "關閉"
   },
   "about": {
     "title": "關於我",

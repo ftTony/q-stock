@@ -28,14 +28,12 @@ import { CandleChartTypeMenu } from "@/components/charts/candle-chart-type-menu"
 import { CandleChartToolbarActions } from "@/components/charts/candle-chart-toolbar-actions";
 import { ordersToTradeMarkers } from "@/components/charts/candle-chart-trade-markers";
 import { EmptyStateBlock } from "@/components/symbol/shared/symbol-empty-art";
+import { SymbolMarketCredsEmpty } from "@/components/symbol/shared/symbol-market-creds-empty";
 import {
   SymbolChartContextMenu,
   type ChartContextMenuState,
 } from "@/components/symbol/chart/symbol-chart-context-menu";
-import {
-  ChartAreaSkeleton,
-  ChartLoadingOverlay,
-} from "@/components/ui/panel-skeleton";
+import { ChartLoadingOverlay } from "@/components/ui/panel-skeleton";
 import { TopToast } from "@/components/ui/top-toast";
 import { useTradingOrders } from "@/hooks/query/use-trading";
 import {
@@ -204,6 +202,7 @@ export const SymbolChartSection = memo(function SymbolChartSection({
         }
       />
       <div className="aw-chart-toolbar relative z-20 flex shrink-0 flex-nowrap items-center gap-0.5 border-b border-[var(--border)] bg-[var(--surface)] px-2">
+        {/* Left cluster: periods + (desktop) type/indicators — keep flush left. */}
         <div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {periods.map((key) => (
             <button
@@ -216,46 +215,45 @@ export const SymbolChartSection = memo(function SymbolChartSection({
               {resolutionLabels[key]}
             </button>
           ))}
-        </div>
-
-        {/* Desktop: type + inline indicators. H5: settings gear owns type/indicators. */}
-        <span
-          className="mx-1 hidden h-3 w-px shrink-0 bg-[var(--border)] lg:block lg:mx-1.5"
-          aria-hidden
-        />
-        <div className="hidden shrink-0 lg:block">
-          <CandleChartTypeMenu
-            value={activeChartType}
-            onChange={onChartTypeChange}
+          {/* Desktop only — H5 keeps type/indicators in the settings gear. */}
+          <span
+            className="mx-1 hidden h-3 w-px shrink-0 bg-[var(--border)] lg:block lg:mx-1.5"
+            aria-hidden
           />
-        </div>
-        <div
-          className="hidden shrink-0 items-center gap-0.5 lg:flex"
-          aria-label={indicatorsLabel}
-        >
-          <span className="mx-1.5 h-3 w-px bg-[var(--border)]" aria-hidden />
-          {primaryKeys.map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => onFlagToggle(key)}
-              data-active={flags[key]}
-              className="aw-toolbar-btn shrink-0"
-            >
-              {label}
-            </button>
-          ))}
-          {moreKeys.map(([key, label]) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => onFlagToggle(key)}
-              data-active={flags[key]}
-              className="aw-toolbar-btn shrink-0 text-[var(--muted)]"
-            >
-              {label}
-            </button>
-          ))}
+          <div className="hidden shrink-0 lg:block">
+            <CandleChartTypeMenu
+              value={activeChartType}
+              onChange={onChartTypeChange}
+            />
+          </div>
+          <div
+            className="hidden shrink-0 items-center gap-0.5 lg:flex"
+            aria-label={indicatorsLabel}
+          >
+            <span className="mx-1.5 h-3 w-px bg-[var(--border)]" aria-hidden />
+            {primaryKeys.map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onFlagToggle(key)}
+                data-active={flags[key]}
+                className="aw-toolbar-btn shrink-0"
+              >
+                {label}
+              </button>
+            ))}
+            {moreKeys.map(([key, label]) => (
+              <button
+                key={key}
+                type="button"
+                onClick={() => onFlagToggle(key)}
+                data-active={flags[key]}
+                className="aw-toolbar-btn shrink-0 text-[var(--muted)]"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
 
         <CandleChartToolbarActions
@@ -279,8 +277,18 @@ export const SymbolChartSection = memo(function SymbolChartSection({
           <EmptyStateBlock art="chart" label={intradayUnavailableLabel} />
         </div>
       ) : loadingChart && bars.length === 0 ? (
-        <div className="relative min-h-0 w-full flex-1 overflow-hidden max-lg:min-h-[200px]">
-          <ChartAreaSkeleton hideToolbar label={loadingLabel} />
+        <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-[var(--panel,var(--surface))] max-lg:min-h-[200px]">
+          <ChartLoadingOverlay label={loadingLabel} />
+        </div>
+      ) : bars.length === 0 ? (
+        <div
+          className="flex min-h-[280px] flex-1 items-center justify-center lg:min-h-0"
+          onContextMenu={onChartContextMenu}
+        >
+          <SymbolMarketCredsEmpty
+            assetType={assetType}
+            fallbackLabel={t("chartEmpty")}
+          />
         </div>
       ) : (
         <div

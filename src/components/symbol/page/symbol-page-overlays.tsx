@@ -14,6 +14,7 @@ import type {
 import type { NewsFeedTab } from "@/components/symbol/dock/symbol-dock-news-panel";
 import { SymbolSeoAboutDrawer } from "@/components/symbol/quote/symbol-seo-about-drawer";
 import { IconRobot } from "@/components/ui/icon-robot";
+import { useElementTop } from "@/hooks/use-element-top";
 import type { SymbolSeoCopy } from "@/lib/seo/symbol-metadata";
 import type { AssetType } from "@/lib/types";
 import type { FormEvent } from "react";
@@ -73,6 +74,10 @@ type Props = {
 export function SymbolPageOverlays(p: Props) {
   const t = useTranslations("symbol");
   const edge = p.isDesktop ? 44 : 0;
+  // Desktop: drawer top = chart grid (below quote bar), same row as icon rail.
+  // H5: topOffset 0 — full-screen sheet unchanged.
+  const gridTop = useElementTop(p.isDesktop ? ".aw-workbench-grid" : null);
+  const topOffset = p.isDesktop ? gridTop || 40 : 0;
   const aiLabel = t("openAi");
 
   return (
@@ -117,6 +122,7 @@ export function SymbolPageOverlays(p: Props) {
           errorLabel={p.errorLabel}
           loadingLabel={p.loadingLabel}
           edgeOffsetPx={edge}
+          topOffsetPx={topOffset}
         />
       ) : null}
 
@@ -134,7 +140,7 @@ export function SymbolPageOverlays(p: Props) {
         />
       ) : null}
 
-      {/* Lightweight FAB until AI chunk warms — keeps chart/plan first paint clear. */}
+      {/* H5: stub FAB until AI chunk warms. Desktop mounts host immediately. */}
       {!p.aiReady && !p.isDesktop ? (
         <button
           type="button"
@@ -147,7 +153,8 @@ export function SymbolPageOverlays(p: Props) {
         </button>
       ) : null}
 
-      {p.aiReady ? (
+      {/* Desktop always hosts the drawer so side-rail AI click is never a silent no-op. */}
+      {p.aiReady || p.isDesktop || p.aiOpen ? (
         <SymbolAiFab
           symbol={p.symbol}
           assetType={p.assetType}
@@ -155,6 +162,7 @@ export function SymbolPageOverlays(p: Props) {
           onOpenChange={p.onAiOpenChange}
           showFab={!p.isDesktop}
           edgeOffsetPx={edge}
+          topOffsetPx={topOffset}
         />
       ) : null}
 
@@ -166,6 +174,7 @@ export function SymbolPageOverlays(p: Props) {
         copy={p.seoCopy}
         peers={p.seoPeers}
         edgeOffsetPx={edge}
+        topOffsetPx={topOffset}
       />
     </>
   );

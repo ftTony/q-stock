@@ -15,6 +15,7 @@ type Props = {
   copy: SymbolSeoCopy;
   peers: string[];
   edgeOffsetPx?: number;
+  topOffsetPx?: number;
 };
 
 /** User-facing about sheet — same copy as SSR crawl, no bottom chrome. */
@@ -26,6 +27,7 @@ export function SymbolSeoAboutDrawer({
   copy,
   peers,
   edgeOffsetPx = 0,
+  topOffsetPx = 0,
 }: Props) {
   const t = useTranslations("seo");
   const title =
@@ -38,6 +40,7 @@ export function SymbolSeoAboutDrawer({
       title={copy.aboutLabel}
       subtitle={title}
       edgeOffsetPx={edgeOffsetPx}
+      topOffsetPx={topOffsetPx}
       widthClassName="max-w-[22rem]"
     >
       <div className="space-y-4 p-4">

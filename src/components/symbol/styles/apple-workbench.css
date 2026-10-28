@@ -451,6 +451,7 @@ html.aw-rail-resizing {
     min-width: 0;
     min-height: 0;
   }
+  /* Icon dock: grid column beside chart (aligned with chart toolbar). */
   .aw-workbench-grid > .aw-side-icon-rail {
     display: flex;
     position: relative;
@@ -468,6 +469,11 @@ html.aw-rail-resizing {
     padding: 10px 0 12px;
     border-left: 1px solid var(--aw-hairline, var(--border));
     background: var(--aw-canvas);
+  }
+
+  /* Keep quote actions out of the 44px dock strip above the icon rail. */
+  .aw-workbench-main .aw-quote-bar {
+    padding-right: var(--aw-side-dock-w, 44px);
   }
   /* Zero-width flex item: hairline is rail border-left; ::before is the drag hit target. */
   .aw-workbench-resizer {

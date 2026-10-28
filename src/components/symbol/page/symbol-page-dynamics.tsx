@@ -2,9 +2,21 @@
 
 import dynamic from "next/dynamic";
 import {
-  ChartAreaSkeleton,
+  ChartLoadingOverlay,
   RailPanelSkeleton,
 } from "@/components/ui/panel-skeleton";
+
+/** Quiet chart host while the chunk loads — no fake candlestick skeleton. */
+function ChartChunkPlaceholder() {
+  return (
+    <div className="relative flex h-full min-h-0 w-full flex-1 flex-col bg-[var(--aw-canvas,var(--surface))]">
+      <div className="h-9 shrink-0 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--surface)]" />
+      <div className="relative min-h-0 flex-1 bg-[var(--panel,var(--surface))]">
+        <ChartLoadingOverlay />
+      </div>
+    </div>
+  );
+}
 
 export const SymbolChartSection = dynamic(
   () =>
@@ -13,9 +25,7 @@ export const SymbolChartSection = dynamic(
     })),
   {
     ssr: false,
-    loading: () => (
-      <ChartAreaSkeleton className="h-full min-h-0 w-full flex-1" />
-    ),
+    loading: () => <ChartChunkPlaceholder />,
   },
 );
 

@@ -24,6 +24,7 @@ const tileClass =
 
 export function SymbolShareMenu({ symbol, price, changePct }: Props) {
   const t = useTranslations("symbolShare");
+  const tCommon = useTranslations("common");
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -161,7 +162,7 @@ export function SymbolShareMenu({ symbol, price, changePct }: Props) {
             <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 sm:p-6">
               <button
                 type="button"
-                aria-label="Close"
+                aria-label={tCommon("close")}
                 className="absolute inset-0 bg-[color-mix(in_srgb,var(--aw-ink,#0b1220)_48%,transparent)] backdrop-blur-[6px]"
                 onClick={() => setOpen(false)}
               />
@@ -184,7 +185,7 @@ export function SymbolShareMenu({ symbol, price, changePct }: Props) {
                     type="button"
                     onClick={() => setOpen(false)}
                     className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-none text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
-                    aria-label="Close"
+                    aria-label={tCommon("close")}
                   >
                     <svg
                       className="h-4 w-4"

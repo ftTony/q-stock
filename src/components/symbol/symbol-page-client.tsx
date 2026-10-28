@@ -2,9 +2,7 @@
 
 import {
   useCallback,
-  useEffect,
   useMemo,
-  useState,
   type CSSProperties,
 } from "react";
 import {
@@ -14,139 +12,51 @@ import {
 } from "@/components/symbol/page/symbol-page-dynamics";
 import { SymbolPageChartSlot } from "@/components/symbol/chart/symbol-page-chart-slot";
 import { SymbolH5BelowSlot } from "@/components/symbol/page/symbol-h5-below-slot";
-import type { MobileSegment } from "@/components/symbol/mobile/symbol-mobile-quick-actions";
 import { SymbolPageOverlays } from "@/components/symbol/page/symbol-page-overlays";
 import { SymbolQuoteBar } from "@/components/symbol/quote/symbol-quote-bar";
-import type { SideIconId } from "@/components/symbol/rail/symbol-side-icon-rail";
+import { feedStatusFromWs } from "@/components/symbol/quote/symbol-feed-status";
 import { SymbolPageTabs } from "@/components/symbol/page/symbol-page-tabs";
 import {
   candleResolutionLabels,
   panelTabFor,
 } from "@/components/symbol/page/symbol-page-tab-utils";
-import type { SymbolTab } from "@/components/symbol/tabs/symbol-tabs-types";
 import { useSymbolPage } from "@/components/symbol/hooks/use-symbol-page";
+import { useSymbolWorkbenchPanels } from "@/components/symbol/hooks/use-symbol-workbench-panels";
 import { useRailResize } from "@/components/symbol/hooks/use-rail-resize";
 import { useWatchlistResize } from "@/components/symbol/hooks/use-watchlist-resize";
 import { LG_MIN, useMinWidth } from "@/hooks/use-min-width";
 import { isMarketIndexSymbol } from "@/lib/market/indices";
 import type { SymbolSeoCopy } from "@/lib/seo/symbol-metadata";
-import type { AssetType, Quote } from "@/lib/types";
+import type { AssetType, OhlcvBar, Quote } from "@/lib/types";
 import "./styles/apple-workbench.css";
 import "./styles/apple-quote-chrome.css";
+
 type Props = {
   symbol: string;
   assetType: AssetType;
   initialQuote?: Quote | null;
+  initialBars?: OhlcvBar[] | null;
   seoCopy: SymbolSeoCopy;
   seoPeers: string[];
 };
-
-type DockId = Exclude<SideIconId, "ai">;
 
 export function SymbolPageClient({
   symbol,
   assetType,
   initialQuote = null,
+  initialBars = null,
   seoCopy,
   seoPeers,
 }: Props) {
   const isIndex = isMarketIndexSymbol(symbol);
-  const [aiOpen, setAiOpen] = useState(false);
-  const [seoOpen, setSeoOpen] = useState(false);
-  const [dock, setDock] = useState<DockId | null>(null);
-  const [dockReady, setDockReady] = useState(false);
-  const [aiReady, setAiReady] = useState(false);
-  const [boundRuleName, setBoundRuleName] = useState<string | null>(null);
-  const [boundStrategyId, setBoundStrategyId] = useState<string | null>(null);
-  const [planFocusKey, setPlanFocusKey] = useState(0);
-  const [mobileSegment, setMobileSegment] = useState<MobileSegment>("plan");
-  const [mobilePlanOpen, setMobilePlanOpen] = useState(false);
-  const [mobilePlanReady, setMobilePlanReady] = useState(false);
   const isDesktop = useMinWidth(LG_MIN);
   const rail = useRailResize();
   const watch = useWatchlistResize();
   const s = useSymbolPage(symbol, assetType, isIndex, initialQuote, {
-    // H5 default segment is plan — don't compete with quote/candles for earnings.
-    prefetchEarnings: isDesktop
-      ? rail.open
-      : mobileSegment === "market",
+    initialBars,
+    // Desktop: earnings when plan rail open. H5 plan-first — skip competing fetch.
+    prefetchEarnings: isDesktop ? rail.open : false,
   });
-
-  useEffect(() => {
-    setBoundRuleName(null);
-    setBoundStrategyId(null);
-    setDock(null);
-    setAiOpen(false);
-    setMobilePlanOpen(false);
-    setMobileSegment("plan");
-  }, [symbol, assetType]);
-
-  useEffect(() => {
-    try {
-      const q = new URLSearchParams(window.location.search);
-      const v = q.get("guide") ?? q.get("onboarding");
-      if (v === "1" || v === "true") {
-        if (isDesktop) rail.setOpen(true);
-        else {
-          setMobileSegment("plan");
-          setPlanFocusKey((k) => k + 1);
-        }
-      }
-    } catch {
-      /* ignore */
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- open once on mount / symbol
-  }, [symbol, assetType, isDesktop]);
-
-  useEffect(() => {
-    if (mobilePlanOpen) setMobilePlanReady(true);
-  }, [mobilePlanOpen]);
-
-  const openPlan = useCallback(() => {
-    setAiOpen(false);
-    setDock(null);
-    setPlanFocusKey((k) => k + 1);
-    if (isDesktop) rail.setOpen(true);
-    else {
-      setMobileSegment("plan");
-      s.setTab("chart");
-    }
-  }, [isDesktop, rail, s.setTab]);
-
-  useEffect(() => {
-    if (dock) setDockReady(true);
-  }, [dock]);
-
-  useEffect(() => {
-    if (aiOpen) setAiReady(true);
-  }, [aiOpen]);
-
-  // H5: idle-warm AI chunk after first paint; stub FAB handles early taps.
-  useEffect(() => {
-    if (isDesktop || aiReady) return;
-    let idleId: number | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    const warm = () => setAiReady(true);
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(warm, { timeout: 4000 });
-    } else {
-      timeoutId = setTimeout(warm, 2500);
-    }
-    return () => {
-      if (idleId != null && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timeoutId != null) clearTimeout(timeoutId);
-    };
-  }, [isDesktop, aiReady]);
-
-  const sideIcon: SideIconId | null = aiOpen ? "ai" : dock;
-
-  const marketCap = useMemo(() => {
-    const hit = s.earningsMetrics.find((m) => m.key === "marketCapitalization");
-    const v = hit?.value;
-    return v != null && Number.isFinite(v) ? v * 1e6 : null;
-  }, [s.earningsMetrics]);
 
   const desktopQuoteTabs = useMemo(
     () => s.tabs.filter((x) => x.id !== "news" && x.id !== "press"),
@@ -160,96 +70,25 @@ export function SymbolPageClient({
     [s.tabs],
   );
 
-  const openTrade = useCallback(() => {
-    setAiOpen(false);
-    setSeoOpen(false);
-    setMobilePlanOpen(false);
-    setDock("trade");
-  }, []);
+  const p = useSymbolWorkbenchPanels({
+    symbol,
+    assetType,
+    isDesktop,
+    setRailOpen: rail.setOpen,
+    setTab: s.setTab,
+    tab: s.tab,
+    mobileMoreTabs,
+  });
 
-  const onMobileSegment = useCallback(
-    (segment: MobileSegment) => {
-      setAiOpen(false);
-      setMobilePlanOpen(false);
-      setDock(null);
-      setMobileSegment(segment);
-      if (segment === "more") {
-        const first = mobileMoreTabs[0]?.id;
-        if (first) s.setTab(first);
-      } else {
-        s.setTab("chart");
-      }
-    },
-    [mobileMoreTabs, s.setTab],
-  );
-
-  const onMoreTabChange = useCallback(
-    (id: SymbolTab) => {
-      setAiOpen(false);
-      setMobilePlanOpen(false);
-      setDock(null);
-      if (id === "chart") {
-        setMobileSegment("plan");
-        s.setTab("chart");
-        return;
-      }
-      setMobileSegment("more");
-      s.setTab(id);
-    },
-    [s.setTab],
-  );
-
-  const onBoundStrategyChange = useCallback(
-    (name: string | null, id?: string | null) => {
-      setBoundRuleName(name);
-      setBoundStrategyId(id ?? null);
-    },
-    [],
-  );
+  const marketCap = useMemo(() => {
+    const hit = s.earningsMetrics.find((m) => m.key === "marketCapitalization");
+    const v = hit?.value;
+    return v != null && Number.isFinite(v) ? v * 1e6 : null;
+  }, [s.earningsMetrics]);
 
   const panelTab = panelTabFor(isDesktop, s.tab);
   const resolutionLabels = useMemo(() => candleResolutionLabels(s.t), [s.t]);
-
-  function closeDock() {
-    setDock(null);
-    if (s.tab === "news" || s.tab === "press" || s.tab === "comments") {
-      s.setTab("chart");
-    }
-  }
-
-  function onSideSelect(id: SideIconId) {
-    if (id === "ai") {
-      if (aiOpen) {
-        setAiOpen(false);
-        return;
-      }
-      setDock(null);
-      setMobilePlanOpen(false);
-      setSeoOpen(false);
-      setAiOpen(true);
-      return;
-    }
-    if (dock === id) {
-      closeDock();
-      return;
-    }
-    setAiOpen(false);
-    setSeoOpen(false);
-    setMobilePlanOpen(false);
-    setDock(id);
-    if (id === "news") s.setTab("news");
-    else if (id === "comments") s.setTab("comments");
-    else if (
-      s.tab === "news" ||
-      s.tab === "press" ||
-      s.tab === "comments"
-    ) {
-      s.setTab("chart");
-    }
-  }
-
   const newsFeedTab = s.tab === "press" ? "press" : "news";
-
   const resizing = rail.dragging || watch.dragging;
 
   const onToggleWatchlist = useCallback(() => {
@@ -306,9 +145,18 @@ export function SymbolPageClient({
             <button
               type="button"
               className="aw-watchlist-resizer"
-              aria-label="Resize watchlist"
+              aria-label={s.t("resizeWatchlist")}
               data-dragging={watch.dragging ? "true" : undefined}
               onPointerDown={watch.onResizeStart}
+              onKeyDown={(e) => {
+                if (e.key === "ArrowRight") {
+                  e.preventDefault();
+                  watch.nudgeWidth(12);
+                } else if (e.key === "ArrowLeft") {
+                  e.preventDefault();
+                  watch.nudgeWidth(-12);
+                }
+              }}
             />
           </>
         ) : null}
@@ -319,18 +167,24 @@ export function SymbolPageClient({
               symbol={symbol}
               assetType={assetType}
               quote={s.quote}
-              boundRuleName={boundRuleName}
-              onOpenPlan={openPlan}
-              onOpenTrade={openTrade}
+              boundRuleName={p.boundRuleName}
+              onOpenPlan={p.openPlan}
+              onOpenTrade={p.openTrade}
+              feedStatus={feedStatusFromWs({
+                enabled: s.wsEnabled,
+                connected: s.wsConnected,
+                degraded: s.wsDegraded,
+                push: s.wsPush,
+              })}
               tabs={isDesktop ? desktopQuoteTabs : undefined}
               tab={isDesktop ? panelTab : undefined}
               onTabChange={
                 isDesktop
                   ? (id) => {
-                      setAiOpen(false);
-                      setMobilePlanOpen(false);
-                      if (id === "news" || id === "press") setDock("news");
-                      else setDock(null);
+                      p.setAiOpen(false);
+                      p.setMobilePlanOpen(false);
+                      if (id === "news" || id === "press") p.setDock("news");
+                      else p.setDock(null);
                       s.setTab(id);
                     }
                   : undefined
@@ -341,19 +195,31 @@ export function SymbolPageClient({
               }
               aboutLabel={seoCopy.aboutLabel}
               onOpenAbout={() => {
-                setAiOpen(false);
-                setDock(null);
-                setMobilePlanOpen(false);
-                setSeoOpen(true);
+                p.setAiOpen(false);
+                p.setDock(null);
+                p.setMobilePlanOpen(false);
+                p.setSeoOpen(true);
               }}
             />
           </div>
 
+          {/*
+            Icon dock stays in the grid (aligned with chart toolbar), not
+            stretched beside the quote bar. Quote bar uses pr dock-width so
+            actions do not peek into the drawer edgeOffset strip.
+          */}
           <div
             className="aw-workbench-grid relative min-h-0 flex-1 lg:overflow-hidden"
             data-resizing={rail.dragging ? "true" : undefined}
           >
-            <div className="aw-stack-y flex min-h-0 min-w-0 flex-col overflow-hidden bg-[var(--aw-canvas)]">
+            <div
+              id="symbol-main-panel"
+              role="tabpanel"
+              aria-labelledby={
+                isDesktop ? `symbol-quote-tab-${panelTab}` : undefined
+              }
+              className="aw-stack-y flex min-h-0 min-w-0 flex-col overflow-hidden bg-[var(--aw-canvas)]"
+            >
               <SymbolPageTabs
                 s={s}
                 tab={panelTab}
@@ -371,14 +237,14 @@ export function SymbolPageClient({
                           quote={s.quote}
                           metrics={s.earningsMetrics}
                           marketCap={marketCap}
-                          segment={mobileSegment}
-                          onSegmentChange={onMobileSegment}
-                          onOpenTrade={openTrade}
-                          focusPlanToken={planFocusKey}
-                          onBoundStrategyChange={onBoundStrategyChange}
+                          segment={p.mobileSegment}
+                          onSegmentChange={p.onMobileSegment}
+                          onOpenTrade={p.openTrade}
+                          focusPlanToken={p.planFocusKey}
+                          onBoundStrategyChange={p.onBoundStrategyChange}
                           panelTab={panelTab}
                           moreTabs={mobileMoreTabs}
-                          onMoreTabChange={onMoreTabChange}
+                          onMoreTabChange={p.onMoreTabChange}
                         />
                       )
                 }
@@ -408,17 +274,19 @@ export function SymbolPageClient({
                 onAlertSubmit={s.createAlert}
                 metrics={s.earningsMetrics}
                 marketCap={marketCap}
-                focusPlanToken={planFocusKey}
-                onBoundStrategyChange={onBoundStrategyChange}
-                onRequestOrder={openTrade}
+                focusPlanToken={p.planFocusKey}
+                onBoundStrategyChange={p.onBoundStrategyChange}
+                onRequestOrder={p.openTrade}
                 dragging={rail.dragging}
                 onResizeStart={rail.onResizeStart}
+                onResizeKeyNudge={rail.nudgeWidth}
               />
             ) : null}
+
             {isDesktop ? (
               <SymbolSideIconRail
-                active={sideIcon}
-                onSelect={onSideSelect}
+                active={p.sideIcon}
+                onSelect={p.onSideSelect}
                 railOpen={rail.open}
                 onToggleRail={() => rail.setOpen((v) => !v)}
               />
@@ -429,27 +297,26 @@ export function SymbolPageClient({
 
       <SymbolPageOverlays
         isDesktop={isDesktop}
-        dockReady={dockReady}
-        dock={dock}
-        onCloseDock={closeDock}
+        dockReady={p.dockReady}
+        dock={p.dock}
+        onCloseDock={p.closeDock}
         symbol={symbol}
         assetType={assetType}
         isIndex={isIndex}
         lastPrice={s.quote?.price ?? null}
         bid={s.quote?.bid ?? null}
         ask={s.quote?.ask ?? null}
-        boundStrategyId={boundStrategyId}
-        boundRuleName={boundRuleName}
-        onBoundStrategyChange={onBoundStrategyChange}
+        boundStrategyId={p.boundStrategyId}
+        boundRuleName={p.boundRuleName}
+        onBoundStrategyChange={p.onBoundStrategyChange}
         onOpenAi={() => {
-          setAiReady(true);
-          setDock(null);
-          setMobilePlanOpen(false);
-          setAiOpen(true);
+          p.setAiOpen(true);
+          p.setDock(null);
+          p.setMobilePlanOpen(false);
         }}
         onOpenPlan={() => {
-          setDock(null);
-          openPlan();
+          p.setDock(null);
+          p.openPlan();
         }}
         newsFeedTab={newsFeedTab}
         onNewsFeedTabChange={(tab) => s.setTab(tab)}
@@ -472,23 +339,23 @@ export function SymbolPageClient({
         degradedLabel={s.tCommon("degraded")}
         errorLabel={s.tCommon("error")}
         loadingLabel={s.tCommon("loading")}
-        mobilePlanReady={mobilePlanReady}
-        mobilePlanOpen={mobilePlanOpen}
-        onCloseMobilePlan={() => setMobilePlanOpen(false)}
-        focusPlanToken={planFocusKey}
-        onRequestOrder={openTrade}
-        aiReady={aiReady}
-        aiOpen={aiOpen}
+        mobilePlanReady={p.mobilePlanReady}
+        mobilePlanOpen={p.mobilePlanOpen}
+        onCloseMobilePlan={() => p.setMobilePlanOpen(false)}
+        focusPlanToken={p.planFocusKey}
+        onRequestOrder={p.openTrade}
+        aiReady={p.aiReady}
+        aiOpen={p.aiOpen}
         onAiOpenChange={(open) => {
-          setAiOpen(open);
+          p.setAiOpen(open);
           if (open) {
-            setDock(null);
-            setMobilePlanOpen(false);
-            setSeoOpen(false);
+            p.setDock(null);
+            p.setMobilePlanOpen(false);
+            p.setSeoOpen(false);
           }
         }}
-        seoOpen={seoOpen}
-        onSeoOpenChange={setSeoOpen}
+        seoOpen={p.seoOpen}
+        onSeoOpenChange={p.setSeoOpen}
         seoCopy={seoCopy}
         seoPeers={seoPeers}
       />

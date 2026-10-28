@@ -83,6 +83,8 @@ type Props = {
   loadingLabel: string;
   /** Leave room for desktop side dock; 0 on H5 (no dock). */
   edgeOffsetPx?: number;
+  /** Align below sticky topbar with the symbol shell / side icon rail. */
+  topOffsetPx?: number;
 };
 
 export function SymbolDockDrawers({
@@ -120,6 +122,7 @@ export function SymbolDockDrawers({
   errorLabel,
   loadingLabel,
   edgeOffsetPx = 44,
+  topOffsetPx = 0,
 }: Props) {
   const t = useTranslations("symbol");
   const tRail = useTranslations("symbolRail");
@@ -143,6 +146,7 @@ export function SymbolDockDrawers({
       title={title}
       className="aw aw-dock-drawer"
       edgeOffsetPx={edgeOffsetPx}
+      topOffsetPx={topOffsetPx}
     >
       {dock === "trade" ? (
         <div className="aw-dock-scroll flex min-h-0 flex-1 flex-col overflow-y-auto">

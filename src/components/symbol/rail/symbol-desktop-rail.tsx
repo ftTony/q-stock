@@ -1,6 +1,11 @@
 "use client";
 
-import type { FormEvent, PointerEvent as ReactPointerEvent } from "react";
+import type {
+  FormEvent,
+  KeyboardEvent as ReactKeyboardEvent,
+  PointerEvent as ReactPointerEvent,
+} from "react";
+import { useTranslations } from "next-intl";
 import { SymbolOrderRail } from "@/components/symbol/rail/symbol-order-rail";
 import { SymbolRailQuoteHeader } from "@/components/symbol/rail/symbol-rail-quote-header";
 import { SymbolRailStats } from "@/components/symbol/rail/symbol-rail-stats";
@@ -30,6 +35,7 @@ type Props = {
   onRequestOrder: () => void;
   dragging: boolean;
   onResizeStart: (e: ReactPointerEvent<HTMLElement>) => void;
+  onResizeKeyNudge?: (delta: number) => void;
 };
 
 /** Desktop-only plan / quote rail (hidden under lg via CSS + parent gate). */
@@ -56,15 +62,31 @@ export function SymbolDesktopRail({
   onRequestOrder,
   dragging,
   onResizeStart,
+  onResizeKeyNudge,
 }: Props) {
+  const t = useTranslations("symbol");
+
+  function onResizeKeyDown(e: ReactKeyboardEvent<HTMLButtonElement>) {
+    if (!onResizeKeyNudge) return;
+    // Handle is left of rail: ArrowLeft widens, ArrowRight narrows.
+    if (e.key === "ArrowLeft") {
+      e.preventDefault();
+      onResizeKeyNudge(12);
+    } else if (e.key === "ArrowRight") {
+      e.preventDefault();
+      onResizeKeyNudge(-12);
+    }
+  }
+
   return (
     <>
       <button
         type="button"
         className="aw-workbench-resizer"
-        aria-label="Resize side panel"
+        aria-label={t("resizeRail")}
         data-dragging={dragging ? "true" : undefined}
         onPointerDown={onResizeStart}
+        onKeyDown={onResizeKeyDown}
       />
 
       <aside className="aw-workbench-rail min-h-0 overflow-hidden bg-[var(--aw-canvas)]">

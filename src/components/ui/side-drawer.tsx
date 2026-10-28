@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { useTranslations } from "next-intl";
 
 export function SideDrawer(props: {
   open: boolean;
@@ -23,6 +24,12 @@ export function SideDrawer(props: {
   className?: string;
   /** Leave room for a fixed edge dock (e.g. Futu-style 40px icon strip). */
   edgeOffsetPx?: number;
+  /**
+   * Start below sticky chrome (e.g. app topbar). Dock drawers on the symbol
+   * page pass the workbench shell top so the panel aligns with the side icon
+   * rail — not `inset-y-0` over the header.
+   */
+  topOffsetPx?: number;
   /** Slide from left (watchlist) or right (default). */
   side?: "left" | "right";
   /** Narrower panel (Futu watchlist strip). */
@@ -33,6 +40,8 @@ export function SideDrawer(props: {
   /** Mount heavy body only while open (keep briefly on close for slide-out). */
   const [bodyLive, setBodyLive] = useState(false);
   const side = props.side ?? "right";
+  const tCommon = useTranslations("common");
+  const closeLabel = tCommon("close");
 
   useEffect(() => setMounted(true), []);
 
@@ -62,10 +71,12 @@ export function SideDrawer(props: {
   if (!mounted) return null;
 
   const edge = Math.max(0, props.edgeOffsetPx ?? 0);
+  const top = Math.max(0, props.topOffsetPx ?? 0);
   // When closed, park fully off-screen. `right: edge` + `translateX(100%)`
   // leaves a `edge`-wide sliver of the panel (title text) visible.
-  const edgeStyle: CSSProperties | undefined =
-    edge > 0
+  const panelStyle: CSSProperties = {
+    ...(top > 0 ? { top } : null),
+    ...(edge > 0
       ? side === "right"
         ? {
             right: edge,
@@ -79,7 +90,8 @@ export function SideDrawer(props: {
               ? "translateX(0)"
               : `translateX(calc(-100% - ${edge}px))`,
           }
-      : undefined;
+      : null),
+  };
 
   const width =
     props.widthClassName ??
@@ -90,6 +102,7 @@ export function SideDrawer(props: {
   const sideBorder =
     side === "right" ? "border-l border-[var(--border)]" : "border-r border-[var(--border)]";
   const useEdgeTransform = edge > 0;
+  const yClass = top > 0 ? "bottom-0" : "inset-y-0";
 
   return createPortal(
     <div
@@ -98,24 +111,25 @@ export function SideDrawer(props: {
     >
       <button
         type="button"
-        aria-label="Close"
+        aria-label={closeLabel}
         tabIndex={props.open ? 0 : -1}
         onClick={props.onClose}
         style={
-          side === "right" && edge > 0
-            ? ({ right: edge } as CSSProperties)
-            : undefined
+          {
+            ...(top > 0 ? { top } : null),
+            ...(side === "right" && edge > 0 ? { right: edge } : null),
+          } as CSSProperties
         }
-        className={`absolute inset-0 bg-black/40 transition-opacity duration-300 ${
-          props.open ? "opacity-100" : "opacity-0"
-        }`}
+        className={`absolute inset-x-0 bottom-0 bg-black/40 transition-opacity duration-300 ${
+          top > 0 ? "" : "top-0"
+        } ${props.open ? "opacity-100" : "opacity-0"}`}
       />
       <aside
         role="dialog"
         aria-modal="true"
         aria-label={props.title}
-        style={edgeStyle}
-        className={`absolute inset-y-0 ${sidePos} flex ${width} flex-col ${sideBorder} bg-[var(--panel)] pb-[env(safe-area-inset-bottom,0px)] shadow-2xl transition-transform duration-300 ease-out ${
+        style={panelStyle}
+        className={`absolute ${yClass} ${sidePos} flex ${width} flex-col ${sideBorder} bg-[var(--panel)] pb-[env(safe-area-inset-bottom,0px)] shadow-2xl transition-transform duration-300 ease-out ${
           useEdgeTransform
             ? ""
             : props.open
@@ -152,7 +166,7 @@ export function SideDrawer(props: {
               type="button"
               onClick={props.onClose}
               className="aw-drawer-close inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-none bg-transparent text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)] active:scale-95"
-              aria-label="Close"
+              aria-label={closeLabel}
             >
               <svg
                 className="h-3.5 w-3.5"

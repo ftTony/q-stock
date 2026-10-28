@@ -293,7 +293,7 @@ export function SymbolWatchlistSettingsModal({
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-5">
       <button
         type="button"
-        aria-label="Close"
+        aria-label={tCommon("close")}
         className="absolute inset-0 bg-black/40"
         onClick={onClose}
       />
@@ -311,7 +311,7 @@ export function SymbolWatchlistSettingsModal({
             type="button"
             onClick={onClose}
             className="inline-flex h-8 w-8 items-center justify-center text-[var(--muted)] hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
-            aria-label="Close"
+            aria-label={tCommon("close")}
           >
             <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
               <path d="M6 6l12 12M18 6L6 18" />

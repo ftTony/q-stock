@@ -50,12 +50,17 @@ export async function GET(req: Request) {
     });
   } catch (err) {
     console.error("quotes", err);
+    const message =
+      err instanceof Error ? err.message : "Failed to fetch quote";
+    const noCreds = /not configured|No market data providers/i.test(message);
     const status =
-      err && typeof err === "object" && "status" in err
-        ? Number((err as { status?: number }).status) || 502
-        : 502;
+      noCreds
+        ? 503
+        : err && typeof err === "object" && "status" in err
+          ? Number((err as { status?: number }).status) || 502
+          : 502;
     return NextResponse.json(
-      { error: err instanceof Error ? err.message : "Failed to fetch quote" },
+      { error: message, code: noCreds ? "NO_CREDENTIALS" : "UPSTREAM" },
       { status },
     );
   }

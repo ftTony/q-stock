@@ -1,8 +1,13 @@
 "use client";
 
+import type { KeyboardEvent as ReactKeyboardEvent } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { ChangePct, PriceText } from "@/components/market/price";
+import {
+  SymbolFeedStatus,
+  type FeedStatusKind,
+} from "@/components/symbol/quote/symbol-feed-status";
 import { SymbolShareMenu } from "@/components/symbol/quote/symbol-share-menu";
 import type { SymbolTab } from "@/components/symbol/tabs/symbol-tabs-panel";
 import { SymbolQuoteBarSearch } from "@/components/symbol/quote/symbol-quote-bar-search";
@@ -30,6 +35,8 @@ type Props = {
   /** Open SSR about / SEO copy (drawer) — keeps crawl text out of bottom chrome. */
   aboutLabel?: string;
   onOpenAbout?: () => void;
+  /** Live quote feed status (WS push / delayed poll / offline). */
+  feedStatus?: FeedStatusKind;
 };
 
 /** Drop noisy copy suffixes for the compact chip; full name stays in title. */
@@ -56,11 +63,38 @@ export function SymbolQuoteBar({
   onExpandWatchlist,
   aboutLabel,
   onOpenAbout,
+  feedStatus,
 }: Props) {
   const t = useTranslations("symbol");
   const tRail = useTranslations("symbolRail");
   const chipName = boundRuleName ? ruleChipLabel(boundRuleName) : null;
   const showTabs = Boolean(tabs?.length && onTabChange && tab);
+
+  function onTabKeyDown(e: ReactKeyboardEvent, index: number) {
+    if (!tabs?.length || !onTabChange) return;
+    const last = tabs.length - 1;
+    let next = index;
+    if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+      e.preventDefault();
+      next = index >= last ? 0 : index + 1;
+    } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+      e.preventDefault();
+      next = index <= 0 ? last : index - 1;
+    } else if (e.key === "Home") {
+      e.preventDefault();
+      next = 0;
+    } else if (e.key === "End") {
+      e.preventDefault();
+      next = last;
+    } else {
+      return;
+    }
+    onTabChange(tabs[next]!.id);
+    const btn = e.currentTarget.parentElement?.querySelectorAll<HTMLElement>(
+      '[role="tab"]',
+    )[next];
+    btn?.focus();
+  }
   const companyName = displayName(symbol, assetType, quote?.name);
   const showCompanyName =
     Boolean(companyName) &&
@@ -176,21 +210,29 @@ export function SymbolQuoteBar({
                 <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   <div
                     role="tablist"
+                    aria-label={t("chartTab")}
                     className="flex h-full w-max items-stretch"
                   >
-                    {tabs!.map((item) => (
-                      <button
-                        key={item.id}
-                        type="button"
-                        role="tab"
-                        aria-selected={tab === item.id}
-                        onClick={() => onTabChange!(item.id)}
-                        data-active={tab === item.id}
-                        className="aw-tab aw-tab-quote"
-                      >
-                        {item.label}
-                      </button>
-                    ))}
+                    {tabs!.map((item, index) => {
+                      const selected = tab === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          type="button"
+                          role="tab"
+                          id={`symbol-quote-tab-${item.id}`}
+                          aria-selected={selected}
+                          aria-controls="symbol-main-panel"
+                          tabIndex={selected ? 0 : -1}
+                          onClick={() => onTabChange!(item.id)}
+                          onKeyDown={(e) => onTabKeyDown(e, index)}
+                          data-active={selected}
+                          className="aw-tab aw-tab-quote"
+                        >
+                          {item.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               </>
@@ -206,6 +248,7 @@ export function SymbolQuoteBar({
               variant="icon"
             />
           </div>
+          {feedStatus ? <SymbolFeedStatus kind={feedStatus} /> : null}
           {onOpenAbout && aboutLabel ? (
             <button
               type="button"

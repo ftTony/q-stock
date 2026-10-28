@@ -28,6 +28,8 @@ type Props = {
   showFab?: boolean;
   /** Leave room for desktop side dock; 0 on H5. */
   edgeOffsetPx?: number;
+  /** Align below sticky topbar with the symbol shell / side icon rail. */
+  topOffsetPx?: number;
 };
 
 export function SymbolAiFab({
@@ -37,6 +39,7 @@ export function SymbolAiFab({
   onOpenChange,
   showFab = true,
   edgeOffsetPx = 0,
+  topOffsetPx = 0,
 }: Props) {
   const t = useTranslations("symbol");
   const { status } = useSession();
@@ -106,6 +109,7 @@ export function SymbolAiFab({
         onClose={close}
         className="aw aw-ai-desk"
         edgeOffsetPx={edgeOffsetPx}
+        topOffsetPx={topOffsetPx}
         title={
           view === "history"
             ? t("aiHistoryTitle", { symbol })

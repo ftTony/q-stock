@@ -30,7 +30,12 @@ import {
 } from "@/hooks/use-quote-socket";
 import { queryKeys } from "@/lib/query/keys";
 import type { ServerMessage } from "@/lib/market/stream/protocol";
-import type { AssetType, CandleResolution, Quote } from "@/lib/types";
+import type {
+  AssetType,
+  CandleResolution,
+  OhlcvBar,
+  Quote,
+} from "@/lib/types";
 
 function quoteTimestamp(quote: Quote | null | undefined): Date | null {
   if (!quote?.timestamp) return null;
@@ -45,7 +50,10 @@ export function useSymbolPage(
   assetType: AssetType,
   isIndex: boolean,
   initialQuote: Quote | null = null,
-  opts?: { prefetchEarnings?: boolean },
+  opts?: {
+    prefetchEarnings?: boolean;
+    initialBars?: OhlcvBar[] | null;
+  },
 ) {
   const prefetchEarnings = opts?.prefetchEarnings ?? false;
   const locale = useLocale();
@@ -65,7 +73,9 @@ export function useSymbolPage(
     rsi: false,
     macd: false,
   });
-  const candles = useSymbolCandles(symbol, assetType, resolution);
+  const candles = useSymbolCandles(symbol, assetType, resolution, {
+    initialBars: opts?.initialBars,
+  });
   const [tab, setTab] = useState<SymbolTab>("chart");
   const tabData = useSymbolTabData({
     symbol,
@@ -265,6 +275,10 @@ export function useSymbolPage(
     alertBusy,
     commentBusy,
     degraded: tabData.degraded,
+    wsEnabled,
+    wsConnected,
+    wsDegraded,
+    wsPush,
     inWatchlist,
     watchBusy,
     updatedAt,

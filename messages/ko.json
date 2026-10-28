@@ -344,7 +344,14 @@
     "chartCtxRangeStats": "Range statistics",
     "chartCtxOverlay": "Overlay symbol",
     "chartCtxRangeStatsSoon": "Range statistics coming soon",
-    "chartCtxOverlaySoon": "Symbol overlay coming soon"
+    "chartCtxOverlaySoon": "Symbol overlay coming soon",
+    "feedLive": "Live",
+    "feedDelayed": "Delayed · 5s",
+    "feedOffline": "Disconnected",
+    "resizeRail": "Resize side panel",
+    "resizeWatchlist": "Resize watchlist",
+    "fundamentalsNav": "Fundamentals",
+    "chartEmpty": "No chart data yet. Check market credentials or try another resolution."
   },
   "company": {
     "na": "이 자산에 대한 기업 정보가 없습니다",
@@ -581,7 +588,9 @@
     "billingRedeemError": "Could not redeem code.",
     "billingCheckoutError": "Checkout failed.",
     "billingPortalError": "Could not open billing portal.",
-    "billingStripeSoon": "Stripe is not configured yet — redeem a code or email us."
+    "billingStripeSoon": "Stripe is not configured yet — redeem a code or email us.",
+    "aboutReplayGuide": "Replay symbol page guide",
+    "aboutReplayGuideHint": "The guide will show again the next time you open a symbol page."
   },
   "alerts": {
     "title": "가격 알림",
@@ -795,7 +804,8 @@
     "providerFutu": "Futu",
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
-    "providerOkx": "OKX"
+    "providerOkx": "OKX",
+    "close": "닫기"
   },
   "about": {
     "title": "운영자 소개",
