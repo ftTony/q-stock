@@ -152,13 +152,22 @@ export async function getQuoteCtx(): Promise<QuoteCtx> {
 /** @deprecated Prefer getQuoteCtx */
 export const getCtx = getQuoteCtx;
 
-export function dec(v: { toNumber(): number } | null | undefined): number {
+/**
+ * Decimal → number. Accepts SDK Decimal objects (`{ toNumber() }`) as well as
+ * primitives, since some endpoints serialize decimals as plain strings.
+ */
+export function dec(
+  v: { toNumber(): number } | number | string | null | undefined,
+): number {
   if (v == null) return 0;
-  try {
-    return v.toNumber();
-  } catch {
-    return Number(String(v)) || 0;
+  if (typeof v === "object") {
+    try {
+      return v.toNumber();
+    } catch {
+      return Number(String(v)) || 0;
+    }
   }
+  return Number(v) || 0;
 }
 
 /** Map UI locale to Longbridge language id (default keeps SDK default). */

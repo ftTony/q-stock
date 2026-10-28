@@ -2,6 +2,7 @@ import { cachedFetch } from "@/lib/cache";
 import { buildStatementFromLbReport } from "@/lib/earnings/from-longbridge-report";
 import { toLongbridgeSymbol, normalizeSymbol } from "@/lib/market/symbols";
 import type { AssetType } from "@/lib/types";
+import type { FinancialReportKind, FinancialReportPeriod } from "longbridge";
 import {
   getContentCtx,
   getFundamentalCtx,
@@ -11,6 +12,20 @@ import {
   loadLb,
   strOrUndef,
 } from "@/lib/market/providers/longbridge-client";
+import type { LbModule } from "@/lib/market/providers/longbridge-client";
+
+/**
+ * Longbridge SDK 把 FinancialReportKind / FinancialReportPeriod 声明为
+ * `declare const enum`（见 node_modules/longbridge/index.d.ts），在 isolatedModules
+ * 下无法跨模块访问其成员；但其 native binding 在运行时确实导出了同名对象。
+ * 因此这里从运行时对象取值，再断言回 SDK 的枚举类型。
+ */
+function lbEnums(lb: LbModule) {
+  return lb as unknown as {
+    FinancialReportKind: Record<string, number>;
+    FinancialReportPeriod: Record<string, number>;
+  };
+}
 
 export type LongbridgePressItem = {
   headline: string;
@@ -318,8 +333,10 @@ export async function getLongbridgeEarnings(
       loadLb(),
     ]);
 
-    const reportKind = lb.FinancialReportKind.All;
-    const reportPeriod = lb.FinancialReportPeriod.QuarterlyFull;
+    const enums = lbEnums(lb);
+    const reportKind = enums.FinancialReportKind.All as FinancialReportKind;
+    const reportPeriod = enums.FinancialReportPeriod
+      .QuarterlyFull as FinancialReportPeriod;
 
     const [valuationRes, consensusRes, staticRes, quoteRes, reportRes] =
       await Promise.allSettled([
@@ -459,7 +476,7 @@ export async function getLongbridgeEarnings(
           const annual = await fund.financialReport(
             lbSym,
             reportKind,
-            lb.FinancialReportPeriod.Annual,
+            enums.FinancialReportPeriod.Annual as FinancialReportPeriod,
           );
           balance = buildStatementFromLbReport(annual?.list, "BS");
           cashflow = buildStatementFromLbReport(annual?.list, "CF");

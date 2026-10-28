@@ -115,9 +115,9 @@ export async function fetchFutuOptionChain(
     const putsRaw: Raw[] = [];
     for (const c of contracts) {
       const strike = Number(c.strike_price);
-      const side =
+      const side: Raw["side"] =
         String(c.option_type ?? "").toUpperCase() === "PUT" ? "put" : "call";
-      const row = { symbol: String(c.code), strike, side };
+      const row: Raw = { symbol: String(c.code), strike, side };
       if (side === "call") callsRaw.push(row);
       else putsRaw.push(row);
     }

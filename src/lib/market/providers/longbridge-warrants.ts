@@ -78,7 +78,7 @@ function mapStatus(n: unknown): WarrantStatusKind {
 
 function nullDec(v: unknown): number | null {
   if (v == null) return null;
-  const n = dec(v as { toNumber?: () => number } | number | string | null);
+  const n = dec(v as { toNumber(): number } | number | string);
   return Number.isFinite(n) ? n : null;
 }
 

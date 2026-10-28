@@ -22,9 +22,11 @@ export type AiTrendAnalysis = {
 };
 
 export function AiAnalysisPanel(props: {
-  available: boolean | null;
+  /** `false` = AI 明确不可用；`null` / `undefined` = 尚未可知，按加载中处理。 */
+  available?: boolean | null;
   message?: string | null;
-  analysis: AiTrendAnalysis | null;
+  /** `null` / `undefined` = 暂无结论（走 message 降级提示）。 */
+  analysis?: AiTrendAnalysis | null;
   disclaimer?: string | null;
   cached?: boolean;
   degraded?: boolean;
