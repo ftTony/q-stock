@@ -20,6 +20,7 @@ import { BillingPanel } from "@/components/settings/billing-panel";
 import { InvitePanel } from "@/components/settings/invite-panel";
 import { PaperRiskSettingsForm } from "@/components/settings/paper-risk-settings-form";
 import { SettingsAboutPanel } from "@/components/settings/settings-about-panel";
+import { PushNotifySettings } from "@/components/settings/push-notify-settings";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
 import { useSaveUserSettings } from "@/hooks/query/use-user-settings";
@@ -299,6 +300,7 @@ export function SettingsPanel({
         </section>
         <BillingPanel />
         <InvitePanel />
+        <PushNotifySettings />
         <AiCredentialsForm />
       </div>
     );

@@ -590,7 +590,19 @@
     "billingPortalError": "Could not open billing portal.",
     "billingStripeSoon": "Stripe is not configured yet — redeem a code or email us.",
     "aboutReplayGuide": "Replay symbol page guide",
-    "aboutReplayGuideHint": "The guide will show again the next time you open a symbol page."
+    "aboutReplayGuideHint": "The guide will show again the next time you open a symbol page.",
+    "pushTitle": "Close push (PWA)",
+    "pushHint": "After the US regular close (~4pm ET), send one notification with your US watchlist prices. Requires notification permission.",
+    "pushEnable": "Enable close push",
+    "pushDisable": "Disable close push",
+    "pushWorking": "Working…",
+    "pushOn": "On",
+    "pushEnabled": "Close push enabled",
+    "pushDisabled": "Close push disabled",
+    "pushUnsupported": "This browser does not support push (use an installable PWA / Chrome / Edge).",
+    "pushDenied": "Notification permission was denied. Allow it in browser or system settings.",
+    "pushNotConfigured": "Server VAPID keys are not configured yet.",
+    "pushSaveError": "Could not save. Try again later."
   },
   "alerts": {
     "title": "価格アラート",

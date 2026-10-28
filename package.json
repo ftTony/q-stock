@@ -48,6 +48,7 @@
     "resend": "^6.28.0",
     "stripe": "^23.0.1",
     "tsx": "^4.23.13",
+    "web-push": "^3.6.7",
     "ws": "^8.22.0",
     "zod": "^4.6.5",
     "zustand": "^5.0.16"
@@ -64,6 +65,7 @@
     "@types/nodemailer": "^8.0.1",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/web-push": "^3.6.4",
     "@types/ws": "^8.18.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.25",

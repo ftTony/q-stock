@@ -3,7 +3,7 @@
  * serve stale markup against new JS and trigger React hydration #418.
  * Do NOT cache-first /_next/* — chunk URLs must always hit network.
  */
-const CACHE = "q-stock-shell-v5";
+const CACHE = "q-stock-shell-v6";
 const PRECACHE = [
   "/manifest.webmanifest",
   "/logo.png",
@@ -66,4 +66,55 @@ self.addEventListener("fetch", (event) => {
       ),
     );
   }
+});
+
+self.addEventListener("push", (event) => {
+  let data = { title: "Qianli Gu", body: "", url: "/watchlist" };
+  try {
+    if (event.data) {
+      const parsed = event.data.json();
+      data = {
+        title: typeof parsed.title === "string" ? parsed.title : data.title,
+        body: typeof parsed.body === "string" ? parsed.body : "",
+        url: typeof parsed.url === "string" ? parsed.url : "/watchlist",
+      };
+    }
+  } catch {
+    try {
+      const text = event.data?.text();
+      if (text) data.body = text;
+    } catch {
+      /* ignore */
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: "/icon-192.png",
+      badge: "/icon-192.png",
+      data: { url: data.url },
+    }),
+  );
+});
+
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+  const raw = event.notification.data && event.notification.data.url;
+  const path = typeof raw === "string" && raw.startsWith("/") ? raw : "/watchlist";
+  const target = new URL(path, self.location.origin).href;
+
+  event.waitUntil(
+    self.clients.matchAll({ type: "window", includeUncontrolled: true }).then((clientList) => {
+      for (const client of clientList) {
+        if (client.url.startsWith(self.location.origin) && "focus" in client) {
+          if (typeof client.navigate === "function") {
+            return client.navigate(target).then((c) => (c && c.focus ? c.focus() : client.focus()));
+          }
+          return client.focus();
+        }
+      }
+      if (self.clients.openWindow) return self.clients.openWindow(target);
+    }),
+  );
 });

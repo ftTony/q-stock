@@ -609,7 +609,19 @@
     "billingPortalError": "无法打开账单门户。",
     "billingStripeSoon": "尚未配置 Stripe — 请先兑换码，或邮件联系。",
     "aboutReplayGuide": "重新查看个股页引导",
-    "aboutReplayGuideHint": "下次打开个股页时会再次显示引导。"
+    "aboutReplayGuideHint": "下次打开个股页时会再次显示引导。",
+    "pushTitle": "收盘推送（PWA）",
+    "pushHint": "美股常规收盘后（美东约 16:00），向已安装的应用推送一条自选美股收盘价摘要。需允许浏览器通知。",
+    "pushEnable": "开启收盘推送",
+    "pushDisable": "关闭收盘推送",
+    "pushWorking": "处理中…",
+    "pushOn": "已开启",
+    "pushEnabled": "已开启收盘推送",
+    "pushDisabled": "已关闭收盘推送",
+    "pushUnsupported": "当前浏览器不支持推送通知（请使用可安装的 PWA / Chrome / Edge）。",
+    "pushDenied": "未获得通知权限，请在系统或浏览器设置中允许。",
+    "pushNotConfigured": "服务器尚未配置 VAPID 推送密钥，暂时无法开启。",
+    "pushSaveError": "保存失败，请稍后重试"
   },
   "alerts": {
     "title": "价格提醒",

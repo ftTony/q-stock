@@ -4,6 +4,7 @@ import {
   nextPriceAlertAction,
 } from "../lib/alerts/threshold";
 import { tickWatchlistDigest } from "../lib/digest/run-watchlist-digest";
+import { tickWatchlistClosePush } from "../lib/push/run-watchlist-close-push";
 import { writeDailySitemapFile } from "../lib/seo/write-daily-sitemap";
 import { isUsMidnightWindow } from "../lib/market/session";
 import { getQuote } from "../lib/market";
@@ -236,6 +237,7 @@ async function tick() {
     console.error("[jobs] tick failed", err);
   }
   await tickWatchlistDigest(prisma);
+  await tickWatchlistClosePush(prisma);
   await tickSeoSitemap();
 }
 
