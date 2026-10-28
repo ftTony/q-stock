@@ -21,13 +21,18 @@ export type ChartScreenshotOpts = {
   filename?: string;
 };
 
+/**
+ * Minimal structural slice of klinecharts' `Chart` we rely on.
+ * `getConvertPictureUrl` must mirror the library's own (narrow) params:
+ * widening `type` to `string` makes the real chart non-assignable.
+ */
 type ChartExportApi = {
   setStyles: (styles: never) => void;
   resize: () => void;
   getConvertPictureUrl: (
-    includeOverlay: boolean,
-    type: string,
-    background: string,
+    includeOverlay?: boolean,
+    type?: "png" | "jpeg" | "bmp",
+    backgroundColor?: string,
   ) => string;
 };
 

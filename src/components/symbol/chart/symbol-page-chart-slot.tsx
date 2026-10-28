@@ -18,7 +18,7 @@ type Props = {
   bars: OhlcvBar[];
   assetType: AssetType;
   symbol: string;
-  onLoadMore: () => void;
+  onLoadMore: (earliestTime: number) => Promise<OhlcvBar[]>;
   loadingMore: boolean;
   hasMore: boolean;
   inWatchlist: boolean;

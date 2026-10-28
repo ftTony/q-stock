@@ -3,7 +3,8 @@ import { fingerprintLongbridge } from "@/lib/market/creds-types";
 import { hasLongbridgeCreds, loadLb } from "@/lib/market/providers/longbridge-client";
 import { resolveLongbridgeCreds } from "@/lib/market/resolve-market-creds";
 import { normalizeSymbol } from "@/lib/market/symbols";
-import type { AssetType, Quote } from "@/lib/types";
+import type { QuoteWithSource } from "@/lib/market/types";
+import type { AssetType } from "@/lib/types";
 
 export type RankBoard = "hot" | "gainers" | "losers";
 
@@ -104,7 +105,7 @@ function toPercent(chgRatio: number): number {
   return chgRatio;
 }
 
-export type RankQuote = Quote & { name?: string; source?: string };
+export type RankQuote = QuoteWithSource & { name?: string };
 
 function mapRankItem(row: unknown, assetType: AssetType): RankQuote | null {
   const o = asPlain(row);

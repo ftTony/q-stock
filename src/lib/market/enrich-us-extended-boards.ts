@@ -1,19 +1,22 @@
 import { getQuotes } from "@/lib/market";
 import { mergeExtendedOntoRank } from "@/lib/market/extended-hours";
 import { getUsMarketPhase } from "@/lib/market/session";
-import type { RankQuote } from "@/lib/market/providers/longbridge-rank";
 import type { RankBoard } from "@/lib/market/providers/longbridge-rank";
+import type { Quote } from "@/lib/types";
 
-type Boards = Record<RankBoard, RankQuote[]>;
+type Boards<T extends Quote> = Record<RankBoard, T[]>;
 
 /**
  * Attach US pre/post/overnight snapshots onto rank boards (one batched quote call).
  * Caps unique symbols to keep the 1GB host happy.
+ *
+ * Generic over the row type so callers can pass either broker rank rows
+ * (`RankQuote`) or router quotes (`QuoteWithSource`) without widening the result.
  */
-export async function enrichUsExtendedBoards(
-  boards: Boards,
+export async function enrichUsExtendedBoards<T extends Quote>(
+  boards: Boards<T>,
   maxSymbols = 36,
-): Promise<Boards> {
+): Promise<Boards<T>> {
   const phase = getUsMarketPhase();
   const seen = new Set<string>();
   const items: { symbol: string; assetType: "stock" }[] = [];
@@ -32,7 +35,7 @@ export async function enrichUsExtendedBoards(
   try {
     const quotes = await getQuotes(items);
     const bySym = new Map(quotes.map((q) => [q.symbol, q]));
-    const mapBoard = (rows: RankQuote[]) =>
+    const mapBoard = (rows: T[]) =>
       rows.map((row) =>
         row.assetType === "stock"
           ? mergeExtendedOntoRank(row, bySym.get(row.symbol), phase)
