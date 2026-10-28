@@ -100,7 +100,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
       <div
         className={
           isSymbol
-            ? "min-h-dvh bg-[var(--symbol-shell-bg,#e6edf6)] lg:flex lg:h-dvh lg:overflow-hidden"
+            ? "flex h-dvh overflow-hidden bg-[var(--symbol-shell-bg,#e6edf6)] lg:flex"
             : "min-h-dvh lg:flex"
         }
         style={{ ["--sidebar-w" as string]: `${sidebarWidth}px` }}
@@ -115,7 +115,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
       <div
         className={
           isSymbol
-            ? "flex min-h-dvh min-w-0 flex-1 flex-col bg-[var(--symbol-shell-bg,#e6edf6)] lg:h-dvh lg:overflow-hidden"
+            ? "flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--symbol-shell-bg,#e6edf6)]"
             : "flex min-h-dvh min-w-0 flex-1 flex-col"
         }
       >
@@ -150,7 +150,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
         <main
           className={
             isSymbol
-              ? "flex min-h-0 flex-1 flex-col pb-20 lg:overflow-hidden lg:pb-0"
+              ? "flex min-h-0 flex-1 flex-col overflow-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
               : `flex-1 pb-24 lg:pb-6 ${
                   isStrategies ? "py-3 sm:py-3.5" : "py-5 sm:py-6"
                 }`

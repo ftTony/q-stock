@@ -4,7 +4,7 @@ import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { localizedPath } from "@/i18n/config";
 import { SiteLogo } from "@/components/brand/site-logo";
-import { IconSettingsGear } from "@/components/symbol/watchlist-toggle-icons";
+import { IconSettingsGear } from "@/components/symbol/watchlist/watchlist-toggle-icons";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
 
 /** Icon-rail width (product chrome — always compact). */

@@ -1,0 +1,995 @@
+.aw {
+  --aw-primary: #0066cc;
+  --aw-primary-focus: #0071e3;
+  --aw-primary-on-dark: #2997ff;
+  --aw-ink: #1d1d1f;
+  --aw-ink-muted-80: #333333;
+  --aw-ink-muted-48: #7a7a7a;
+  --aw-body-muted: #cccccc;
+  --aw-divider-soft: #f0f0f0;
+  --aw-hairline: #d5dce8;
+  --aw-canvas: #ffffff;
+  --aw-parchment: #e6edf6;
+  --aw-pearl: #fafafc;
+  --aw-chip: #d2d2d7;
+  --aw-on-primary: #ffffff;
+  --aw-radius-sm: 8px;
+  --aw-radius-md: 11px;
+  --aw-radius-lg: 18px;
+  --aw-radius-pill: 9999px;
+  --aw-space-xxs: 4px;
+  --aw-space-xs: 8px;
+  --aw-space-sm: 12px;
+  --aw-space-md: 17px;
+  --aw-space-lg: 24px;
+  --background: var(--aw-parchment);
+  --foreground: var(--aw-ink);
+  --surface: var(--aw-canvas);
+  --surface-2: var(--aw-parchment);
+  --border: var(--aw-hairline);
+  --muted: var(--aw-ink-muted-48);
+  --brand: var(--aw-primary);
+  --brand-soft: rgba(0, 102, 204, 0.1);
+  --brand-text: var(--aw-primary);
+  --on-brand: var(--aw-on-primary);
+  --panel: var(--aw-canvas);
+  --input: var(--aw-canvas);
+  --sidebar-hover: var(--aw-parchment);
+  --radius: var(--aw-radius-lg);
+  --shadow: none;
+  font-family:
+    "SF Pro Text",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: var(--aw-ink);
+  letter-spacing: -0.012em;
+  background: var(--aw-parchment);
+}
+
+/* Align workbench tokens with globals.html.dark (panel / surface / brand). */
+html.dark .aw {
+  --aw-primary: #2997ff;
+  --aw-primary-focus: #64b5ff;
+  --aw-primary-on-dark: #2997ff;
+  --aw-ink: #edf2ff;
+  --aw-ink-muted-80: #c5cddb;
+  --aw-ink-muted-48: #8b97ad;
+  --aw-body-muted: #5a6578;
+  --aw-divider-soft: #161d2a;
+  --aw-hairline: #1c2433;
+  --aw-canvas: #0f1520;
+  --aw-parchment: #06090f;
+  --aw-pearl: #121925;
+  --aw-chip: #1c2433;
+  --aw-on-primary: #ffffff;
+  --brand: var(--aw-primary);
+  --brand-soft: rgba(41, 151, 255, 0.16);
+  --brand-text: #64b5ff;
+  --on-brand: var(--aw-on-primary);
+}
+.aw .qt-panel,
+.aw .qt-card {
+  background: var(--aw-canvas);
+  border: 1px solid var(--aw-hairline);
+  border-radius: var(--aw-radius-lg);
+  box-shadow: none;
+}
+.aw .qt-input,
+.aw input.qt-input,
+.aw textarea.qt-input,
+.aw select.qt-input {
+  border: 1px solid color-mix(in srgb, var(--aw-ink) 8%, transparent);
+  border-radius: var(--aw-radius-md);
+  background: var(--aw-canvas);
+  color: var(--aw-ink);
+  /* Dense workbench: sit between 12px labels and 14px actions */
+  font-size: 13px;
+  letter-spacing: -0.08px;
+  line-height: 1.3;
+}
+
+.aw .qt-input::placeholder,
+.aw input.qt-input::placeholder {
+  font-size: 13px;
+  color: var(--aw-ink-muted-48);
+}
+
+.aw .qt-input:focus {
+  outline: 2px solid var(--aw-primary-focus);
+  outline-offset: 1px;
+  border-color: transparent;
+}
+
+.aw .qt-btn,
+.aw button.qt-btn-primary,
+.aw a.qt-btn-primary,
+.aw .qt-btn.qt-btn-primary {
+  border-radius: var(--aw-radius-pill);
+  background: var(--aw-primary);
+  color: var(--aw-on-primary);
+  border: none;
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.224px;
+  padding: 8px 16px;
+  transition: transform 0.12s ease;
+}
+
+.aw .qt-btn:active:not(:disabled),
+.aw button.qt-btn-primary:active:not(:disabled),
+.aw .qt-btn.qt-btn-primary:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.aw button.qt-btn-primary:hover,
+.aw a.qt-btn-primary:hover,
+.aw .qt-btn.qt-btn-primary:hover {
+  background: var(--aw-primary);
+  filter: none;
+  opacity: 0.92;
+}
+
+.aw button.qt-btn-ghost,
+.aw a.qt-btn-ghost,
+.aw .qt-btn.qt-btn-ghost {
+  background: var(--aw-pearl);
+  color: var(--aw-ink-muted-80);
+  border: 3px solid var(--aw-divider-soft);
+  border-radius: var(--aw-radius-md);
+  box-shadow: none;
+}
+
+.aw button.qt-btn-ghost:hover,
+.aw a.qt-btn-ghost:hover {
+  background: var(--aw-parchment);
+  color: var(--aw-ink);
+}
+
+.aw-surface,
+.aw-region {
+  background: var(--aw-canvas);
+  border: 1px solid var(--aw-hairline);
+  border-radius: var(--aw-radius-lg);
+  box-shadow: none;
+}
+
+.aw-surface-flush {
+  background: var(--aw-canvas);
+  border: 1px solid var(--aw-hairline);
+  border-radius: var(--aw-radius-lg);
+  overflow: hidden;
+}
+
+.aw-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.aw-stack > .aw-surface {
+  flex-shrink: 0;
+}
+
+.aw-stack-y {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.aw-stack-y > * + * {
+  margin-top: -1px;
+}
+
+.aw-stack-y > * {
+  border-radius: 0 !important;
+}
+
+.aw-workbench-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  background: var(--aw-canvas);
+  border: none;
+  min-height: 0;
+}
+
+.aw-workbench-grid > .aw-stack-y {
+  background: var(--aw-canvas);
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+  overflow: hidden;
+}
+
+.aw-workbench-rail {
+  flex-direction: column;
+  gap: 0;
+  min-height: 0;
+  background: var(--aw-canvas);
+  border: none;
+  border-top: 1px solid var(--aw-hairline);
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.aw-workbench-rail .qt-panel,
+.aw-workbench-rail .aw-surface,
+.aw-workbench-rail .aw-surface-flush {
+  border: none;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.aw-workbench-grid > .aw-stack-y > .aw-surface,
+.aw-workbench-grid > .aw-stack-y > .aw-surface-flush {
+  border: none;
+  border-radius: 0;
+  background: var(--aw-canvas);
+}
+
+.aw-workbench-resizer {
+  display: none;
+}
+
+/*
+ * H5: no vertical side dock (eats ~44px + breaks chart width).
+ * Trade → QuoteBar; AI → FAB; news → quote tabs; plan → drawer.
+ * Desktop (≥1024): dock becomes the last workbench column.
+ */
+.aw-side-icon-rail {
+  --aw-side-dock-w: 44px;
+  display: none;
+}
+
+.aw-workbench-main {
+  padding-right: 0;
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* H5: never stack the desktop plan rail under the chart. */
+.aw-workbench-rail {
+  display: none;
+}
+
+.aw-symbol-shell {
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.aw-side-icon-rule {
+  display: block;
+  flex-shrink: 0;
+  margin: 6px 0 8px;
+  height: 1px;
+  width: 20px;
+  background: var(--aw-hairline, var(--border));
+}
+
+.aw-side-icon-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  color: var(--aw-ink-muted-80);
+  background: transparent;
+  border: none;
+  opacity: 0.9;
+  transition:
+    opacity 0.12s ease,
+    color 0.12s ease,
+    background 0.12s ease;
+}
+
+.aw-side-icon-btn:hover {
+  opacity: 1;
+  background: color-mix(in srgb, var(--aw-ink) 5%, transparent);
+}
+
+.aw-side-icon-btn[data-active="true"] {
+  opacity: 1;
+  color: var(--aw-primary);
+  background: color-mix(in srgb, var(--aw-primary) 10%, transparent);
+}
+
+
+/* Global while dragging: keep col-resize even over chart/canvas. */
+html.aw-rail-resizing,
+html.aw-rail-resizing * {
+  cursor: col-resize !important;
+}
+html.aw-rail-resizing {
+  user-select: none !important;
+}
+
+/* Watchlist columns — header row matches .aw-chart-toolbar (36px / 12px) */
+.aw-watchlist-cols,
+.aw-watchlist-row {
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr) minmax(0, 0.85fr);
+}
+
+.aw-watchlist-cols {
+  box-sizing: border-box;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.12px;
+}
+
+/* Full-height left watchlist (sibling of quote+workbench, not under quote bar) */
+.aw-symbol-shell > .aw-watchlist-pane {
+  display: none;
+}
+
+.aw-watchlist-resizer {
+  display: none;
+}
+
+/* Shared 40px header strip with QuoteBar (H5 may grow to two rows). */
+.aw-watchlist-head {
+  box-sizing: border-box;
+  height: 40px;
+  min-height: 40px;
+  max-height: 40px;
+}
+
+.aw-quote-bar {
+  box-sizing: border-box;
+  min-height: 40px;
+}
+
+@media (max-width: 1023px) {
+  .aw-quote-bar {
+    height: auto;
+    max-height: none;
+  }
+}
+
+@media (min-width: 1024px) {
+  .aw-quote-bar {
+    height: 40px;
+    max-height: 40px;
+  }
+}
+
+.aw-watchlist-collapse-btn,
+.aw-watchlist-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  color: var(--aw-ink, var(--foreground));
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.aw-watchlist-expand-btn {
+  display: none;
+  background: color-mix(in srgb, var(--aw-ink) 6%, transparent);
+}
+
+.aw-watchlist-collapse-btn:hover,
+.aw-watchlist-expand-btn:hover {
+  background: color-mix(in srgb, var(--aw-ink) 10%, transparent);
+}
+
+@media (min-width: 1024px) {
+  .aw-symbol-shell {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .aw-symbol-shell > .aw-watchlist-pane {
+    display: flex;
+    flex: 0 0 var(--aw-watchlist-width, 260px);
+    width: var(--aw-watchlist-width, 260px);
+    min-width: 180px;
+    max-width: min(420px, 36vw);
+    border-right: none;
+    min-height: 0;
+    align-self: stretch;
+  }
+
+  .aw-watchlist-resizer {
+    display: block;
+    flex: 0 0 8px;
+    width: 8px;
+    margin-left: -4px;
+    margin-right: -4px;
+    position: relative;
+    z-index: 5;
+    cursor: col-resize;
+    touch-action: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    align-self: stretch;
+  }
+  .aw-watchlist-resizer::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+    background: var(--aw-hairline);
+    transition: background 0.12s ease, width 0.12s ease;
+  }
+  .aw-watchlist-resizer:hover::after,
+  .aw-watchlist-resizer:focus-visible::after,
+  .aw-watchlist-resizer[data-dragging="true"]::after {
+    width: 2px;
+    background: var(--aw-primary);
+  }
+
+  .aw-watchlist-expand-btn {
+    display: inline-flex;
+  }
+
+  .aw-workbench-grid {
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+    min-height: 0;
+  }
+  .aw-workbench-grid > .aw-stack-y {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 0;
+  }
+  .aw-workbench-grid > .aw-side-icon-rail {
+    display: flex;
+    position: relative;
+    top: auto;
+    right: auto;
+    bottom: auto;
+    z-index: auto;
+    flex: 0 0 var(--aw-side-dock-w, 44px);
+    width: var(--aw-side-dock-w, 44px);
+    align-self: stretch;
+    overflow: visible;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 10px 0 12px;
+    border-left: 1px solid var(--aw-hairline, var(--border));
+    background: var(--aw-canvas);
+  }
+  /* Zero-width flex item: hairline is rail border-left; ::before is the drag hit target. */
+  .aw-workbench-resizer {
+    display: block;
+    flex: 0 0 0;
+    width: 0;
+    position: relative;
+    z-index: 5;
+    cursor: col-resize;
+    touch-action: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+    align-self: stretch;
+  }
+  .aw-workbench-resizer::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -4px;
+    width: 8px;
+  }
+  .aw-workbench-resizer::after {
+    content: none;
+  }
+  .aw-workbench-resizer:hover ~ .aw-workbench-rail,
+  .aw-workbench-resizer:focus-visible ~ .aw-workbench-rail,
+  .aw-workbench-grid[data-resizing="true"] .aw-workbench-rail {
+    border-left-color: var(--aw-primary);
+  }
+  .aw-workbench-rail {
+    display: flex;
+    flex: 0 0 var(--aw-rail-width, 360px);
+    width: var(--aw-rail-width, 360px);
+    max-width: min(560px, 48vw);
+    min-width: 300px;
+    border-top: none;
+    /* Single hairline at the chart|rail edge (chart y-axis spine is flushEdge-hidden). */
+    border-left: 1px solid var(--aw-hairline);
+    min-height: 0;
+    transition: border-left-color 0.12s ease;
+  }
+  .aw-workbench-grid[data-resizing="true"] {
+    user-select: none;
+    cursor: col-resize;
+  }
+  .aw-workbench-grid[data-resizing="true"] *,
+  .aw-workbench-grid[data-resizing="true"] iframe,
+  .aw-workbench-grid[data-resizing="true"] canvas {
+    pointer-events: none;
+    cursor: col-resize !important;
+  }
+  .aw-workbench-grid[data-resizing="true"] .aw-workbench-resizer {
+    pointer-events: auto;
+  }
+}
+
+.aw-parchment {
+  background: var(--aw-parchment);
+}
+
+.aw-ticker {
+  font-family:
+    "SF Pro Display",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.231px;
+  color: var(--aw-ink);
+}
+
+.aw-price {
+  font-family:
+    "SF Pro Display",
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -0.28px;
+  font-variant-numeric: tabular-nums;
+}
+
+.aw-caption {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.12px;
+  color: var(--aw-ink-muted-48);
+}
+
+.aw-caption-strong {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.29;
+  letter-spacing: -0.224px;
+  color: var(--aw-ink);
+}
+
+.aw-metric-label {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.12px;
+  color: var(--aw-ink-muted-48);
+}
+
+.aw-metric-value {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.29;
+  letter-spacing: -0.224px;
+  font-variant-numeric: tabular-nums;
+  color: var(--aw-ink);
+}
+
+.aw-btn-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: var(--aw-radius-pill);
+  background: var(--aw-primary);
+  color: var(--aw-on-primary);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.224px;
+  border: none;
+  transition: transform 0.12s ease;
+}
+
+.aw-btn-pill:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.aw-btn-pill-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 36px;
+  padding: 0 16px;
+  border-radius: var(--aw-radius-pill);
+  background: transparent;
+  color: var(--aw-primary);
+  border: 1px solid var(--aw-primary);
+  font-size: 14px;
+  font-weight: 400;
+  letter-spacing: -0.224px;
+  transition: transform 0.12s ease;
+}
+
+.aw-btn-pill-ghost:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.aw-btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--aw-radius-full, 9999px);
+  background: color-mix(in srgb, var(--aw-chip) 64%, transparent);
+  color: var(--aw-ink);
+  border: none;
+  transition: transform 0.12s ease;
+}
+
+.aw-btn-icon:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.aw-chip {
+  display: inline-flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 12px;
+  border-radius: var(--aw-radius-pill);
+  background: var(--aw-canvas);
+  border: 1px solid var(--aw-hairline);
+  color: var(--aw-ink-muted-80);
+  font-size: 12px;
+  letter-spacing: -0.12px;
+}
+
+.aw-chip-active {
+  border: 2px solid var(--aw-primary-focus);
+  color: var(--aw-ink);
+  font-weight: 600;
+}
+
+.aw-text-link {
+  color: var(--aw-primary);
+  font-size: 14px;
+  letter-spacing: -0.224px;
+}
+
+.aw-text-link:hover {
+  text-decoration: underline;
+}
+
+.aw-chart-toolbar {
+  box-sizing: border-box;
+  height: 36px;
+  min-height: 36px;
+  max-height: 36px;
+  align-items: center;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.aw-chart-toolbar::-webkit-scrollbar {
+  display: none;
+}
+
+.aw-toolbar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 24px;
+  padding: 0 8px;
+  border-radius: 0;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--aw-ink-muted-48);
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1;
+  letter-spacing: -0.12px;
+}
+
+.aw-toolbar-btn[data-active="true"] {
+  background: var(--brand-soft);
+  border-color: transparent;
+  color: var(--aw-primary);
+  font-weight: 600;
+}
+
+.aw-toolbar-btn:not([data-active="true"]):hover {
+  background: color-mix(in srgb, var(--aw-ink) 6%, transparent);
+  color: var(--aw-ink);
+}
+
+.aw-segment,
+.aw-segment > div,
+.aw-segment [role="tab"] {
+  border-radius: 0 !important;
+}
+
+.aw-segment {
+  border: none;
+  border-bottom: 1px solid var(--aw-hairline);
+  background: transparent;
+  padding: 0;
+}
+
+.aw-segment [role="tab"] {
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.2;
+  letter-spacing: -0.12px;
+  padding: 6px 4px;
+}
+
+.aw-segment [role="tab"][aria-selected="true"] {
+  font-weight: 600;
+}
+
+.aw-side-seg [role="tab"] {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.08px;
+  padding: 8px 6px;
+}
+
+/* Trade dock buy/sell — compact, clear up/down contrast */
+.aw-trade-side {
+  height: 34px;
+  border-radius: 8px;
+  border: 1px solid var(--aw-hairline);
+  background: var(--aw-pearl, var(--surface-2));
+  overflow: hidden;
+}
+
+.aw-trade-side [role="tab"] {
+  height: 100%;
+  padding: 0 10px;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.08px;
+  border-radius: 0;
+}
+
+.aw-trade-side .aw-trade-side-pill {
+  top: 2px;
+  bottom: 2px;
+  border-radius: 6px;
+}
+
+.aw-tab {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.12px;
+  color: var(--aw-ink-muted-48);
+  padding: 0 11px;
+  /* Active mark via ::after so it does not stack with the tablist 1px hairline. */
+  border-bottom: none;
+  border-radius: 0;
+}
+
+.aw-tab[data-active="true"] {
+  color: var(--aw-ink);
+  font-weight: 600;
+}
+
+.aw-tab[data-active="true"]::after {
+  content: "";
+  position: absolute;
+  left: 10px;
+  right: 10px;
+  bottom: -1px;
+  z-index: 1;
+  height: 2px;
+  background: var(--aw-primary);
+}
+
+/* QuoteBar secondary tabs: full row height so active mark sits on bar bottom edge */
+.aw-tab-quote {
+  height: 100%;
+  min-height: 40px;
+  box-sizing: border-box;
+  margin-bottom: -1px;
+  padding-top: 0;
+  padding-bottom: 0;
+}
+
+.aw-tab-quote[data-active="true"]::after {
+  left: 0;
+  right: 0;
+  bottom: 0;
+}
+
+/* H5: one segment bar under chart (计划|复盘|行情|更多) */
+.aw-mobile-segment .aw-tab-mobile {
+  min-height: 36px;
+  font-size: 13px;
+}
+
+/* Nested under「更多」— soft chips (child of segment, not a 2nd underline row) */
+.aw-mobile-more-chip:hover {
+  color: var(--aw-ink, var(--foreground));
+  background: color-mix(in srgb, var(--aw-ink) 6%, transparent);
+}
+
+.aw-mobile-more-chip[data-active="true"]:hover {
+  background: var(--brand-soft);
+  color: var(--brand-text);
+}
+
+.aw-hairline {
+  border-color: var(--aw-hairline);
+}
+
+/* Dock drawers: one canvas surface, body does not scroll — panels own scroll. */
+.aw-dock-drawer {
+  box-shadow: none !important;
+  border-left-color: var(--aw-hairline) !important;
+  background: var(--aw-canvas) !important;
+}
+
+.aw-dock-drawer .aw-drawer-header {
+  align-items: center;
+  /* Dense trading chrome: ~40px bar (not settings-modal py-3 + h-8). */
+  background: var(--aw-canvas);
+  border-bottom-color: var(--aw-hairline) !important;
+  padding: 8px 16px 8px 20px !important;
+  min-height: 40px;
+}
+
+.aw-dock-drawer .aw-drawer-title {
+  font-size: 16px !important;
+  font-weight: 600;
+  line-height: 1.25;
+  letter-spacing: -0.25px;
+  color: var(--aw-ink);
+}
+
+.aw-dock-drawer .aw-drawer-close {
+  height: 28px;
+  width: 28px;
+}
+
+.aw-dock-drawer > .aw-drawer-body {
+  display: flex !important;
+  flex-direction: column;
+  overflow: hidden !important;
+  padding: 0 !important;
+  background: var(--aw-canvas);
+}
+
+.aw-dock-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.aw-dock-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* Right rail: hairline scrollbar (qt-scroll default 8px reads too thick here). */
+.aw-rail-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--muted) 28%, transparent) transparent;
+}
+
+.aw-rail-scroll::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+.aw-rail-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.aw-rail-scroll::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted) 32%, transparent);
+  border-radius: 999px;
+}
+
+.aw-rail-scroll::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted) 48%, transparent);
+}
+
+/* Secondary chip tabs (news/press, review filters): soft fill when active. */
+.aw-chip-tabs,
+.aw-dock-feed-tabs {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 16px;
+  background: var(--aw-canvas);
+  border-bottom: 1px solid var(--aw-hairline);
+}
+
+.aw-chip-tabs.aw-chip-tabs--flush {
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.aw-dock-feed-tabs--nolines {
+  border-bottom: none;
+  /* More space below tabs before the feed list. */
+  padding: 10px 20px 16px;
+}
+
+/* Futu-style feed row: generous inset so hover fill breathes around title/meta. */
+.aw-dock-feed-item {
+  display: block;
+  margin-inline: -12px;
+  padding: 14px 12px 16px;
+  border-radius: 6px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.12s ease;
+}
+
+.aw-dock-feed-item:hover {
+  background: color-mix(in srgb, var(--aw-parchment, var(--surface-2)) 88%, transparent);
+}
+
+.aw-chip,
+.aw-dock-feed-tabs .aw-dock-chip {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 28px;
+  padding: 0 12px;
+  border: none;
+  border-radius: 6px;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 400;
+  letter-spacing: -0.08px;
+  color: var(--aw-ink-muted-48, var(--muted));
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.aw-chip:hover,
+.aw-dock-feed-tabs .aw-dock-chip:hover {
+  color: var(--aw-ink, var(--foreground));
+  background: color-mix(in srgb, var(--aw-parchment, var(--surface-2)) 72%, transparent);
+}
+
+.aw-chip[data-active="true"],
+.aw-dock-feed-tabs .aw-dock-chip[data-active="true"] {
+  font-weight: 600;
+  color: var(--aw-ink, var(--foreground));
+  background: var(--aw-parchment, var(--surface-2));
+}
+
+.aw-chip[data-active="true"]:hover,
+.aw-dock-feed-tabs .aw-dock-chip[data-active="true"]:hover {
+  background: var(--aw-parchment, var(--surface-2));
+}
+
+.aw .qt-panel {
+  padding: 16px;
+}

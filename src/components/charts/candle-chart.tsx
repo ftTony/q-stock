@@ -370,12 +370,35 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
   useEffect(() => {
     const shell = shellRef.current;
     if (!shell || typeof ResizeObserver === "undefined") return;
+    // Single-flight resize: mobile URL bar / soft keyboard can spam RO.
+    let raf = 0;
     const ro = new ResizeObserver(() => {
-      chartRef.current?.resize();
+      if (raf) return;
+      raf = requestAnimationFrame(() => {
+        raf = 0;
+        chartRef.current?.resize();
+      });
     });
     ro.observe(shell);
-    return () => ro.disconnect();
+    return () => {
+      ro.disconnect();
+      if (raf) cancelAnimationFrame(raf);
+    };
   }, [ready]);
+
+  // Flex parents can lay out after KC.init — kick resize once height is real.
+  useEffect(() => {
+    if (!ready) return;
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      chartRef.current?.resize();
+      raf2 = requestAnimationFrame(() => chartRef.current?.resize());
+    });
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+    };
+  }, [ready, resetKey]);
 
   const toggleFullscreen = async () => {
     const shell = shellRef.current;
@@ -443,10 +466,12 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
 
   // fillParent sits beside the workbench resizer — no shell border or the
   // right edge doubles with the 1px hairline divider.
+  // H5: keep a real min-height — pure h-full/flex-1 collapses to 0 when the
+  // parent height chain is still unresolved (blank chart + axis-only strip).
   const shellClass = fullscreen
     ? "relative flex h-screen flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)]"
     : fillParent
-      ? "relative flex h-[360px] flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)] sm:h-[520px] lg:h-full lg:min-h-[280px]"
+      ? "relative flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)] max-lg:min-h-[200px]"
       : "relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)]";
 
   const plotClass =

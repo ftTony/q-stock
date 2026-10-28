@@ -16,7 +16,7 @@ import { useAlerts } from "@/hooks/query/use-alerts";
 import { getEquitySession } from "@/lib/market/session";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
-import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
+import { EmptyStateBlock } from "@/components/symbol/shared/symbol-empty-art";
 
 type AlertItem = {
   id: string;

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { SymbolPageClient } from "@/components/symbol/symbol-page-client";
-import { SymbolSeoHeading } from "@/components/symbol/symbol-seo-heading";
+import { SymbolSeoCrawl } from "@/components/symbol/quote/symbol-seo-crawl";
 import { ScopedMessages } from "@/components/providers/scoped-messages";
 import {
   buildSymbolMetadata,
@@ -8,6 +8,10 @@ import {
   fetchSymbolQuote,
   symbolJsonLd,
 } from "@/lib/seo/symbol-metadata";
+import {
+  seedSymbolsForMarket,
+  type SitemapMarket,
+} from "@/lib/seo/sitemap-symbols";
 import { parseAssetType } from "@/lib/types";
 
 type PageParams = {
@@ -35,6 +39,9 @@ export default async function SymbolPage({ params }: Props) {
   const quote = await fetchSymbolQuote(symbol, assetType);
   const copy = await buildSymbolSeoCopy(locale, symbol, assetType, quote);
   const jsonLd = symbolJsonLd(locale, symbol, assetType, copy, quote);
+  const peers = seedSymbolsForMarket(assetType as SitemapMarket)
+    .filter((s) => s !== symbol)
+    .slice(0, 8);
 
   return (
     <>
@@ -42,7 +49,7 @@ export default async function SymbolPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <SymbolSeoHeading symbol={symbol} copy={copy} />
+      <SymbolSeoCrawl symbol={symbol} assetType={assetType} copy={copy} />
       <ScopedMessages
         namespaces={[
           "ai",
@@ -58,6 +65,7 @@ export default async function SymbolPage({ params }: Props) {
           "nav",
           "orderRisk",
           "paperRiskBar",
+          "seo",
           "settings",
           "symbol",
           "symbolEmotion",
@@ -72,6 +80,8 @@ export default async function SymbolPage({ params }: Props) {
           symbol={symbol}
           assetType={assetType}
           initialQuote={quote}
+          seoCopy={copy}
+          seoPeers={peers}
         />
       </ScopedMessages>
     </>

@@ -100,6 +100,12 @@ export type SymbolSeoCopy = {
   changeLabel: string | null;
   asOfLabel: string | null;
   currency: string;
+  intro: string;
+  aboutLabel: string;
+  howTitle: string;
+  howSteps: [string, string, string];
+  disclaimer: string;
+  breadcrumbHome: string;
 };
 
 function hasCjk(s: string): boolean {
@@ -145,6 +151,18 @@ export async function buildSymbolSeoCopy(
   const t = await getTranslations({ locale, namespace: "seo" });
   const name = seoSymbolName(locale, symbol, assetType, quote);
   const currency = currencyFor(assetType);
+  const crawl = {
+    intro: t("symbolIntro", { symbol, name }),
+    aboutLabel: t("symbolAbout"),
+    howTitle: t("symbolHowTitle"),
+    howSteps: [t("symbolHow1"), t("symbolHow2"), t("symbolHow3")] as [
+      string,
+      string,
+      string,
+    ],
+    disclaimer: t("symbolDisclaimer"),
+    breadcrumbHome: t("breadcrumbHome"),
+  };
 
   if (!quote || !(quote.price > 0)) {
     return {
@@ -155,6 +173,7 @@ export async function buildSymbolSeoCopy(
       changeLabel: null,
       asOfLabel: null,
       currency,
+      ...crawl,
     };
   }
 
@@ -176,6 +195,7 @@ export async function buildSymbolSeoCopy(
     changeLabel,
     asOfLabel,
     currency,
+    ...crawl,
   };
 }
 
@@ -234,7 +254,7 @@ export async function buildSymbolMetadata(
   };
 }
 
-/** JSON-LD graph: InvestmentOrSecurity (+ Offer) and BreadcrumbList. */
+/** JSON-LD: WebPage + InvestmentOrSecurity (+ Offer) + HowTo + BreadcrumbList. */
 export function symbolJsonLd(
   locale: string,
   symbol: string,
@@ -250,11 +270,24 @@ export function symbolJsonLd(
   const homeUrl = homePath === "/" ? `${origin}/` : `${origin}${homePath}`;
   const path = `/symbol/${assetType}/${encodeURIComponent(symbol)}`;
   const url = `${origin}${localizedPath(loc, path)}`;
+  const securityName =
+    copy.name !== symbol ? `${symbol} ${copy.name}` : symbol;
+
+  const webpage: Record<string, unknown> = {
+    "@type": "WebPage",
+    "@id": `${url}#webpage`,
+    url,
+    name: copy.title,
+    description: copy.description,
+    inLanguage: loc,
+    isPartOf: { "@id": `${origin}/#website` },
+    about: { "@id": `${url}#security` },
+  };
 
   const security: Record<string, unknown> = {
     "@type": "InvestmentOrSecurity",
     "@id": `${url}#security`,
-    name: copy.name !== symbol ? `${symbol} ${copy.name}` : symbol,
+    name: securityName,
     tickerSymbol: symbol,
     url,
     description: copy.description,
@@ -272,19 +305,32 @@ export function symbolJsonLd(
     };
   }
 
+  const howTo: Record<string, unknown> = {
+    "@type": "HowTo",
+    "@id": `${url}#howto`,
+    name: copy.howTitle,
+    description: copy.intro,
+    inLanguage: loc,
+    step: copy.howSteps.map((text, i) => ({
+      "@type": "HowToStep",
+      position: i + 1,
+      text,
+    })),
+  };
+
   const breadcrumb: Record<string, unknown> = {
     "@type": "BreadcrumbList",
     itemListElement: [
       {
         "@type": "ListItem",
         position: 1,
-        name: "Home",
+        name: copy.breadcrumbHome,
         item: homeUrl,
       },
       {
         "@type": "ListItem",
         position: 2,
-        name: symbol,
+        name: securityName,
         item: url,
       },
     ],
@@ -292,6 +338,6 @@ export function symbolJsonLd(
 
   return {
     "@context": "https://schema.org",
-    "@graph": [security, breadcrumb],
+    "@graph": [webpage, security, howTo, breadcrumb],
   };
 }

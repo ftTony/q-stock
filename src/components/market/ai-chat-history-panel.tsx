@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
-import { EmptyStateBlock } from "@/components/symbol/symbol-empty-art";
+import { EmptyStateBlock } from "@/components/symbol/shared/symbol-empty-art";
 import { InlineLoading } from "@/components/ui/panel-skeleton";
 import type { AssetType } from "@/lib/types";
 

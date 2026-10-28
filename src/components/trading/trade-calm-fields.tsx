@@ -4,7 +4,7 @@ import { QtSelect } from "@/components/ui/qt-select";
 import {
   SymbolEmotionCheck,
   type EmotionTagId,
-} from "@/components/symbol/symbol-emotion-check";
+} from "@/components/symbol/plan/symbol-emotion-check";
 import { OrderRiskSummary } from "@/components/trading/order-risk-summary";
 import { useTranslations } from "next-intl";
 

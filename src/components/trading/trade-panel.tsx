@@ -20,7 +20,7 @@ import {
 } from "@/hooks/query/use-trading";
 import { formatNumber } from "@/lib/format-number";
 import { summarizeOrderRisk } from "@/lib/trading/risk-math";
-import type { EmotionTagId } from "@/components/symbol/symbol-emotion-check";
+import type { EmotionTagId } from "@/components/symbol/plan/symbol-emotion-check";
 import { TradeAccountStrip } from "@/components/trading/trade-account-strip";
 import { TradeAiLinks } from "@/components/trading/trade-ai-links";
 import { TradeBidAsk } from "@/components/trading/trade-bid-ask";

@@ -62,11 +62,23 @@ export function SideDrawer(props: {
   if (!mounted) return null;
 
   const edge = Math.max(0, props.edgeOffsetPx ?? 0);
+  // When closed, park fully off-screen. `right: edge` + `translateX(100%)`
+  // leaves a `edge`-wide sliver of the panel (title text) visible.
   const edgeStyle: CSSProperties | undefined =
     edge > 0
       ? side === "right"
-        ? { right: edge }
-        : { left: edge }
+        ? {
+            right: edge,
+            transform: props.open
+              ? "translateX(0)"
+              : `translateX(calc(100% + ${edge}px))`,
+          }
+        : {
+            left: edge,
+            transform: props.open
+              ? "translateX(0)"
+              : `translateX(calc(-100% - ${edge}px))`,
+          }
       : undefined;
 
   const width =
@@ -77,6 +89,7 @@ export function SideDrawer(props: {
   const sidePos = side === "right" ? "right-0" : "left-0";
   const sideBorder =
     side === "right" ? "border-l border-[var(--border)]" : "border-r border-[var(--border)]";
+  const useEdgeTransform = edge > 0;
 
   return createPortal(
     <div
@@ -103,7 +116,11 @@ export function SideDrawer(props: {
         aria-label={props.title}
         style={edgeStyle}
         className={`absolute inset-y-0 ${sidePos} flex ${width} flex-col ${sideBorder} bg-[var(--panel)] pb-[env(safe-area-inset-bottom,0px)] shadow-2xl transition-transform duration-300 ease-out ${
-          props.open ? "translate-x-0" : closedX
+          useEdgeTransform
+            ? ""
+            : props.open
+              ? "translate-x-0"
+              : closedX
         } ${props.className ?? ""}`}
       >
         <header className="aw-drawer-header flex w-full shrink-0 items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-2.5 sm:px-5">

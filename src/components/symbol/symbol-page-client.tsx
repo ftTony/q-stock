@@ -7,66 +7,69 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { SymbolOrderRail } from "@/components/symbol/symbol-order-rail";
 import {
-  SymbolAiFab,
-  SymbolChartSection,
-  SymbolDockDrawers,
-  SymbolWatchlistPanel,
-} from "@/components/symbol/symbol-page-dynamics";
-import { SymbolQuoteBar } from "@/components/symbol/symbol-quote-bar";
-import { SymbolRailQuoteHeader } from "@/components/symbol/symbol-rail-quote-header";
-import { SymbolRailStats } from "@/components/symbol/symbol-rail-stats";
-import {
+  SymbolDesktopRail,
   SymbolSideIconRail,
-  type SideIconId,
-} from "@/components/symbol/symbol-side-icon-rail";
-import { SymbolTabsPanel } from "@/components/symbol/symbol-tabs-panel";
-import { useSymbolPage } from "@/components/symbol/use-symbol-page";
-import { useRailResize } from "@/components/symbol/use-rail-resize";
-import { useWatchlistResize } from "@/components/symbol/use-watchlist-resize";
-import { setBoundStrategyId as persistBoundStrategyId } from "@/components/symbol/symbol-plan-binding";
-import type { IndicatorFlags } from "@/components/charts/candle-chart-overlays";
+  SymbolWatchlistPanel,
+} from "@/components/symbol/page/symbol-page-dynamics";
+import { SymbolPageChartSlot } from "@/components/symbol/chart/symbol-page-chart-slot";
+import { SymbolH5BelowSlot } from "@/components/symbol/page/symbol-h5-below-slot";
+import type { MobileSegment } from "@/components/symbol/mobile/symbol-mobile-quick-actions";
+import { SymbolPageOverlays } from "@/components/symbol/page/symbol-page-overlays";
+import { SymbolQuoteBar } from "@/components/symbol/quote/symbol-quote-bar";
+import type { SideIconId } from "@/components/symbol/rail/symbol-side-icon-rail";
+import { SymbolPageTabs } from "@/components/symbol/page/symbol-page-tabs";
+import {
+  candleResolutionLabels,
+  panelTabFor,
+} from "@/components/symbol/page/symbol-page-tab-utils";
+import type { SymbolTab } from "@/components/symbol/tabs/symbol-tabs-types";
+import { useSymbolPage } from "@/components/symbol/hooks/use-symbol-page";
+import { useRailResize } from "@/components/symbol/hooks/use-rail-resize";
+import { useWatchlistResize } from "@/components/symbol/hooks/use-watchlist-resize";
+import { LG_MIN, useMinWidth } from "@/hooks/use-min-width";
 import { isMarketIndexSymbol } from "@/lib/market/indices";
-import type { AssetType, CandleResolution, Quote } from "@/lib/types";
-import "./apple-workbench.css";
-import "./apple-quote-chrome.css";
-
+import type { SymbolSeoCopy } from "@/lib/seo/symbol-metadata";
+import type { AssetType, Quote } from "@/lib/types";
+import "./styles/apple-workbench.css";
+import "./styles/apple-quote-chrome.css";
 type Props = {
   symbol: string;
   assetType: AssetType;
   initialQuote?: Quote | null;
+  seoCopy: SymbolSeoCopy;
+  seoPeers: string[];
 };
 
 type DockId = Exclude<SideIconId, "ai">;
-
-function metricOf(
-  metrics: { key?: string; metric?: string; value?: number | null }[],
-  key: string,
-): number | null {
-  const hit = metrics.find((m) => m.key === key || m.metric === key);
-  const v = hit?.value;
-  return v != null && Number.isFinite(v) ? v : null;
-}
 
 export function SymbolPageClient({
   symbol,
   assetType,
   initialQuote = null,
+  seoCopy,
+  seoPeers,
 }: Props) {
   const isIndex = isMarketIndexSymbol(symbol);
   const [aiOpen, setAiOpen] = useState(false);
+  const [seoOpen, setSeoOpen] = useState(false);
   const [dock, setDock] = useState<DockId | null>(null);
-  /** Keep chunk after first open so close animation / SideDrawer bodyLive still work. */
   const [dockReady, setDockReady] = useState(false);
   const [aiReady, setAiReady] = useState(false);
   const [boundRuleName, setBoundRuleName] = useState<string | null>(null);
   const [boundStrategyId, setBoundStrategyId] = useState<string | null>(null);
   const [planFocusKey, setPlanFocusKey] = useState(0);
+  const [mobileSegment, setMobileSegment] = useState<MobileSegment>("plan");
+  const [mobilePlanOpen, setMobilePlanOpen] = useState(false);
+  const [mobilePlanReady, setMobilePlanReady] = useState(false);
+  const isDesktop = useMinWidth(LG_MIN);
   const rail = useRailResize();
   const watch = useWatchlistResize();
   const s = useSymbolPage(symbol, assetType, isIndex, initialQuote, {
-    prefetchEarnings: rail.open,
+    // H5 default segment is plan — don't compete with quote/candles for earnings.
+    prefetchEarnings: isDesktop
+      ? rail.open
+      : mobileSegment === "market",
   });
 
   useEffect(() => {
@@ -74,18 +77,41 @@ export function SymbolPageClient({
     setBoundStrategyId(null);
     setDock(null);
     setAiOpen(false);
+    setMobilePlanOpen(false);
+    setMobileSegment("plan");
   }, [symbol, assetType]);
 
   useEffect(() => {
     try {
       const q = new URLSearchParams(window.location.search);
       const v = q.get("guide") ?? q.get("onboarding");
-      if (v === "1" || v === "true") rail.setOpen(true);
+      if (v === "1" || v === "true") {
+        if (isDesktop) rail.setOpen(true);
+        else {
+          setMobileSegment("plan");
+          setPlanFocusKey((k) => k + 1);
+        }
+      }
     } catch {
       /* ignore */
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- open once on mount / symbol
-  }, [symbol, assetType]);
+  }, [symbol, assetType, isDesktop]);
+
+  useEffect(() => {
+    if (mobilePlanOpen) setMobilePlanReady(true);
+  }, [mobilePlanOpen]);
+
+  const openPlan = useCallback(() => {
+    setAiOpen(false);
+    setDock(null);
+    setPlanFocusKey((k) => k + 1);
+    if (isDesktop) rail.setOpen(true);
+    else {
+      setMobileSegment("plan");
+      s.setTab("chart");
+    }
+  }, [isDesktop, rail, s.setTab]);
 
   useEffect(() => {
     if (dock) setDockReady(true);
@@ -95,36 +121,94 @@ export function SymbolPageClient({
     if (aiOpen) setAiReady(true);
   }, [aiOpen]);
 
+  // H5: idle-warm AI chunk after first paint; stub FAB handles early taps.
+  useEffect(() => {
+    if (isDesktop || aiReady) return;
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const warm = () => setAiReady(true);
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(warm, { timeout: 4000 });
+    } else {
+      timeoutId = setTimeout(warm, 2500);
+    }
+    return () => {
+      if (idleId != null && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId != null) clearTimeout(timeoutId);
+    };
+  }, [isDesktop, aiReady]);
+
   const sideIcon: SideIconId | null = aiOpen ? "ai" : dock;
 
   const marketCap = useMemo(() => {
-    const m = metricOf(s.earningsMetrics, "marketCapitalization");
-    return m != null ? m * 1e6 : null;
+    const hit = s.earningsMetrics.find((m) => m.key === "marketCapitalization");
+    const v = hit?.value;
+    return v != null && Number.isFinite(v) ? v * 1e6 : null;
   }, [s.earningsMetrics]);
 
-  const quoteTabs = useMemo(
+  const desktopQuoteTabs = useMemo(
     () => s.tabs.filter((x) => x.id !== "news" && x.id !== "press"),
     [s.tabs],
   );
-
-  /** Dock tabs load via setTab but main surface stays on chart. */
-  const panelTab =
-    s.tab === "news" || s.tab === "press" || s.tab === "comments"
-      ? "chart"
-      : s.tab;
-
-  const resolutionLabels = useMemo(
+  const mobileMoreTabs = useMemo(
     () =>
-      ({
-        T: s.t("intraday"),
-        "1": s.t("min1"),
-        "5": s.t("min5"),
-        D: s.t("day"),
-        Q: s.t("quarter"),
-        Y: s.t("year"),
-      }) satisfies Record<CandleResolution, string>,
-    [s.t],
+      s.tabs.filter(
+        (x) => x.id !== "chart" && x.id !== "press" && x.id !== "comments",
+      ),
+    [s.tabs],
   );
+
+  const openTrade = useCallback(() => {
+    setAiOpen(false);
+    setSeoOpen(false);
+    setMobilePlanOpen(false);
+    setDock("trade");
+  }, []);
+
+  const onMobileSegment = useCallback(
+    (segment: MobileSegment) => {
+      setAiOpen(false);
+      setMobilePlanOpen(false);
+      setDock(null);
+      setMobileSegment(segment);
+      if (segment === "more") {
+        const first = mobileMoreTabs[0]?.id;
+        if (first) s.setTab(first);
+      } else {
+        s.setTab("chart");
+      }
+    },
+    [mobileMoreTabs, s.setTab],
+  );
+
+  const onMoreTabChange = useCallback(
+    (id: SymbolTab) => {
+      setAiOpen(false);
+      setMobilePlanOpen(false);
+      setDock(null);
+      if (id === "chart") {
+        setMobileSegment("plan");
+        s.setTab("chart");
+        return;
+      }
+      setMobileSegment("more");
+      s.setTab(id);
+    },
+    [s.setTab],
+  );
+
+  const onBoundStrategyChange = useCallback(
+    (name: string | null, id?: string | null) => {
+      setBoundRuleName(name);
+      setBoundStrategyId(id ?? null);
+    },
+    [],
+  );
+
+  const panelTab = panelTabFor(isDesktop, s.tab);
+  const resolutionLabels = useMemo(() => candleResolutionLabels(s.t), [s.t]);
 
   function closeDock() {
     setDock(null);
@@ -140,6 +224,8 @@ export function SymbolPageClient({
         return;
       }
       setDock(null);
+      setMobilePlanOpen(false);
+      setSeoOpen(false);
       setAiOpen(true);
       return;
     }
@@ -148,6 +234,8 @@ export function SymbolPageClient({
       return;
     }
     setAiOpen(false);
+    setSeoOpen(false);
+    setMobilePlanOpen(false);
     setDock(id);
     if (id === "news") s.setTab("news");
     else if (id === "comments") s.setTab("comments");
@@ -164,74 +252,40 @@ export function SymbolPageClient({
 
   const resizing = rail.dragging || watch.dragging;
 
-  const onFlagToggle = useCallback(
-    (key: keyof IndicatorFlags) => {
-      s.setFlags((f) => ({ ...f, [key]: !f[key] }));
-    },
-    [s.setFlags],
-  );
-
   const onToggleWatchlist = useCallback(() => {
     void s.toggleWatchlist();
   }, [s.toggleWatchlist]);
 
-  const indicatorsLabel = s.t("indicators");
-  const intradayUnavailableLabel = s.t("intradayUnavailable");
-  const loadingLabel = s.tCommon("loading");
-
-  const chartSlot = useMemo(
-    () => (
-      <SymbolChartSection
-        resolution={s.resolution}
-        onResolutionChange={s.setResolution}
-        resolutionLabels={resolutionLabels}
-        indicatorsLabel={indicatorsLabel}
-        intradayUnavailableLabel={intradayUnavailableLabel}
-        flags={s.flags}
-        onFlagToggle={onFlagToggle}
-        loadingChart={s.loadingChart}
-        loadingLabel={loadingLabel}
-        bars={s.bars}
-        assetType={assetType}
-        symbol={symbol}
-        onLoadMore={s.loadMoreCandles}
-        loadingMore={s.loadingMoreCandles}
-        hasMore={s.hasMoreCandles}
-        inWatchlist={s.inWatchlist}
-        watchBusy={s.watchBusy}
-        onToggleWatchlist={onToggleWatchlist}
-      />
-    ),
-    [
-      s.resolution,
-      s.setResolution,
-      resolutionLabels,
-      indicatorsLabel,
-      intradayUnavailableLabel,
-      s.flags,
-      onFlagToggle,
-      s.loadingChart,
-      loadingLabel,
-      s.bars,
-      assetType,
-      symbol,
-      s.loadMoreCandles,
-      s.loadingMoreCandles,
-      s.hasMoreCandles,
-      s.inWatchlist,
-      s.watchBusy,
-      onToggleWatchlist,
-    ],
+  const chartSlot = (
+    <SymbolPageChartSlot
+      resolution={s.resolution}
+      onResolutionChange={s.setResolution}
+      resolutionLabels={resolutionLabels}
+      indicatorsLabel={s.t("indicators")}
+      intradayUnavailableLabel={s.t("intradayUnavailable")}
+      flags={s.flags}
+      onFlagsChange={s.setFlags}
+      loadingChart={s.loadingChart}
+      loadingLabel={s.tCommon("loading")}
+      bars={s.bars}
+      assetType={assetType}
+      symbol={symbol}
+      onLoadMore={s.loadMoreCandles}
+      loadingMore={s.loadingMoreCandles}
+      hasMore={s.hasMoreCandles}
+      inWatchlist={s.inWatchlist}
+      watchBusy={s.watchBusy}
+      onToggleWatchlist={onToggleWatchlist}
+    />
   );
 
   return (
     <div
-      className="aw aw-stack flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--aw-canvas)] lg:overflow-hidden"
+      className="aw aw-stack flex h-full min-h-0 max-w-full flex-1 flex-col overflow-hidden bg-[var(--aw-canvas)]"
       onContextMenu={(e) => {
         e.preventDefault();
       }}
     >
-      {/* Watchlist is full-height left; quote bar only over main workbench */}
       <div
         className="aw-symbol-shell relative flex min-h-0 flex-1 overflow-hidden"
         data-resizing={resizing ? "true" : undefined}
@@ -242,7 +296,7 @@ export function SymbolPageClient({
           } as CSSProperties
         }
       >
-        {watch.open ? (
+        {isDesktop && watch.open ? (
           <>
             <SymbolWatchlistPanel
               currentSymbol={symbol}
@@ -259,30 +313,39 @@ export function SymbolPageClient({
           </>
         ) : null}
 
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="aw-workbench-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <div className="shrink-0">
             <SymbolQuoteBar
               symbol={symbol}
               assetType={assetType}
               quote={s.quote}
               boundRuleName={boundRuleName}
-              onOpenPlan={() => {
-                rail.setOpen(true);
-                setPlanFocusKey((k) => k + 1);
-              }}
-              onOpenTrade={() => {
-                setAiOpen(false);
-                setDock("trade");
-              }}
-              tabs={quoteTabs}
-              tab={panelTab}
-              onTabChange={(id) => {
+              onOpenPlan={openPlan}
+              onOpenTrade={openTrade}
+              tabs={isDesktop ? desktopQuoteTabs : undefined}
+              tab={isDesktop ? panelTab : undefined}
+              onTabChange={
+                isDesktop
+                  ? (id) => {
+                      setAiOpen(false);
+                      setMobilePlanOpen(false);
+                      if (id === "news" || id === "press") setDock("news");
+                      else setDock(null);
+                      s.setTab(id);
+                    }
+                  : undefined
+              }
+              showWatchlistExpand={isDesktop && !watch.open}
+              onExpandWatchlist={
+                isDesktop ? () => watch.setOpen(true) : undefined
+              }
+              aboutLabel={seoCopy.aboutLabel}
+              onOpenAbout={() => {
                 setAiOpen(false);
                 setDock(null);
-                s.setTab(id);
+                setMobilePlanOpen(false);
+                setSeoOpen(true);
               }}
-              showWatchlistExpand={!watch.open}
-              onExpandWatchlist={() => watch.setOpen(true)}
             />
           </div>
 
@@ -291,179 +354,144 @@ export function SymbolPageClient({
             data-resizing={rail.dragging ? "true" : undefined}
           >
             <div className="aw-stack-y flex min-h-0 min-w-0 flex-col overflow-hidden bg-[var(--aw-canvas)]">
-              <SymbolTabsPanel
+              <SymbolPageTabs
+                s={s}
                 tab={panelTab}
                 chartSlot={chartSlot}
-                degraded={s.degraded}
-                degradedLabel={s.tCommon("degraded")}
-                tabLoading={s.tabLoading}
-                loadingLabel={s.tCommon("loading")}
+                chartPinned={!isDesktop}
+                belowChartSlot={
+                  isDesktop
+                    ? null
+                    : ({ secondary }) => (
+                        <SymbolH5BelowSlot
+                          secondary={secondary}
+                          symbol={symbol}
+                          assetType={assetType}
+                          isIndex={isIndex}
+                          quote={s.quote}
+                          metrics={s.earningsMetrics}
+                          marketCap={marketCap}
+                          segment={mobileSegment}
+                          onSegmentChange={onMobileSegment}
+                          onOpenTrade={openTrade}
+                          focusPlanToken={planFocusKey}
+                          onBoundStrategyChange={onBoundStrategyChange}
+                          panelTab={panelTab}
+                          moreTabs={mobileMoreTabs}
+                          onMoreTabChange={onMoreTabChange}
+                        />
+                      )
+                }
                 symbol={symbol}
                 assetType={assetType}
                 isIndex={isIndex}
                 lastPrice={s.quote?.price ?? null}
-                news={s.news}
-                press={s.press}
-                earnings={s.earnings}
-                earningsUpcoming={s.earningsUpcoming}
-                earningsRecent={s.earningsRecent}
-                earningsMetrics={s.earningsMetrics}
-                earningsStatement={s.earningsStatement}
-                earningsBalance={s.earningsBalance}
-                earningsCashflow={s.earningsCashflow}
-                earningsLoading={s.earningsLoading}
-                earningsCryptoNa={s.tEarnings("cryptoNa")}
-                company={s.company}
-                officers={s.officers}
-                comments={s.comments}
-                commentText={s.commentText}
-                onCommentTextChange={s.setCommentText}
-                onPostComment={s.postComment}
-                onDeleteComment={s.deleteComment}
-                commentBusy={s.commentBusy}
-                canComment={Boolean(s.session?.user)}
-                currentUserId={s.session?.user?.id}
-                commentsPlaceholder={s.tComments("placeholder")}
-                commentsPost={s.tComments("post")}
-                commentsLoginRequired={s.tComments("loginRequired")}
-                commentsEmpty={s.tComments("empty")}
-                commentsDelete={s.tComments("delete")}
-                errorLabel={s.tCommon("error")}
-                sentiment={s.sentiment}
-                aiAvailable={null}
-                aiMessage={null}
-                aiAnalysis={null}
-                aiDisclaimer={null}
-                aiCached={false}
-                aiLoading={false}
               />
             </div>
 
-            {rail.open ? (
-              <>
-                <button
-                  type="button"
-                  className="aw-workbench-resizer"
-                  aria-label="Resize side panel"
-                  data-dragging={rail.dragging ? "true" : undefined}
-                  onPointerDown={rail.onResizeStart}
-                />
-
-                <aside className="aw-workbench-rail min-h-0 overflow-hidden bg-[var(--aw-canvas)]">
-                  <div className="shrink-0">
-                    <SymbolRailQuoteHeader
-                      symbol={symbol}
-                      assetType={assetType}
-                      quote={s.quote}
-                      updatedAt={s.updatedAt}
-                      inWatchlist={s.inWatchlist}
-                      watchBusy={s.watchBusy}
-                      onToggleWatchlist={onToggleWatchlist}
-                      alert={{
-                        condition: s.alertCondition,
-                        onConditionChange: s.setAlertCondition,
-                        price: s.alertPrice,
-                        onPriceChange: s.setAlertPrice,
-                        busy: s.alertBusy,
-                        message: s.alertMsg,
-                        onSubmit: s.createAlert,
-                      }}
-                    />
-                    <SymbolRailStats
-                      quote={s.quote}
-                      metrics={s.earningsMetrics}
-                      assetType={assetType}
-                      marketCap={marketCap}
-                    />
-                  </div>
-                  <SymbolOrderRail
-                    symbol={symbol}
-                    assetType={assetType}
-                    isIndex={isIndex}
-                    onBoundStrategyChange={(name, id) => {
-                      setBoundRuleName(name);
-                      setBoundStrategyId(id ?? null);
-                    }}
-                    focusPlanToken={planFocusKey}
-                    onRequestOrder={() => {
-                      setAiOpen(false);
-                      setDock("trade");
-                    }}
-                  />
-                </aside>
-              </>
+            {isDesktop && rail.open ? (
+              <SymbolDesktopRail
+                symbol={symbol}
+                assetType={assetType}
+                isIndex={isIndex}
+                quote={s.quote}
+                updatedAt={s.updatedAt}
+                inWatchlist={s.inWatchlist}
+                watchBusy={s.watchBusy}
+                onToggleWatchlist={onToggleWatchlist}
+                alertCondition={s.alertCondition}
+                onAlertConditionChange={s.setAlertCondition}
+                alertPrice={s.alertPrice}
+                onAlertPriceChange={s.setAlertPrice}
+                alertBusy={s.alertBusy}
+                alertMessage={s.alertMsg}
+                onAlertSubmit={s.createAlert}
+                metrics={s.earningsMetrics}
+                marketCap={marketCap}
+                focusPlanToken={planFocusKey}
+                onBoundStrategyChange={onBoundStrategyChange}
+                onRequestOrder={openTrade}
+                dragging={rail.dragging}
+                onResizeStart={rail.onResizeStart}
+              />
             ) : null}
-            <SymbolSideIconRail
-              active={sideIcon}
-              onSelect={onSideSelect}
-              railOpen={rail.open}
-              onToggleRail={() => rail.setOpen((v) => !v)}
-            />
+            {isDesktop ? (
+              <SymbolSideIconRail
+                active={sideIcon}
+                onSelect={onSideSelect}
+                railOpen={rail.open}
+                onToggleRail={() => rail.setOpen((v) => !v)}
+              />
+            ) : null}
           </div>
         </div>
       </div>
 
-      {dockReady ? (
-        <SymbolDockDrawers
-          dock={dock}
-          onClose={closeDock}
-          symbol={symbol}
-          assetType={assetType}
-          lastPrice={s.quote?.price ?? null}
-          bid={s.quote?.bid ?? null}
-          ask={s.quote?.ask ?? null}
-          strategyId={boundStrategyId}
-          strategyName={boundRuleName}
-          onStrategyIdChange={(id, name) => {
-            const next = id || null;
-            persistBoundStrategyId(assetType, symbol, next);
-            setBoundStrategyId(next);
-            setBoundRuleName(name || null);
-          }}
-          onOpenAi={() => {
+      <SymbolPageOverlays
+        isDesktop={isDesktop}
+        dockReady={dockReady}
+        dock={dock}
+        onCloseDock={closeDock}
+        symbol={symbol}
+        assetType={assetType}
+        isIndex={isIndex}
+        lastPrice={s.quote?.price ?? null}
+        bid={s.quote?.bid ?? null}
+        ask={s.quote?.ask ?? null}
+        boundStrategyId={boundStrategyId}
+        boundRuleName={boundRuleName}
+        onBoundStrategyChange={onBoundStrategyChange}
+        onOpenAi={() => {
+          setAiReady(true);
+          setDock(null);
+          setMobilePlanOpen(false);
+          setAiOpen(true);
+        }}
+        onOpenPlan={() => {
+          setDock(null);
+          openPlan();
+        }}
+        newsFeedTab={newsFeedTab}
+        onNewsFeedTabChange={(tab) => s.setTab(tab)}
+        news={s.news}
+        press={s.press}
+        comments={s.comments}
+        commentText={s.commentText}
+        onCommentTextChange={s.setCommentText}
+        onPostComment={s.postComment}
+        onDeleteComment={s.deleteComment}
+        commentBusy={s.commentBusy}
+        canComment={Boolean(s.session?.user)}
+        currentUserId={s.session?.user?.id}
+        commentsPlaceholder={s.tComments("placeholder")}
+        commentsPost={s.tComments("post")}
+        commentsEmpty={s.tComments("empty")}
+        commentsDelete={s.tComments("delete")}
+        tabLoading={s.tabLoading}
+        degraded={s.degraded}
+        degradedLabel={s.tCommon("degraded")}
+        errorLabel={s.tCommon("error")}
+        loadingLabel={s.tCommon("loading")}
+        mobilePlanReady={mobilePlanReady}
+        mobilePlanOpen={mobilePlanOpen}
+        onCloseMobilePlan={() => setMobilePlanOpen(false)}
+        focusPlanToken={planFocusKey}
+        onRequestOrder={openTrade}
+        aiReady={aiReady}
+        aiOpen={aiOpen}
+        onAiOpenChange={(open) => {
+          setAiOpen(open);
+          if (open) {
             setDock(null);
-            setAiOpen(true);
-          }}
-          onOpenPlan={() => {
-            setDock(null);
-            setPlanFocusKey((k) => k + 1);
-          }}
-          newsFeedTab={newsFeedTab}
-          onNewsFeedTabChange={(tab) => s.setTab(tab)}
-          news={s.news}
-          press={s.press}
-          comments={s.comments}
-          commentText={s.commentText}
-          onCommentTextChange={s.setCommentText}
-          onPostComment={s.postComment}
-          onDeleteComment={s.deleteComment}
-          commentBusy={s.commentBusy}
-          canComment={Boolean(s.session?.user)}
-          currentUserId={s.session?.user?.id}
-          commentsPlaceholder={s.tComments("placeholder")}
-          commentsPost={s.tComments("post")}
-          commentsEmpty={s.tComments("empty")}
-          commentsDelete={s.tComments("delete")}
-          tabLoading={s.tabLoading}
-          degraded={s.degraded}
-          degradedLabel={s.tCommon("degraded")}
-          errorLabel={s.tCommon("error")}
-          loadingLabel={s.tCommon("loading")}
-        />
-      ) : null}
-
-      {aiReady ? (
-        <SymbolAiFab
-          symbol={symbol}
-          assetType={assetType}
-          open={aiOpen}
-          onOpenChange={(open) => {
-            setAiOpen(open);
-            if (open) setDock(null);
-          }}
-          showFab={false}
-        />
-      ) : null}
+            setMobilePlanOpen(false);
+            setSeoOpen(false);
+          }
+        }}
+        seoOpen={seoOpen}
+        onSeoOpenChange={setSeoOpen}
+        seoCopy={seoCopy}
+        seoPeers={seoPeers}
+      />
     </div>
   );
 }

@@ -42,10 +42,11 @@ export function CandleChartToolbarActions({
   const t = useTranslations("symbol");
 
   return (
-    <div className="ml-auto flex shrink-0 items-center gap-0.5 pl-2">
+    <div className="ml-auto flex shrink-0 items-center gap-0.5 pl-1 lg:pl-2">
+      {/* H5: only settings (owns type / indicators). Shot + FS clutter the period strip. */}
       <button
         type="button"
-        className={toolClass()}
+        className={`${toolClass()} max-lg:hidden`}
         title={t("chartScreenshot")}
         aria-label={t("chartScreenshot")}
         onClick={onScreenshot}
@@ -80,7 +81,7 @@ export function CandleChartToolbarActions({
 
       <button
         type="button"
-        className={toolClass(fullscreen)}
+        className={`${toolClass(fullscreen)} max-lg:hidden`}
         title={fullscreen ? t("exitFullscreen") : t("fullscreen")}
         aria-label={fullscreen ? t("exitFullscreen") : t("fullscreen")}
         onClick={onToggleFullscreen}
