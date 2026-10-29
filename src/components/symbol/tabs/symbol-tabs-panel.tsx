@@ -167,7 +167,7 @@ export function SymbolTabsPanel({
   aiRegenerateLabel,
 }: Props) {
   const showSecondary = tab !== "chart";
-  // H5 pinned: fixed px via .aw-tab-chart--pinned (not vh) to avoid chrome thrash.
+  // H5 pinned: height via .aw-tab-chart--pinned (clamp + dvh).
   const chartClass = chartPinned
     ? "aw-tab-chart aw-tab-chart--pinned shrink-0 overflow-hidden"
     : `aw-tab-chart min-h-0 flex-1 overflow-hidden ${

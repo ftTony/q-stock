@@ -12,7 +12,7 @@ function ChartChunkPlaceholder() {
     <div className="relative flex h-full min-h-0 w-full flex-1 flex-col bg-[var(--aw-canvas,var(--surface))]">
       <div className="h-9 shrink-0 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--surface)]" />
       <div className="relative min-h-0 flex-1 bg-[var(--panel,var(--surface))]">
-        <ChartLoadingOverlay />
+        <ChartLoadingOverlay placement="center" />
       </div>
     </div>
   );

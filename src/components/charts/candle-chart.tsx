@@ -471,7 +471,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
   const shellClass = fullscreen
     ? "relative flex h-screen flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)]"
     : fillParent
-      ? "relative flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)] max-lg:min-h-[200px]"
+      ? "relative flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)] max-lg:min-h-[240px]"
       : "relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)]";
 
   const plotClass =

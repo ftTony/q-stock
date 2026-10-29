@@ -236,7 +236,8 @@ export function DataSourceBadge() {
       className={`fixed z-30 max-w-[min(100vw-1.5rem,20rem)] touch-none select-none ${
         pos
           ? ""
-          : "bottom-[4.25rem] left-3 lg:bottom-3 lg:left-[272px]"
+          : /* H5: sit above tab bar, clear of pinned chart mid-pane */
+            "bottom-[calc(3.75rem+env(safe-area-inset-bottom,0px))] left-3 max-lg:max-w-[min(100vw-1.5rem,14rem)] lg:bottom-3 lg:left-[272px]"
       } ${dragging ? "cursor-grabbing" : "cursor-grab"}`}
     >
       <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)]/90 px-2.5 py-1.5 text-[11px] text-[var(--muted)] shadow-sm backdrop-blur-md">

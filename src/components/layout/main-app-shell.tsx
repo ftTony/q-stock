@@ -134,7 +134,10 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
               >
                 <SiteLogo height={24} variant="compact" />
               </a>
-              <TopbarIndexTicker />
+              {/* Symbol H5: hide index ticker — quote bar under this row is already dense. */}
+              <div className={isSymbol ? "hidden min-w-0 lg:block" : "min-w-0"}>
+                <TopbarIndexTicker />
+              </div>
             </div>
             <MarketCredentialsPrompt inline />
             <div className="ml-auto flex shrink-0 items-center">

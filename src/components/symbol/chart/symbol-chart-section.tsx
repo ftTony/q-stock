@@ -277,8 +277,8 @@ export const SymbolChartSection = memo(function SymbolChartSection({
           <EmptyStateBlock art="chart" label={intradayUnavailableLabel} />
         </div>
       ) : loadingChart && bars.length === 0 ? (
-        <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-[var(--panel,var(--surface))] max-lg:min-h-[200px]">
-          <ChartLoadingOverlay label={loadingLabel} />
+        <div className="relative min-h-0 w-full flex-1 overflow-hidden bg-[var(--panel,var(--surface))] max-lg:min-h-[240px]">
+          <ChartLoadingOverlay label={loadingLabel} placement="center" />
         </div>
       ) : bars.length === 0 ? (
         <div
@@ -292,7 +292,7 @@ export const SymbolChartSection = memo(function SymbolChartSection({
         </div>
       ) : (
         <div
-          className="relative min-h-0 w-full flex-1 overflow-hidden max-lg:min-h-[200px] [&_>div]:h-full [&_>div]:min-h-0 [&_>div]:rounded-none [&_>div]:border-0"
+          className="relative min-h-0 w-full flex-1 overflow-hidden max-lg:min-h-[240px] [&_>div]:h-full [&_>div]:min-h-0 [&_>div]:rounded-none [&_>div]:border-0"
           onContextMenuCapture={onChartContextMenu}
         >
           <CandleChart
@@ -318,7 +318,9 @@ export const SymbolChartSection = memo(function SymbolChartSection({
             chartSettings={chartSettings}
             onFullscreenChange={setFullscreen}
           />
-          {loadingChart ? <ChartLoadingOverlay label={loadingLabel} /> : null}
+          {loadingChart ? (
+            <ChartLoadingOverlay label={loadingLabel} placement="corner" />
+          ) : null}
         </div>
       )}
     </div>

@@ -98,9 +98,18 @@
   min-height: 0;
 }
 
-/* Fixed height — avoid 40vh churn when mobile URL bar shows/hides. */
+/*
+ * H5 pinned chart: give the plot real room (was 280px — too short with
+ * toolbar + volume). Prefer dvh over classic vh to limit URL-bar jump.
+ */
 .aw-tab-chart--pinned {
-  height: 280px;
+  height: clamp(320px, 44dvh, 440px);
+}
+
+@media (max-height: 640px) {
+  .aw-tab-chart--pinned {
+    height: clamp(280px, 48dvh, 360px);
+  }
 }
 
 .aw-tab-chart .aw-surface-flush {

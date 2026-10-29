@@ -206,8 +206,21 @@ export function RailPanelSkeleton({
   );
 }
 
-/** Quiet corner mark while chart stays mounted (period / symbol refresh). */
-export function ChartLoadingOverlay({ label }: { label?: string }) {
+/**
+ * Chart busy mark.
+ * - `center`: empty plot / chunk load — spinner in the middle of the pane
+ * - `corner`: chart still visible (period refresh) — quiet top-right chip
+ */
+export function ChartLoadingOverlay({
+  label,
+  placement = "corner",
+}: {
+  label?: string;
+  placement?: "corner" | "center";
+}) {
+  const chip =
+    "rounded-md border border-[var(--aw-hairline,var(--border))] bg-[var(--panel,var(--surface))]/92 shadow-sm backdrop-blur-[2px]";
+
   return (
     <div
       className="pointer-events-none absolute inset-0 z-[1]"
@@ -215,9 +228,17 @@ export function ChartLoadingOverlay({ label }: { label?: string }) {
       aria-busy="true"
       aria-label={label}
     >
-      <div className="absolute right-3 top-3 rounded-md border border-[var(--aw-hairline,var(--border))] bg-[var(--panel,var(--surface))]/92 px-2 py-1 shadow-sm backdrop-blur-[2px]">
-        <InlineLoading label={label} />
-      </div>
+      {placement === "center" ? (
+        <div className="flex h-full min-h-[12rem] w-full items-center justify-center">
+          <div className={`${chip} px-3 py-2`}>
+            <InlineLoading label={label} className="text-[13px]" />
+          </div>
+        </div>
+      ) : (
+        <div className={`absolute right-3 top-3 ${chip} px-2 py-1`}>
+          <InlineLoading label={label} />
+        </div>
+      )}
     </div>
   );
 }
