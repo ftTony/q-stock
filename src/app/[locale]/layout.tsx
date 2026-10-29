@@ -4,6 +4,7 @@ import { NextIntlClientProvider } from "next-intl";
 import { getMessages, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
 import { locales, type AppLocale } from "@/i18n/config";
+import { ssgLocales } from "@/i18n/ssg-locales";
 import { shellMessages } from "@/i18n/client-messages";
 import { AppProviders } from "@/components/providers/app-providers";
 import { AppShell } from "@/components/layout/app-shell";
@@ -27,7 +28,7 @@ import "../globals.css";
 const siteVerification = googleSiteVerification();
 
 export function generateStaticParams() {
-  return locales.map((locale) => ({ locale }));
+  return ssgLocales().map((locale) => ({ locale }));
 }
 
 export const viewport: Viewport = {

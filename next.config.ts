@@ -3,9 +3,28 @@ import createNextIntlPlugin from "next-intl/plugin";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
+/** Set SKIP_TYPECHECK=1 in Docker/CI after a separate `tsc` step to save build time. */
+const skipTypecheck = process.env.SKIP_TYPECHECK === "1";
+
 const nextConfig: NextConfig = {
   output: "standalone",
   serverExternalPackages: ["longbridge"],
+  // Lint already runs in CI (`npm run lint`); skip duplicate ESLint during `next build`.
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: skipTypecheck,
+  },
+  experimental: {
+    // Tree-shake heavy barrels faster / smaller client graphs.
+    optimizePackageImports: [
+      "date-fns",
+      "zod",
+      "@tanstack/react-query",
+      "next-intl",
+    ],
+  },
   // Sitemap: index + children via lightweight routes (disk-first, not MetadataRoute).
   async rewrites() {
     return [

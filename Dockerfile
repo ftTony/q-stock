@@ -1,3 +1,6 @@
+# syntax=docker/dockerfile:1.7
+# BuildKit recommended: DOCKER_BUILDKIT=1 docker build ...
+
 # ---- base ----
 FROM node:22-trixie-slim AS base
 RUN apt-get update && apt-get install -y --no-install-recommends openssl \
@@ -8,7 +11,8 @@ FROM base AS deps
 WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
-RUN npm ci --include=optional \
+RUN --mount=type=cache,target=/root/.npm \
+    npm ci --include=optional \
     && node -e "import('longbridge').then(() => { console.log('Longbridge SDK loaded'); process.exit(0); }, (error) => { console.error(error); process.exit(1); })"
 
 # ---- builder ----
@@ -16,11 +20,15 @@ FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN npx prisma generate
 ENV NEXT_TELEMETRY_DISABLED=1
+# CI already typechecks; cut SSG fan-out (10 locales → 3). See docs/build-performance.md
+ENV SKIP_TYPECHECK=1
+ENV SSG_LOCALES=en,zh-CN,zh-TW
 ARG NEXT_PUBLIC_QUOTE_WS_URL
 ENV NEXT_PUBLIC_QUOTE_WS_URL=${NEXT_PUBLIC_QUOTE_WS_URL}
-RUN npm run build
+# `npm run build` already runs prisma generate — do not duplicate.
+RUN --mount=type=cache,target=/app/.next/cache \
+    npm run build
 
 # ---- web runner ----
 FROM base AS runner
