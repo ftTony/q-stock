@@ -13,6 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check:i18n": "tsx scripts/check-i18n-scope.ts",
+    "check:i18n:keys": "tsx scripts/check-i18n-keys.ts",
+    "og:image": "python3 scripts/make-og-image.py",
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate deploy",
     "db:migrate:dev": "prisma migrate dev",

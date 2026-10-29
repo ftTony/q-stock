@@ -830,6 +830,7 @@
   "common": {
     "loading": "Cargando…",
     "error": "Algo salió mal",
+    "errorBody": "La página no terminó de cargarse. Reintentar suele resolverlo, o vuelve al inicio.",
     "retry": "Reintentar",
     "rateLimited": "Límite alcanzado, inténtalo más tarde",
     "degraded": "Algunos datos no disponibles para tu plan",

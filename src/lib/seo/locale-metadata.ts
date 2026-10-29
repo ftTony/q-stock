@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import { defaultLocale, locales, type AppLocale } from "@/i18n/config";
+import { ogImages } from "@/lib/seo/og-image";
 
 /**
  * Locale layout defaults only: title template + site description.
@@ -39,11 +40,13 @@ export async function buildLocaleMetadata(locale: string): Promise<Metadata> {
       siteName: t("siteName"),
       title: titleDefault,
       description: descriptionShort,
+      images: ogImages(titleDefault),
     },
     twitter: {
       card: "summary_large_image",
       title: titleDefault,
       description: descriptionShort,
+      images: ogImages(titleDefault),
     },
     appleWebApp: {
       capable: true,

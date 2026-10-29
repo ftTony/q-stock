@@ -35,3 +35,11 @@ jobs:
 
       - name: Unit tests
         run: npm test
+
+      # 补齐的两道闸门：这两类问题以前只能等运行时炸 MISSING_MESSAGE，
+      # 或者等用户看到英文页面上的 "symbol.pbRatio" 才发现。
+      - name: i18n namespace scope
+        run: npm run check:i18n
+
+      - name: i18n key parity
+        run: npm run check:i18n:keys

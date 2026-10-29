@@ -10,6 +10,7 @@ import {
 import { cachedFetch } from "@/lib/cache";
 import { getDailyCandles, getQuote } from "@/lib/market";
 import { displayName } from "@/lib/market-names";
+import { ogImages } from "@/lib/seo/og-image";
 import { siteOrigin } from "@/lib/seo/site-url";
 import {
   isSitemapTicker,
@@ -265,11 +266,13 @@ export async function buildSymbolMetadata(
       url: canonical,
       title: copy.title,
       description: copy.description,
+      images: ogImages(copy.title),
     },
     twitter: {
       card: "summary",
       title: copy.title,
       description: copy.description,
+      images: ogImages(copy.title),
     },
     ...(quote && quote.price > 0
       ? {

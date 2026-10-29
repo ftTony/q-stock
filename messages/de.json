@@ -830,6 +830,7 @@
   "common": {
     "loading": "Lädt…",
     "error": "Etwas ist schiefgelaufen",
+    "errorBody": "Die Seite konnte nicht geladen werden. Ein erneuter Versuch hilft meist — oder zurück zur Startseite.",
     "retry": "Erneut versuchen",
     "rateLimited": "Limit erreicht, später erneut versuchen",
     "degraded": "Einige Daten für Ihren Plan nicht verfügbar",

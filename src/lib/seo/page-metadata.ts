@@ -7,6 +7,7 @@ import {
   type AppLocale,
 } from "@/i18n/config";
 import { siteOrigin } from "@/lib/seo/site-url";
+import { ogImages } from "@/lib/seo/og-image";
 import { sitemapLocales } from "@/lib/seo/sitemap-locales";
 
 function languageAlternates(
@@ -80,11 +81,13 @@ export async function buildPageMetadata(
       title,
       description: opts.description ?? descriptionShort,
       url: canonical,
+      images: ogImages(title),
     },
     twitter: {
       card: "summary_large_image",
       title,
       description: opts.description ?? descriptionShort,
+      images: ogImages(title),
     },
   };
 }

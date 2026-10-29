@@ -830,6 +830,7 @@
   "common": {
     "loading": "Chargement…",
     "error": "Une erreur est survenue",
+    "errorBody": "Cette page n'a pas pu se charger. Réessayer suffit généralement — ou revenez à l'accueil.",
     "retry": "Réessayer",
     "rateLimited": "Limite atteinte, réessayez plus tard",
     "degraded": "Certaines données indisponibles pour votre plan",
