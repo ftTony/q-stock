@@ -9,11 +9,39 @@ RUN apt-get update && apt-get install -y --no-install-recommends openssl \
 # ---- deps ----
 FROM base AS deps
 WORKDIR /app
+
+# npm 网络加固。两个偶发失败都出在这一层：
+#   1) ECONNRESET / network aborted —— longbridge 的 optionalDependencies 里
+#      longbridge-linux-x64-gnu 是几十 MB 的原生 binding，断流即整体失败；
+#   2) TAR_ENTRY_ERROR ENOENT —— 中断后 /root/.npm 缓存里留下半截 tarball，
+#      后续重试从坏缓存解包，报 next/dist/... 不存在。
+# 所以既要提高重试，也要在失败时清缓存，否则重试必然复现同一个错。
+ENV NPM_CONFIG_FETCH_RETRIES=5 \
+    NPM_CONFIG_FETCH_RETRY_MINTIMEOUT=20000 \
+    NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT=120000 \
+    NPM_CONFIG_FETCH_TIMEOUT=600000 \
+    NPM_CONFIG_MAXSOCKETS=6 \
+    NPM_CONFIG_AUDIT=false \
+    NPM_CONFIG_FUND=false \
+    NPM_CONFIG_UPDATE_NOTIFIER=false
+
+# 国内构建可 --build-arg NPM_REGISTRY=https://registry.npmmirror.com
+ARG NPM_REGISTRY=https://registry.npmjs.org
+ARG NPM_REGISTRY_FALLBACK=https://registry.npmmirror.com
+
 COPY package.json package-lock.json ./
 COPY prisma ./prisma
+
 RUN --mount=type=cache,target=/root/.npm \
-    npm ci --include=optional \
-    && node -e "import('longbridge').then(() => { console.log('Longbridge SDK loaded'); process.exit(0); }, (error) => { console.error(error); process.exit(1); })"
+    set -eu; \
+    attempt() { npm ci --include=optional --no-audit --no-fund --registry="$1"; }; \
+    reset() { npm cache clean --force >/dev/null 2>&1 || true; rm -rf /app/node_modules; }; \
+    attempt "$NPM_REGISTRY" \
+      || { echo "npm ci 失败，清缓存后改用镜像源重试"; reset; attempt "$NPM_REGISTRY_FALLBACK"; } \
+      || { echo "镜像源仍失败，回退官方源重试"; reset; attempt "$NPM_REGISTRY"; }
+
+# 单独一层：install 命中缓存时这条仍会执行，能在几秒内确认原生 binding 可用。
+RUN node -e "import('longbridge').then(() => { console.log('Longbridge SDK loaded'); process.exit(0); }, (error) => { console.error(error); process.exit(1); })"
 
 # ---- builder ----
 FROM base AS builder
