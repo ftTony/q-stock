@@ -40,7 +40,7 @@ export default async function AnalysisPage({ params }: Props) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <ScopedMessages namespaces={["ai", "analysis", "symbol"]}>
+      <ScopedMessages namespaces={["ai", "analysis", "symbol", "multiChart"]}>
         <div className="space-y-4 animate-[qtFade_0.45s_ease]">
           <AnalysisSeoIntro
             title={tNav("analysis")}

@@ -81,6 +81,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
     isPortfolio ||
     pathname.startsWith("/analysis") ||
     pathname.startsWith("/symbol") ||
+    pathname.startsWith("/multi-chart") ||
     pathname.startsWith("/strategies") ||
     (isAccountGatePage && !authed);
   const isSymbol = pathname.startsWith("/symbol");

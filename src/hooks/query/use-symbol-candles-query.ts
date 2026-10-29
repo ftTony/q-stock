@@ -46,6 +46,7 @@ export function useSymbolCandlesQuery(
       setHasMoreCandles(next.length > 0 && data.hasMore !== false);
       return next;
     },
+    enabled: Boolean(symbol.trim()),
     initialData: initialBars,
     // Daily+ bars change slowly; intraday stays on global 30s default.
     staleTime: isIntradayResolution(resolution) ? 30_000 : 90_000,

@@ -159,7 +159,10 @@ export function AppSidebar({ onNavigate }: Props) {
 
   const isHome = pathname === "/";
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
-  const isAnalysis = pathname.startsWith("/analysis") || pathname.startsWith("/symbol");
+  const isAnalysis =
+    pathname.startsWith("/analysis") ||
+    pathname.startsWith("/symbol") ||
+    pathname.startsWith("/multi-chart");
   const isPortfolio = pathname.startsWith("/portfolio");
   const isReview = pathname.startsWith("/review");
   const isStrategies = pathname.startsWith("/strategies");

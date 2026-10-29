@@ -51,6 +51,7 @@ export function AnalysisComparePanel({
   onRemove,
 }: Props) {
   const t = useTranslations("analysis");
+  const tMulti = useTranslations("multiChart");
   const tAi = useTranslations("ai");
   const tCommon = useTranslations("common");
   const tSymbol = useTranslations("symbol");
@@ -185,6 +186,21 @@ export function AnalysisComparePanel({
           </span>
         </div>
         <div className="ml-auto flex items-center gap-2">
+          {canRun ? (
+            <Link
+              href={`/multi-chart?${new URLSearchParams({
+                layout: String(basket.length <= 2 ? 2 : 4),
+                resolution: "D",
+                legs: basket
+                  .slice(0, 4)
+                  .map((b) => `${b.assetType}:${b.symbol}`)
+                  .join(","),
+              }).toString()}`}
+              className="qt-btn qt-btn-ghost h-7 px-2.5 text-xs"
+            >
+              {tMulti("openMultiChart")}
+            </Link>
+          ) : null}
           {canAddMore && (
             <button
               type="button"

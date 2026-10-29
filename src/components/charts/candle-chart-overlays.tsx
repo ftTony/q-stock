@@ -49,6 +49,8 @@ type Props = {
   loadingMore?: boolean;
   /** When false, hide floating fullscreen (parent toolbar owns it). */
   showFloatingChrome?: boolean;
+  /** When false, hide left drawing strip (multi-chart / read-only). */
+  showDrawingTools?: boolean;
 };
 
 function toolBtnClass(active: boolean) {
@@ -72,6 +74,7 @@ export function CandleChartOverlays({
   indicatorsLabel,
   loadingMore,
   showFloatingChrome = true,
+  showDrawingTools = true,
 }: Props) {
   const t = useTranslations("symbol");
   const [mounted, setMounted] = useState(false);
@@ -128,31 +131,31 @@ export function CandleChartOverlays({
 
   return (
     <>
-      {/* Mobile toggle only after mount (avoids SSR/client aria mismatch); md+: strip always on */}
-      <div className="pointer-events-none absolute bottom-10 left-0 top-[40px] z-10 flex flex-col items-start gap-1 p-1.5 sm:p-2 md:top-[45px]">
-        {mounted ? (
-          <button
-            type="button"
-            title={t("drawing")}
-            aria-label={t("drawing")}
-            onClick={() => setMobileToolsOpen((o) => !o)}
-            className={`pointer-events-auto flex h-8 w-8 items-center justify-center rounded-lg border shadow-sm backdrop-blur-sm md:hidden ${
-              mobileToolsOpen || drawingTool !== "none"
-                ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                : "border-[var(--border)]/80 bg-[var(--panel)]/90 text-[var(--muted)]"
-            }`}
+      {showDrawingTools ? (
+        /* Mobile toggle after mount; md+: strip always on */
+        <div className="pointer-events-none absolute bottom-10 left-0 top-[40px] z-10 flex flex-col items-start gap-1 p-1.5 sm:p-2 md:top-[45px]">
+          {mounted ? (
+            <button
+              type="button"
+              title={t("drawing")}
+              aria-label={t("drawing")}
+              onClick={() => setMobileToolsOpen((o) => !o)}
+              className={`pointer-events-auto flex h-8 w-8 items-center justify-center rounded-lg border shadow-sm backdrop-blur-sm md:hidden ${
+                mobileToolsOpen || drawingTool !== "none"
+                  ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
+                  : "border-[var(--border)]/80 bg-[var(--panel)]/90 text-[var(--muted)]"
+              }`}
+            >
+              <DrawingToolIcon tool="segment" />
+            </button>
+          ) : null}
+          <div
+            className={`${mobileToolsOpen ? "flex" : "hidden"} md:flex`}
           >
-            <DrawingToolIcon tool="segment" />
-          </button>
-        ) : null}
-        <div
-          className={`${
-            mobileToolsOpen ? "flex" : "hidden"
-          } md:flex`}
-        >
-          {strip}
+            {strip}
+          </div>
         </div>
-      </div>
+      ) : null}
 
       {showFloatingChrome ? (
         <div className="pointer-events-none absolute right-2 top-0 z-10 p-2 sm:p-2.5">

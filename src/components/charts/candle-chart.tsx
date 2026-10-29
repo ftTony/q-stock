@@ -58,6 +58,8 @@ type CandleChartProps = {
   showFloatingIndicators?: boolean;
   /** False when parent toolbar owns settings / fullscreen / screenshot. */
   showFloatingChrome?: boolean;
+  /** False for multi-chart / read-only panes (no left drawing strip). */
+  showDrawingTools?: boolean;
   resetKey?: string;
   resolution?: string;
   symbol?: string;
@@ -82,6 +84,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       indicatorsLabel,
       showFloatingIndicators = true,
       showFloatingChrome = true,
+      showDrawingTools = true,
       resetKey,
       resolution = "D",
       symbol = "",
@@ -112,6 +115,8 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
   const [fullscreen, setFullscreen] = useState(false);
   const chartSettingsRef = useRef(chartSettings);
   chartSettingsRef.current = chartSettings;
+  const showDrawingToolsRef = useRef(showDrawingTools);
+  showDrawingToolsRef.current = showDrawingTools;
   const [liveSession, setLiveSession] = useState(() =>
     isAssetSessionOpen(assetType),
   );
@@ -229,6 +234,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
           liveSession: isAssetSessionOpen(assetType),
           flushEdge: fillParent,
           chartType: resolveCandleType(chartSettingsRef.current, resolution),
+          noDrawingStrip: !showDrawingToolsRef.current,
         }) as never,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
       });
@@ -323,6 +329,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
         liveSession,
         flushEdge: fillParent,
         chartType,
+        noDrawingStrip: !showDrawingTools,
       }) as never,
     );
   }, [
@@ -334,6 +341,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     liveSession,
     fillParent,
     chartType,
+    showDrawingTools,
   ]);
 
   const tradeMarkersKey = tradeMarkers
@@ -491,6 +499,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
         onFlagToggle={onFlagToggle}
         showFloatingIndicators={showFloatingIndicators}
         showFloatingChrome={showFloatingChrome}
+        showDrawingTools={showDrawingTools}
         indicatorsLabel={indicatorsLabel}
         loadingMore={loadingMore}
       />

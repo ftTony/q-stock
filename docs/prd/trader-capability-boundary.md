@@ -6,7 +6,7 @@
 | 人设 | **波段 / 学习型**个人投资者（非日内刷单、非机构 OMS） |
 | 用途 | 需求砍伐、评审「要不要做」、对外讲清边界 |
 | 状态 | **决策稿**（与现状/路线图对齐；改人设须同步本文 + [product-roadmap §0](../product-roadmap.md)） |
-| 相关 | [institution-capability-boundary](./institution-capability-boundary.md)（机构成对） · [product-status](../product-status.md) · [product-roadmap](../product-roadmap.md) · [risk-control](./risk-control.md) · [strategy-and-backtest](./strategy-and-backtest.md) · [c-end-billing](./c-end-billing.md) · [symbol-trading-ui](./symbol-trading-ui.md) · [review-notes](./review-notes.md) |
+| 相关 | [institution-capability-boundary](./institution-capability-boundary.md)（机构成对） · [multi-chart-compare](./multi-chart-compare.md) · [product-status](../product-status.md) · [product-roadmap](../product-roadmap.md) · [risk-control](./risk-control.md) · [strategy-and-backtest](./strategy-and-backtest.md) · [c-end-billing](./c-end-billing.md) · [symbol-trading-ui](./symbol-trading-ui.md) · [review-notes](./review-notes.md) |
 
 ---
 
@@ -29,6 +29,7 @@
 | 多周期 K + 常用指标 | 服务波段结构；不堆指标超市 | 已有 |
 | 冷静 AI | 结构、价位、无效化；不荐股、不自动提交 | 已有骨架 |
 | 同行对照 / 对比篮 | 分析页主任务 | 已有 |
+| 多图同屏（多标的） | 1/2/4 格共享周期；分析篮可带入 | 见 [multi-chart-compare](./multi-chart-compare.md) |
 | 情景 → 纸面草案 | AI 结果可预填下单，须人工确认 | 雏形；路线图 C2 / D2 |
 | 模拟限价 / 止损 / 止盈 + 成交日志 | 过程资产，非游戏盘 | 已有 |
 | 下单前风险摘要 + 软情绪自检 | 风控 **P0** | 见 [risk-control](./risk-control.md) |
@@ -52,7 +53,8 @@
 | 能力点 | 备注 |
 |---|---|
 | 模拟日亏损熔断 / 账户硬风控 P1 | [risk-control](./risk-control.md) P1 |
-| 多图同屏 / 图表标注可保存 | 终端感；非第一刀 |
+| 图表标注可保存 / 十字光标同步 | 多图增强；非本切片 |
+| 单图叠加相对强弱（vs 指数） | 与分格同屏不同；另案 |
 | 事件日历落到 K 线 | 财报、分红等 |
 | 收盘自选摘要邮件 | 留存；Worker 雏形已有 |
 | A 股源加深（扶摇） | 中期尖 fort 候选 |

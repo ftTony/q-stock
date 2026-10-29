@@ -51,6 +51,7 @@ const STATIC_PATHS: Array<{
   { path: "/", changeFrequency: "weekly", priority: 1 },
   { path: "/markets", changeFrequency: "daily", priority: 0.95 },
   { path: "/analysis", changeFrequency: "daily", priority: 0.9 },
+  { path: "/multi-chart", changeFrequency: "weekly", priority: 0.7 },
   { path: "/about", changeFrequency: "monthly", priority: 0.5 },
   { path: "/learn", changeFrequency: "weekly", priority: 0.6 },
   { path: "/tools", changeFrequency: "weekly", priority: 0.55 },

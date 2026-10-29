@@ -68,6 +68,8 @@ export function buildChartStyles(
     hideCandleTooltip?: boolean;
     /** Explicit product chart type; falls back to resolution default. */
     chartType?: ChartCandleType;
+    /** No left drawing strip — shrink tip offset (multi-chart). */
+    noDrawingStrip?: boolean;
   },
 ) {
   const c = readThemeColors();
@@ -83,8 +85,14 @@ export function buildChartStyles(
     window.matchMedia("(max-width: 767px)").matches;
   // HTML overlays sit above the canvas tooltip — keep rect clear of them.
   // Left: drawing strip (~44px) + padding. Right: fullscreen btn (~right-12 + 32).
-  const tipOffsetLeft = narrow ? 48 : 52;
-  const tipOffsetRight = narrow ? 52 : 56;
+  const tipOffsetLeft = opts?.noDrawingStrip ? (narrow ? 8 : 12) : narrow ? 48 : 52;
+  const tipOffsetRight = opts?.noDrawingStrip
+    ? narrow
+      ? 12
+      : 16
+    : narrow
+      ? 52
+      : 56;
   const tipOffsetTop = 8;
   // Area tip pulse only while the venue is in regular session (crypto = always).
   const live = Boolean(opts?.liveSession);

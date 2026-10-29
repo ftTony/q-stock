@@ -31,3 +31,4 @@
 | 交易策略与回测 | [strategy-and-backtest.md](./strategy-and-backtest.md) | 规则实验室：模板、单标的回放、模拟标签；非量化 IDE / 非实盘自动交易 |
 | 复盘笔记 | [review-notes.md](./review-notes.md) | 跨标的过程资产台：确定性摘要 + 偏差列表 + 可选 AI 解读 |
 | 个股图表形态 | [symbol-chart-types.md](./symbol-chart-types.md) | 蜡烛 / 面积独立切换；P0 已落地 |
+| 多图对比 | [multi-chart-compare.md](./multi-chart-compare.md) | 多标的 1/2/4 格同屏；`/multi-chart`；分析篮带入 |

@@ -1960,5 +1960,24 @@
     "limitReached": "研究卡已达上限（{limit}）。升级可增加额度。",
     "proHint": "Pro 额度",
     "upgrade": "去升级"
+  },
+  "multiChart": {
+    "title": "多圖對比",
+    "seoDescription": "最多四隻標的同屏對照 K 線，共用週期。學習工具，不構成投資建議。",
+    "addSymbol": "新增標的",
+    "searchPlaceholder": "代碼（如 AAPL / 00700）…",
+    "emptyPane": "搜尋新增圖表",
+    "openSymbol": "個股",
+    "clear": "清除",
+    "loading": "載入圖表…",
+    "openMultiChart": "多圖對比",
+    "backAnalysis": "分析對比",
+    "summaryEmpty": "新增標的開始對照",
+    "replace": "更換",
+    "replaceSymbol": "更換標的",
+    "cancelReplace": "取消",
+    "syncHint": "可視區間暫未同步，僅共用週期；先對照結構與節奏。",
+    "back": "返回",
+    "syncHintShort": "區間未同步 · 僅共用週期"
   }
 }

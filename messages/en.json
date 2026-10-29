@@ -1913,5 +1913,24 @@
     "limitReached": "Research card limit reached ({limit}). Upgrade for more.",
     "proHint": "Pro limits",
     "upgrade": "Upgrade"
+  },
+  "multiChart": {
+    "title": "Multi-chart",
+    "seoDescription": "Compare up to four tickers side by side on shared timeframes. Learning tool only—not investment advice.",
+    "addSymbol": "Add symbol",
+    "searchPlaceholder": "Ticker (e.g. AAPL / 00700)…",
+    "emptyPane": "Search to add a chart",
+    "openSymbol": "Open",
+    "clear": "Clear",
+    "loading": "Loading chart…",
+    "openMultiChart": "Multi-chart",
+    "backAnalysis": "Analysis",
+    "summaryEmpty": "Add symbols to compare",
+    "replace": "Replace",
+    "replaceSymbol": "Replace symbol",
+    "cancelReplace": "Cancel",
+    "syncHint": "Time ranges are not synced yet — compare structure visually; shared resolution only.",
+    "back": "Back",
+    "syncHintShort": "Ranges not synced · shared period only"
   }
 }

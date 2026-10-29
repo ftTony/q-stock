@@ -61,8 +61,9 @@
 |---|---|
 | Learn / Tools | 多在营销或独立路由，**未进主侧栏** |
 | 个股 | `/symbol/...`，侧栏归「分析」 |
+| 多图对比 | `/multi-chart`，侧栏归「分析」（不增图标）；分析对比篮 CTA | 见 [multi-chart-compare](./multi-chart-compare.md) |
 | 风控设置 | 无独立项（规划进设置/资产） |
-| 规则实验室 | 无 |
+| 规则实验室 | 侧栏已有 `/strategies` |
 
 ---
 
