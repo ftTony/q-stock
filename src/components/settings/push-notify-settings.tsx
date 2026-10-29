@@ -3,6 +3,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { SubmitButton } from "@/components/ui/submit-button";
+import {
+  SETTINGS_SUBMIT_GHOST,
+  SETTINGS_SUBMIT_PRIMARY,
+} from "@/components/settings/settings-btn";
 
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
   const padding = "=".repeat((4 - (base64String.length % 4)) % 4);
@@ -145,7 +150,7 @@ export function PushNotifySettings() {
   if (sessionStatus !== "authenticated") return null;
 
   return (
-    <section className="space-y-2 border-t border-[var(--aw-hairline,var(--border))] pt-4">
+    <section className="space-y-2.5 border-t border-[var(--aw-hairline,var(--border))] pb-4 pt-4">
       <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
         {t("pushTitle")}
       </h2>
@@ -161,25 +166,29 @@ export function PushNotifySettings() {
       ) : (
         <div className="flex flex-wrap items-center gap-2.5">
           {status?.subscribed ? (
-            <button
+            <SubmitButton
               type="button"
+              loading={busy}
+              loadingLabel={t("pushWorking")}
               disabled={busy}
               onClick={() => void disable()}
-              className="qt-btn h-9 px-4"
+              className={SETTINGS_SUBMIT_GHOST}
             >
-              {busy ? t("pushWorking") : t("pushDisable")}
-            </button>
+              {t("pushDisable")}
+            </SubmitButton>
           ) : (
-            <button
+            <SubmitButton
               type="button"
+              loading={busy || status == null}
+              loadingLabel={t("pushWorking")}
               disabled={busy || status == null}
               onClick={() => void enable()}
-              className="qt-btn qt-btn-primary h-9 px-4"
+              className={SETTINGS_SUBMIT_PRIMARY}
             >
-              {busy ? t("pushWorking") : t("pushEnable")}
-            </button>
+              {t("pushEnable")}
+            </SubmitButton>
           )}
-          {status?.subscribed ? (
+          {status?.subscribed && !busy ? (
             <span className="text-[12px] text-[var(--muted)]">
               {t("pushOn")}
             </span>
@@ -187,7 +196,7 @@ export function PushNotifySettings() {
           {message ? (
             <p
               role="status"
-              className="text-xs"
+              className="text-xs leading-none"
               style={{
                 color: messageKind === "ok" ? "var(--up)" : "var(--down)",
               }}

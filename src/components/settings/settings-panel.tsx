@@ -20,7 +20,8 @@ import { BillingPanel } from "@/components/settings/billing-panel";
 import { InvitePanel } from "@/components/settings/invite-panel";
 import { PaperRiskSettingsForm } from "@/components/settings/paper-risk-settings-form";
 import { SettingsAboutPanel } from "@/components/settings/settings-about-panel";
-import { PushNotifySettings } from "@/components/settings/push-notify-settings";
+import { NotificationsSettingsPanel } from "@/components/settings/notifications-settings-panel";
+import { SETTINGS_SUBMIT_PRIMARY } from "@/components/settings/settings-btn";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
 import { useSaveUserSettings } from "@/hooks/query/use-user-settings";
@@ -35,6 +36,7 @@ export type SettingsSection =
   | "general"
   | "trading"
   | "market"
+  | "notifications"
   | "account"
   | "about";
 
@@ -231,12 +233,18 @@ export function SettingsPanel({
     );
   }
 
+  if (section === "notifications") {
+    return <NotificationsSettingsPanel />;
+  }
+
   if (section === "account") {
     return (
       <div className="settings-ui space-y-0">
         <form onSubmit={onSave} className="space-y-3.5 pb-4">
-          <label className="block space-y-1.5 text-sm">
-            <span className="block text-[var(--muted)]">{t("name")}</span>
+          <label className="block space-y-2 text-sm">
+            <span className="block leading-snug text-[var(--muted)]">
+              {t("name")}
+            </span>
             <input
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
@@ -249,7 +257,7 @@ export function SettingsPanel({
             <SubmitButton
               loading={saving}
               loadingLabel={tCommon("loading")}
-              className="qt-btn qt-btn-primary h-9 px-4"
+              className={SETTINGS_SUBMIT_PRIMARY}
             >
               {t("save")}
             </SubmitButton>
@@ -267,14 +275,14 @@ export function SettingsPanel({
             ) : null}
           </div>
         </form>
-        <section className="space-y-1.5 border-t border-[var(--aw-hairline,var(--border))] pt-4">
+        <section className="space-y-2.5 border-t border-[var(--aw-hairline,var(--border))] pb-5 pt-5">
           <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
             {t("freemiumTitle")}
           </h2>
           <p className="text-[13px] leading-relaxed text-[var(--muted)]">
             {t("freemiumBody")}
           </p>
-          <ul className="space-y-1 text-[13px] leading-relaxed text-[var(--muted)]">
+          <ul className="space-y-2 text-[13px] leading-relaxed text-[var(--muted)]">
             <li>
               <span className="font-medium text-[var(--foreground)]">
                 {t("freemiumInvite")}
@@ -300,7 +308,6 @@ export function SettingsPanel({
         </section>
         <BillingPanel />
         <InvitePanel />
-        <PushNotifySettings />
         <AiCredentialsForm />
       </div>
     );

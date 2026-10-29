@@ -219,6 +219,10 @@ model UserMarketCredential {
 enum ServiceCredentialProvider {
   email
   ai
+  /** Feishu bot incoming webhook. */
+  feishu
+  /** Slack / Discord / Telegram / generic incoming webhook. */
+  notify_webhook
 }
 
 /** Encrypted per-user email / AI credentials (BYOK). */

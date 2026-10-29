@@ -77,7 +77,7 @@ export function useWatchlistResize() {
 
     const prevCursor = document.body.style.cursor;
     const prevUserSelect = document.body.style.userSelect;
-    document.body.style.cursor = "col-resize";
+    document.body.style.cursor = "ew-resize";
     document.body.style.userSelect = "none";
     document.documentElement.classList.add("aw-rail-resizing");
 

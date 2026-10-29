@@ -298,10 +298,10 @@ html.dark .aw {
 }
 
 
-/* Global while dragging: keep col-resize even over chart/canvas. */
+/* Match klinecharts axis hover (ew-resize), keep over chart/canvas while drag. */
 html.aw-rail-resizing,
 html.aw-rail-resizing * {
-  cursor: col-resize !important;
+  cursor: ew-resize !important;
 }
 html.aw-rail-resizing {
   user-select: none !important;
@@ -403,7 +403,8 @@ html.aw-rail-resizing {
     align-self: stretch;
   }
 
-  .aw-watchlist-resizer {
+  /* Beat globals `button:not(:disabled) { cursor: pointer }` (0,2,1). */
+  button.aw-watchlist-resizer:not(:disabled) {
     display: block;
     flex: 0 0 8px;
     width: 8px;
@@ -411,7 +412,7 @@ html.aw-rail-resizing {
     margin-right: -4px;
     position: relative;
     z-index: 5;
-    cursor: col-resize;
+    cursor: ew-resize;
     touch-action: none;
     background: transparent;
     border: none;
@@ -475,35 +476,49 @@ html.aw-rail-resizing {
   .aw-workbench-main .aw-quote-bar {
     padding-right: var(--aw-side-dock-w, 44px);
   }
-  /* Zero-width flex item: hairline is rail border-left; ::before is the drag hit target. */
-  .aw-workbench-resizer {
+  /*
+   * Same hit model as watchlist resizer: 8px strip + ::after hairline.
+   * Selector must beat globals `button:not(:disabled) { cursor: pointer }`.
+   */
+  button.aw-workbench-resizer:not(:disabled) {
     display: block;
-    flex: 0 0 0;
-    width: 0;
+    flex: 0 0 8px;
+    width: 8px;
+    margin-left: -4px;
+    margin-right: -4px;
     position: relative;
-    z-index: 5;
-    cursor: col-resize;
+    z-index: 20;
+    cursor: ew-resize;
     touch-action: none;
     background: transparent;
     border: none;
     padding: 0;
     align-self: stretch;
   }
-  .aw-workbench-resizer::before {
+  button.aw-workbench-resizer:not(:disabled)::before {
+    content: none;
+  }
+  button.aw-workbench-resizer:not(:disabled)::after {
     content: "";
     position: absolute;
     top: 0;
     bottom: 0;
-    left: -4px;
-    width: 8px;
+    left: 50%;
+    width: 1px;
+    transform: translateX(-50%);
+    background: var(--aw-hairline);
+    transition:
+      background 0.12s ease,
+      width 0.12s ease;
+    pointer-events: none;
   }
-  .aw-workbench-resizer::after {
-    content: none;
-  }
-  .aw-workbench-resizer:hover ~ .aw-workbench-rail,
-  .aw-workbench-resizer:focus-visible ~ .aw-workbench-rail,
-  .aw-workbench-grid[data-resizing="true"] .aw-workbench-rail {
-    border-left-color: var(--aw-primary);
+  button.aw-workbench-resizer:not(:disabled):hover::after,
+  button.aw-workbench-resizer:not(:disabled):focus-visible::after,
+  button.aw-workbench-resizer:not(:disabled)[data-dragging="true"]::after,
+  .aw-workbench-grid[data-resizing="true"]
+    button.aw-workbench-resizer:not(:disabled)::after {
+    width: 2px;
+    background: var(--aw-primary);
   }
   .aw-workbench-rail {
     display: flex;
@@ -512,20 +527,19 @@ html.aw-rail-resizing {
     max-width: min(560px, 48vw);
     min-width: 300px;
     border-top: none;
-    /* Single hairline at the chart|rail edge (chart y-axis spine is flushEdge-hidden). */
-    border-left: 1px solid var(--aw-hairline);
+    /* Hairline drawn by .aw-workbench-resizer::after (avoid double edge). */
+    border-left: none;
     min-height: 0;
-    transition: border-left-color 0.12s ease;
   }
   .aw-workbench-grid[data-resizing="true"] {
     user-select: none;
-    cursor: col-resize;
+    cursor: ew-resize;
   }
   .aw-workbench-grid[data-resizing="true"] *,
   .aw-workbench-grid[data-resizing="true"] iframe,
   .aw-workbench-grid[data-resizing="true"] canvas {
     pointer-events: none;
-    cursor: col-resize !important;
+    cursor: ew-resize !important;
   }
   .aw-workbench-grid[data-resizing="true"] .aw-workbench-resizer {
     pointer-events: auto;

@@ -3,6 +3,8 @@ import { decryptJson } from "@/lib/crypto/secret-box";
 import type {
   AiCreds,
   EmailCreds,
+  NotifyWebhookCreds,
+  OverseasNotifyPlatform,
   ServiceCredsStatus,
   ServiceCredsStore,
 } from "@/lib/user/service-creds-types";
@@ -81,6 +83,53 @@ function parseAi(raw: unknown): AiCreds | undefined {
   };
 }
 
+const OVERSEAS_PLATFORMS: readonly OverseasNotifyPlatform[] = [
+  "slack",
+  "discord",
+  "telegram",
+  "generic",
+];
+
+function parseNotifyWebhook(
+  raw: unknown,
+  requirePlatform: boolean,
+): NotifyWebhookCreds | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  const webhookUrl = String(o.webhookUrl ?? "").trim();
+  if (!webhookUrl || !/^https:\/\//i.test(webhookUrl)) return undefined;
+  const platformRaw = String(o.platform ?? "")
+    .trim()
+    .toLowerCase();
+  if (requirePlatform) {
+    if (!(OVERSEAS_PLATFORMS as readonly string[]).includes(platformRaw)) {
+      return undefined;
+    }
+    return {
+      webhookUrl,
+      platform: platformRaw as OverseasNotifyPlatform,
+    };
+  }
+  return { webhookUrl };
+}
+
+function webhookStatus(
+  creds?: NotifyWebhookCreds,
+): ServiceCredsStatus["feishu"] {
+  if (!creds?.webhookUrl) return { configured: false };
+  let hostHint: string | undefined;
+  try {
+    hostHint = new URL(creds.webhookUrl).host;
+  } catch {
+    hostHint = undefined;
+  }
+  return {
+    configured: true,
+    platform: creds.platform,
+    hostHint,
+  };
+}
+
 export async function loadUserServiceCreds(
   userId: string,
 ): Promise<ServiceCredsStore> {
@@ -101,6 +150,10 @@ export async function loadUserServiceCreds(
         store.email = parseEmail(parsed);
       } else if (row.provider === "ai") {
         store.ai = parseAi(parsed);
+      } else if (row.provider === "feishu") {
+        store.feishu = parseNotifyWebhook(parsed, false);
+      } else if (row.provider === "notify_webhook") {
+        store.notifyWebhook = parseNotifyWebhook(parsed, true);
       }
     } catch (err) {
       console.error(
@@ -134,6 +187,8 @@ export async function getUserServiceCredsStatus(
           baseUrl: store.ai.baseUrl,
         }
       : { configured: false },
+    feishu: webhookStatus(store.feishu),
+    notifyWebhook: webhookStatus(store.notifyWebhook),
   };
 }
 
@@ -193,4 +248,25 @@ export function mergeAiCreds(
     model,
     baseUrl: incoming.vendor === "openai" ? undefined : baseUrl,
   };
+}
+
+export function mergeNotifyWebhookCreds(
+  incoming: {
+    webhookUrl?: string;
+    platform?: OverseasNotifyPlatform;
+  },
+  existing?: NotifyWebhookCreds,
+  opts?: { requirePlatform?: boolean },
+): NotifyWebhookCreds | null {
+  const webhookUrl =
+    String(incoming.webhookUrl ?? "").trim() || existing?.webhookUrl || "";
+  if (!webhookUrl || !/^https:\/\//i.test(webhookUrl)) return null;
+  if (opts?.requirePlatform) {
+    const platform = incoming.platform ?? existing?.platform;
+    if (!platform || !(OVERSEAS_PLATFORMS as readonly string[]).includes(platform)) {
+      return null;
+    }
+    return { webhookUrl, platform };
+  }
+  return { webhookUrl };
 }

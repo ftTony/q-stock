@@ -6,6 +6,10 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import { QtSelect } from "@/components/ui/qt-select";
 import {
+  SETTINGS_BTN_GHOST,
+  SETTINGS_SUBMIT_PRIMARY,
+} from "@/components/settings/settings-btn";
+import {
   presetModelsForVendor,
   type AiCredsStatus,
   type AiVendor,
@@ -155,7 +159,7 @@ export function AiCredentialsForm() {
 
       <form onSubmit={onSave} className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <span className="block text-xs text-[var(--muted)]">
               {t("aiVendor")}
             </span>
@@ -172,7 +176,7 @@ export function AiCredentialsForm() {
               disabled={saving}
             />
           </div>
-          <label className="block space-y-1.5">
+          <label className="block space-y-2">
             <span className="block text-xs text-[var(--muted)]">
               {t("aiApiKey")}
             </span>
@@ -188,7 +192,7 @@ export function AiCredentialsForm() {
               disabled={saving}
             />
           </label>
-          <div className="space-y-1.5">
+          <div className="space-y-2">
             <span className="block text-xs text-[var(--muted)]">
               {t("aiModel")}
             </span>
@@ -200,7 +204,7 @@ export function AiCredentialsForm() {
             />
           </div>
           {showBaseUrl ? (
-            <label className="block space-y-1.5">
+            <label className="block space-y-2">
               <span className="block text-xs text-[var(--muted)]">
                 {t("aiBaseUrl")}
               </span>
@@ -220,7 +224,7 @@ export function AiCredentialsForm() {
             </label>
           ) : null}
           {modelPick === CUSTOM ? (
-            <label className="block space-y-1.5 sm:col-span-2">
+            <label className="block space-y-2 sm:col-span-2">
               <span className="block text-xs text-[var(--muted)]">
                 {t("aiModelId")}
               </span>
@@ -236,28 +240,30 @@ export function AiCredentialsForm() {
           ) : null}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2.5">
           <SubmitButton
             loading={saving}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary h-9 px-3 font-medium"
+            className={SETTINGS_SUBMIT_PRIMARY}
           >
-            {t("aiSave")}
+            {t("save")}
           </SubmitButton>
           {status?.configured ? (
             <button
               type="button"
               onClick={onClear}
               disabled={saving}
-              className="qt-btn qt-btn-ghost h-9 px-3 font-medium"
+              className={SETTINGS_BTN_GHOST}
             >
               {t("credsClear")}
             </button>
           ) : null}
           {message ? (
             <p
-              className={`text-xs ${messageKind === "ok" ? "text-[var(--up)]" : "text-[var(--down)]"}`}
+              role="status"
+              className={`text-xs leading-none ${messageKind === "ok" ? "text-[var(--up)]" : "text-[var(--down)]"}`}
             >
+              {messageKind === "ok" ? "✓ " : ""}
               {message}
             </p>
           ) : null}

@@ -6,6 +6,10 @@ import { SubmitButton } from "@/components/ui/submit-button";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import { QtSelect } from "@/components/ui/qt-select";
 import { SettingsHint } from "@/components/settings/settings-hint";
+import {
+  SETTINGS_BTN_GHOST,
+  SETTINGS_SUBMIT_PRIMARY,
+} from "@/components/settings/settings-btn";
 import type { EmailChannel, EmailCredsStatus } from "@/lib/user/service-creds-types";
 import {
   useDeleteServiceCredentials,
@@ -13,7 +17,12 @@ import {
   useServiceCredentials,
 } from "@/hooks/query/use-credentials";
 
-export function EmailCredentialsForm() {
+type Props = {
+  /** Match settings modal density (通知 tab). */
+  compact?: boolean;
+};
+
+export function EmailCredentialsForm({ compact = false }: Props) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
   const credsQuery = useServiceCredentials();
@@ -108,13 +117,33 @@ export function EmailCredentialsForm() {
   }
 
   return (
-    <div className="space-y-4">
+    <div
+      className={
+        compact
+          ? "space-y-2.5 pb-4"
+          : "space-y-4"
+      }
+    >
       <div>
-        <h2 className="text-lg font-semibold">{t("emailTitle")}</h2>
-        <SettingsHint tone="trust" className="mt-2">
-          {t("credsTrustNote")}
-        </SettingsHint>
-        <p className="mt-2 text-xs">
+        <h2
+          className={
+            compact
+              ? "text-[15px] font-semibold tracking-[-0.2px]"
+              : "text-lg font-semibold"
+          }
+        >
+          {t("emailTitle")}
+        </h2>
+        {compact ? (
+          <p className="mt-1.5 text-[13px] leading-relaxed text-[var(--muted)]">
+            {t("emailHint")}
+          </p>
+        ) : (
+          <SettingsHint tone="trust" className="mt-2">
+            {t("credsTrustNote")}
+          </SettingsHint>
+        )}
+        <p className={compact ? "mt-1.5 text-[12px]" : "mt-2 text-xs"}>
           <span
             className={
               status?.configured
@@ -129,9 +158,11 @@ export function EmailCredentialsForm() {
         </p>
       </div>
 
-      <form onSubmit={onSave} className="space-y-3">
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("emailChannel")}</span>
+      <form onSubmit={onSave} className="space-y-3.5">
+        <label className="block space-y-2 text-sm">
+          <span className="block leading-snug text-[var(--muted)]">
+            {t("emailChannel")}
+          </span>
           <QtSelect
             value={channel}
             onChange={(v) => setChannel(v as EmailChannel)}
@@ -143,22 +174,26 @@ export function EmailCredentialsForm() {
           />
         </label>
 
-        <label className="block space-y-1 text-sm">
-          <span className="text-[var(--muted)]">{t("emailFrom")}</span>
+        <label className="block space-y-2 text-sm">
+          <span className="block leading-snug text-[var(--muted)]">
+            {t("emailFrom")}
+          </span>
           <input
             type="email"
             required
             value={from}
             onChange={(e) => setFrom(e.target.value)}
-            className="qt-input h-9 w-full px-3 text-sm leading-none"
+            className="qt-input h-9 w-full px-3 text-[14px] leading-none"
             disabled={saving}
             placeholder="alerts@example.com"
           />
         </label>
 
         {channel === "resend" ? (
-          <label className="block space-y-1 text-sm">
-            <span className="text-[var(--muted)]">{t("emailResendKey")}</span>
+          <label className="block space-y-2 text-sm">
+            <span className="block leading-snug text-[var(--muted)]">
+              {t("emailResendKey")}
+            </span>
             <input
               type="password"
               autoComplete="off"
@@ -167,42 +202,50 @@ export function EmailCredentialsForm() {
               placeholder={
                 status?.configured ? t("credsKeepPlaceholder") : undefined
               }
-              className="qt-input h-9 w-full px-3 text-sm leading-none"
+              className="qt-input h-9 w-full px-3 text-[14px] leading-none"
               disabled={saving}
             />
           </label>
         ) : (
           <>
-            <label className="block space-y-1 text-sm">
-              <span className="text-[var(--muted)]">{t("emailSmtpHost")}</span>
+            <label className="block space-y-2 text-sm">
+              <span className="block leading-snug text-[var(--muted)]">
+                {t("emailSmtpHost")}
+              </span>
               <input
                 value={smtpHost}
                 onChange={(e) => setSmtpHost(e.target.value)}
-                className="qt-input h-9 w-full px-3 text-sm leading-none"
+                className="qt-input h-9 w-full px-3 text-[14px] leading-none"
                 disabled={saving}
                 placeholder="smtp.example.com"
               />
             </label>
-            <label className="block space-y-1 text-sm">
-              <span className="text-[var(--muted)]">{t("emailSmtpPort")}</span>
+            <label className="block space-y-2 text-sm">
+              <span className="block leading-snug text-[var(--muted)]">
+                {t("emailSmtpPort")}
+              </span>
               <input
                 value={smtpPort}
                 onChange={(e) => setSmtpPort(e.target.value)}
-                className="qt-input h-9 w-full px-3 text-sm leading-none"
+                className="qt-input h-9 w-full px-3 text-[14px] leading-none"
                 disabled={saving}
               />
             </label>
-            <label className="block space-y-1 text-sm">
-              <span className="text-[var(--muted)]">{t("emailSmtpUser")}</span>
+            <label className="block space-y-2 text-sm">
+              <span className="block leading-snug text-[var(--muted)]">
+                {t("emailSmtpUser")}
+              </span>
               <input
                 value={smtpUser}
                 onChange={(e) => setSmtpUser(e.target.value)}
-                className="qt-input h-9 w-full px-3 text-sm leading-none"
+                className="qt-input h-9 w-full px-3 text-[14px] leading-none"
                 disabled={saving}
               />
             </label>
-            <label className="block space-y-1 text-sm">
-              <span className="text-[var(--muted)]">{t("emailSmtpPass")}</span>
+            <label className="block space-y-2 text-sm">
+              <span className="block leading-snug text-[var(--muted)]">
+                {t("emailSmtpPass")}
+              </span>
               <input
                 type="password"
                 autoComplete="off"
@@ -211,7 +254,7 @@ export function EmailCredentialsForm() {
                 placeholder={
                   status?.configured ? t("credsKeepPlaceholder") : undefined
                 }
-                className="qt-input h-9 w-full px-3 text-sm leading-none"
+                className="qt-input h-9 w-full px-3 text-[14px] leading-none"
                 disabled={saving}
               />
             </label>
@@ -227,28 +270,30 @@ export function EmailCredentialsForm() {
           </>
         )}
 
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="flex flex-wrap items-center gap-2.5">
           <SubmitButton
             loading={saving}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary h-9 px-3 text-sm font-medium"
+            className={SETTINGS_SUBMIT_PRIMARY}
           >
-            {t("emailSave")}
+            {compact ? t("save") : t("emailSave")}
           </SubmitButton>
           {status?.configured ? (
             <button
               type="button"
               onClick={onClear}
               disabled={saving}
-              className="qt-btn qt-btn-ghost h-9 px-3 text-sm font-medium"
+              className={SETTINGS_BTN_GHOST}
             >
               {t("credsClear")}
             </button>
           ) : null}
           {message ? (
             <p
-              className={`text-sm ${messageKind === "ok" ? "text-[var(--up)]" : "text-[var(--down)]"}`}
+              role="status"
+              className={`text-xs leading-none ${messageKind === "ok" ? "text-[var(--up)]" : "text-[var(--down)]"}`}
             >
+              {messageKind === "ok" ? "✓ " : ""}
               {message}
             </p>
           ) : null}

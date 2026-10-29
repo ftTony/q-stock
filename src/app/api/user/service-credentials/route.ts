@@ -9,6 +9,7 @@ import {
   loadUserServiceCreds,
   mergeAiCreds,
   mergeEmailCreds,
+  mergeNotifyWebhookCreds,
 } from "@/lib/user/service-creds";
 
 const emailPutSchema = z.object({
@@ -35,14 +36,32 @@ const aiPutSchema = z.object({
   baseUrl: z.string().max(512).optional(),
 });
 
+const feishuPutSchema = z.object({
+  webhookUrl: z.string().url().max(2048).optional(),
+});
+
+const notifyWebhookPutSchema = z.object({
+  webhookUrl: z.string().url().max(2048).optional(),
+  platform: z.enum(["slack", "discord", "telegram", "generic"]),
+});
+
 const putSchema = z
   .object({
     email: emailPutSchema.optional(),
     ai: aiPutSchema.optional(),
+    feishu: feishuPutSchema.optional(),
+    notifyWebhook: notifyWebhookPutSchema.optional(),
   })
-  .refine((v) => v.email != null || v.ai != null, {
-    message: "Provide email and/or ai credentials",
-  });
+  .refine(
+    (v) =>
+      v.email != null ||
+      v.ai != null ||
+      v.feishu != null ||
+      v.notifyWebhook != null,
+    {
+      message: "Provide email, ai, feishu, and/or notifyWebhook credentials",
+    },
+  );
 
 export async function GET() {
   const session = await auth();
@@ -129,6 +148,51 @@ export async function PUT(req: Request) {
         update: { payload },
       });
     }
+
+    if (parsed.data.feishu) {
+      const merged = mergeNotifyWebhookCreds(
+        parsed.data.feishu,
+        existing.feishu,
+      );
+      if (!merged) {
+        return NextResponse.json(
+          {
+            error:
+              "Feishu webhook incomplete — provide an https:// incoming webhook URL",
+          },
+          { status: 400 },
+        );
+      }
+      const payload = encryptJson(merged);
+      await prisma.userServiceCredential.upsert({
+        where: { userId_provider: { userId, provider: "feishu" } },
+        create: { userId, provider: "feishu", payload },
+        update: { payload },
+      });
+    }
+
+    if (parsed.data.notifyWebhook) {
+      const merged = mergeNotifyWebhookCreds(
+        parsed.data.notifyWebhook,
+        existing.notifyWebhook,
+        { requirePlatform: true },
+      );
+      if (!merged) {
+        return NextResponse.json(
+          {
+            error:
+              "Notify webhook incomplete — provide platform + https:// webhook URL",
+          },
+          { status: 400 },
+        );
+      }
+      const payload = encryptJson(merged);
+      await prisma.userServiceCredential.upsert({
+        where: { userId_provider: { userId, provider: "notify_webhook" } },
+        create: { userId, provider: "notify_webhook", payload },
+        update: { payload },
+      });
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Save failed";
     console.error("[service-credentials] save failed:", msg);
@@ -157,9 +221,14 @@ export async function DELETE(req: Request) {
   }
 
   const provider = new URL(req.url).searchParams.get("provider");
-  if (provider !== "email" && provider !== "ai") {
+  if (
+    provider !== "email" &&
+    provider !== "ai" &&
+    provider !== "feishu" &&
+    provider !== "notify_webhook"
+  ) {
     return NextResponse.json(
-      { error: "provider must be email or ai" },
+      { error: "provider must be email, ai, feishu, or notify_webhook" },
       { status: 400 },
     );
   }

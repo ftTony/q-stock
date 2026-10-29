@@ -25,10 +25,24 @@ export type AiCreds = {
   baseUrl?: string;
 };
 
+export type OverseasNotifyPlatform =
+  | "slack"
+  | "discord"
+  | "telegram"
+  | "generic";
+
+/** Incoming webhook for Feishu / Slack / Discord / Telegram. */
+export type NotifyWebhookCreds = {
+  webhookUrl: string;
+  platform?: OverseasNotifyPlatform;
+};
+
 export type ServiceCredsStore = {
   userId?: string;
   email?: EmailCreds;
   ai?: AiCreds;
+  feishu?: NotifyWebhookCreds;
+  notifyWebhook?: NotifyWebhookCreds;
 };
 
 export type EmailCredsStatus = {
@@ -44,9 +58,18 @@ export type AiCredsStatus = {
   baseUrl?: string;
 };
 
+export type NotifyWebhookCredsStatus = {
+  configured: boolean;
+  platform?: OverseasNotifyPlatform;
+  /** Masked host only — never the full URL. */
+  hostHint?: string;
+};
+
 export type ServiceCredsStatus = {
   email: EmailCredsStatus;
   ai: AiCredsStatus;
+  feishu: NotifyWebhookCredsStatus;
+  notifyWebhook: NotifyWebhookCredsStatus;
 };
 
 export const DEEPSEEK_MODELS = [

@@ -5,6 +5,11 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
+import {
+  SETTINGS_BTN_GHOST,
+  SETTINGS_BTN_PRIMARY,
+  SETTINGS_SUBMIT_GHOST,
+} from "@/components/settings/settings-btn";
 import { trackBillingClick } from "@/lib/billing/client-events";
 import { fetchJson } from "@/lib/query/fetch-json";
 
@@ -126,19 +131,28 @@ export function BillingPanel() {
     }
   }
 
+  const quotaModeLabel =
+    quota?.mode === "pro"
+      ? t("billingPlanPro")
+      : quota?.mode === "byok"
+        ? t("freemiumByok")
+        : t("billingPlanFree");
+
   return (
-    <section className="space-y-3 border-t border-[var(--aw-hairline,var(--border))] pt-4">
-      <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
-        {t("billingTitle")}
-      </h2>
-      <p className="text-[13px] leading-relaxed text-[var(--muted)]">
-        {t("billingBody")}
-      </p>
+    <section className="space-y-5 border-t border-[var(--aw-hairline,var(--border))] pb-5 pt-5">
+      <div className="space-y-2">
+        <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
+          {t("billingTitle")}
+        </h2>
+        <p className="text-[13px] leading-relaxed text-[var(--muted)]">
+          {t("billingBody")}
+        </p>
+      </div>
 
       {query.isLoading ? (
         <p className="text-[13px] text-[var(--muted)]">{t("billingLoading")}</p>
       ) : ent ? (
-        <div className="space-y-1 text-[13px] leading-relaxed text-[var(--muted)]">
+        <div className="space-y-2 text-[13px] leading-relaxed text-[var(--muted)]">
           <p>
             <span className="font-medium text-[var(--foreground)]">
               {t("billingPlan")}
@@ -171,19 +185,19 @@ export function BillingPanel() {
               {t("billingAiQuotaBody", {
                 remaining: quota.remaining,
                 limit: quota.limit,
-                mode: quota.mode,
+                mode: quotaModeLabel,
               })}
             </p>
           ) : null}
         </div>
       ) : null}
 
-      <div className="flex flex-wrap gap-2 pt-1">
+      <div className="flex flex-wrap items-center gap-2.5">
         {!ent?.isPro ? (
           <>
             <button
               type="button"
-              className="qt-btn qt-btn-primary h-9 px-3 text-[13px]"
+              className={SETTINGS_BTN_PRIMARY}
               disabled={busy}
               onClick={() => void startCheckout("monthly")}
             >
@@ -191,7 +205,7 @@ export function BillingPanel() {
             </button>
             <button
               type="button"
-              className="qt-btn qt-btn-ghost h-9 px-3 text-[13px]"
+              className={SETTINGS_BTN_GHOST}
               disabled={busy}
               onClick={() => void startCheckout("yearly")}
             >
@@ -201,7 +215,7 @@ export function BillingPanel() {
         ) : ent.stripeEnabled ? (
           <button
             type="button"
-            className="qt-btn qt-btn-ghost h-9 px-3 text-[13px]"
+            className={SETTINGS_BTN_GHOST}
             disabled={busy}
             onClick={() => void openPortal()}
           >
@@ -210,44 +224,52 @@ export function BillingPanel() {
         ) : null}
         <Link
           href="/pricing"
-          className="qt-btn qt-btn-ghost h-9 px-3 text-[13px]"
+          className={`${SETTINGS_BTN_GHOST} no-underline`}
           onClick={() => void trackBillingClick("click_upgrade")}
         >
           {t("billingCompare")}
         </Link>
       </div>
 
-      <form onSubmit={onRedeem} className="flex flex-wrap items-end gap-2 pt-1">
-        <label className="flex min-w-[12rem] flex-1 flex-col gap-1 text-[12px] text-[var(--muted)]">
-          {t("billingRedeemLabel")}
-          <input
-            value={code}
-            onChange={(e) => setCode(e.target.value)}
-            className="h-9 rounded-md border border-[var(--border)] bg-[var(--panel)] px-2 text-[13px] text-[var(--foreground)]"
-            placeholder={t("billingRedeemPlaceholder")}
-            autoComplete="off"
-          />
-        </label>
-        <SubmitButton
-          type="submit"
-          className="qt-btn qt-btn-ghost h-9 px-3 text-[13px]"
-          disabled={busy || code.trim().length < 4}
-        >
-          {t("billingRedeemCta")}
-        </SubmitButton>
-      </form>
+      <div className="space-y-2.5 border-t border-[var(--aw-hairline,var(--border))] pt-4">
+        <form onSubmit={onRedeem} className="space-y-2">
+          <span className="block text-[13px] font-medium leading-snug text-[var(--foreground)]">
+            {t("billingRedeemLabel")}
+          </span>
+          <div className="flex min-w-0 items-center gap-2.5">
+            <input
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              className="qt-input h-9 min-w-0 flex-1 px-3 text-[14px] leading-none"
+              placeholder={t("billingRedeemPlaceholder")}
+              autoComplete="off"
+              aria-label={t("billingRedeemLabel")}
+            />
+            <SubmitButton
+              type="submit"
+              loading={busy}
+              loadingLabel={t("billingRedeemCta")}
+              className={SETTINGS_SUBMIT_GHOST}
+              disabled={busy || code.trim().length < 4}
+            >
+              {t("billingRedeemCta")}
+            </SubmitButton>
+          </div>
+        </form>
 
-      {message ? (
-        <p
-          role="status"
-          className="text-xs"
-          style={{
-            color: messageKind === "ok" ? "var(--up)" : "var(--down)",
-          }}
-        >
-          {message}
-        </p>
-      ) : null}
+        {message ? (
+          <p
+            role="status"
+            className="text-xs leading-none"
+            style={{
+              color: messageKind === "ok" ? "var(--up)" : "var(--down)",
+            }}
+          >
+            {messageKind === "ok" ? "✓ " : ""}
+            {message}
+          </p>
+        ) : null}
+      </div>
     </section>
   );
 }
