@@ -4,6 +4,7 @@ import { FormEvent, useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { AiLoginButton } from "@/components/ai/ai-login-button";
 import { useAiAccess } from "@/components/ai/use-ai-access";
+import { InlineLoading } from "@/components/ui/panel-skeleton";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { TopToast } from "@/components/ui/top-toast";
 import type { AssetType } from "@/lib/types";
@@ -349,9 +350,23 @@ export function AiChatPanel(props: {
             : "max-h-64 space-y-2 overflow-y-auto rounded-xl border border-[var(--border)] bg-[var(--surface-2)]/40 p-3 text-sm qt-scroll"
         }
       >
-        {hydrating && (
-          <p className="text-[var(--muted)]">{tCommon("loading")}</p>
-        )}
+        {hydrating ? (
+          page ? (
+            <div className="aw-ai-thread-empty" role="status" aria-busy="true">
+              <InlineLoading
+                label={tCommon("loading")}
+                className="text-[12px]"
+              />
+            </div>
+          ) : (
+            <div className="flex min-h-[6rem] items-center justify-center py-6">
+              <InlineLoading
+                label={tCommon("loading")}
+                className="text-[12px]"
+              />
+            </div>
+          )
+        ) : null}
         {!hydrating && messages.length === 0 && (
           page ? (
             <div className="aw-ai-thread-empty">
@@ -362,7 +377,7 @@ export function AiChatPanel(props: {
               </p>
             </div>
           ) : (
-            <p className="text-[var(--muted)]">{t("empty")}</p>
+            <p className="text-[12px] text-[var(--muted)]">{t("empty")}</p>
           )
         )}
         {messages.map((m, i) => (

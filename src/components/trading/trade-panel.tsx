@@ -6,8 +6,6 @@ import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { QtSelect } from "@/components/ui/qt-select";
-import { SegmentedControl } from "@/components/ui/segmented-control";
 import { TopToast, type ToastTone } from "@/components/ui/top-toast";
 import { useMounted } from "@/hooks/use-mounted";
 import { useMyStrategies } from "@/hooks/query/use-strategies";
@@ -21,11 +19,12 @@ import {
 import { formatNumber } from "@/lib/format-number";
 import { summarizeOrderRisk } from "@/lib/trading/risk-math";
 import type { EmotionTagId } from "@/components/symbol/plan/symbol-emotion-check";
-import { TradeAccountStrip } from "@/components/trading/trade-account-strip";
 import { TradeAiLinks } from "@/components/trading/trade-ai-links";
-import { TradeBidAsk } from "@/components/trading/trade-bid-ask";
 import { TradeCalmFields } from "@/components/trading/trade-calm-fields";
 import { TradeOpenOrders } from "@/components/trading/trade-open-orders";
+import { TradeOrderFields } from "@/components/trading/trade-order-fields";
+import { TradeSubmitResult } from "@/components/trading/trade-submit-result";
+import { TradeTicketHeader } from "@/components/trading/trade-ticket-header";
 import type { AssetType } from "@/lib/types";
 
 type Side = "buy" | "sell";
@@ -64,6 +63,8 @@ export function TradePanel({
   symbol,
   assetType,
   lastPrice,
+  percentChange = null,
+  quoteName = null,
   bid = null,
   ask = null,
   aiDraft = null,
@@ -71,12 +72,16 @@ export function TradePanel({
   onCashBalance,
   onOpenCalm,
   onOpenAi,
+  onOpenPlan,
   strategyId: strategyIdProp,
+  strategyName = null,
   onStrategyIdChange,
 }: {
   symbol: string;
   assetType: AssetType;
   lastPrice: number | null;
+  percentChange?: number | null;
+  quoteName?: string | null;
   bid?: number | null;
   ask?: number | null;
   aiDraft?: TradeAiDraft | null;
@@ -84,8 +89,9 @@ export function TradePanel({
   onCashBalance?: (cash: number | null) => void;
   onOpenCalm?: () => void;
   onOpenAi?: () => void;
-  /** Controlled strategy tag from Plan rail. */
+  onOpenPlan?: () => void;
   strategyId?: string;
+  strategyName?: string | null;
   onStrategyIdChange?: (id: string, name?: string) => void;
 }) {
   const t = useTranslations("trading");
@@ -93,7 +99,8 @@ export function TradePanel({
   const searchParams = useSearchParams();
   const mounted = useMounted();
   const [side, setSide] = useState<Side>("buy");
-  const [orderType, setOrderType] = useState<OrderType>("market");
+  /** Swing / learning default: limit (P0 IA). */
+  const [orderType, setOrderType] = useState<OrderType>("limit");
   const [qty, setQty] = useState("1");
   const [limitPrice, setLimitPrice] = useState("");
   const [stopPrice, setStopPrice] = useState("");
@@ -129,7 +136,14 @@ export function TradePanel({
     const list =
       (
         positionsQuery.data as
-          | { positions?: Array<{ symbol: string; assetType: string; qty: number; avgCost: number }> }
+          | {
+              positions?: Array<{
+                symbol: string;
+                assetType: string;
+                qty: number;
+                avgCost: number;
+              }>;
+            }
           | undefined
       )?.positions ?? [];
     const pos = list.find(
@@ -149,6 +163,9 @@ export function TradePanel({
   const [msg, setMsg] = useState<string | null>(null);
   const [msgTone, setMsgTone] = useState<ToastTone>("neutral");
   const [msgKey, setMsgKey] = useState(0);
+  const [submitResult, setSubmitResult] = useState<"filled" | "pending" | null>(
+    null,
+  );
 
   useEffect(() => {
     onCashBalance?.(account?.cashBalance ?? null);
@@ -209,6 +226,7 @@ export function TradePanel({
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
     setMsg(null);
+    setSubmitResult(null);
     if (!session?.user) {
       showToast(t("loginRequired"), "neutral");
       return;
@@ -250,8 +268,10 @@ export function TradePanel({
         order?: { status?: string };
         error?: string;
       };
+      const filled = data.order?.status === "filled";
+      setSubmitResult(filled ? "filled" : "pending");
       showToast(
-        data.order?.status === "filled" ? t("orderFilled") : t("orderPending"),
+        filled ? t("orderFilledPaper") : t("orderPendingPaper"),
         "success",
       );
       setEmotionTags([]);
@@ -272,7 +292,6 @@ export function TradePanel({
     }
   }
 
-  // Match SSR (session status is "loading") on the first client paint.
   if (!mounted || status === "loading") {
     return (
       <div className="p-4 text-sm text-[var(--muted)]">{t("loading")}</div>
@@ -292,182 +311,125 @@ export function TradePanel({
     );
   }
 
-  const fieldInput =
-    "qt-input h-9 w-full px-3 text-[13px] tabular-nums leading-none";
-  const fieldLabel = "aw-metric-label mb-1 block";
-  const selectTrigger = "h-9 px-3 text-[13px]";
+  const submitClass =
+    side === "buy"
+      ? "h-9 w-full !rounded-[8px] !border !border-[color-mix(in_srgb,var(--up)_28%,var(--aw-hairline,var(--border)))] !bg-[color-mix(in_srgb,var(--up)_14%,var(--aw-canvas,#fff))] !text-[13px] !font-semibold !text-[var(--up)] hover:!bg-[color-mix(in_srgb,var(--up)_22%,var(--aw-canvas,#fff))] hover:!opacity-100"
+      : "h-9 w-full !rounded-[8px] !border !border-[color-mix(in_srgb,var(--down)_28%,var(--aw-hairline,var(--border)))] !bg-[color-mix(in_srgb,var(--down)_14%,var(--aw-canvas,#fff))] !text-[13px] !font-semibold !text-[var(--down)] hover:!bg-[color-mix(in_srgb,var(--down)_22%,var(--aw-canvas,#fff))] hover:!opacity-100";
 
   return (
-    <div className="space-y-2.5 px-4 py-2.5">
+    <form
+      onSubmit={onSubmit}
+      className="flex min-h-0 flex-1 flex-col"
+    >
       <TopToast
         key={msgKey}
         message={msg}
         tone={msgTone}
         onDismiss={() => setMsg(null)}
       />
-      <div className="flex items-center justify-between gap-2">
-        <span className="rounded-full bg-[var(--aw-parchment,var(--surface-2))] px-2 py-0.5 text-[12px] font-medium tracking-[-0.08px] text-[var(--muted)]">
-          {t("paperBadge")}
-        </span>
-        {loading ? <span className="aw-caption">{t("loading")}</span> : null}
+      <TradeTicketHeader
+        symbol={symbol}
+        assetType={assetType}
+        name={quoteName}
+        lastPrice={lastPrice}
+        percentChange={percentChange}
+      />
+      <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2.5">
+        <div className="space-y-2.5">
+          {loading ? <p className="aw-caption">{t("loading")}</p> : null}
+
+          {submitResult ? (
+            <TradeSubmitResult
+              kind={submitResult}
+              onDismiss={() => setSubmitResult(null)}
+            />
+          ) : null}
+
+          {position && position.qty > 0 ? (
+            <p className="text-[12px] tabular-nums text-[var(--muted)]">
+              {t("position")}: {position.qty}
+              {position.avgCost != null
+                ? ` · ${t("avgCost")} $${fmtMoney(position.avgCost)}`
+                : ""}
+            </p>
+          ) : null}
+
+          <TradeOrderFields
+            side={side}
+            onSide={setSide}
+            orderType={orderType}
+            onOrderType={setOrderType}
+            qty={qty}
+            onQty={setQty}
+            limitPrice={limitPrice}
+            onLimitPrice={setLimitPrice}
+            stopPrice={stopPrice}
+            onStopPrice={setStopPrice}
+            bid={bid}
+            ask={ask}
+            lastPrice={lastPrice}
+          />
+
+          {aiDraft ? (
+            <div className="flex items-center justify-between gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-2 text-[12px] text-[var(--brand-text)]">
+              <span>{t("aiDraftBanner")}</span>
+              <button
+                type="button"
+                className="underline"
+                onClick={() => onDismissAiDraft?.()}
+              >
+                {t("aiDraftUndo")}
+              </button>
+            </div>
+          ) : null}
+
+          <TradeCalmFields
+            invalidationPrice={invalidationPrice}
+            onInvalidationPrice={setInvalidationPrice}
+            strategies={strategies}
+            strategyId={strategyId}
+            strategyName={strategyName}
+            onStrategyId={setStrategyId}
+            onOpenPlan={onOpenPlan}
+            equity={account?.cashBalance ?? null}
+            qty={qtyNum}
+            entry={estimatePrice}
+            stop={
+              orderType === "stop"
+                ? Number(stopPrice) || null
+                : Number(invalidationPrice) || null
+            }
+            symbol={symbol}
+            assetType={assetType}
+            emotionTags={emotionTags}
+            onEmotionTags={setEmotionTags}
+          />
+
+          <TradeAiLinks onOpenCalm={onOpenCalm} onOpenAi={onOpenAi} />
+
+          <TradeOpenOrders
+            orders={orders}
+            busy={busy}
+            onCancel={(id) => void cancel(id)}
+          />
+        </div>
       </div>
 
-      <TradeAccountStrip
-        positionQty={position ? position.qty : 0}
-        avgCost={position ? position.avgCost : null}
-      />
-
-      <SegmentedControl
-        value={side}
-        onChange={setSide}
-        className="aw-trade-side"
-        buttonClassName="flex-1"
-        options={[
-          {
-            value: "buy",
-            label: t("buy"),
-            indicatorClassName:
-              "bg-[color-mix(in_srgb,var(--up)_16%,var(--aw-canvas,#fff))]",
-            activeTextClassName: "text-[var(--up)] font-semibold",
-          },
-          {
-            value: "sell",
-            label: t("sell"),
-            indicatorClassName:
-              "bg-[color-mix(in_srgb,var(--down)_16%,var(--aw-canvas,#fff))]",
-            activeTextClassName: "text-[var(--down)] font-semibold",
-          },
-        ]}
-      />
-
-      <form onSubmit={onSubmit} className="space-y-2.5">
-        <div>
-          <label className={fieldLabel}>{t("orderType")}</label>
-          <QtSelect
-            value={orderType}
-            onChange={(v) => setOrderType(v as OrderType)}
-            triggerClassName={selectTrigger}
-            options={[
-              { value: "market", label: t("market") },
-              { value: "limit", label: t("limit") },
-              { value: "stop", label: t("stop") },
-            ]}
-          />
-        </div>
-
-        <div>
-          <label className={fieldLabel}>{t("qty")}</label>
-          <input
-            type="number"
-            min="0"
-            step="any"
-            required
-            value={qty}
-            onChange={(e) => setQty(e.target.value)}
-            className={fieldInput}
-          />
-        </div>
-
-        <TradeBidAsk
-          bid={bid}
-          ask={ask}
-          lastPrice={lastPrice}
-          onPick={(p) => {
-            setLimitPrice(String(Number(p.toFixed(4))));
-            setOrderType("limit");
-          }}
-        />
-
-        {orderType === "limit" && (
-          <div>
-            <label className={fieldLabel}>{t("limitPrice")}</label>
-            <input
-              type="number"
-              min="0"
-              step="any"
-              required
-              value={limitPrice}
-              onChange={(e) => setLimitPrice(e.target.value)}
-              className={fieldInput}
-            />
-          </div>
-        )}
-
-        {orderType === "stop" && (
-          <div>
-            <label className={fieldLabel}>{t("stopPrice")}</label>
-            <input
-              type="number"
-              min="0"
-              step="any"
-              required
-              value={stopPrice}
-              onChange={(e) => setStopPrice(e.target.value)}
-              className={fieldInput}
-            />
-          </div>
-        )}
-
-        <div className="flex items-baseline justify-between gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-2">
+      <div className="shrink-0 border-t border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas,var(--panel))] px-4 pb-2.5 pt-2">
+        <div className="mb-2 flex items-baseline justify-between gap-2">
           <span className="aw-metric-label">{t("estimate")}</span>
           <span className="aw-metric-value">${fmtMoney(estimate)}</span>
         </div>
-
-        {aiDraft ? (
-          <div className="flex items-center justify-between gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-2 text-[12px] text-[var(--brand-text)]">
-            <span>{t("aiDraftBanner")}</span>
-            <button
-              type="button"
-              className="underline"
-              onClick={() => onDismissAiDraft?.()}
-            >
-              {t("aiDraftUndo")}
-            </button>
-          </div>
-        ) : null}
-
-        <TradeCalmFields
-          invalidationPrice={invalidationPrice}
-          onInvalidationPrice={setInvalidationPrice}
-          strategies={strategies}
-          strategyId={strategyId}
-          onStrategyId={setStrategyId}
-          equity={account?.cashBalance ?? null}
-          qty={qtyNum}
-          entry={estimatePrice}
-          stop={
-            orderType === "stop"
-              ? Number(stopPrice) || null
-              : Number(invalidationPrice) || null
-          }
-          symbol={symbol}
-          assetType={assetType}
-          emotionTags={emotionTags}
-          onEmotionTags={setEmotionTags}
-        />
-
-        <TradeAiLinks onOpenCalm={onOpenCalm} onOpenAi={onOpenAi} />
-
         <SubmitButton
           type="submit"
           loading={busy}
           loadingLabel={t("loading")}
           disabled={!(qtyNum > 0)}
-          className={`mt-0.5 inline-flex h-9 w-full items-center justify-center !rounded-full !border-0 text-[13px] font-semibold !text-white hover:!opacity-100 ${
-            side === "buy"
-              ? "!bg-[var(--up)] hover:!brightness-110 hover:!bg-[var(--up)]"
-              : "!bg-[var(--down)] hover:!brightness-110 hover:!bg-[var(--down)]"
-          }`}
+          className={submitClass}
         >
           {side === "buy" ? t("submitBuy") : t("submitSell")}
         </SubmitButton>
-      </form>
-
-      <TradeOpenOrders
-        orders={orders}
-        busy={busy}
-        onCancel={(id) => void cancel(id)}
-      />
-    </div>
+      </div>
+    </form>
   );
 }

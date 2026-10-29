@@ -276,19 +276,27 @@ export function EmptyStateBlock({
   label: string;
   art: EmptyArtKind;
   children?: ReactNode;
-  /** Shorter min-height for nested rail sections. */
+  /** Shorter min-height for nested rail / drawer sections. */
   compact?: boolean;
 }) {
   return (
     <div
-      className={`flex w-full flex-1 flex-col items-center justify-center gap-3 px-4 text-center ${
+      className={`flex w-full flex-1 flex-col items-center justify-center gap-2.5 px-4 text-center ${
         compact
-          ? "min-h-[8rem] py-6"
+          ? "min-h-[12rem] py-8"
           : "min-h-[min(56vh,24rem)] py-12"
       }`}
     >
       <Art kind={art} />
-      <p className="max-w-md text-[13px] leading-relaxed tracking-[-0.08px] text-[var(--muted)]">
+      {/*
+        Compact empties match list meta / captions (12px); full-page empties
+        stay at body muted 13px — same as other panels, not display type.
+      */}
+      <p
+        className={`max-w-[16rem] leading-relaxed tracking-[-0.08px] text-[var(--muted)] ${
+          compact ? "text-[12px]" : "text-[13px]"
+        }`}
+      >
         {label}
       </p>
       {children}

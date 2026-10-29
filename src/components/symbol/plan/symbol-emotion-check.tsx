@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 
 export const EMOTION_TAG_IDS = [
@@ -13,36 +14,6 @@ export const EMOTION_TAG_IDS = [
 
 export type EmotionTagId = (typeof EMOTION_TAG_IDS)[number];
 
-const TONE: Record<
-  EmotionTagId,
-  { idle: string; on: string }
-> = {
-  fomo: {
-    idle: "border-[var(--border)] text-[var(--muted)]",
-    on: "border-[var(--up)]/40 bg-[color-mix(in_srgb,var(--up)_12%,transparent)] text-[var(--up)]",
-  },
-  panic: {
-    idle: "border-[var(--border)] text-[var(--muted)]",
-    on: "border-[color-mix(in_srgb,#ca8a04_55%,var(--border))] bg-[color-mix(in_srgb,#ca8a04_14%,transparent)] text-[#ca8a04]",
-  },
-  revenge: {
-    idle: "border-[var(--border)] text-[var(--muted)]",
-    on: "border-[var(--down)]/40 bg-[color-mix(in_srgb,var(--down)_10%,transparent)] text-[var(--down)]",
-  },
-  oversizing: {
-    idle: "border-[var(--border)] text-[var(--muted)]",
-    on: "border-[var(--brand)]/40 bg-[var(--brand-soft)] text-[var(--brand-text)]",
-  },
-  noPlan: {
-    idle: "border-[var(--border)] text-[var(--muted)]",
-    on: "border-[var(--border)] bg-[var(--surface-2)] text-[var(--foreground)]",
-  },
-  calm: {
-    idle: "border-[var(--border)] text-[var(--muted)]",
-    on: "border-[var(--up)]/50 bg-[color-mix(in_srgb,var(--up)_10%,transparent)] text-[var(--up)]",
-  },
-};
-
 type Props = {
   selected: EmotionTagId[];
   onChange: (next: EmotionTagId[]) => void;
@@ -55,6 +26,7 @@ export function SymbolEmotionCheck({
   className = "",
 }: Props) {
   const t = useTranslations("symbolEmotion");
+  const [open, setOpen] = useState(selected.length > 0);
 
   function toggle(id: EmotionTagId) {
     if (id === "calm") {
@@ -69,31 +41,48 @@ export function SymbolEmotionCheck({
     );
   }
 
+  const summary =
+    selected.length > 0
+      ? selected.map((id) => t(id)).join(" · ")
+      : t("hint");
+
   return (
     <div
       className={`border-t border-[var(--aw-hairline,var(--border))] pt-2.5 ${className}`}
     >
-      <p className="aw-metric-label">{t("title")}</p>
-      <div className="mt-1.5 flex flex-wrap gap-1.5">
-        {EMOTION_TAG_IDS.map((id) => {
-          const on = selected.includes(id);
-          const tone = TONE[id];
-          return (
-            <button
-              key={id}
-              type="button"
-              aria-pressed={on}
-              onClick={() => toggle(id)}
-              className={`inline-flex h-7 items-center rounded-full border px-2.5 text-[12px] font-medium leading-none tracking-[-0.08px] transition active:scale-95 ${
-                on ? tone.on : `${tone.idle} hover:border-[var(--brand)]/35 hover:text-[var(--foreground)]`
-              }`}
-            >
-              {t(id)}
-            </button>
-          );
-        })}
-      </div>
-      <p className="aw-caption mt-1.5">{t("hint")}</p>
+      <button
+        type="button"
+        className="flex w-full items-baseline justify-between gap-2 text-left"
+        aria-expanded={open}
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="aw-metric-label">{t("title")}</span>
+        <span className="min-w-0 truncate text-[12px] leading-snug text-[var(--muted)]">
+          {open ? (selected.length > 0 ? summary : t("hint")) : summary}
+        </span>
+      </button>
+      {open ? (
+        <div className="mt-1.5 flex flex-wrap gap-1.5">
+          {EMOTION_TAG_IDS.map((id) => {
+            const on = selected.includes(id);
+            return (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={on}
+                onClick={() => toggle(id)}
+                className={`inline-flex h-7 items-center rounded-sm border px-2 text-[12px] font-medium leading-none tracking-[-0.08px] transition active:scale-95 ${
+                  on
+                    ? "border-[var(--brand)]/35 bg-[var(--brand-soft)] text-[var(--brand-text)]"
+                    : "border-[var(--aw-hairline,var(--border))] text-[var(--muted)] hover:border-[var(--brand)]/35 hover:text-[var(--foreground)]"
+                }`}
+              >
+                {t(id)}
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
     </div>
   );
 }

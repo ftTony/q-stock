@@ -48,7 +48,6 @@ export function OrderRiskSummary({
     <div
       className={`space-y-1 border-t border-[var(--aw-hairline,var(--border))] pt-2.5 ${className}`}
     >
-      <p className="aw-metric-label">{t("title")}</p>
       <p className="text-[12px] leading-snug tabular-nums tracking-[-0.08px] text-[var(--foreground)]">
         {t("positionPct", {
           pct:

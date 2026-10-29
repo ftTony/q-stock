@@ -304,6 +304,8 @@ export function SymbolPageClient({
         assetType={assetType}
         isIndex={isIndex}
         lastPrice={s.quote?.price ?? null}
+        percentChange={s.quote?.percentChange ?? null}
+        quoteName={s.quote?.name ?? null}
         bid={s.quote?.bid ?? null}
         ask={s.quote?.ask ?? null}
         boundStrategyId={p.boundStrategyId}

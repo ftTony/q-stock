@@ -22,14 +22,16 @@ export function TradeAccountStrip({
   const t = useTranslations("trading");
 
   return (
-    <div className="grid grid-cols-2 gap-x-5 border-b border-[var(--aw-hairline,var(--border))] pb-2.5">
+    <div className="grid grid-cols-2 gap-x-5">
       <div className="min-w-0 text-left">
         <div className="aw-metric-label">{t("position")}</div>
-        <div className="aw-metric-value mt-1 truncate">{positionQty}</div>
+        <div className="mt-1 truncate text-[13px] font-medium tabular-nums tracking-[-0.16px] text-[var(--foreground)]">
+          {positionQty}
+        </div>
       </div>
       <div className="min-w-0 text-left">
         <div className="aw-metric-label">{t("avgCost")}</div>
-        <div className="aw-metric-value mt-1 truncate">
+        <div className="mt-1 truncate text-[13px] font-medium tabular-nums tracking-[-0.16px] text-[var(--foreground)]">
           {avgCost != null ? `$${fmtMoney(avgCost)}` : "—"}
         </div>
       </div>

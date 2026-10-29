@@ -114,13 +114,13 @@ export function SymbolDockCommentsPanel({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 py-3">
+      <div className="aw-dock-scroll flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-5 py-3">
         {tabLoading ? (
           <ListPanelSkeleton rows={5} label={loadingLabel} />
         ) : comments.length === 0 ? (
-          <div className="flex min-h-[min(42vh,16rem)] flex-col items-center justify-center gap-3 px-2 py-8 text-center">
+          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 px-2 py-8 text-center">
             <EmptyCommentsArt />
-            <p className="text-[13px] tracking-[-0.08px] text-[var(--muted)]">
+            <p className="text-[12px] tracking-[-0.08px] text-[var(--muted)]">
               {commentsEmpty}
             </p>
           </div>

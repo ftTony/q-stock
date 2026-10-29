@@ -53,6 +53,8 @@ type Props = {
   symbol: string;
   assetType: AssetType;
   lastPrice: number | null;
+  percentChange?: number | null;
+  quoteName?: string | null;
   bid: number | null;
   ask: number | null;
   strategyId: string | null;
@@ -93,6 +95,8 @@ export function SymbolDockDrawers({
   symbol,
   assetType,
   lastPrice,
+  percentChange = null,
+  quoteName = null,
   bid,
   ask,
   strategyId,
@@ -139,6 +143,39 @@ export function SymbolDockDrawers({
           ? t("comments")
           : "";
 
+  const ruleFooter = strategyName ? (
+    <div className="flex items-center justify-between gap-2">
+      <span className="min-w-0 truncate text-[12px] leading-snug text-[var(--muted)]">
+        {tRail("orderRuleTag")}
+        <span className="mx-1 text-[var(--border)]">·</span>
+        <span className="font-medium text-[var(--foreground)]">
+          {strategyName}
+        </span>
+      </span>
+      <button
+        type="button"
+        className="aw-text-link shrink-0 text-[12px] leading-none"
+        onClick={() => {
+          onClose();
+          onOpenPlan();
+        }}
+      >
+        {tRail("orderChangeRule")}
+      </button>
+    </div>
+  ) : (
+    <button
+      type="button"
+      className="text-left text-[12px] leading-snug text-[var(--aw-primary)] hover:underline"
+      onClick={() => {
+        onClose();
+        onOpenPlan();
+      }}
+    >
+      {tRail("orderSuggestRule")}
+    </button>
+  );
+
   return (
     <SideDrawer
       open={dock != null}
@@ -149,7 +186,7 @@ export function SymbolDockDrawers({
       topOffsetPx={topOffsetPx}
     >
       {dock === "trade" ? (
-        <div className="aw-dock-scroll flex min-h-0 flex-1 flex-col overflow-y-auto">
+        <div className="flex min-h-0 flex-1 flex-col">
           {authStatus === "loading" ? (
             <div className="flex flex-1 flex-col items-center justify-center px-4 py-8">
               <InlineLoading label={loadingLabel} />
@@ -169,44 +206,11 @@ export function SymbolDockDrawers({
                 symbol={symbol}
                 assetType={assetType}
                 lastPrice={lastPrice}
+                footer={ruleFooter}
               />
-              {strategyName ? (
-                <div className="flex h-9 items-center justify-between gap-2 border-b border-[var(--aw-hairline,var(--border))] px-4">
-                  <span className="min-w-0 truncate text-[12px] text-[var(--muted)]">
-                    {tRail("orderRuleTag")}
-                    <span className="mx-1 text-[var(--border)]">·</span>
-                    <span className="font-medium text-[var(--foreground)]">
-                      {strategyName}
-                    </span>
-                  </span>
-                  <button
-                    type="button"
-                    className="aw-text-link shrink-0 text-[12px]"
-                    onClick={() => {
-                      onClose();
-                      onOpenPlan();
-                    }}
-                  >
-                    {tRail("orderChangeRule")}
-                  </button>
-                </div>
-              ) : (
-                <div className="flex h-9 items-center border-b border-[var(--aw-hairline,var(--border))] px-4">
-                  <button
-                    type="button"
-                    className="aw-text-link text-[12px]"
-                    onClick={() => {
-                      onClose();
-                      onOpenPlan();
-                    }}
-                  >
-                    {tRail("orderSuggestRule")}
-                  </button>
-                </div>
-              )}
               <Suspense
                 fallback={
-                  <div className="p-4">
+                  <div className="min-h-0 flex-1 p-4">
                     <PanelSkeleton rows={5} label={loadingLabel} />
                   </div>
                 }
@@ -215,10 +219,17 @@ export function SymbolDockDrawers({
                   symbol={symbol}
                   assetType={assetType}
                   lastPrice={lastPrice}
+                  percentChange={percentChange}
+                  quoteName={quoteName}
                   bid={bid}
                   ask={ask}
                   onOpenAi={onOpenAi}
+                  onOpenPlan={() => {
+                    onClose();
+                    onOpenPlan();
+                  }}
                   strategyId={strategyId ?? ""}
+                  strategyName={strategyName}
                   onStrategyIdChange={onStrategyIdChange}
                 />
               </Suspense>

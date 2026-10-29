@@ -89,10 +89,14 @@ export function AiChatHistoryPanel(props: {
         {t("historyBack")}
       </button>
 
-      <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {rows === null && <InlineLoading label={tCommon("loading")} />}
+      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {rows === null && (
+          <div className="flex flex-1 items-center justify-center py-8">
+            <InlineLoading label={tCommon("loading")} />
+          </div>
+        )}
         {error && (
-          <p className="py-8 text-center text-[13px] text-[var(--down)]">
+          <p className="flex flex-1 items-center justify-center py-8 text-center text-[12px] text-[var(--down)]">
             {error}
           </p>
         )}

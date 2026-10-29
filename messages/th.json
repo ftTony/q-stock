@@ -768,13 +768,22 @@
     "invalidationPrice": "Invalidation price",
     "invalidationPlaceholder": "Optional plan break level",
     "strategyTag": "Strategy tag",
-    "strategyNone": "None",
+    "strategyNone": "No tag this order",
     "aiDraftBanner": "Prefilled from calm scenario",
     "aiDraftUndo": "Clear",
     "paperBadge": "Paper",
     "useCalmDraft": "Fill from calm scenario",
     "askSymbol": "Ask about this symbol",
-    "riskSettings": "Risk settings"
+    "riskSettings": "Risk settings",
+    "orderFilledPaper": "Paper fill confirmed",
+    "orderPendingPaper": "Paper order placed",
+    "viewReview": "Open process review",
+    "dismissResult": "Dismiss",
+    "strategyBoundFallback": "Bound rule",
+    "strategyEmptyHint": "No strategies — tap to bind in Plan",
+    "strategySuggest": "Tag a rule so review can compare against it",
+    "bindPlanRule": "Bind in Plan",
+    "changePlanRule": "Change rule"
   },
   "ai": {
     "loading": "กำลังสร้างการวิเคราะห์จากข่าวและผลประกอบการ…",
@@ -1840,7 +1849,10 @@
     "maxSymbol": "Max single-name",
     "symbolPct": "Current single-name",
     "loginHint": "Sign in to see paper account risk.",
-    "login": "Sign in"
+    "login": "Sign in",
+    "positionQty": "Position",
+    "expand": "Expand",
+    "collapse": "Collapse"
   },
   "paperRisk": {
     "title": "Paper risk controls",

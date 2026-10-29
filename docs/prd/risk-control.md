@@ -6,7 +6,7 @@
 | 范围 | **模拟交易**账户与个股下单动线；工具与 AI 冷静层衔接 |
 | 状态 | **规划稿**（未开工实现） |
 | 优先级 | P0 下单前仓位预填 + 软提示 → P1 账户规则 → P2 规则单增强 |
-| 相关 | [仓位风险工具](./tool-position-sizing.md) · [策略与回测](./strategy-and-backtest.md) · [个股交易台 UI](./symbol-trading-ui.md) · [富途模拟规划](./symbol-advanced-and-futu-paper.md) · [行情 AI](../行情AI功能.md) · [路线图](../product-roadmap.md) |
+| 相关 | [仓位风险工具](./tool-position-sizing.md) · [策略与回测](./strategy-and-backtest.md) · [个股交易台 UI](./symbol-trading-ui.md)（含 **§4.5.1 交易抽屉 IA P0**） · [富途模拟规划](./symbol-advanced-and-futu-paper.md) · [行情 AI](../行情AI功能.md) · [路线图](../product-roadmap.md) |
 
 ---
 

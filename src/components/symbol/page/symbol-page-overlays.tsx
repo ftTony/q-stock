@@ -28,6 +28,8 @@ type Props = {
   assetType: AssetType;
   isIndex: boolean;
   lastPrice: number | null;
+  percentChange?: number | null;
+  quoteName?: string | null;
   bid: number | null;
   ask: number | null;
   boundStrategyId: string | null;
@@ -89,6 +91,8 @@ export function SymbolPageOverlays(p: Props) {
           symbol={p.symbol}
           assetType={p.assetType}
           lastPrice={p.lastPrice}
+          percentChange={p.percentChange ?? null}
+          quoteName={p.quoteName ?? null}
           bid={p.bid}
           ask={p.ask}
           strategyId={p.boundStrategyId}
