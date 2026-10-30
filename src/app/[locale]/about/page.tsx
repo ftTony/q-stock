@@ -101,7 +101,7 @@ export default async function AboutPage({ params }: Props) {
                 <Section index="01" title={t("originTitle")}>
                   <div className="max-w-2xl space-y-4 text-sm leading-relaxed text-[var(--foreground)] sm:text-[15px] sm:leading-7">
                     <p>{t("p1")}</p>
-                    <blockquote className="border-l-2 border-[var(--brand-text)] pl-4 text-base font-medium leading-relaxed tracking-tight text-[var(--foreground)] sm:text-lg sm:leading-8">
+                    <blockquote className="border-l-2 border-[var(--brand-text)] bg-[var(--brand-soft)] py-3 pl-4 pr-4 text-base font-medium leading-relaxed tracking-tight text-[var(--foreground)] sm:text-lg sm:leading-8">
                       {t("quote")}
                     </blockquote>
                     <p>{t("originP2")}</p>
