@@ -2,7 +2,9 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
+import { IndustryHeatmapSkeleton } from "@/components/market/industry-heatmap-skeleton";
 import { IndustryHeatmapTooltip } from "@/components/market/industry-heatmap-tooltip";
+import { Skel } from "@/components/ui/panel-skeleton";
 import type { IndustryHeatCell } from "@/lib/market/providers/longbridge-industry";
 import { squarify, type TreemapRect } from "@/lib/market/treemap";
 import type { AssetType } from "@/lib/types";
@@ -185,11 +187,13 @@ export function IndustryHeatmap({
             )}
           </div>
           <span className="text-xs text-[var(--muted)]">
-            {loading
-              ? tCommon("loading")
-              : degraded
-                ? t("unavailable")
-                : t("industryHeatmap")}
+            {loading ? (
+              <Skel className="inline-block h-3 w-14 align-middle" />
+            ) : degraded ? (
+              t("unavailable")
+            ) : (
+              t("industryHeatmap")
+            )}
           </span>
         </div>
 
@@ -198,9 +202,7 @@ export function IndustryHeatmap({
           className="relative h-[360px] w-full bg-[var(--panel)] sm:h-[440px] lg:h-[520px]"
           onMouseLeave={scheduleHide}
         >
-          {loading && (
-            <div className="absolute inset-0 animate-pulse bg-[var(--surface-2)]" />
-          )}
+          {loading && <IndustryHeatmapSkeleton label={tCommon("loading")} />}
           {!loading && items.length === 0 && (
             <div className="flex h-full items-center justify-center text-sm text-[var(--muted)]">
               {t("unavailable")}
