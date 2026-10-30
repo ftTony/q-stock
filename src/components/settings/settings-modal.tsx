@@ -145,7 +145,7 @@ export function SettingsModal({
         role="dialog"
         aria-modal="true"
         aria-label={t("title")}
-        className="relative z-10 flex h-[min(88dvh,40rem)] w-full max-w-[52rem] flex-col overflow-hidden rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] shadow-[0_24px_80px_rgba(15,23,42,0.28)]"
+        className="settings-ui relative z-10 flex h-[min(88dvh,40rem)] w-full max-w-[52rem] flex-col overflow-hidden rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] shadow-[0_24px_80px_rgba(15,23,42,0.28)]"
       >
         <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--aw-hairline,var(--border))] px-5 py-3">
           <h2 className="text-[16px] font-semibold tracking-tight text-[var(--foreground)]">

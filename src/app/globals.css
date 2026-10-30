@@ -33,11 +33,11 @@
   --danger: #f87171;
   --up: #e11d48;
   --down: #16a34a;
-  /* Terminal: sharp controls (直角). Keep --radius-pill only for true dots/toggles. */
-  --radius: 0;
-  --radius-md: 0;
-  --radius-sm: 0;
-  --radius-control: 0;
+  /* Default (marketing): soft corners. App `.wb-shell` / `.aw` override to 直角. */
+  --radius: 14px;
+  --radius-md: 10px;
+  --radius-sm: 8px;
+  --radius-control: 10px;
   --radius-pill: 9999px;
   --shadow: none;
   --symbol-shell-bg: var(--wb-parchment);
@@ -163,11 +163,23 @@ body {
   letter-spacing: -0.012em;
 }
 
-/* App shell (markets / portfolio / settings / …) — same terminal canvas as symbol. */
+/* App shell (markets / portfolio / settings / …) — terminal canvas + 直角控件. */
 .wb-shell {
+  --radius: 0;
+  --radius-md: 0;
+  --radius-sm: 0;
+  --radius-control: 0;
   background: var(--background);
   color: var(--foreground);
   letter-spacing: -0.012em;
+}
+
+/* Symbol workbench inherits sharp controls even if nested tokens remap colors. */
+.aw {
+  --radius: 0;
+  --radius-md: 0;
+  --radius-sm: 0;
+  --radius-control: 0;
 }
 
 a {
@@ -267,6 +279,14 @@ select.qt-input::-ms-expand {
   letter-spacing: -0.224px;
   transition: transform 0.12s ease, opacity 0.12s ease;
   cursor: pointer;
+}
+
+/* Settings page + modal (portaled outside .wb-shell): keep terminal 直角. */
+.settings-ui {
+  --radius: 0;
+  --radius-md: 0;
+  --radius-sm: 0;
+  --radius-control: 0;
 }
 
 /* Settings page: force 14px on buttons, inputs, selects, and field labels */
