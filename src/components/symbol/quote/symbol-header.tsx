@@ -53,7 +53,7 @@ function WatchButton({
       title={label}
       aria-label={label}
       aria-pressed={inWatchlist}
-      className={`qt-btn h-7 w-7 shrink-0 rounded-full p-0 ${
+      className={`qt-btn h-7 w-7 shrink-0 p-0 ${
         inWatchlist
           ? "qt-btn-ghost text-[var(--down)]"
           : "qt-btn-ghost text-[var(--muted)] hover:text-[var(--down)]"

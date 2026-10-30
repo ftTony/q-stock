@@ -83,7 +83,7 @@ export function SegmentedControl<T extends string>({
     >
       <div
         aria-hidden
-        className={`pointer-events-none absolute bottom-1 left-0 top-1 rounded-lg ${pillClass} ${
+        className={`pointer-events-none absolute bottom-1 left-0 top-1 rounded-none ${pillClass} ${
           className.includes("aw-trade-side") ? "aw-trade-side-pill" : ""
         } ${
           pill.ready
@@ -109,7 +109,7 @@ export function SegmentedControl<T extends string>({
             role="tab"
             aria-selected={selected}
             onClick={() => onChange(opt.value)}
-            className={`relative z-10 rounded-lg transition-colors duration-300 ${buttonClassName} ${
+            className={`relative z-10 rounded-none transition-colors duration-300 ${buttonClassName} ${
               selected
                 ? textActive
                 : "text-[var(--muted)] hover:text-[var(--foreground)]"

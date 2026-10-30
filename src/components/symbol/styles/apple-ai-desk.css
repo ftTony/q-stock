@@ -159,7 +159,7 @@
   background: var(--aw-primary, var(--brand)) !important;
   color: var(--aw-on-primary, var(--on-brand, #fff)) !important;
   border: none !important;
-  border-radius: 6px !important;
+  border-radius: var(--radius-control, 0) !important;
   box-shadow: none !important;
   font-size: 13px;
   font-weight: 600;
@@ -200,7 +200,7 @@
   color: var(--aw-ink-muted-80, var(--aw-ink-muted-48));
   background: transparent;
   border: 1px solid var(--aw-hairline);
-  border-radius: 6px;
+  border-radius: var(--radius-control, 0);
   transition:
     color 0.12s ease,
     background 0.12s ease;
@@ -225,7 +225,7 @@
   color: var(--aw-ink-muted-48);
   background: transparent;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-control, 0);
 }
 
 .aw-ai-text-btn:hover {
@@ -304,7 +304,7 @@
   color: var(--aw-ink);
   background: var(--aw-parchment);
   border: 1px solid transparent;
-  border-radius: 9999px;
+  border-radius: var(--radius-control, 0);
 }
 
 .aw-ai-input::placeholder {
@@ -328,7 +328,7 @@
   background: var(--aw-primary) !important;
   color: var(--aw-on-primary) !important;
   border: none !important;
-  border-radius: var(--aw-radius-pill) !important;
+  border-radius: var(--radius-control, 0) !important;
   font-size: 14px;
   font-weight: 500;
   letter-spacing: -0.2px;

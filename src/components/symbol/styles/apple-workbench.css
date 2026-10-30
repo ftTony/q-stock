@@ -1,42 +1,28 @@
+/* Symbol workbench: layout chrome only. Tokens alias globals (see design-tokens rule). */
 .aw {
-  --aw-primary: #0066cc;
-  --aw-primary-focus: #0071e3;
-  --aw-primary-on-dark: #2997ff;
-  --aw-ink: #1d1d1f;
-  --aw-ink-muted-80: #333333;
-  --aw-ink-muted-48: #7a7a7a;
-  --aw-body-muted: #cccccc;
-  --aw-divider-soft: #f0f0f0;
-  --aw-hairline: #d5dce8;
-  --aw-canvas: #ffffff;
-  --aw-parchment: #e6edf6;
-  --aw-pearl: #fafafc;
-  --aw-chip: #d2d2d7;
-  --aw-on-primary: #ffffff;
-  --aw-radius-sm: 8px;
-  --aw-radius-md: 11px;
-  --aw-radius-lg: 18px;
-  --aw-radius-pill: 9999px;
+  --aw-primary: var(--brand);
+  --aw-primary-focus: var(--brand-focus);
+  --aw-primary-on-dark: var(--brand);
+  --aw-ink: var(--foreground);
+  --aw-ink-muted-80: var(--wb-ink-strong);
+  --aw-ink-muted-48: var(--muted);
+  --aw-body-muted: color-mix(in srgb, var(--muted) 70%, transparent);
+  --aw-divider-soft: var(--wb-divider-soft);
+  --aw-hairline: var(--border);
+  --aw-canvas: var(--panel);
+  --aw-parchment: var(--background);
+  --aw-pearl: var(--pearl);
+  --aw-chip: var(--wb-chip);
+  --aw-on-primary: var(--on-brand);
+  --aw-radius-sm: var(--radius-sm);
+  --aw-radius-md: var(--radius-md);
+  --aw-radius-lg: var(--radius);
+  --aw-radius-pill: var(--radius-pill);
   --aw-space-xxs: 4px;
   --aw-space-xs: 8px;
   --aw-space-sm: 12px;
   --aw-space-md: 17px;
   --aw-space-lg: 24px;
-  --background: var(--aw-parchment);
-  --foreground: var(--aw-ink);
-  --surface: var(--aw-canvas);
-  --surface-2: var(--aw-parchment);
-  --border: var(--aw-hairline);
-  --muted: var(--aw-ink-muted-48);
-  --brand: var(--aw-primary);
-  --brand-soft: rgba(0, 102, 204, 0.1);
-  --brand-text: var(--aw-primary);
-  --on-brand: var(--aw-on-primary);
-  --panel: var(--aw-canvas);
-  --input: var(--aw-canvas);
-  --sidebar-hover: var(--aw-parchment);
-  --radius: var(--aw-radius-lg);
-  --shadow: none;
   font-family:
     "SF Pro Text",
     system-ui,
@@ -44,48 +30,16 @@
     BlinkMacSystemFont,
     "Segoe UI",
     sans-serif;
-  color: var(--aw-ink);
+  color: var(--foreground);
   letter-spacing: -0.012em;
-  background: var(--aw-parchment);
+  background: var(--background);
 }
 
-/* Align workbench tokens with globals.html.dark (panel / surface / brand). */
-html.dark .aw {
-  --aw-primary: #2997ff;
-  --aw-primary-focus: #64b5ff;
-  --aw-primary-on-dark: #2997ff;
-  --aw-ink: #edf2ff;
-  --aw-ink-muted-80: #c5cddb;
-  --aw-ink-muted-48: #8b97ad;
-  --aw-body-muted: #5a6578;
-  --aw-divider-soft: #161d2a;
-  --aw-hairline: #1c2433;
-  --aw-canvas: #0f1520;
-  --aw-parchment: #06090f;
-  --aw-pearl: #121925;
-  --aw-chip: #1c2433;
-  --aw-on-primary: #ffffff;
-  --brand: var(--aw-primary);
-  --brand-soft: rgba(41, 151, 255, 0.16);
-  --brand-text: #64b5ff;
-  --on-brand: var(--aw-on-primary);
-}
-.aw .qt-panel,
-.aw .qt-card {
-  background: var(--aw-canvas);
-  border: 1px solid var(--aw-hairline);
-  border-radius: var(--aw-radius-lg);
-  box-shadow: none;
-}
+/* Dense symbol forms only — do not re-skin qt-* here. */
 .aw .qt-input,
 .aw input.qt-input,
 .aw textarea.qt-input,
 .aw select.qt-input {
-  border: 1px solid color-mix(in srgb, var(--aw-ink) 8%, transparent);
-  border-radius: var(--aw-radius-md);
-  background: var(--aw-canvas);
-  color: var(--aw-ink);
-  /* Dense workbench: sit between 12px labels and 14px actions */
   font-size: 13px;
   letter-spacing: -0.08px;
   line-height: 1.3;
@@ -94,58 +48,6 @@ html.dark .aw {
 .aw .qt-input::placeholder,
 .aw input.qt-input::placeholder {
   font-size: 13px;
-  color: var(--aw-ink-muted-48);
-}
-
-.aw .qt-input:focus {
-  outline: 2px solid var(--aw-primary-focus);
-  outline-offset: 1px;
-  border-color: transparent;
-}
-
-.aw .qt-btn,
-.aw button.qt-btn-primary,
-.aw a.qt-btn-primary,
-.aw .qt-btn.qt-btn-primary {
-  border-radius: var(--aw-radius-pill);
-  background: var(--aw-primary);
-  color: var(--aw-on-primary);
-  border: none;
-  font-size: 14px;
-  font-weight: 400;
-  letter-spacing: -0.224px;
-  padding: 8px 16px;
-  transition: transform 0.12s ease;
-}
-
-.aw .qt-btn:active:not(:disabled),
-.aw button.qt-btn-primary:active:not(:disabled),
-.aw .qt-btn.qt-btn-primary:active:not(:disabled) {
-  transform: scale(0.95);
-}
-
-.aw button.qt-btn-primary:hover,
-.aw a.qt-btn-primary:hover,
-.aw .qt-btn.qt-btn-primary:hover {
-  background: var(--aw-primary);
-  filter: none;
-  opacity: 0.92;
-}
-
-.aw button.qt-btn-ghost,
-.aw a.qt-btn-ghost,
-.aw .qt-btn.qt-btn-ghost {
-  background: var(--aw-pearl);
-  color: var(--aw-ink-muted-80);
-  border: 3px solid var(--aw-divider-soft);
-  border-radius: var(--aw-radius-md);
-  box-shadow: none;
-}
-
-.aw button.qt-btn-ghost:hover,
-.aw a.qt-btn-ghost:hover {
-  background: var(--aw-parchment);
-  color: var(--aw-ink);
 }
 
 .aw-surface,
@@ -275,7 +177,7 @@ html.dark .aw {
   justify-content: center;
   width: 40px;
   height: 40px;
-  border-radius: 6px;
+  border-radius: var(--radius-control, 0);
   color: var(--aw-ink-muted-80);
   background: transparent;
   border: none;
@@ -368,7 +270,7 @@ html.aw-rail-resizing {
   width: 28px;
   height: 28px;
   border: none;
-  border-radius: 6px;
+  border-radius: var(--radius-control, 0);
   background: transparent;
   color: var(--aw-ink, var(--foreground));
   cursor: pointer;
@@ -618,7 +520,7 @@ html.aw-rail-resizing {
   gap: 6px;
   height: 30px;
   padding: 0 14px;
-  border-radius: var(--aw-radius-pill);
+  border-radius: var(--radius-control, 0);
   background: var(--aw-primary);
   color: var(--aw-on-primary);
   font-size: 14px;
@@ -639,7 +541,7 @@ html.aw-rail-resizing {
   gap: 6px;
   height: 36px;
   padding: 0 16px;
-  border-radius: var(--aw-radius-pill);
+  border-radius: var(--radius-control, 0);
   background: transparent;
   color: var(--aw-primary);
   border: 1px solid var(--aw-primary);
@@ -659,7 +561,7 @@ html.aw-rail-resizing {
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: var(--aw-radius-full, 9999px);
+  border-radius: var(--radius-control, 0);
   background: color-mix(in srgb, var(--aw-chip) 64%, transparent);
   color: var(--aw-ink);
   border: none;
@@ -675,7 +577,7 @@ html.aw-rail-resizing {
   align-items: center;
   height: 28px;
   padding: 0 12px;
-  border-radius: var(--aw-radius-pill);
+  border-radius: var(--radius-control, 0);
   background: var(--aw-canvas);
   border: 1px solid var(--aw-hairline);
   color: var(--aw-ink-muted-80);

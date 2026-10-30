@@ -74,7 +74,7 @@ export function SymbolWatchlistManageSidebar({
           type="button"
           disabled={busy}
           onClick={onCreate}
-          className="flex h-8 w-full items-center justify-center gap-1 rounded-full border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] text-[12px] text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
+          className="flex h-8 w-full items-center justify-center gap-1 rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] text-[12px] text-[var(--muted)] hover:text-[var(--foreground)] disabled:opacity-50"
         >
           <span aria-hidden>+</span>
           {labels.createGroup}

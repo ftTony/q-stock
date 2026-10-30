@@ -97,7 +97,7 @@ export function SymbolRailQuoteHeader({
             title={watchLabel}
             aria-label={watchLabel}
             aria-pressed={inWatchlist}
-            className="inline-flex h-9 w-9 items-center justify-center rounded-full text-[var(--muted)] transition hover:bg-[var(--aw-parchment)] hover:text-[var(--aw-ink)] disabled:opacity-50"
+            className="inline-flex h-9 w-9 items-center justify-center rounded-none text-[var(--muted)] transition hover:bg-[var(--aw-parchment)] hover:text-[var(--aw-ink)] disabled:opacity-50"
           >
             <IconHeart
               filled={inWatchlist}

@@ -243,7 +243,7 @@ export function AiScenarioPanel(props: {
                   const p = buildPayload(true);
                   if (p) props.onApplyDraft?.(p);
                 }}
-                className="!mt-1 w-full !rounded-full !border-0 !bg-[var(--brand)] !py-2.5 !text-[14px] font-normal !text-white"
+                className="!mt-1 w-full !rounded-none !border-0 !bg-[var(--brand)] !py-2.5 !text-[14px] font-normal !text-white"
               >
                 {t("applyAndGo")}
               </SubmitButton>

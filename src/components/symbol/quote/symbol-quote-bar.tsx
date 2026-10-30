@@ -108,7 +108,7 @@ export function SymbolQuoteBar({
         type="button"
         onClick={onOpenPlan}
         title={tRail("ruleBadgeBound", { name: boundRuleName! })}
-        className="inline-flex h-7 max-w-[4.25rem] items-center truncate rounded-full border border-[var(--brand)]/30 bg-[var(--brand-soft)] px-1.5 text-[11px] font-medium leading-none tracking-[-0.1px] text-[var(--brand-text)] sm:max-w-[10rem] sm:px-2.5 sm:text-[12px] xl:max-w-[13rem]"
+        className="inline-flex h-7 max-w-[4.25rem] items-center truncate rounded-none border border-[var(--brand)]/30 bg-[var(--brand-soft)] px-1.5 text-[11px] font-medium leading-none tracking-[-0.1px] text-[var(--brand-text)] sm:max-w-[10rem] sm:px-2.5 sm:text-[12px] xl:max-w-[13rem]"
       >
         {chipName}
       </button>
@@ -255,7 +255,7 @@ export function SymbolQuoteBar({
               onClick={onOpenAbout}
               title={aboutLabel}
               aria-label={aboutLabel}
-              className="inline-flex h-7 shrink-0 items-center rounded-full px-1.5 text-[11px] text-[var(--muted)] hover:text-[var(--brand-text)] sm:px-2 sm:text-[12px]"
+              className="inline-flex h-7 shrink-0 items-center rounded-none px-1.5 text-[11px] text-[var(--muted)] hover:text-[var(--brand-text)] sm:px-2 sm:text-[12px]"
             >
               {aboutLabel}
             </button>

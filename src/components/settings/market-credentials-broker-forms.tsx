@@ -2,6 +2,10 @@
 
 import { FormEvent } from "react";
 import { useTranslations } from "next-intl";
+import {
+  SETTINGS_BTN_GHOST,
+  SETTINGS_SUBMIT_PRIMARY,
+} from "@/components/settings/settings-btn";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import type { MarketCredsStatus } from "@/lib/market/creds-status-client";
@@ -138,7 +142,7 @@ export function MarketCredentialsBrokerForms(props: Props) {
             <SubmitButton
               loading={savingLb}
               loadingLabel={tCommon("loading")}
-              className="qt-btn-primary h-9 px-3 font-medium"
+              className={SETTINGS_SUBMIT_PRIMARY}
               disabled={!lbKey.trim() || !lbSecret.trim() || !lbToken.trim()}
             >
               {t("credsSaveLongbridge")}
@@ -147,7 +151,7 @@ export function MarketCredentialsBrokerForms(props: Props) {
               <button
                 type="button"
                 onClick={() => onClearProvider("longbridge")}
-                className="qt-btn qt-btn-ghost h-9 px-3 font-medium"
+                className={SETTINGS_BTN_GHOST}
               >
                 {t("credsClear")}
               </button>
@@ -239,7 +243,7 @@ export function MarketCredentialsBrokerForms(props: Props) {
             <SubmitButton
               loading={savingFutu}
               loadingLabel={tCommon("loading")}
-              className="qt-btn-primary h-9 px-3 font-medium"
+              className={SETTINGS_SUBMIT_PRIMARY}
               disabled={
                 futuMode === "bearer"
                   ? !futuBearer.trim()
@@ -252,7 +256,7 @@ export function MarketCredentialsBrokerForms(props: Props) {
               <button
                 type="button"
                 onClick={() => onClearProvider("futu")}
-                className="qt-btn qt-btn-ghost h-9 px-3 font-medium"
+                className={SETTINGS_BTN_GHOST}
               >
                 {t("credsClear")}
               </button>
@@ -308,7 +312,7 @@ export function MarketCredentialsBrokerForms(props: Props) {
             <SubmitButton
               loading={savingBn}
               loadingLabel={tCommon("loading")}
-              className="qt-btn-primary h-9 px-3 font-medium"
+              className={SETTINGS_SUBMIT_PRIMARY}
               disabled={!bnApiKey.trim()}
             >
               {t("credsSaveBinance")}
@@ -317,7 +321,7 @@ export function MarketCredentialsBrokerForms(props: Props) {
               <button
                 type="button"
                 onClick={() => onClearProvider("binance")}
-                className="qt-btn qt-btn-ghost h-9 px-3 font-medium"
+                className={SETTINGS_BTN_GHOST}
               >
                 {t("credsClear")}
               </button>

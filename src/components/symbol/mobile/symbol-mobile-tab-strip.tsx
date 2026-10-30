@@ -37,7 +37,7 @@ export function SymbolMobileTabStrip({ tabs, tab, onTabChange }: Props) {
                 if (active) onTabChange("chart");
                 else onTabChange(item.id);
               }}
-              className="aw-mobile-more-chip inline-flex h-7 items-center rounded-full px-2.5 text-[12px] leading-none tracking-[-0.1px] text-[var(--aw-ink-muted-48,var(--muted))] transition-colors data-[active=true]:bg-[var(--brand-soft)] data-[active=true]:font-medium data-[active=true]:text-[var(--brand-text)]"
+              className="aw-mobile-more-chip inline-flex h-7 items-center rounded-none px-2.5 text-[12px] leading-none tracking-[-0.1px] text-[var(--aw-ink-muted-48,var(--muted))] transition-colors data-[active=true]:bg-[var(--brand-soft)] data-[active=true]:font-medium data-[active=true]:text-[var(--brand-text)]"
             >
               {item.label}
             </button>

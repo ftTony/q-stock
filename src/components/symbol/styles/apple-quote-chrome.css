@@ -3,14 +3,14 @@
  * Requires parent `.aw` for tokens.
  */
 
-/* Primary circular (watchlist heart) */
+/* Primary icon (watchlist heart) — sharp rect for terminal */
 .aw .aw-btn-icon-primary.qt-btn,
 .aw button.aw-btn-icon-primary,
 .aw-btn-icon.aw-btn-icon-primary {
   background: var(--aw-primary) !important;
   color: var(--aw-on-primary) !important;
   border: none !important;
-  border-radius: 9999px !important;
+  border-radius: var(--radius-control, 0) !important;
   width: 36px;
   height: 36px;
   padding: 0 !important;

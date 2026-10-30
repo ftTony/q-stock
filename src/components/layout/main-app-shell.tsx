@@ -101,8 +101,8 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
       <div
         className={
           isSymbol
-            ? "flex h-dvh overflow-hidden bg-[var(--symbol-shell-bg,#e6edf6)] lg:flex"
-            : "min-h-dvh lg:flex"
+            ? "wb-shell flex h-dvh overflow-hidden bg-[var(--symbol-shell-bg)] lg:flex"
+            : "wb-shell min-h-dvh lg:flex"
         }
         style={{ ["--sidebar-w" as string]: `${sidebarWidth}px` }}
       >
@@ -116,15 +116,15 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
       <div
         className={
           isSymbol
-            ? "flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--symbol-shell-bg,#e6edf6)]"
-            : "flex min-h-dvh min-w-0 flex-1 flex-col"
+            ? "flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--symbol-shell-bg)]"
+            : "flex min-h-dvh min-w-0 flex-1 flex-col bg-[var(--background)]"
         }
       >
         <header
-          className={`sticky top-0 z-40 shrink-0 border-b border-[var(--aw-hairline,var(--border))] backdrop-blur-xl ${
+          className={`sticky top-0 z-40 shrink-0 border-b border-[var(--border)] backdrop-blur-xl ${
             isSymbol
-              ? "bg-[var(--symbol-shell-bg,#e6edf6)]/90"
-              : "bg-[var(--background)]/85"
+              ? "bg-[var(--symbol-shell-bg)]/90"
+              : "bg-[var(--background)]/90"
           }`}
         >
           <div className="flex h-10 items-center gap-2 px-3 sm:gap-3 sm:px-5 lg:px-6">
@@ -144,8 +144,8 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
             <div className="ml-auto flex shrink-0 items-center">
               <TopBarActions
                 showMarketStatus={false}
-                showTheme={false}
-                showLanguage={false}
+                showTheme
+                showLanguage
               />
             </div>
           </div>

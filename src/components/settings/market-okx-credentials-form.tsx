@@ -3,6 +3,10 @@
 import { FormEvent, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import {
+  SETTINGS_BTN_GHOST,
+  SETTINGS_SUBMIT_PRIMARY,
+} from "@/components/settings/settings-btn";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import {
@@ -180,7 +184,7 @@ export function MarketOkxCredentialsForm() {
           <SubmitButton
             loading={saving}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary h-9 px-3 font-medium"
+            className={SETTINGS_SUBMIT_PRIMARY}
             disabled={!apiKey.trim()}
           >
             {t("credsSaveOkx")}
@@ -189,7 +193,7 @@ export function MarketOkxCredentialsForm() {
             <button
               type="button"
               onClick={onClear}
-              className="qt-btn qt-btn-ghost h-9 px-3 font-medium"
+              className={SETTINGS_BTN_GHOST}
             >
               {t("credsClear")}
             </button>

@@ -105,7 +105,7 @@ export function MarketCredentialsPrompt({
   );
 
   const actionClass =
-    "qt-btn-primary inline-flex h-7 items-center justify-center rounded-full px-3 text-[12px] font-semibold leading-none no-underline shadow-none";
+    "qt-btn-primary inline-flex h-7 items-center justify-center px-2.5 text-[12px] font-medium leading-none no-underline shadow-none";
 
   const actions = (
     <div className="flex shrink-0 items-center gap-1.5">
@@ -132,7 +132,7 @@ export function MarketCredentialsPrompt({
       <button
         type="button"
         onClick={dismiss}
-        className="inline-flex h-7 items-center justify-center rounded-full px-2.5 text-[12px] font-semibold leading-none tracking-[-0.12px] text-[var(--foreground)]/70 hover:bg-black/[0.04] hover:text-[var(--foreground)]"
+        className="inline-flex h-7 items-center justify-center rounded-[var(--radius-md)] px-2.5 text-[12px] font-medium leading-none tracking-[-0.12px] text-[var(--foreground)]/70 hover:bg-black/[0.04] hover:text-[var(--foreground)]"
       >
         {t("credsPromptLater")}
       </button>

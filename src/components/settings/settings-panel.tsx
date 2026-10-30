@@ -46,14 +46,60 @@ function SchemePreview({ scheme }: { scheme: ChangeColorScheme }) {
   const up = scheme === "cn" ? "#e11d48" : "#22c55e";
   const down = scheme === "cn" ? "#16a34a" : "#f87171";
   return (
-    <div className="mt-1.5 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] tabular-nums">
-      <span className="font-semibold" style={{ color: up }}>
-        ▲ 128.50 +1.24%
-      </span>
-      <span className="font-semibold" style={{ color: down }}>
-        ▼ 96.20 −0.85%
-      </span>
+    <div className="mt-2 flex flex-col gap-1.5">
+      <div className="flex items-center gap-1.5">
+        <span
+          className="inline-block h-3 w-3 shrink-0 rounded-full"
+          style={{ backgroundColor: up }}
+          aria-hidden
+        />
+        <span
+          className="inline-block h-3 w-3 shrink-0 rounded-full"
+          style={{ backgroundColor: down }}
+          aria-hidden
+        />
+      </div>
+      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] tabular-nums">
+        <span className="font-semibold" style={{ color: up }}>
+          ▲ 128.50 +1.24%
+        </span>
+        <span className="font-semibold" style={{ color: down }}>
+          ▼ 96.20 −0.85%
+        </span>
+      </div>
     </div>
+  );
+}
+
+function ThemeOptionIcon({ id }: { id: "light" | "dark" | "system" }) {
+  const common = {
+    className: "h-4 w-4 shrink-0 text-[var(--brand-text)]",
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    "aria-hidden": true as const,
+  };
+  if (id === "light") {
+    return (
+      <svg {...common}>
+        <circle cx="12" cy="12" r="4" />
+        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+      </svg>
+    );
+  }
+  if (id === "dark") {
+    return (
+      <svg {...common}>
+        <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z" />
+      </svg>
+    );
+  }
+  return (
+    <svg {...common}>
+      <rect x="3" y="4" width="18" height="12" rx="2" />
+      <path d="M8 20h8M12 16v4" />
+    </svg>
   );
 }
 
@@ -359,12 +405,13 @@ export function SettingsPanel({
                   key={opt.id}
                   type="button"
                   onClick={() => setTheme(opt.id)}
-                  className={`rounded-none border px-3 py-2.5 text-left text-[13px] font-medium transition ${
+                  className={`flex items-center gap-2 rounded-none border px-3 py-2.5 text-left text-[13px] font-medium transition ${
                     selected
-                      ? "border-[var(--foreground)] bg-[var(--panel)]"
-                      : "border-[var(--border)] hover:bg-[var(--sidebar-hover)]"
+                      ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
+                      : "border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--sidebar-hover)]"
                   }`}
                 >
+                  <ThemeOptionIcon id={opt.id} />
                   {opt.label}
                 </button>
               );
@@ -394,11 +441,13 @@ export function SettingsPanel({
                   onClick={() => setChangeColorScheme(opt.id)}
                   className={`rounded-none border px-3 py-2.5 text-left transition ${
                     selected
-                      ? "border-[var(--foreground)]"
+                      ? "border-[var(--brand)] bg-[var(--brand-soft)]"
                       : "border-[var(--border)] hover:bg-[var(--sidebar-hover)]"
                   }`}
                 >
-                  <div className="text-[13px] font-medium">{opt.label}</div>
+                  <div className="text-[13px] font-medium text-[var(--foreground)]">
+                    {opt.label}
+                  </div>
                   <SchemePreview scheme={opt.id} />
                 </button>
               );
@@ -410,7 +459,7 @@ export function SettingsPanel({
           <SubmitButton
             loading={saving}
             loadingLabel={tCommon("loading")}
-            className="qt-btn qt-btn-primary h-9 px-4"
+            className={SETTINGS_SUBMIT_PRIMARY}
           >
             {t("save")}
           </SubmitButton>
