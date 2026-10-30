@@ -283,3 +283,45 @@ export function periodFromResolution(resolution: string) {
   }
   return { type: "day" as const, span: 1 };
 }
+
+/** Passed into klinecharts `init({ layout })` — v10 has no setLayoutOptions. */
+export const FILL_PARENT_CHART_LAYOUT = {
+  yAxis: { gap: { top: 0.02, bottom: 0.08 } },
+} as const;
+
+/** Workbench charts: no empty strip after the last bar; reinforce y-axis gap. */
+export function applyFillParentChartLayout(chart: {
+  setOffsetRightDistance: (distance: number) => void;
+  overrideYAxis?: (yAxis: {
+    gap: { top: number; bottom: number };
+  }) => void;
+}) {
+  chart.setOffsetRightDistance(0);
+  chart.overrideYAxis?.(FILL_PARENT_CHART_LAYOUT.yAxis);
+}
+
+export function candleChartShellClass(
+  fullscreen: boolean,
+  fillParent: boolean,
+): string {
+  if (fullscreen) {
+    return "relative flex h-screen flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)]";
+  }
+  // fillParent sits beside the workbench resizer — no shell border or the
+  // right edge doubles with the 1px hairline divider.
+  // H5: keep a real min-height — pure h-full/flex-1 collapses to 0 when the
+  // parent height chain is still unresolved (blank chart + axis-only strip).
+  if (fillParent) {
+    return "relative flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)] max-lg:min-h-[240px]";
+  }
+  return "relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)]";
+}
+
+export function candleChartPlotClass(
+  fullscreen: boolean,
+  fillParent: boolean,
+): string {
+  return fullscreen || fillParent
+    ? "min-h-0 w-full flex-1"
+    : "h-[360px] w-full sm:h-[520px] lg:h-[620px]";
+}

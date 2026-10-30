@@ -17,8 +17,13 @@ import {
   CandleChartOverlays,
   type IndicatorFlags,
 } from "@/components/charts/candle-chart-overlays";
+import { syncCandleIndicators } from "@/components/charts/candle-chart-indicators";
 import {
+  applyFillParentChartLayout,
   buildChartStyles,
+  candleChartPlotClass,
+  candleChartShellClass,
+  FILL_PARENT_CHART_LAYOUT,
   periodFromResolution,
   toKLineData,
   type TipLabels,
@@ -167,57 +172,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
   }, [assetType]);
 
   const syncIndicators = useCallback((chart: ChartInstance) => {
-    const f = flagsRef.current;
-    const ids = indicatorIdsRef.current;
-
-    const ensure = (key: string, create: () => string | null) => {
-      if (ids[key]) return;
-      ids[key] = create();
-    };
-    const remove = (key: string) => {
-      if (!ids[key]) return;
-      chart.removeIndicator({ id: ids[key]! });
-      ids[key] = null;
-    };
-
-    if (f.ma) {
-      ensure("ma", () =>
-        chart.createIndicator(
-          { name: "MA", calcParams: [7, 25, 99], paneId: "candle_pane" },
-          true,
-        ),
-      );
-    } else remove("ma");
-
-    if (f.ema) {
-      ensure("ema", () =>
-        chart.createIndicator(
-          { name: "EMA", calcParams: [12, 26], paneId: "candle_pane" },
-          true,
-        ),
-      );
-    } else remove("ema");
-
-    if (f.boll) {
-      ensure("boll", () =>
-        chart.createIndicator(
-          { name: "BOLL", paneId: "candle_pane" },
-          true,
-        ),
-      );
-    } else remove("boll");
-
-    if (f.rsi) {
-      ensure("rsi", () => chart.createIndicator("RSI"));
-    } else remove("rsi");
-
-    if (f.macd) {
-      ensure("macd", () => chart.createIndicator("MACD"));
-    } else remove("macd");
-
-    if (!ids.vol) {
-      ids.vol = chart.createIndicator("VOL");
-    }
+    syncCandleIndicators(chart, flagsRef.current, indicatorIdsRef.current);
   }, []);
 
   // Init chart (client-only dynamic import)
@@ -237,9 +192,11 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
           noDrawingStrip: !showDrawingToolsRef.current,
         }) as never,
         timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+        ...(fillParent ? { layout: FILL_PARENT_CHART_LAYOUT } : {}),
       });
       if (!chart) return;
       chartRef.current = chart;
+      if (fillParent) applyFillParentChartLayout(chart);
 
       chart.setDataLoader({
         getBars: async ({ type, timestamp, callback }) => {
@@ -472,23 +429,11 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     [symbol, resolution],
   );
 
-  // fillParent sits beside the workbench resizer — no shell border or the
-  // right edge doubles with the 1px hairline divider.
-  // H5: keep a real min-height — pure h-full/flex-1 collapses to 0 when the
-  // parent height chain is still unresolved (blank chart + axis-only strip).
-  const shellClass = fullscreen
-    ? "relative flex h-screen flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)]"
-    : fillParent
-      ? "relative flex h-full min-h-0 flex-1 flex-col overflow-hidden rounded-none border-0 bg-[var(--panel)] max-lg:min-h-[240px]"
-      : "relative overflow-hidden rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)]";
-
-  const plotClass =
-    fullscreen || fillParent
-      ? "min-h-0 w-full flex-1"
-      : "h-[360px] w-full sm:h-[520px] lg:h-[620px]";
-
   return (
-    <div ref={shellRef} className={shellClass}>
+    <div
+      ref={shellRef}
+      className={candleChartShellClass(fullscreen, fillParent)}
+    >
       <CandleChartOverlays
         drawingTool={drawingTool}
         onStartDrawing={startDrawing}
@@ -504,7 +449,10 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
         loadingMore={loadingMore}
       />
 
-      <div ref={containerRef} className={plotClass} />
+      <div
+        ref={containerRef}
+        className={candleChartPlotClass(fullscreen, fillParent)}
+      />
     </div>
   );
   },

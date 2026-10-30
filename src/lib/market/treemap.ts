@@ -110,13 +110,24 @@ export function squarify(
   }
   flush();
 
-  // apply gap by shrinking each rect slightly
+  // Gaps only between tiles — outer edges stay flush to the container.
   if (gap <= 0) return result;
-  return result.map((r) => ({
-    ...r,
-    x: r.x + gap / 2,
-    y: r.y + gap / 2,
-    w: Math.max(0, r.w - gap),
-    h: Math.max(0, r.h - gap),
-  }));
+  const eps = 0.51;
+  return result.map((r) => {
+    const atL = r.x <= eps;
+    const atT = r.y <= eps;
+    const atR = r.x + r.w >= width - eps;
+    const atB = r.y + r.h >= height - eps;
+    const insetL = atL ? 0 : gap / 2;
+    const insetT = atT ? 0 : gap / 2;
+    const insetR = atR ? 0 : gap / 2;
+    const insetB = atB ? 0 : gap / 2;
+    return {
+      ...r,
+      x: r.x + insetL,
+      y: r.y + insetT,
+      w: Math.max(0, r.w - insetL - insetR),
+      h: Math.max(0, r.h - insetT - insetB),
+    };
+  });
 }

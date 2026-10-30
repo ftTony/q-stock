@@ -210,11 +210,7 @@ export function SymbolPageClient({
             />
           </div>
 
-          {/*
-            Icon dock stays in the grid (aligned with chart toolbar), not
-            stretched beside the quote bar. Quote bar uses pr dock-width so
-            actions do not peek into the drawer edgeOffset strip.
-          */}
+          {/* Icon dock is a grid column (aligned with chart toolbar), not quote-bar height. */}
           <div
             className="aw-workbench-grid relative min-h-0 flex-1 lg:overflow-hidden"
             data-resizing={rail.dragging ? "true" : undefined}

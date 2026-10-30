@@ -374,10 +374,6 @@ html.aw-rail-resizing {
     background: var(--aw-canvas);
   }
 
-  /* Keep quote actions out of the 44px dock strip above the icon rail. */
-  .aw-workbench-main .aw-quote-bar {
-    padding-right: var(--aw-side-dock-w, 44px);
-  }
   /*
    * Same hit model as watchlist resizer: 8px strip + ::after hairline.
    * Selector must beat globals `button:not(:disabled) { cursor: pointer }`.

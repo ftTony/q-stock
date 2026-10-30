@@ -90,7 +90,7 @@ function RailItem({
   /** Spotlight tour target. */
   tourId?: string;
 }) {
-  const className = `flex h-10 w-10 items-center justify-center rounded-lg transition ${
+  const className = `flex h-10 w-10 items-center justify-center rounded-none transition ${
     active
       ? "bg-[var(--sidebar-active)] text-[var(--brand-text)]"
       : "text-[color-mix(in_srgb,var(--muted)_88%,transparent)] hover:bg-[var(--sidebar-hover)] hover:text-[var(--foreground)]"
