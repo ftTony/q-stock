@@ -242,7 +242,7 @@ export default function MarketsDashboard() {
       {tab !== "crypto" && <IndustryHeatmap assetType={tab} />}
 
       <section className="space-y-3">
-        <div className="flex items-end justify-between gap-3">
+        <div className="flex items-end justify-between gap-3 px-3 lg:px-0">
           <h2 className="text-base font-semibold tracking-tight sm:text-lg">
             {sectionTitle}
           </h2>

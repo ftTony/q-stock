@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { AccountPageLoading } from "@/components/auth/account-page-fill";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
@@ -72,12 +73,13 @@ function AlertsContent() {
   }, [searchParams]);
 
   if (status === "loading") {
-    return <p className="text-sm text-[var(--muted)]">…</p>;
+    return <AccountPageLoading />;
   }
 
   if (!session?.user) {
     return (
       <AuthLoginGate
+        fill
         title={t("loginTitle")}
         body={t("loginBody")}
         hint={t("loginHint")}
@@ -127,7 +129,7 @@ function AlertsContent() {
 
   return (
     <div className="space-y-5 animate-[qtFade_0.45s_ease]">
-      <div className="mb-1 flex items-center gap-2 text-[12px]">
+      <div className="mb-1 flex items-center gap-2 px-3 pt-3 text-[12px] lg:px-0 lg:pt-0">
         <Link
           href="/watchlist"
           className="text-[var(--brand-text)] hover:underline"
@@ -137,7 +139,7 @@ function AlertsContent() {
         <span className="text-[var(--muted)]">/</span>
         <span className="text-[var(--muted)]">{t("title")}</span>
       </div>
-      <header className="flex flex-wrap items-end justify-between gap-3">
+      <header className="flex flex-wrap items-end justify-between gap-3 px-3 lg:px-0">
         <div className="space-y-1.5">
           <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
             {t("title")}

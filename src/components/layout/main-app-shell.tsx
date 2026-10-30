@@ -1,6 +1,5 @@
 "use client";
 
-import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname } from "@/i18n/routing";
 import { localizedPath } from "@/i18n/config";
@@ -15,7 +14,6 @@ import { MarketCredentialsPrompt } from "@/components/settings/market-credential
 import { SettingsModalHost } from "@/components/settings/settings-modal-host";
 import { SiteLogo } from "@/components/brand/site-logo";
 import { SpotlightTour } from "@/components/onboarding/spotlight-tour";
-import { useMounted } from "@/hooks/use-mounted";
 
 function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
   return (
@@ -64,34 +62,30 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
   const locale = useLocale();
   const pathname = usePathname();
   const homeHref = localizedPath(locale, "/");
-  const { status: sessionStatus } = useSession();
-  const mounted = useMounted();
 
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isWatchlist = pathname.startsWith("/watchlist");
-  const isReview = pathname.startsWith("/review");
   const isPortfolio = pathname.startsWith("/portfolio");
   const isStrategiesNav = pathname.startsWith("/strategies");
-  const isAccountGatePage = isWatchlist || isReview;
-  // Session status often differs SSR ("loading") vs client ("authenticated").
-  // Keep the pre-mount layout identical to SSR, then tighten after mount.
-  const authed = mounted && sessionStatus === "authenticated";
+  const isSymbol = pathname.startsWith("/symbol");
+  const isStrategies = pathname.startsWith("/strategies");
+  /** Fluid pages: H5 full-bleed; desktop keeps prior side gutters. */
   const isFluidMain =
     isMarkets ||
+    isWatchlist ||
+    pathname.startsWith("/review") ||
     isPortfolio ||
+    isStrategies ||
     pathname.startsWith("/analysis") ||
     pathname.startsWith("/symbol") ||
     pathname.startsWith("/multi-chart") ||
-    pathname.startsWith("/strategies") ||
-    (isAccountGatePage && !authed);
-  const isSymbol = pathname.startsWith("/symbol");
-  const isStrategies = pathname.startsWith("/strategies");
+    pathname.startsWith("/alerts");
   const mainRailClass = isFluidMain
     ? isSymbol
       ? "w-full px-0"
       : isStrategies
-        ? "w-full px-3 sm:px-4"
-        : "w-full px-4 sm:px-6"
+        ? "w-full px-0 lg:px-3"
+        : "w-full px-0 lg:px-4 xl:px-6"
     : "mx-auto w-full max-w-6xl px-4 sm:px-6";
   const sidebarWidth = SIDEBAR_WIDTH_COLLAPSED;
 
@@ -134,7 +128,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
                 : "flex h-10 items-center gap-2 px-3 sm:gap-3 sm:px-5 lg:px-6"
             }
           >
-            <div className="flex min-w-0 shrink-0 items-center gap-2 sm:max-w-[min(42%,28rem)] sm:gap-3">
+            <div className="flex min-w-0 max-w-[38%] shrink items-center gap-1.5 sm:max-w-[min(42%,28rem)] sm:gap-3">
               <a
                 href={homeHref}
                 className="relative z-10 flex shrink-0 items-center lg:hidden"
@@ -147,7 +141,13 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
               </div>
             </div>
             <MarketCredentialsPrompt inline />
-            <div className="ml-auto flex shrink-0 items-center">
+            <div
+              className={`relative z-10 ml-auto flex shrink-0 items-center pl-1.5 ${
+                isSymbol
+                  ? "bg-[var(--symbol-shell-bg)]"
+                  : "bg-[var(--background)]"
+              }`}
+            >
               <TopBarActions
                 showMarketStatus={false}
                 showTheme
@@ -161,14 +161,18 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
           className={
             isSymbol
               ? "flex min-h-0 flex-1 flex-col overflow-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
-              : `flex-1 pb-24 lg:pb-6 ${
-                  isStrategies ? "py-3 sm:py-3.5" : "py-5 sm:py-6"
-                }`
+              : isFluidMain
+                ? `flex flex-1 flex-col pb-24 lg:pb-6 ${
+                    isStrategies
+                      ? "py-0 lg:py-3"
+                      : "py-0 lg:py-5"
+                  }`
+                : "flex-1 py-5 pb-24 sm:py-6 lg:pb-6"
           }
         >
           <div
             className={
-              isSymbol
+              isSymbol || isFluidMain
                 ? `${mainRailClass} flex min-h-0 flex-1 flex-col`
                 : mainRailClass
             }

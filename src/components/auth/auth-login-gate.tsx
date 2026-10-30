@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
+import { AccountPageFill } from "@/components/auth/account-page-fill";
 import {
   AUTH_LOGIN_CTA_COMPACT,
   AUTH_LOGIN_CTA_DEFAULT,
@@ -27,7 +28,7 @@ function AuthLoginArt({ compact }: { compact?: boolean }) {
         y="28"
         width="84"
         height="68"
-        rx="12"
+        rx="0"
         fill="var(--panel)"
         stroke="currentColor"
         strokeOpacity="0.28"
@@ -54,7 +55,7 @@ function AuthLoginArt({ compact }: { compact?: boolean }) {
         y="78"
         width="56"
         height="8"
-        rx="4"
+        rx="0"
         fill="currentColor"
         opacity="0.16"
       />
@@ -70,6 +71,11 @@ export function AuthLoginGate(props: {
   hint?: string;
   /** Narrow column (e.g. symbol watchlist) — tighter art + full-width CTA. */
   compact?: boolean;
+  /**
+   * Account pages: H5 white full-bleed under the top bar;
+   * desktop keeps the prior bordered panel card.
+   */
+  fill?: boolean;
 }) {
   const tNav = useTranslations("nav");
   const tWatch = useTranslations("watchlist");
@@ -78,16 +84,11 @@ export function AuthLoginGate(props: {
   const body = props.body ?? tWatch("loginBody");
   const hint = props.hint ?? tWatch("loginHint");
   const compact = Boolean(props.compact);
+  const fill = Boolean(props.fill) && !compact;
   const ctaClass = compact ? AUTH_LOGIN_CTA_COMPACT : AUTH_LOGIN_CTA_DEFAULT;
 
-  return (
-    <div
-      className={
-        compact
-          ? `flex w-full flex-col items-center px-1 text-center ${props.className ?? ""}`
-          : `qt-panel flex min-h-[calc(100dvh-11rem)] w-full flex-col items-center justify-center px-6 py-10 text-center lg:min-h-[calc(100dvh-7rem)] ${props.className ?? ""}`
-      }
-    >
+  const inner = (
+    <>
       <AuthLoginArt compact={compact} />
       <h3
         className={
@@ -127,6 +128,34 @@ export function AuthLoginGate(props: {
           {hint}
         </p>
       ) : null}
+    </>
+  );
+
+  if (compact) {
+    return (
+      <div
+        className={`flex w-full flex-col items-center px-1 text-center ${props.className ?? ""}`}
+      >
+        {inner}
+      </div>
+    );
+  }
+
+  if (fill) {
+    return (
+      <AccountPageFill
+        className={`items-center justify-center px-6 py-10 text-center ${props.className ?? ""}`}
+      >
+        {inner}
+      </AccountPageFill>
+    );
+  }
+
+  return (
+    <div
+      className={`qt-panel flex min-h-[16rem] w-full flex-col items-center justify-center px-6 py-10 text-center ${props.className ?? ""}`}
+    >
+      {inner}
     </div>
   );
 }

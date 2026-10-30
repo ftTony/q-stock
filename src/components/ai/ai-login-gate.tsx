@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { AiLoginButton } from "@/components/ai/ai-login-button";
+import { AccountPageFill } from "@/components/auth/account-page-fill";
 import {
   AUTH_LOGIN_CTA_COMPACT,
   AUTH_LOGIN_CTA_DEFAULT,
@@ -80,16 +81,10 @@ export function AiLoginGate(props: {
   const tNav = useTranslations("nav");
   /** Dock / AI drawer default compact — same density as comments AuthLoginGate. */
   const compact = Boolean(props.compact ?? !props.fill);
-  const fillClass = props.fill
-    ? "qt-panel min-h-[calc(100dvh-11rem)] w-full lg:min-h-[calc(100dvh-7rem)]"
-    : compact
-      ? "min-h-0"
-      : "min-h-[16rem]";
+  const fill = Boolean(props.fill) && !compact;
 
-  return (
-    <div
-      className={`flex flex-col items-center justify-center px-4 py-8 text-center ${fillClass} ${props.className ?? ""}`}
-    >
+  const inner = (
+    <>
       <AiLoginArt compact={compact} />
       <h3
         className={
@@ -125,6 +120,26 @@ export function AiLoginGate(props: {
           {props.hint ?? t("loginHint")}
         </p>
       ) : null}
+    </>
+  );
+
+  if (fill) {
+    return (
+      <AccountPageFill
+        className={`items-center justify-center px-4 py-8 text-center ${props.className ?? ""}`}
+      >
+        {inner}
+      </AccountPageFill>
+    );
+  }
+
+  return (
+    <div
+      className={`flex flex-col items-center justify-center px-4 py-8 text-center ${
+        compact ? "min-h-0" : "qt-panel min-h-[16rem]"
+      } ${props.className ?? ""}`}
+    >
+      {inner}
     </div>
   );
 }

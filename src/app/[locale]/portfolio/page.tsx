@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { AccountPageLoading } from "@/components/auth/account-page-fill";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import type { Quote } from "@/lib/types";
 import { MarketsKpiStrip } from "@/components/market/markets-kpi-strip";
@@ -147,12 +148,13 @@ export default function PortfolioPage() {
   }
 
   if (status === "loading") {
-    return <p className="text-sm text-[var(--muted)]">…</p>;
+    return <AccountPageLoading />;
   }
 
   if (!session?.user) {
     return (
       <AuthLoginGate
+        fill
         title={t("loginTitle")}
         body={t("loginBody")}
         hint={t("loginHint")}
@@ -165,7 +167,7 @@ export default function PortfolioPage() {
 
   return (
     <div className="space-y-5 animate-[qtFade_0.45s_ease]">
-      <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+      <section className="flex flex-col gap-3 px-3 pt-3 sm:flex-row sm:items-center sm:justify-between lg:px-0 lg:pt-0">
         <div className="min-w-0">
           <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
             {t("title")}

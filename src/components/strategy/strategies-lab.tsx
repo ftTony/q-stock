@@ -178,9 +178,9 @@ export function StrategiesLab() {
   const listError = listQuery.isError;
 
   return (
-    <div className="flex h-full gap-3 lg:overflow-hidden">
+    <div className="flex h-full max-lg:border-t max-lg:border-[var(--border)] lg:gap-3 lg:overflow-hidden">
       {/* Height follows the lab viewport, not the right column’s content. */}
-      <aside className="hidden h-full w-[260px] shrink-0 overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)] lg:flex lg:flex-col">
+      <aside className="hidden h-full w-[260px] shrink-0 overflow-hidden bg-[var(--panel)] lg:flex lg:flex-col lg:rounded-lg lg:border lg:border-[var(--border)]">
         <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-3 py-2.5">
           <span className="text-[12px] font-medium">{t("mine")}</span>
           <span className="rounded-full bg-[var(--brand-soft)] px-1.5 text-[10px] tabular-nums text-[var(--brand-text)]">
@@ -278,7 +278,7 @@ export function StrategiesLab() {
         </div>
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--panel)] lg:rounded-lg lg:border lg:border-[var(--border)]">
         <div className="flex shrink-0 flex-col gap-2 border-b border-[var(--border)] px-3 pt-1 sm:flex-row sm:items-center sm:justify-between sm:px-4">
           <div className="flex flex-wrap items-center gap-0.5">
             {(

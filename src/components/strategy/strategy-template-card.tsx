@@ -85,7 +85,7 @@ function MarketPills({ markets }: { markets: string[] }) {
 
 /** Soft tile on the lab panel — light radius; no nested bordered cards. */
 const TILE =
-  "flex h-auto w-full flex-col rounded-md bg-[var(--surface-2)] p-3.5 sm:p-4";
+  "flex h-auto w-full flex-col rounded-none bg-[var(--surface-2)] p-3.5 sm:p-4";
 
 export function StrategyTemplateCard({
   row,

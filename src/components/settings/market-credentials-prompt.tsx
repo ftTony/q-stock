@@ -106,34 +106,45 @@ export function MarketCredentialsPrompt({
 
   const actionClass =
     "qt-btn-primary inline-flex h-7 items-center justify-center px-2.5 text-[12px] font-medium leading-none no-underline shadow-none";
+  const laterClass =
+    "inline-flex h-7 items-center justify-center rounded-none px-2.5 text-[12px] font-medium leading-none tracking-[-0.12px] text-[var(--foreground)]/70 hover:bg-black/[0.04] hover:text-[var(--foreground)]";
+  const setupHref = authed
+    ? "/settings?setupKeys=1"
+    : "/login?next=/settings%3FsetupKeys%3D1";
+  const actionLabel = t("credsPromptAction");
+
+  const primaryAction = (compact: boolean) =>
+    authed && settingsModal ? (
+      <button
+        type="button"
+        className={
+          compact
+            ? `${actionClass} max-w-[4.75rem] truncate px-2`
+            : actionClass
+        }
+        title={actionLabel}
+        onClick={() => settingsModal.openSettings({ setupKeys: true })}
+      >
+        {actionLabel}
+      </button>
+    ) : (
+      <Link
+        href={setupHref}
+        className={
+          compact
+            ? `${actionClass} max-w-[4.75rem] truncate px-2`
+            : actionClass
+        }
+        title={actionLabel}
+      >
+        {actionLabel}
+      </Link>
+    );
 
   const actions = (
     <div className="flex shrink-0 items-center gap-1.5">
-      {authed && settingsModal ? (
-        <button
-          type="button"
-          className={actionClass}
-          onClick={() => settingsModal.openSettings({ setupKeys: true })}
-        >
-          {t("credsPromptAction")}
-        </button>
-      ) : (
-        <Link
-          href={
-            authed
-              ? "/settings?setupKeys=1"
-              : "/login?next=/settings%3FsetupKeys%3D1"
-          }
-          className={actionClass}
-        >
-          {t("credsPromptAction")}
-        </Link>
-      )}
-      <button
-        type="button"
-        onClick={dismiss}
-        className="inline-flex h-7 items-center justify-center rounded-[var(--radius-md)] px-2.5 text-[12px] font-medium leading-none tracking-[-0.12px] text-[var(--foreground)]/70 hover:bg-black/[0.04] hover:text-[var(--foreground)]"
-      >
+      {primaryAction(false)}
+      <button type="button" onClick={dismiss} className={laterClass}>
         {t("credsPromptLater")}
       </button>
     </div>
@@ -144,10 +155,21 @@ export function MarketCredentialsPrompt({
       <div
         role="status"
         aria-label={`${title}. ${body}`}
-        className="flex min-w-0 flex-1 items-center gap-2 border-l border-[var(--aw-hairline,var(--border))] pl-2.5 sm:gap-2.5 sm:pl-3"
+        className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden border-l border-[var(--aw-hairline,var(--border))] pl-2 sm:gap-2.5 sm:pl-3"
       >
-        {marquee}
-        {actions}
+        {/* Narrow: short CTA only — full marquee + actions overlap theme/lang/login. */}
+        <div className="hidden min-w-0 flex-1 md:block">{marquee}</div>
+        <div className="shrink-0 md:hidden">{primaryAction(true)}</div>
+        <div className="hidden shrink-0 items-center gap-1.5 md:flex">
+          {primaryAction(false)}
+          <button
+            type="button"
+            onClick={dismiss}
+            className={`${laterClass} hidden lg:inline-flex`}
+          >
+            {t("credsPromptLater")}
+          </button>
+        </div>
       </div>
     );
   }

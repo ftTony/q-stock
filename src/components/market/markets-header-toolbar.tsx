@@ -53,7 +53,7 @@ export function MarketsHeaderToolbar({
     "qt-btn inline-flex h-8 items-center justify-center px-3 text-[13px] font-medium leading-none";
 
   return (
-    <section className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <section className="flex flex-col gap-3 px-3 pt-3 sm:flex-row sm:items-center sm:justify-between lg:px-0 lg:pt-0">
       <div className="min-w-0 space-y-1">
         <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
           {title}

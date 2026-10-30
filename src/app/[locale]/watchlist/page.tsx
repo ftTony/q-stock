@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
+import { AccountPageLoading } from "@/components/auth/account-page-fill";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { ChangePct, PriceText } from "@/components/market/price";
 import { Sparkline } from "@/components/market/sparkline";
@@ -112,12 +113,13 @@ function WatchlistContent() {
   }
 
   if (status === "loading") {
-    return <p className="text-sm text-[var(--muted)]">…</p>;
+    return <AccountPageLoading />;
   }
 
   if (!session?.user) {
     return (
       <AuthLoginGate
+        fill
         title={tWatch("loginTitle")}
         body={tWatch("loginBody")}
         hint={tWatch("loginHint")}
@@ -127,7 +129,7 @@ function WatchlistContent() {
 
   return (
     <div className="space-y-4 animate-[qtFade_0.45s_ease]">
-      <header className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+      <header className="flex flex-col gap-3 px-3 pt-3 sm:flex-row sm:items-end sm:justify-between lg:px-0 lg:pt-0">
         <div className="space-y-1">
           <div className="flex flex-wrap items-baseline gap-2">
             <h1 className="text-xl font-semibold tracking-tight sm:text-2xl">
