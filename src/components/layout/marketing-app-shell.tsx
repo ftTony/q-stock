@@ -136,6 +136,7 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
               showNotifications={false}
               showTheme={!menuOpen}
               showLanguage={!menuOpen}
+              loginMode="page"
             />
             <button
               type="button"

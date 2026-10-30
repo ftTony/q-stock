@@ -1,13 +1,20 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { AiLoginButton } from "@/components/ai/ai-login-button";
+import {
+  AiLoginButton,
+  AI_LOGIN_CTA_CLASS,
+} from "@/components/ai/ai-login-button";
 
-function AiLoginArt() {
+function AiLoginArt({ compact }: { compact?: boolean }) {
   return (
     <svg
       viewBox="0 0 160 120"
-      className="h-28 w-auto text-[var(--brand)]"
+      className={
+        compact
+          ? "h-16 w-auto text-[var(--brand)]"
+          : "h-28 w-auto text-[var(--brand)]"
+      }
       aria-hidden
     >
       <ellipse cx="80" cy="108" rx="46" ry="8" fill="currentColor" opacity="0.1" />
@@ -62,30 +69,59 @@ export function AiLoginGate(props: {
   className?: string;
   /** Fill remaining viewport under the top bar (account pages). */
   fill?: boolean;
+  /** Dock / narrow column — match comments AuthLoginGate compact. */
+  compact?: boolean;
   title?: string;
   body?: string;
   hint?: string;
 }) {
   const t = useTranslations("ai");
+  const tNav = useTranslations("nav");
+  /** Dock / AI drawer default compact — same density as comments AuthLoginGate. */
+  const compact = Boolean(props.compact ?? !props.fill);
   const fillClass = props.fill
     ? "qt-panel min-h-[calc(100dvh-11rem)] w-full lg:min-h-[calc(100dvh-7rem)]"
-    : "min-h-[16rem]";
+    : compact
+      ? "min-h-0"
+      : "min-h-[16rem]";
 
   return (
     <div
-      className={`flex flex-col items-center justify-center px-6 py-10 text-center ${fillClass} ${props.className ?? ""}`}
+      className={`flex flex-col items-center justify-center px-4 py-8 text-center ${fillClass} ${props.className ?? ""}`}
     >
-      <AiLoginArt />
-      <h3 className="mt-4 text-base font-semibold tracking-tight">
+      <AiLoginArt compact={compact} />
+      <h3
+        className={
+          compact
+            ? "mt-3 text-[13px] font-semibold tracking-tight text-[var(--foreground)]"
+            : "mt-4 text-base font-semibold tracking-tight"
+        }
+      >
         {props.title ?? t("loginTitle")}
       </h3>
-      <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-[var(--muted)]">
+      <p
+        className={
+          compact
+            ? "mt-1.5 max-w-[16rem] text-[12px] leading-relaxed text-[var(--muted)]"
+            : "mt-2 max-w-2xl text-[14px] leading-relaxed text-[var(--muted)]"
+        }
+      >
         {props.body ?? t("loginBody")}
       </p>
-      <AiLoginButton className="qt-btn-primary mt-5 inline-flex h-10 items-center justify-center rounded-lg px-5 text-[14px] font-medium" />
-      <p className="mt-3 max-w-2xl text-[14px] leading-relaxed text-[var(--muted)]">
-        {props.hint ?? t("loginHint")}
-      </p>
+      <AiLoginButton className={AI_LOGIN_CTA_CLASS}>
+        {tNav("login")}
+      </AiLoginButton>
+      {props.hint !== "" ? (
+        <p
+          className={
+            compact
+              ? "mt-2.5 max-w-[16rem] text-[11px] leading-relaxed text-[var(--muted)]"
+              : "mt-3 max-w-2xl text-[14px] leading-relaxed text-[var(--muted)]"
+          }
+        >
+          {props.hint ?? t("loginHint")}
+        </p>
+      ) : null}
     </div>
   );
 }

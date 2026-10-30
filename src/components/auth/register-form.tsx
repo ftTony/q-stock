@@ -105,15 +105,11 @@ export function RegisterForm({
     }
   }
 
-  const fieldClass = modal
-    ? "qt-input h-11 w-full px-3.5 text-[15px] leading-none"
-    : "qt-input w-full px-3 py-2.5";
-  const submitClass = modal
-    ? "qt-btn-primary mt-1 h-11 w-full px-4 text-[15px] font-semibold tracking-[-0.2px]"
-    : "qt-btn-primary w-full px-3 py-2.5 text-sm";
-  const labelClass = modal
-    ? "block space-y-1.5 text-[13px]"
-    : "block space-y-1 text-sm";
+  const fieldClass =
+    "qt-input h-11 w-full px-3.5 text-[15px] leading-none";
+  const submitClass =
+    "qt-btn qt-btn-primary mt-3 h-11 w-full px-4 text-[15px] font-semibold tracking-[-0.2px]";
+  const labelClass = "block space-y-1.5 text-sm";
 
   return (
     <div
@@ -130,9 +126,11 @@ export function RegisterForm({
           <p className="text-sm text-[var(--muted)]">{tApp("slogan")}</p>
         </Link>
       ) : null}
-      <form onSubmit={onSubmit} className={modal ? "space-y-4" : "space-y-3"}>
+      <form onSubmit={onSubmit} className="space-y-4">
         <label className={labelClass}>
-          <span className="text-[var(--muted)]">{t("name")}</span>
+          <div className="flex h-5 items-center">
+            <span className="text-[var(--muted)]">{t("name")}</span>
+          </div>
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
@@ -142,7 +140,9 @@ export function RegisterForm({
           />
         </label>
         <label className={labelClass}>
-          <span className="text-[var(--muted)]">{t("email")}</span>
+          <div className="flex h-5 items-center">
+            <span className="text-[var(--muted)]">{t("email")}</span>
+          </div>
           <input
             type="email"
             required
@@ -154,7 +154,9 @@ export function RegisterForm({
           />
         </label>
         <label className={labelClass}>
-          <span className="text-[var(--muted)]">{t("password")}</span>
+          <div className="flex h-5 items-center">
+            <span className="text-[var(--muted)]">{t("password")}</span>
+          </div>
           <input
             type="password"
             required
@@ -167,7 +169,9 @@ export function RegisterForm({
           />
         </label>
         <label className={labelClass}>
-          <span className="text-[var(--muted)]">{t("inviteCode")}</span>
+          <div className="flex h-5 items-center">
+            <span className="text-[var(--muted)]">{t("inviteCode")}</span>
+          </div>
           <input
             value={inviteCode}
             onChange={(e) => setInviteCode(e.target.value)}
@@ -179,14 +183,7 @@ export function RegisterForm({
           />
         </label>
         {error ? <p className="text-sm text-[var(--danger)]">{error}</p> : null}
-        <SubmitButton
-          loading={formBusy}
-          loadingLabel={tCommon("loading")}
-          className={submitClass}
-        >
-          {t("submitRegister")}
-        </SubmitButton>
-        <p className="text-center text-[12px] leading-relaxed text-[var(--muted)]">
+        <p className="text-[12px] leading-relaxed text-[var(--muted)]">
           {t("consentLead")}{" "}
           <Link
             href="/terms"
@@ -202,6 +199,13 @@ export function RegisterForm({
             {t("consentPrivacy")}
           </Link>
         </p>
+        <SubmitButton
+          loading={formBusy}
+          loadingLabel={tCommon("loading")}
+          className={submitClass}
+        >
+          {t("submitRegister")}
+        </SubmitButton>
       </form>
       <OAuthSignInButtons
         disabled={formBusy}

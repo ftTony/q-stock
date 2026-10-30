@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <div className="qt-panel w-full space-y-4 p-6 sm:p-8">
+    <div className="qt-panel w-full space-y-5 p-6 sm:p-8">
       <Link
         href="/"
         className="flex flex-col items-center gap-2 rounded-lg outline-none transition hover:opacity-90 focus-visible:ring-2 focus-visible:ring-[var(--brand)]/40"
@@ -64,23 +64,27 @@ export default function ForgotPasswordPage() {
           </Link>
         </div>
       ) : (
-        <form onSubmit={onSubmit} className="space-y-3">
+        <form onSubmit={onSubmit} className="space-y-4">
           <label className="block space-y-1.5 text-sm">
-            <span className="text-[var(--muted)]">{t("email")}</span>
+            <div className="flex h-5 items-center">
+              <span className="text-[var(--muted)]">{t("email")}</span>
+            </div>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="qt-input w-full px-3 py-2.5"
+              className="qt-input h-11 w-full px-3.5 text-[15px] leading-none"
               disabled={loading}
             />
           </label>
-          {error && <p className="text-sm text-[var(--down)]">{error}</p>}
+          {error ? (
+            <p className="text-sm text-[var(--danger)]">{error}</p>
+          ) : null}
           <SubmitButton
             loading={loading}
             loadingLabel={tCommon("loading")}
-            className="qt-btn-primary w-full px-3 py-2.5 text-sm"
+            className="qt-btn qt-btn-primary mt-3 h-11 w-full px-4 text-[15px] font-semibold tracking-[-0.2px]"
           >
             {t("forgotSubmit")}
           </SubmitButton>

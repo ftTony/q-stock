@@ -76,15 +76,11 @@ export function LoginForm({
     }
   }
 
-  const fieldClass = modal
-    ? "qt-input h-11 w-full px-3.5 text-[15px] leading-none"
-    : "qt-input w-full px-3 py-2.5";
-  const submitClass = modal
-    ? "qt-btn-primary mt-1 h-11 w-full px-4 text-[15px] font-semibold tracking-[-0.2px]"
-    : "qt-btn-primary w-full px-3 py-2.5 text-sm";
-  const labelClass = modal
-    ? "block space-y-1.5 text-[13px]"
-    : "block space-y-1 text-sm";
+  const fieldClass =
+    "qt-input h-11 w-full px-3.5 text-[15px] leading-none";
+  const submitClass =
+    "qt-btn qt-btn-primary mt-3 h-11 w-full px-4 text-[15px] font-semibold tracking-[-0.2px]";
+  const labelClass = "block space-y-1.5 text-sm";
 
   return (
     <div
@@ -107,9 +103,11 @@ export function LoginForm({
       {!modal && oauthError ? (
         <p className="text-sm text-[var(--danger)]">{t("oauthError")}</p>
       ) : null}
-      <form onSubmit={onSubmit} className={modal ? "space-y-4" : "space-y-3"}>
+      <form onSubmit={onSubmit} className="space-y-4">
         <label className={labelClass}>
-          <span className="text-[var(--muted)]">{t("email")}</span>
+          <div className="flex h-5 items-center">
+            <span className="text-[var(--muted)]">{t("email")}</span>
+          </div>
           <input
             type="email"
             required
@@ -121,7 +119,7 @@ export function LoginForm({
           />
         </label>
         <label className={labelClass}>
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex h-5 items-center justify-between gap-2">
             <span className="text-[var(--muted)]">{t("password")}</span>
             <Link
               href="/forgot-password"

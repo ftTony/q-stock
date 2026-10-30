@@ -90,6 +90,11 @@ export function TopBarActions({
   showLanguage = true,
   placement = "header",
   compact = false,
+  /**
+   * Marketing chrome: always `/login` page + larger CTA.
+   * App shell: modal login (LoginModalBridge only mounts under MainAppShell).
+   */
+  loginMode = "modal",
 }: {
   showMarketStatus?: boolean;
   showNotifications?: boolean;
@@ -97,6 +102,7 @@ export function TopBarActions({
   showLanguage?: boolean;
   placement?: "header" | "sidebar";
   compact?: boolean;
+  loginMode?: "modal" | "page";
 }) {
   const t = useTranslations("nav");
   const tAlerts = useTranslations("alerts");
@@ -412,7 +418,18 @@ export function TopBarActions({
         </div>
       ) : (
         <div className="flex items-center gap-2">
-          {loginModal ? (
+          {loginMode === "page" || !loginModal ? (
+            <Link
+              href="/login"
+              className={
+                loginMode === "page"
+                  ? "qt-btn qt-btn-primary inline-flex h-9 items-center justify-center px-4 text-[13px] font-semibold leading-none no-underline"
+                  : "qt-btn-primary inline-flex h-7 items-center justify-center rounded-full px-3 text-[12px] font-semibold leading-none no-underline"
+              }
+            >
+              {t("login")}
+            </Link>
+          ) : (
             <button
               type="button"
               className="qt-btn-primary inline-flex h-7 items-center justify-center rounded-full px-3 text-[12px] font-semibold leading-none"
@@ -420,13 +437,6 @@ export function TopBarActions({
             >
               {t("login")}
             </button>
-          ) : (
-            <Link
-              href="/login"
-              className="qt-btn-primary inline-flex h-7 items-center justify-center rounded-full px-3 text-[12px] font-semibold leading-none no-underline"
-            >
-              {t("login")}
-            </Link>
           )}
         </div>
       )}

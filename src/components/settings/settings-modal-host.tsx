@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect } from "react";
 import dynamic from "next/dynamic";
 import {
   SettingsModalProvider,
@@ -8,6 +9,7 @@ import {
 import {
   LoginModalProvider,
   useLoginModal,
+  useLoginModalStore,
 } from "@/components/auth/login-modal-context";
 
 const SettingsModal = dynamic(
@@ -41,6 +43,11 @@ function SettingsModalBridge() {
 
 function LoginModalBridge() {
   const { open, closeLogin } = useLoginModal();
+  const setHostMounted = useLoginModalStore((s) => s.setHostMounted);
+  useEffect(() => {
+    setHostMounted(true);
+    return () => setHostMounted(false);
+  }, [setHostMounted]);
   return <LoginModal open={open} onClose={closeLogin} />;
 }
 
