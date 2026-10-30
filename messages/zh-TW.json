@@ -855,7 +855,9 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX",
-    "close": "關閉"
+    "close": "關閉",
+    "watchAdded": "添加成功",
+    "watchRemoved": "已移出自選"
   },
   "about": {
     "title": "關於我",

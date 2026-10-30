@@ -861,7 +861,9 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX",
-    "close": "Close"
+    "close": "Close",
+    "watchAdded": "Added to watchlist",
+    "watchRemoved": "Removed from watchlist"
   },
   "about": {
     "title": "About me",

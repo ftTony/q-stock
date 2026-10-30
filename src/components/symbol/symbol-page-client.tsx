@@ -24,6 +24,7 @@ import { useSymbolPage } from "@/components/symbol/hooks/use-symbol-page";
 import { useSymbolWorkbenchPanels } from "@/components/symbol/hooks/use-symbol-workbench-panels";
 import { useRailResize } from "@/components/symbol/hooks/use-rail-resize";
 import { useWatchlistResize } from "@/components/symbol/hooks/use-watchlist-resize";
+import { TopToast } from "@/components/ui/top-toast";
 import { LG_MIN, useMinWidth } from "@/hooks/use-min-width";
 import { isMarketIndexSymbol } from "@/lib/market/indices";
 import type { SymbolSeoCopy } from "@/lib/seo/symbol-metadata";
@@ -125,6 +126,12 @@ export function SymbolPageClient({
         e.preventDefault();
       }}
     >
+      <TopToast
+        key={s.toastKey}
+        message={s.toastMsg}
+        tone={s.toastTone}
+        onDismiss={s.clearToast}
+      />
       <div
         className="aw-symbol-shell relative flex min-h-0 flex-1 overflow-hidden"
         data-resizing={resizing ? "true" : undefined}

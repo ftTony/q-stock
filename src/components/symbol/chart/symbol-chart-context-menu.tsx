@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useLoginModalOptional } from "@/components/auth/login-modal-context";
 import {
   useAddWatchlistGroupItems,
   useWatchlistGroups,
@@ -24,6 +25,8 @@ type Props = {
   watchBusy?: boolean;
   onToggleWatchlist: () => void | Promise<void>;
   onSoon?: (feature: "rangeStats" | "overlay") => void;
+  /** e.g. toast after adding to a group */
+  onWatchAdded?: () => void;
 };
 
 function MenuItem({
@@ -68,10 +71,12 @@ export function SymbolChartContextMenu({
   watchBusy,
   onToggleWatchlist,
   onSoon,
+  onWatchAdded,
 }: Props) {
   const t = useTranslations("symbol");
   const { data: session } = useSession();
   const signedIn = Boolean(session?.user);
+  const loginModal = useLoginModalOptional();
   const [mounted, setMounted] = useState(false);
   const [groupsOpen, setGroupsOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement>(null);
@@ -116,13 +121,18 @@ export function SymbolChartContextMenu({
   );
 
   async function handleToggleWatch() {
+    if (!signedIn) {
+      loginModal?.openLogin();
+      onClose();
+      return;
+    }
     await onToggleWatchlist();
     onClose();
   }
 
   async function handleAddToGroup(groupId: string) {
     if (!signedIn) {
-      await onToggleWatchlist();
+      loginModal?.openLogin();
       onClose();
       return;
     }
@@ -132,6 +142,7 @@ export function SymbolChartContextMenu({
         symbol,
         assetType,
       });
+      onWatchAdded?.();
     } finally {
       onClose();
     }
@@ -171,9 +182,16 @@ export function SymbolChartContextMenu({
             className="absolute left-full top-0 z-[96] ml-0.5 min-w-[9rem] rounded-md border border-[var(--border)] bg-[var(--panel)] py-1 shadow-lg"
           >
             {!signedIn ? (
-              <p className="px-3 py-2 text-[12px] text-[var(--muted)]">
+              <button
+                type="button"
+                className="w-full px-3 py-2 text-left text-[12px] text-[var(--brand-text)] hover:bg-[var(--surface-2)]"
+                onClick={() => {
+                  loginModal?.openLogin();
+                  onClose();
+                }}
+              >
                 {t("chartCtxLogin")}
-              </p>
+              </button>
             ) : groups.length === 0 ? (
               <p className="px-3 py-2 text-[12px] text-[var(--muted)]">
                 {t("chartCtxNoGroups")}

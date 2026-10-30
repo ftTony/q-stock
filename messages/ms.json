@@ -842,7 +842,9 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX",
-    "close": "Tutup"
+    "close": "Tutup",
+    "watchAdded": "Added to watchlist",
+    "watchRemoved": "Removed from watchlist"
   },
   "about": {
     "title": "Tentang penulis",

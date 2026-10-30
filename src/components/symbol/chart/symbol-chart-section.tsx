@@ -88,12 +88,14 @@ export const SymbolChartSection = memo(function SymbolChartSection({
 }: Props) {
   const locale = useLocale();
   const t = useTranslations("symbol");
+  const tCommon = useTranslations("common");
   const { data: session } = useSession();
   const signedIn = Boolean(session?.user);
   const chartRef = useRef<CandleChartHandle>(null);
   const [fullscreen, setFullscreen] = useState(false);
   const [ctxMenu, setCtxMenu] = useState<ChartContextMenuState>(null);
   const [soonToast, setSoonToast] = useState<string | null>(null);
+  const [toastTone, setToastTone] = useState<"neutral" | "success">("neutral");
   const [chartSettings, setChartSettings] = useState<ChartUiSettings>({
     showTradeMarkers: true,
   });
@@ -182,7 +184,7 @@ export const SymbolChartSection = memo(function SymbolChartSection({
     <div className="aw-surface-flush flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <TopToast
         message={soonToast}
-        tone="neutral"
+        tone={toastTone}
         onDismiss={() => setSoonToast(null)}
       />
       <SymbolChartContextMenu
@@ -193,13 +195,18 @@ export const SymbolChartSection = memo(function SymbolChartSection({
         inWatchlist={inWatchlist}
         watchBusy={watchBusy}
         onToggleWatchlist={onToggleWatchlist}
-        onSoon={(feature) =>
+        onSoon={(feature) => {
+          setToastTone("neutral");
           setSoonToast(
             feature === "rangeStats"
               ? t("chartCtxRangeStatsSoon")
               : t("chartCtxOverlaySoon"),
-          )
-        }
+          );
+        }}
+        onWatchAdded={() => {
+          setToastTone("success");
+          setSoonToast(tCommon("watchAdded"));
+        }}
       />
       <div className="aw-chart-toolbar relative z-20 flex shrink-0 flex-nowrap items-center gap-0.5 border-b border-[var(--border)] bg-[var(--surface)] px-2">
         {/* Left cluster: periods + (desktop) type/indicators — keep flush left. */}

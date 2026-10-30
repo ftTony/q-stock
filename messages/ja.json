@@ -842,7 +842,9 @@
     "providerFinnhub": "Finnhub",
     "providerBinance": "Binance",
     "providerOkx": "OKX",
-    "close": "閉じる"
+    "close": "閉じる",
+    "watchAdded": "Added to watchlist",
+    "watchRemoved": "Removed from watchlist"
   },
   "about": {
     "title": "運営者について",

@@ -13,6 +13,7 @@ import {
 } from "@/components/symbol/tabs/build-symbol-tabs";
 import { useSymbolPageMutations } from "@/components/symbol/hooks/use-symbol-page-mutations";
 import { useSymbolTabData } from "@/components/symbol/hooks/use-symbol-tab-data";
+import type { ToastTone } from "@/components/ui/top-toast";
 import { useCreateAlert } from "@/hooks/query/use-alerts";
 import {
   useCreateComment,
@@ -92,6 +93,16 @@ export function useSymbolPage(
   const [alertBusy, setAlertBusy] = useState(false);
   const [commentBusy, setCommentBusy] = useState(false);
   const [watchBusy, setWatchBusy] = useState(false);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastTone, setToastTone] = useState<ToastTone>("neutral");
+  const [toastKey, setToastKey] = useState(0);
+
+  const showToast = useCallback((message: string, tone: ToastTone = "success") => {
+    setToastMsg(message);
+    setToastTone(tone);
+    setToastKey((k) => k + 1);
+  }, []);
+  const clearToast = useCallback(() => setToastMsg(null), []);
 
   const quoteKey = queryKeys.symbol.quote(assetType, symbol);
 
@@ -221,8 +232,8 @@ export function useSymbolPage(
       inWatchlist,
       setWatchBusy,
       loadTab: tabData.loadTab,
-      tAlerts,
       tCommon,
+      showToast,
       createAlertMut,
       addWatch,
       removeWatch,
@@ -237,6 +248,10 @@ export function useSymbolPage(
     tComments,
     tAlerts,
     tEarnings,
+    toastMsg,
+    toastTone,
+    toastKey,
+    clearToast,
     quote,
     bars: candles.bars,
     resolution,

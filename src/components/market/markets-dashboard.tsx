@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { useLoginModalOptional } from "@/components/auth/login-modal-context";
 import { CryptoPopularTable } from "@/components/market/crypto-popular-table";
 import { IndustryHeatmap } from "@/components/market/industry-heatmap";
 import { MarketsAsidePanels } from "@/components/market/markets-aside-panels";
@@ -11,6 +12,7 @@ import { MarketsHeaderToolbar } from "@/components/market/markets-header-toolbar
 import { MarketsKpiStrip } from "@/components/market/markets-kpi-strip";
 import { RankBoardPanel } from "@/components/market/rank-board-panel";
 import type { RankQuote } from "@/components/market/markets-types";
+import { TopToast, type ToastTone } from "@/components/ui/top-toast";
 import {
   useAddWatchlistItem,
   useRemoveWatchlistItem,
@@ -60,8 +62,12 @@ export default function MarketsDashboard() {
   const [tab, setTab] = useState<Tab>(initialTab);
   const [q, setQ] = useState("");
   const [debouncedQ, setDebouncedQ] = useState("");
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastTone, setToastTone] = useState<ToastTone>("success");
+  const [toastKey, setToastKey] = useState(0);
 
   const signedIn = Boolean(session?.user);
+  const loginModal = useLoginModalOptional();
 
   const boardsQuery = useMarketBoards(tab, {
     refetchInterval: (query) => {
@@ -133,12 +139,27 @@ export default function MarketsDashboard() {
     : null;
 
   async function toggleWatch(symbol: string, assetType: AssetType) {
-    if (!signedIn) return;
+    if (!signedIn) {
+      loginModal?.openLogin();
+      return;
+    }
     const key = `${assetType}:${symbol}`;
-    if (watched.has(key)) {
-      await removeWatch.mutateAsync({ symbol, assetType });
-    } else {
-      await addWatch.mutateAsync({ symbol, assetType });
+    try {
+      if (watched.has(key)) {
+        await removeWatch.mutateAsync({ symbol, assetType });
+        setToastTone("success");
+        setToastMsg(tCommon("watchRemoved"));
+        setToastKey((k) => k + 1);
+      } else {
+        await addWatch.mutateAsync({ symbol, assetType });
+        setToastTone("success");
+        setToastMsg(tCommon("watchAdded"));
+        setToastKey((k) => k + 1);
+      }
+    } catch {
+      setToastTone("error");
+      setToastMsg(tCommon("error"));
+      setToastKey((k) => k + 1);
     }
   }
 
@@ -172,6 +193,12 @@ export default function MarketsDashboard() {
 
   return (
     <div className="space-y-5 animate-[qtFade_0.45s_ease]">
+      <TopToast
+        key={toastKey}
+        message={toastMsg}
+        tone={toastTone}
+        onDismiss={() => setToastMsg(null)}
+      />
       <MarketsHeaderToolbar
         tab={tab}
         q={q}

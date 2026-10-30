@@ -1,10 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { AiLoginButton } from "@/components/ai/ai-login-button";
 import {
-  AiLoginButton,
-  AI_LOGIN_CTA_CLASS,
-} from "@/components/ai/ai-login-button";
+  AUTH_LOGIN_CTA_COMPACT,
+  AUTH_LOGIN_CTA_DEFAULT,
+} from "@/components/auth/auth-login-cta";
 
 function AiLoginArt({ compact }: { compact?: boolean }) {
   return (
@@ -108,7 +109,9 @@ export function AiLoginGate(props: {
       >
         {props.body ?? t("loginBody")}
       </p>
-      <AiLoginButton className={AI_LOGIN_CTA_CLASS}>
+      <AiLoginButton
+        className={compact ? AUTH_LOGIN_CTA_COMPACT : AUTH_LOGIN_CTA_DEFAULT}
+      >
         {tNav("login")}
       </AiLoginButton>
       {props.hint !== "" ? (

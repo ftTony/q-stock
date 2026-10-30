@@ -7,6 +7,8 @@ import {
   type SetStateAction,
 } from "react";
 import type { Session } from "next-auth";
+import { useLoginModalOptional } from "@/components/auth/login-modal-context";
+import type { ToastTone } from "@/components/ui/top-toast";
 import type { AssetType } from "@/lib/types";
 
 type MutateWatch = {
@@ -54,8 +56,8 @@ type Args = {
   inWatchlist: boolean;
   setWatchBusy: Dispatch<SetStateAction<boolean>>;
   loadTab: () => Promise<void>;
-  tAlerts: (key: string) => string;
   tCommon: (key: string) => string;
+  showToast: (message: string, tone?: ToastTone) => void;
   createAlertMut: MutateAlert;
   addWatch: MutateWatch;
   removeWatch: MutateWatch;
@@ -65,10 +67,19 @@ type Args = {
 
 /** Comment / alert / watchlist write paths for the symbol page (stable callbacks). */
 export function useSymbolPageMutations(a: Args) {
+  const loginModal = useLoginModalOptional();
+
+  const requireLogin = useCallback(() => {
+    if (a.session?.user) return true;
+    loginModal?.openLogin();
+    return false;
+  }, [a.session?.user, loginModal]);
+
   const postComment = useCallback(
     async (e: FormEvent) => {
       e.preventDefault();
       if (!a.commentText.trim() || a.commentBusy) return;
+      if (!requireLogin()) return;
       a.setCommentBusy(true);
       try {
         await a.createCommentMut.mutateAsync({
@@ -93,6 +104,7 @@ export function useSymbolPageMutations(a: Args) {
       a.assetType,
       a.setCommentText,
       a.loadTab,
+      requireLogin,
     ],
   );
 
@@ -108,10 +120,7 @@ export function useSymbolPageMutations(a: Args) {
     async (e: FormEvent) => {
       e.preventDefault();
       a.setAlertMsg(null);
-      if (!a.session?.user) {
-        a.setAlertMsg(a.tAlerts("loginRequired"));
-        return;
-      }
+      if (!requireLogin()) return;
       if (a.alertBusy) return;
       a.setAlertBusy(true);
       try {
@@ -131,8 +140,7 @@ export function useSymbolPageMutations(a: Args) {
     },
     [
       a.setAlertMsg,
-      a.session?.user,
-      a.tAlerts,
+      requireLogin,
       a.alertBusy,
       a.setAlertBusy,
       a.createAlertMut,
@@ -146,10 +154,7 @@ export function useSymbolPageMutations(a: Args) {
   );
 
   const toggleWatchlist = useCallback(async () => {
-    if (!a.session?.user) {
-      a.setAlertMsg(a.tAlerts("loginRequired"));
-      return;
-    }
+    if (!requireLogin()) return;
     a.setWatchBusy(true);
     try {
       if (a.inWatchlist) {
@@ -157,25 +162,29 @@ export function useSymbolPageMutations(a: Args) {
           symbol: a.symbol,
           assetType: a.assetType,
         });
+        a.showToast(a.tCommon("watchRemoved"), "success");
       } else {
         await a.addWatch.mutateAsync({
           symbol: a.symbol,
           assetType: a.assetType,
         });
+        a.showToast(a.tCommon("watchAdded"), "success");
       }
+    } catch {
+      a.showToast(a.tCommon("error"), "error");
     } finally {
       a.setWatchBusy(false);
     }
   }, [
-    a.session?.user,
-    a.setAlertMsg,
-    a.tAlerts,
+    requireLogin,
     a.setWatchBusy,
     a.inWatchlist,
     a.removeWatch,
     a.addWatch,
     a.symbol,
     a.assetType,
+    a.showToast,
+    a.tCommon,
   ]);
 
   return { postComment, deleteComment, createAlert, toggleWatchlist };

@@ -3,6 +3,12 @@
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
+import {
+  AUTH_LOGIN_CTA_COMPACT,
+  AUTH_LOGIN_CTA_DEFAULT,
+} from "@/components/auth/auth-login-cta";
+
+export { AUTH_LOGIN_CTA_COMPACT, AUTH_LOGIN_CTA_DEFAULT };
 
 function AuthLoginArt({ compact }: { compact?: boolean }) {
   return (
@@ -72,9 +78,7 @@ export function AuthLoginGate(props: {
   const body = props.body ?? tWatch("loginBody");
   const hint = props.hint ?? tWatch("loginHint");
   const compact = Boolean(props.compact);
-  const ctaClass = compact
-    ? "qt-btn-primary mt-4 inline-flex h-9 w-full max-w-[12rem] items-center justify-center rounded-full px-5 text-[13px] font-medium no-underline"
-    : "qt-btn-primary mt-5 inline-flex h-10 min-w-[7.5rem] items-center justify-center rounded-full px-6 text-[14px] font-medium no-underline";
+  const ctaClass = compact ? AUTH_LOGIN_CTA_COMPACT : AUTH_LOGIN_CTA_DEFAULT;
 
   return (
     <div
