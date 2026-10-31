@@ -176,7 +176,7 @@ export function SymbolTabsPanel({
 
   const secondaryBody =
     tab === "derivatives" ? (
-      <div className="flex min-h-0 flex-col">
+      <div className="flex min-h-0 flex-1 flex-col">
         {tabLoading ? (
           <div className="overflow-y-auto p-4 sm:p-5">
             <PanelSkeleton rows={6} label={loadingLabel} />
