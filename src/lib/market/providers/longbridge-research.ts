@@ -37,6 +37,18 @@ export type OptionRow = {
   iv: number | null;
   oi: number;
   volume: number;
+  /** Best bid/ask — only available from Futu snapshot; null for Longbridge. */
+  bid?: number | null;
+  ask?: number | null;
+  /** Best-bid/ask volumes (contracts) — Futu only. */
+  bidVol?: number | null;
+  askVol?: number | null;
+  /** Bid-ask ratio in percent (positive = buy side heavier) — Futu only. */
+  bidAskRatio?: number | null;
+  /** Today's open / high / low — Futu only. */
+  open?: number | null;
+  high?: number | null;
+  low?: number | null;
 };
 
 export type OptionChainBundle = {
@@ -394,8 +406,8 @@ export async function fetchLbOptionChain(
       );
     }
 
-    const callsPick = pickNearSpot(callsRaw, spot, 18);
-    const putsPick = pickNearSpot(putsRaw, spot, 18);
+    const callsPick = pickNearSpot(callsRaw, spot, 30);
+    const putsPick = pickNearSpot(putsRaw, spot, 30);
     const symbols = [...callsPick, ...putsPick].map((c) => c.symbol);
     const quoteMap = new Map<string, OptionRow>();
 

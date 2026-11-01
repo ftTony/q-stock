@@ -110,11 +110,6 @@ function OptionsDerivativesBody({
       ? t("derivativesEmpty")
       : metaError;
 
-  const toolsHref =
-    lastPrice != null && lastPrice > 0
-      ? `/tools/options?symbol=${encodeURIComponent(symbol)}&spot=${lastPrice}`
-      : `/tools/options?symbol=${encodeURIComponent(symbol)}`;
-
   if (loadingMeta) {
     return (
       <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
@@ -153,9 +148,10 @@ function OptionsDerivativesBody({
       calls={calls}
       puts={puts}
       spot={lastPrice}
+      symbol={symbol}
+      assetType={assetType}
       loading={chainQuery.isLoading}
       empty={chainError || t("derivativesEmpty")}
-      toolsHref={toolsHref}
     />
   );
 }

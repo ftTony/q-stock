@@ -54,7 +54,12 @@ async function messagesFor(locale: AppLocale): Promise<Bundle> {
   const result = current
     ? deepMerge(deepMerge(zh, en), current)
     : deepMerge(zh, en);
-  cache.set(locale, result);
+  /*
+   * Cache only in production: the module-level Map would otherwise keep a
+   * stale merged bundle alive across HMR in dev, so keys added to the JSON
+   * files later keep rendering as MISSING_MESSAGE raw keys until restart.
+   */
+  if (process.env.NODE_ENV === "production") cache.set(locale, result);
   return result;
 }
 

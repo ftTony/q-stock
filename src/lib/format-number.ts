@@ -1,9 +1,30 @@
-/** Stable number formatting for SSR + client (avoid `undefined` locale mismatch). */
+/**
+ * Stable number formatting for SSR + client (avoid `undefined` locale mismatch).
+ *
+ * `toLocaleString` builds a fresh Intl.NumberFormat on every call, and the
+ * quote tables call this thousands of times per render — cache one formatter
+ * per options shape (there are only a handful of distinct shapes in practice).
+ */
+const baseFormatter = new Intl.NumberFormat("en-US");
+const formatters = new Map<string, Intl.NumberFormat>();
+
+function formatterFor(opts?: Intl.NumberFormatOptions): Intl.NumberFormat {
+  if (!opts) return baseFormatter;
+  const key = JSON.stringify(opts);
+  let f = formatters.get(key);
+  if (!f) {
+    f = new Intl.NumberFormat("en-US", opts);
+    if (formatters.size > 200) formatters.clear();
+    formatters.set(key, f);
+  }
+  return f;
+}
+
 export function formatNumber(
   value: number,
   opts?: Intl.NumberFormatOptions,
 ): string {
-  return value.toLocaleString("en-US", opts);
+  return formatterFor(opts).format(value);
 }
 
 export function formatPrice(value: number, maxDigits = 6): string {

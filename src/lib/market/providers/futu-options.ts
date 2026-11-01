@@ -31,9 +31,17 @@ type OptionSnap = {
   option_implied_volatility?: number;
   option_open_interest?: number;
   option_strike_price?: number;
+  bid_price?: number;
+  ask_price?: number;
+  bid_vol?: number;
+  ask_vol?: number;
+  bid_ask_ratio?: number;
+  open_price?: number;
+  high_price?: number;
+  low_price?: number;
 };
 
-const NEAR_SPOT = 18;
+const NEAR_SPOT = 30;
 
 function assertOptionMarket(assetType: AssetType) {
   if (assetType !== "stock" && assetType !== "hk") {
@@ -149,6 +157,17 @@ export async function fetchFutuOptionChain(
             iv: iv > 0 ? iv : null,
             oi: Number(s.option_open_interest ?? 0),
             volume: Number(s.volume ?? 0),
+            bid: Number(s.bid_price ?? 0) > 0 ? Number(s.bid_price) : null,
+            ask: Number(s.ask_price ?? 0) > 0 ? Number(s.ask_price) : null,
+            bidVol: Number(s.bid_vol ?? 0) > 0 ? Number(s.bid_vol) : null,
+            askVol: Number(s.ask_vol ?? 0) > 0 ? Number(s.ask_vol) : null,
+            bidAskRatio:
+              s.bid_ask_ratio != null && Number(s.bid_ask_ratio) !== 0
+                ? Number(s.bid_ask_ratio)
+                : null,
+            open: Number(s.open_price ?? 0) > 0 ? Number(s.open_price) : null,
+            high: Number(s.high_price ?? 0) > 0 ? Number(s.high_price) : null,
+            low: Number(s.low_price ?? 0) > 0 ? Number(s.low_price) : null,
           });
         }
       }

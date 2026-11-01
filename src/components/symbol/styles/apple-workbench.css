@@ -911,3 +911,59 @@ html.aw-rail-resizing {
 .aw .qt-panel {
   padding: 16px;
 }
+
+/* ------------------------------------------------------------------ */
+/* Option chain panes: single outer vertical scrollbar.                */
+/* Plain CSS on purpose — Tailwind v4 arbitrary ::-webkit-scrollbar    */
+/* variants are unreliable here and leak system scrollbars.            */
+/* ------------------------------------------------------------------ */
+
+/*
+ * Call / put panes: horizontal scrollbar only. Vertical overflow is `hidden`
+ * on purpose — an `auto` vertical axis produces a per-pane vertical scrollbar
+ * in engines that ignore ::-webkit-scrollbar (Firefox et al.). The panes are
+ * still programmatically scrollable on Y (scrollTop works on overflow:hidden),
+ * and the outer rail + wheel forwarding own all vertical movement.
+ */
+.aw .oc-scroll-pane {
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+.aw .oc-scroll-pane::-webkit-scrollbar {
+  width: 0;
+  height: 8px;
+}
+.aw .oc-scroll-pane::-webkit-scrollbar-track {
+  background: transparent;
+}
+.aw .oc-scroll-pane::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--muted) 35%, transparent);
+}
+
+/* Strike column: no scrollbars at all (synced programmatically). */
+.aw .oc-strike-pane {
+  overflow-x: hidden;
+  overflow-y: hidden;
+  scrollbar-width: none;
+}
+.aw .oc-strike-pane::-webkit-scrollbar {
+  display: none;
+}
+
+/* Outer vertical rail (the only visible vertical scrollbar). */
+.aw .oc-vrail {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+.aw .oc-vrail::-webkit-scrollbar {
+  width: 8px;
+  height: 0;
+}
+.aw .oc-vrail::-webkit-scrollbar-track {
+  background: transparent;
+}
+.aw .oc-vrail::-webkit-scrollbar-thumb {
+  border-radius: 9999px;
+  background: color-mix(in srgb, var(--muted) 35%, transparent);
+}
