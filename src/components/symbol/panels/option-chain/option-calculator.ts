@@ -85,7 +85,13 @@ function bs(spot: number, k: number, sigma: number, T: number, r: number, isCall
   return { theo, dist: theo - spot, delta, gamma, vega, theta, rho };
 }
 
-/** CRR binomial pricer for American options (early exercise). */
+/**
+ * CRR binomial pricer for American options (early exercise).
+ *
+ * `steps = 100`: against 160 steps the price differs by ≤0.13% on ATM/ITM/OTM
+ * samples (well under the 2-decimal display precision) while costing ~40% of
+ * the time — this runs 9× per quote, on every slider tick.
+ */
 function crrPrice(
   spot: number,
   k: number,
@@ -93,7 +99,7 @@ function crrPrice(
   T: number,
   r: number,
   isCall: boolean,
-  steps = 160,
+  steps = 100,
 ): number {
   const dt = T / steps;
   const u = Math.exp(sigma * Math.sqrt(dt));

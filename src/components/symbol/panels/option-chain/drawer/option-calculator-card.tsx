@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useDeferredValue, useEffect, useMemo, useState } from "react";
 import { QtDatePicker } from "@/components/ui/qt-date-picker";
 import { calcOption } from "../option-calculator";
 import type { CalcModel } from "../option-calculator";
@@ -49,22 +49,38 @@ export function OptionCalculatorCard({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [strike, isCall, expiry]);
 
+  /*
+   * The American model prices 9 binomial trees per quote (~15ms on a laptop,
+   * much more on a phone). Feed the inputs through `useDeferredValue` so
+   * dragging the date slider or typing stays responsive and the numbers catch
+   * up on the next idle pass instead of blocking every input event.
+   */
+  const snapshot = useMemo(
+    () => ({
+      s: Number(spotInput),
+      v: Number(iv),
+      r: Number(rate),
+      valDate,
+      model,
+    }),
+    [spotInput, iv, rate, valDate, model],
+  );
+  const deferred = useDeferredValue(snapshot);
+
   const res = useMemo(() => {
-    const s = Number(spotInput);
-    const v = Number(iv);
-    const r = Number(rate);
+    const { s, v, r } = deferred;
     if (!(s > 0) || !(v > 0)) return null;
     return calcOption({
       spot: s,
       strike,
       ivPct: v,
       // DTE measured from the valuation date to expiry (can be 0).
-      days: Math.max(0, daysBetween(valDate, expiry)),
+      days: Math.max(0, daysBetween(deferred.valDate, expiry)),
       ratePct: Number.isFinite(r) ? r : DEFAULT_RATE_PCT,
       isCall,
-      model,
+      model: deferred.model,
     });
-  }, [spotInput, iv, rate, valDate, expiry, strike, isCall, model]);
+  }, [deferred, expiry, strike, isCall]);
 
   const todayYmd = ymdToday();
   const maxDate = expiry || todayYmd;
