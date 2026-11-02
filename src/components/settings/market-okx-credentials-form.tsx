@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
 import {
@@ -9,6 +10,7 @@ import {
 } from "@/components/settings/settings-btn";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
+import { useFlashMessage } from "@/components/settings/use-flash-message";
 import {
   MARKET_VENDORS_CHANGED,
   type MarketCredsStatus,
@@ -22,6 +24,12 @@ import { queryKeys } from "@/lib/query/keys";
 
 type Status = MarketCredsStatus;
 
+type OkxValues = {
+  apiKey: string;
+  apiSecret: string;
+  passphrase: string;
+};
+
 export function MarketOkxCredentialsForm() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
@@ -31,13 +39,19 @@ export function MarketOkxCredentialsForm() {
   const saveMut = useSaveMarketCredentials();
   const deleteMut = useDeleteMarketCredentials();
   const status = statusData ?? null;
+  const { message, messageKind, flash, clearFlash } = useFlashMessage();
 
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageKind, setMessageKind] = useState<"ok" | "error">("ok");
-  const [apiKey, setApiKey] = useState("");
-  const [apiSecret, setApiSecret] = useState("");
-  const [passphrase, setPassphrase] = useState("");
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { isSubmitting },
+  } = useForm<OkxValues>({
+    defaultValues: { apiKey: "", apiSecret: "", passphrase: "" },
+  });
+
+  const apiKey = watch("apiKey");
 
   useEffect(() => {
     function onVendorsChanged(ev: Event) {
@@ -56,46 +70,33 @@ export function MarketOkxCredentialsForm() {
     };
   }, [qc, refetch]);
 
-  useEffect(() => {
-    if (!message) return;
-    const timer = setTimeout(() => setMessage(null), 3500);
-    return () => clearTimeout(timer);
-  }, [message]);
-
-  async function onSave(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setMessage(null);
+  async function onSubmit(values: OkxValues) {
+    clearFlash();
     try {
       await saveMut.mutateAsync({
         okx: {
-          apiKey: apiKey.trim(),
-          apiSecret: apiSecret.trim() || undefined,
-          passphrase: passphrase.trim() || undefined,
+          apiKey: values.apiKey.trim(),
+          apiSecret: values.apiSecret.trim() || undefined,
+          passphrase: values.passphrase.trim() || undefined,
         },
       });
-      setApiKey("");
-      setApiSecret("");
-      setPassphrase("");
-      setMessageKind("ok");
-      setMessage(t("credsSaved"));
+      reset({ apiKey: "", apiSecret: "", passphrase: "" });
+      flash("ok", t("credsSaved"));
     } catch (err) {
-      setMessageKind("error");
-      setMessage(err instanceof Error ? err.message : t("credsSaveError"));
-    } finally {
-      setSaving(false);
+      flash(
+        "error",
+        err instanceof Error ? err.message : t("credsSaveError"),
+      );
     }
   }
 
   async function onClear() {
-    setMessage(null);
+    clearFlash();
     try {
       await deleteMut.mutateAsync("okx");
-      setMessageKind("ok");
-      setMessage(t("credsCleared"));
+      flash("ok", t("credsCleared"));
     } catch {
-      setMessageKind("error");
-      setMessage(t("credsSaveError"));
+      flash("error", t("credsSaveError"));
     }
   }
 
@@ -140,15 +141,14 @@ export function MarketOkxCredentialsForm() {
           {message}
         </p>
       ) : null}
-      <form onSubmit={onSave} className="space-y-3">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="block space-y-1.5">
             <span className="block text-xs text-[var(--muted)]">
               {t("credsBinanceApiKey")}
             </span>
             <input
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+              {...register("apiKey")}
               autoComplete="off"
               className="qt-input h-9 w-full px-3 font-mono text-[14px] leading-none"
             />
@@ -159,8 +159,7 @@ export function MarketOkxCredentialsForm() {
             </span>
             <input
               type="password"
-              value={apiSecret}
-              onChange={(e) => setApiSecret(e.target.value)}
+              {...register("apiSecret")}
               autoComplete="off"
               className="qt-input h-9 w-full px-3 font-mono text-[14px] leading-none"
               placeholder={t("credsOkxOptional")}
@@ -172,8 +171,7 @@ export function MarketOkxCredentialsForm() {
             </span>
             <input
               type="password"
-              value={passphrase}
-              onChange={(e) => setPassphrase(e.target.value)}
+              {...register("passphrase")}
               autoComplete="off"
               className="qt-input h-9 w-full px-3 font-mono text-[14px] leading-none"
               placeholder={t("credsOkxOptional")}
@@ -182,7 +180,7 @@ export function MarketOkxCredentialsForm() {
         </div>
         <div className="flex flex-wrap gap-2">
           <SubmitButton
-            loading={saving}
+            loading={isSubmitting}
             loadingLabel={tCommon("loading")}
             className={SETTINGS_SUBMIT_PRIMARY}
             disabled={!apiKey.trim()}
@@ -192,7 +190,7 @@ export function MarketOkxCredentialsForm() {
           {status?.okx?.configured ? (
             <button
               type="button"
-              onClick={onClear}
+              onClick={() => void onClear()}
               className={SETTINGS_BTN_GHOST}
             >
               {t("credsClear")}

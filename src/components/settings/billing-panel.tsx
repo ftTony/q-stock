@@ -3,6 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
+import { useForm } from "react-hook-form";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
 import {
@@ -10,6 +11,7 @@ import {
   SETTINGS_BTN_PRIMARY,
   SETTINGS_SUBMIT_GHOST,
 } from "@/components/settings/settings-btn";
+import { useFlashMessage } from "@/components/settings/use-flash-message";
 import { trackBillingClick } from "@/lib/billing/client-events";
 import { fetchJson } from "@/lib/query/fetch-json";
 
@@ -32,14 +34,24 @@ type EntitlementsPayload = {
   };
 };
 
+type RedeemValues = { code: string };
+
 export function BillingPanel() {
   const t = useTranslations("settings");
   const locale = useLocale();
   const qc = useQueryClient();
-  const [code, setCode] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageKind, setMessageKind] = useState<"ok" | "err">("ok");
+  const { message, messageKind, flash, clearFlash } = useFlashMessage();
   const [busy, setBusy] = useState(false);
+  const {
+    register,
+    handleSubmit,
+    reset,
+    watch,
+    formState: { isSubmitting },
+  } = useForm<RedeemValues>({
+    defaultValues: { code: "" },
+  });
+  const code = watch("code");
 
   const query = useQuery({
     queryKey: ["billing", "entitlements"],
@@ -51,7 +63,7 @@ export function BillingPanel() {
 
   async function startCheckout(interval: "monthly" | "yearly") {
     setBusy(true);
-    setMessage(null);
+    clearFlash();
     void trackBillingClick("click_upgrade", { interval });
     try {
       const res = await fetch("/api/billing/checkout", {
@@ -61,8 +73,8 @@ export function BillingPanel() {
       });
       const data = (await res.json()) as { url?: string; error?: string; code?: string };
       if (!res.ok || !data.url) {
-        setMessageKind("err");
-        setMessage(
+        flash(
+          "error",
           data.code === "STRIPE_NOT_CONFIGURED"
             ? t("billingStripeSoon")
             : data.error || t("billingCheckoutError"),
@@ -71,8 +83,7 @@ export function BillingPanel() {
       }
       window.location.href = data.url;
     } catch {
-      setMessageKind("err");
-      setMessage(t("billingCheckoutError"));
+      flash("error", t("billingCheckoutError"));
     } finally {
       setBusy(false);
     }
@@ -80,7 +91,7 @@ export function BillingPanel() {
 
   async function openPortal() {
     setBusy(true);
-    setMessage(null);
+    clearFlash();
     try {
       const res = await fetch("/api/billing/portal", {
         method: "POST",
@@ -89,45 +100,36 @@ export function BillingPanel() {
       });
       const data = (await res.json()) as { url?: string; error?: string };
       if (!res.ok || !data.url) {
-        setMessageKind("err");
-        setMessage(data.error || t("billingPortalError"));
+        flash("error", data.error || t("billingPortalError"));
         return;
       }
       window.location.href = data.url;
     } catch {
-      setMessageKind("err");
-      setMessage(t("billingPortalError"));
+      flash("error", t("billingPortalError"));
     } finally {
       setBusy(false);
     }
   }
 
-  async function onRedeem(e: React.FormEvent) {
-    e.preventDefault();
-    setBusy(true);
-    setMessage(null);
+  async function onRedeem(values: RedeemValues) {
+    clearFlash();
     try {
       const res = await fetch("/api/billing/redeem", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ code }),
+        body: JSON.stringify({ code: values.code }),
       });
       const data = (await res.json()) as { error?: string; ok?: boolean };
       if (!res.ok) {
-        setMessageKind("err");
-        setMessage(data.error || t("billingRedeemError"));
+        flash("error", data.error || t("billingRedeemError"));
         return;
       }
-      setMessageKind("ok");
-      setMessage(t("billingRedeemOk"));
-      setCode("");
+      flash("ok", t("billingRedeemOk"));
+      reset({ code: "" });
       await qc.invalidateQueries({ queryKey: ["billing"] });
       await qc.invalidateQueries({ queryKey: ["ai", "quota"] });
     } catch {
-      setMessageKind("err");
-      setMessage(t("billingRedeemError"));
-    } finally {
-      setBusy(false);
+      flash("error", t("billingRedeemError"));
     }
   }
 
@@ -232,14 +234,13 @@ export function BillingPanel() {
       </div>
 
       <div className="space-y-2.5 border-t border-[var(--aw-hairline,var(--border))] pt-4">
-        <form onSubmit={onRedeem} className="space-y-2">
+        <form onSubmit={handleSubmit(onRedeem)} className="space-y-2">
           <span className="block text-[13px] font-medium leading-snug text-[var(--foreground)]">
             {t("billingRedeemLabel")}
           </span>
           <div className="flex min-w-0 items-center gap-2.5">
             <input
-              value={code}
-              onChange={(e) => setCode(e.target.value)}
+              {...register("code")}
               className="qt-input h-9 min-w-0 flex-1 px-3 text-[14px] leading-none"
               placeholder={t("billingRedeemPlaceholder")}
               autoComplete="off"
@@ -247,10 +248,10 @@ export function BillingPanel() {
             />
             <SubmitButton
               type="submit"
-              loading={busy}
+              loading={busy || isSubmitting}
               loadingLabel={t("billingRedeemCta")}
               className={SETTINGS_SUBMIT_GHOST}
-              disabled={busy || code.trim().length < 4}
+              disabled={busy || isSubmitting || code.trim().length < 4}
             >
               {t("billingRedeemCta")}
             </SubmitButton>

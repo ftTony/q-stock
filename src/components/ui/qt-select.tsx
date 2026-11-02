@@ -10,6 +10,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useMounted } from "@/hooks/use-mounted";
+import { qtPortalShellClass } from "@/components/ui/qt-portal-shell";
 
 export type QtSelectOption = {
   value: string;
@@ -124,6 +125,8 @@ export function QtSelect({
     }
   }
 
+  const portalShell = qtPortalShellClass(rootRef.current);
+
   const menu =
     mounted && open && pos
       ? createPortal(
@@ -137,7 +140,7 @@ export function QtSelect({
               width: pos.width,
               maxHeight: pos.maxHeight,
             }}
-            className="fixed z-[80] overflow-auto rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1.5 shadow-[0_12px_40px_rgba(15,23,42,0.16)] qt-scroll"
+            className={`${portalShell} fixed z-[80] overflow-auto rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)] p-1.5 shadow-[0_12px_40px_rgba(15,23,42,0.16)] qt-scroll`}
           >
             {options.map((opt, index) => {
               const active = opt.value === value;
@@ -159,7 +162,7 @@ export function QtSelect({
                     type="button"
                     role="option"
                     aria-selected={active}
-                    className={`flex w-full cursor-pointer items-center gap-2 rounded-lg px-2.5 py-2 text-left text-sm transition-colors ${
+                    className={`flex w-full cursor-pointer items-center gap-2 rounded-[var(--radius-sm)] px-2.5 py-2 text-left text-sm transition-colors ${
                       active
                         ? "bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]"
                         : "text-[var(--foreground)] hover:bg-[var(--sidebar-hover)]"

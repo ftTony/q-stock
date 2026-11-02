@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
@@ -10,7 +11,11 @@ import {
   SETTINGS_BTN_GHOST,
   SETTINGS_SUBMIT_PRIMARY,
 } from "@/components/settings/settings-btn";
-import type { EmailChannel, EmailCredsStatus } from "@/lib/user/service-creds-types";
+import { useFlashMessage } from "@/components/settings/use-flash-message";
+import type {
+  EmailChannel,
+  EmailCredsStatus,
+} from "@/lib/user/service-creds-types";
 import {
   useDeleteServiceCredentials,
   useSaveServiceCredentials,
@@ -22,6 +27,17 @@ type Props = {
   compact?: boolean;
 };
 
+type EmailFormValues = {
+  channel: EmailChannel;
+  from: string;
+  resendApiKey: string;
+  smtpHost: string;
+  smtpPort: string;
+  smtpUser: string;
+  smtpPass: string;
+  smtpSecure: boolean;
+};
+
 export function EmailCredentialsForm({ compact = false }: Props) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
@@ -30,85 +46,90 @@ export function EmailCredentialsForm({ compact = false }: Props) {
   const deleteMut = useDeleteServiceCredentials();
   const status: EmailCredsStatus | null = credsQuery.data?.email ?? null;
   const loading = credsQuery.isLoading;
+  const { message, messageKind, flash, clearFlash } = useFlashMessage();
 
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageKind, setMessageKind] = useState<"ok" | "error">("ok");
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<EmailFormValues>({
+    defaultValues: {
+      channel: "resend",
+      from: "",
+      resendApiKey: "",
+      smtpHost: "",
+      smtpPort: "587",
+      smtpUser: "",
+      smtpPass: "",
+      smtpSecure: false,
+    },
+  });
 
-  const [channel, setChannel] = useState<EmailChannel>("resend");
-  const [from, setFrom] = useState("");
-  const [resendApiKey, setResendApiKey] = useState("");
-  const [smtpHost, setSmtpHost] = useState("");
-  const [smtpPort, setSmtpPort] = useState("587");
-  const [smtpUser, setSmtpUser] = useState("");
-  const [smtpPass, setSmtpPass] = useState("");
-  const [smtpSecure, setSmtpSecure] = useState(false);
+  const channel = watch("channel");
 
   useEffect(() => {
     const email = credsQuery.data?.email;
     if (!email?.configured) return;
-    if (email.channel) setChannel(email.channel);
-    if (email.from) setFrom(email.from);
-  }, [credsQuery.data?.email]);
+    reset({
+      channel: email.channel ?? "resend",
+      from: email.from ?? "",
+      resendApiKey: "",
+      smtpHost: "",
+      smtpPort: "587",
+      smtpUser: "",
+      smtpPass: "",
+      smtpSecure: false,
+    });
+  }, [credsQuery.data?.email, reset]);
 
-  useEffect(() => {
-    if (!message) return;
-    const timer = setTimeout(() => setMessage(null), 3500);
-    return () => clearTimeout(timer);
-  }, [message]);
-
-  async function onSave(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setMessage(null);
+  async function onSubmit(values: EmailFormValues) {
+    clearFlash();
     try {
       const body =
-        channel === "resend"
+        values.channel === "resend"
           ? {
               email: {
                 channel: "resend" as const,
-                from: from.trim(),
-                resendApiKey: resendApiKey.trim() || undefined,
+                from: values.from.trim(),
+                resendApiKey: values.resendApiKey.trim() || undefined,
               },
             }
           : {
               email: {
                 channel: "smtp" as const,
-                from: from.trim(),
-                smtpHost: smtpHost.trim() || undefined,
-                smtpPort: Number(smtpPort) || 587,
-                smtpUser: smtpUser.trim() || undefined,
-                smtpPass: smtpPass.trim() || undefined,
-                smtpSecure,
+                from: values.from.trim(),
+                smtpHost: values.smtpHost.trim() || undefined,
+                smtpPort: Number(values.smtpPort) || 587,
+                smtpUser: values.smtpUser.trim() || undefined,
+                smtpPass: values.smtpPass.trim() || undefined,
+                smtpSecure: values.smtpSecure,
               },
             };
       await saveMut.mutateAsync(body);
-      setResendApiKey("");
-      setSmtpPass("");
-      setMessageKind("ok");
-      setMessage(t("emailSaved"));
+      setValue("resendApiKey", "");
+      setValue("smtpPass", "");
+      flash("ok", t("emailSaved"));
     } catch (err) {
-      setMessageKind("error");
-      setMessage(err instanceof Error ? err.message : t("emailSaveError"));
-    } finally {
-      setSaving(false);
+      flash(
+        "error",
+        err instanceof Error ? err.message : t("emailSaveError"),
+      );
     }
   }
 
   async function onClear() {
-    setSaving(true);
-    setMessage(null);
+    clearFlash();
     try {
       await deleteMut.mutateAsync("email");
-      setResendApiKey("");
-      setSmtpPass("");
-      setMessageKind("ok");
-      setMessage(t("emailCleared"));
+      setValue("resendApiKey", "");
+      setValue("smtpPass", "");
+      flash("ok", t("emailCleared"));
     } catch {
-      setMessageKind("error");
-      setMessage(t("emailSaveError"));
-    } finally {
-      setSaving(false);
+      flash("error", t("emailSaveError"));
     }
   }
 
@@ -116,14 +137,10 @@ export function EmailCredentialsForm({ compact = false }: Props) {
     return <PanelSkeleton rows={3} label={tCommon("loading")} />;
   }
 
+  const busy = isSubmitting || deleteMut.isPending;
+
   return (
-    <div
-      className={
-        compact
-          ? "space-y-2.5 pb-4"
-          : "space-y-4"
-      }
-    >
+    <div className={compact ? "space-y-2.5 pb-4" : "space-y-4"}>
       <div>
         <h2
           className={
@@ -146,9 +163,7 @@ export function EmailCredentialsForm({ compact = false }: Props) {
         <p className={compact ? "mt-1.5 text-[12px]" : "mt-2 text-xs"}>
           <span
             className={
-              status?.configured
-                ? "text-[var(--up)]"
-                : "text-[var(--muted)]"
+              status?.configured ? "text-[var(--up)]" : "text-[var(--muted)]"
             }
           >
             {status?.configured
@@ -158,19 +173,25 @@ export function EmailCredentialsForm({ compact = false }: Props) {
         </p>
       </div>
 
-      <form onSubmit={onSave} className="space-y-3.5">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3.5">
         <label className="block space-y-2 text-sm">
           <span className="block leading-snug text-[var(--muted)]">
             {t("emailChannel")}
           </span>
-          <QtSelect
-            value={channel}
-            onChange={(v) => setChannel(v as EmailChannel)}
-            options={[
-              { value: "resend", label: t("emailChannelResend") },
-              { value: "smtp", label: t("emailChannelSmtp") },
-            ]}
-            disabled={saving}
+          <Controller
+            name="channel"
+            control={control}
+            render={({ field }) => (
+              <QtSelect
+                value={field.value}
+                onChange={(v) => field.onChange(v as EmailChannel)}
+                options={[
+                  { value: "resend", label: t("emailChannelResend") },
+                  { value: "smtp", label: t("emailChannelSmtp") },
+                ]}
+                disabled={busy}
+              />
+            )}
           />
         </label>
 
@@ -180,11 +201,9 @@ export function EmailCredentialsForm({ compact = false }: Props) {
           </span>
           <input
             type="email"
-            required
-            value={from}
-            onChange={(e) => setFrom(e.target.value)}
+            {...register("from", { required: true })}
             className="qt-input h-9 w-full px-3 text-[14px] leading-none"
-            disabled={saving}
+            disabled={busy}
             placeholder="alerts@example.com"
           />
         </label>
@@ -197,13 +216,12 @@ export function EmailCredentialsForm({ compact = false }: Props) {
             <input
               type="password"
               autoComplete="off"
-              value={resendApiKey}
-              onChange={(e) => setResendApiKey(e.target.value)}
+              {...register("resendApiKey")}
               placeholder={
                 status?.configured ? t("credsKeepPlaceholder") : undefined
               }
               className="qt-input h-9 w-full px-3 text-[14px] leading-none"
-              disabled={saving}
+              disabled={busy}
             />
           </label>
         ) : (
@@ -213,10 +231,9 @@ export function EmailCredentialsForm({ compact = false }: Props) {
                 {t("emailSmtpHost")}
               </span>
               <input
-                value={smtpHost}
-                onChange={(e) => setSmtpHost(e.target.value)}
+                {...register("smtpHost")}
                 className="qt-input h-9 w-full px-3 text-[14px] leading-none"
-                disabled={saving}
+                disabled={busy}
                 placeholder="smtp.example.com"
               />
             </label>
@@ -225,10 +242,9 @@ export function EmailCredentialsForm({ compact = false }: Props) {
                 {t("emailSmtpPort")}
               </span>
               <input
-                value={smtpPort}
-                onChange={(e) => setSmtpPort(e.target.value)}
+                {...register("smtpPort")}
                 className="qt-input h-9 w-full px-3 text-[14px] leading-none"
-                disabled={saving}
+                disabled={busy}
               />
             </label>
             <label className="block space-y-2 text-sm">
@@ -236,10 +252,9 @@ export function EmailCredentialsForm({ compact = false }: Props) {
                 {t("emailSmtpUser")}
               </span>
               <input
-                value={smtpUser}
-                onChange={(e) => setSmtpUser(e.target.value)}
+                {...register("smtpUser")}
                 className="qt-input h-9 w-full px-3 text-[14px] leading-none"
-                disabled={saving}
+                disabled={busy}
               />
             </label>
             <label className="block space-y-2 text-sm">
@@ -249,21 +264,19 @@ export function EmailCredentialsForm({ compact = false }: Props) {
               <input
                 type="password"
                 autoComplete="off"
-                value={smtpPass}
-                onChange={(e) => setSmtpPass(e.target.value)}
+                {...register("smtpPass")}
                 placeholder={
                   status?.configured ? t("credsKeepPlaceholder") : undefined
                 }
                 className="qt-input h-9 w-full px-3 text-[14px] leading-none"
-                disabled={saving}
+                disabled={busy}
               />
             </label>
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
-                checked={smtpSecure}
-                onChange={(e) => setSmtpSecure(e.target.checked)}
-                disabled={saving}
+                {...register("smtpSecure")}
+                disabled={busy}
               />
               <span className="text-[var(--muted)]">{t("emailSmtpSecure")}</span>
             </label>
@@ -272,7 +285,7 @@ export function EmailCredentialsForm({ compact = false }: Props) {
 
         <div className="flex flex-wrap items-center gap-2.5">
           <SubmitButton
-            loading={saving}
+            loading={isSubmitting}
             loadingLabel={tCommon("loading")}
             className={SETTINGS_SUBMIT_PRIMARY}
           >
@@ -281,8 +294,8 @@ export function EmailCredentialsForm({ compact = false }: Props) {
           {status?.configured ? (
             <button
               type="button"
-              onClick={onClear}
-              disabled={saving}
+              onClick={() => void onClear()}
+              disabled={busy}
               className={SETTINGS_BTN_GHOST}
             >
               {t("credsClear")}

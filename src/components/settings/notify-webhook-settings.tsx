@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
@@ -8,6 +9,7 @@ import {
   SETTINGS_BTN_GHOST,
   SETTINGS_SUBMIT_PRIMARY,
 } from "@/components/settings/settings-btn";
+import { useFlashMessage } from "@/components/settings/use-flash-message";
 import {
   useDeleteServiceCredentials,
   useSaveServiceCredentials,
@@ -21,6 +23,11 @@ type Props = {
   kind: Kind;
 };
 
+type WebhookValues = {
+  webhookUrl: string;
+  platform: OverseasNotifyPlatform;
+};
+
 /** Feishu or overseas (Slack / Discord / Telegram) incoming webhook. */
 export function NotifyWebhookSettings({ kind }: Props) {
   const t = useTranslations("settings");
@@ -28,75 +35,66 @@ export function NotifyWebhookSettings({ kind }: Props) {
   const credsQuery = useServiceCredentials();
   const saveMut = useSaveServiceCredentials();
   const deleteMut = useDeleteServiceCredentials();
+  const { message, messageKind, flash, clearFlash } = useFlashMessage();
 
   const status =
     kind === "feishu"
       ? credsQuery.data?.feishu
       : credsQuery.data?.notifyWebhook;
 
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageKind, setMessageKind] = useState<"ok" | "err">("ok");
-  const [webhookUrl, setWebhookUrl] = useState("");
-  const [platform, setPlatform] = useState<OverseasNotifyPlatform>("slack");
+  const {
+    register,
+    control,
+    handleSubmit,
+    setValue,
+    formState: { isSubmitting },
+  } = useForm<WebhookValues>({
+    defaultValues: {
+      webhookUrl: "",
+      platform: "slack",
+    },
+  });
 
   useEffect(() => {
     if (kind === "overseas" && status?.platform) {
-      setPlatform(status.platform);
+      setValue("platform", status.platform);
     }
-  }, [kind, status?.platform]);
+  }, [kind, status?.platform, setValue]);
 
-  useEffect(() => {
-    if (!message) return;
-    const timer = setTimeout(() => setMessage(null), 3500);
-    return () => clearTimeout(timer);
-  }, [message]);
-
-  async function onSave(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setMessage(null);
+  async function onSubmit(values: WebhookValues) {
+    clearFlash();
     try {
       if (kind === "feishu") {
         await saveMut.mutateAsync({
           feishu: {
-            webhookUrl: webhookUrl.trim() || undefined,
+            webhookUrl: values.webhookUrl.trim() || undefined,
           },
         });
       } else {
         await saveMut.mutateAsync({
           notifyWebhook: {
-            platform,
-            webhookUrl: webhookUrl.trim() || undefined,
+            platform: values.platform,
+            webhookUrl: values.webhookUrl.trim() || undefined,
           },
         });
       }
-      setWebhookUrl("");
-      setMessageKind("ok");
-      setMessage(t("notifyWebhookSaved"));
+      setValue("webhookUrl", "");
+      flash("ok", t("notifyWebhookSaved"));
     } catch {
-      setMessageKind("err");
-      setMessage(t("notifyWebhookSaveError"));
-    } finally {
-      setSaving(false);
+      flash("error", t("notifyWebhookSaveError"));
     }
   }
 
   async function onClear() {
-    setSaving(true);
-    setMessage(null);
+    clearFlash();
     try {
       await deleteMut.mutateAsync(
         kind === "feishu" ? "feishu" : "notify_webhook",
       );
-      setWebhookUrl("");
-      setMessageKind("ok");
-      setMessage(t("notifyWebhookCleared"));
+      setValue("webhookUrl", "");
+      flash("ok", t("notifyWebhookCleared"));
     } catch {
-      setMessageKind("err");
-      setMessage(t("notifyWebhookSaveError"));
-    } finally {
-      setSaving(false);
+      flash("error", t("notifyWebhookSaveError"));
     }
   }
 
@@ -104,6 +102,7 @@ export function NotifyWebhookSettings({ kind }: Props) {
     kind === "feishu" ? t("notifyFeishuTitle") : t("notifyOverseasTitle");
   const hint =
     kind === "feishu" ? t("notifyFeishuHint") : t("notifyOverseasHint");
+  const busy = isSubmitting || deleteMut.isPending;
 
   return (
     <section className="space-y-2.5 border-t border-[var(--aw-hairline,var(--border))] pb-4 pt-4">
@@ -117,22 +116,30 @@ export function NotifyWebhookSettings({ kind }: Props) {
           : t("credsNotConfigured")}
       </p>
 
-      <form onSubmit={onSave} className="space-y-3">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         {kind === "overseas" ? (
           <label className="block space-y-2 text-sm">
             <span className="block leading-snug text-[var(--muted)]">
               {t("notifyOverseasPlatform")}
             </span>
-            <QtSelect
-              value={platform}
-              onChange={(v) => setPlatform(v as OverseasNotifyPlatform)}
-              options={[
-                { value: "slack", label: t("notifyPlatformSlack") },
-                { value: "discord", label: t("notifyPlatformDiscord") },
-                { value: "telegram", label: t("notifyPlatformTelegram") },
-                { value: "generic", label: t("notifyPlatformGeneric") },
-              ]}
-              disabled={saving}
+            <Controller
+              name="platform"
+              control={control}
+              render={({ field }) => (
+                <QtSelect
+                  value={field.value}
+                  onChange={(v) =>
+                    field.onChange(v as OverseasNotifyPlatform)
+                  }
+                  options={[
+                    { value: "slack", label: t("notifyPlatformSlack") },
+                    { value: "discord", label: t("notifyPlatformDiscord") },
+                    { value: "telegram", label: t("notifyPlatformTelegram") },
+                    { value: "generic", label: t("notifyPlatformGeneric") },
+                  ]}
+                  disabled={busy}
+                />
+              )}
             />
           </label>
         ) : null}
@@ -143,8 +150,9 @@ export function NotifyWebhookSettings({ kind }: Props) {
           </span>
           <input
             type="url"
-            value={webhookUrl}
-            onChange={(e) => setWebhookUrl(e.target.value)}
+            {...register("webhookUrl", {
+              required: !status?.configured,
+            })}
             placeholder={
               status?.configured
                 ? t("credsKeepPlaceholder")
@@ -153,14 +161,13 @@ export function NotifyWebhookSettings({ kind }: Props) {
                   : "https://hooks.slack.com/services/…"
             }
             className="qt-input h-9 w-full px-3 text-[14px] leading-none"
-            disabled={saving}
-            required={!status?.configured}
+            disabled={busy}
           />
         </label>
 
         <div className="flex flex-wrap items-center gap-2.5">
           <SubmitButton
-            loading={saving}
+            loading={isSubmitting}
             loadingLabel={tCommon("loading")}
             className={SETTINGS_SUBMIT_PRIMARY}
           >
@@ -170,7 +177,7 @@ export function NotifyWebhookSettings({ kind }: Props) {
             <button
               type="button"
               onClick={() => void onClear()}
-              disabled={saving}
+              disabled={busy}
               className={SETTINGS_BTN_GHOST}
             >
               {t("credsClear")}

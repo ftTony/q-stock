@@ -1,17 +1,10 @@
 "use client";
 
-import { FormEvent, Suspense, useEffect, useState } from "react";
+import { Suspense } from "react";
 import { useSession } from "next-auth/react";
-import { useTheme } from "next-themes";
-import { useLocale, useTranslations } from "next-intl";
-import { usePathname, useRouter, Link } from "@/i18n/routing";
-import {
-  usePreference,
-  type ChangeColorScheme,
-} from "@/components/providers/preference-provider";
-import { SubmitButton } from "@/components/ui/submit-button";
+import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
-import { QtSelect } from "@/components/ui/qt-select";
 import { MarketCredentialsForm } from "@/components/settings/market-credentials-form";
 import { MarketOkxCredentialsForm } from "@/components/settings/market-okx-credentials-form";
 import { MarketVendorPrefs } from "@/components/settings/market-vendor-prefs";
@@ -20,17 +13,11 @@ import { BillingPanel } from "@/components/settings/billing-panel";
 import { InvitePanel } from "@/components/settings/invite-panel";
 import { PaperRiskSettingsForm } from "@/components/settings/paper-risk-settings-form";
 import { SettingsAboutPanel } from "@/components/settings/settings-about-panel";
+import { SettingsAccountNameForm } from "@/components/settings/settings-account-name-form";
+import { SettingsGeneralForm } from "@/components/settings/settings-general-form";
 import { NotificationsSettingsPanel } from "@/components/settings/notifications-settings-panel";
-import { SETTINGS_SUBMIT_PRIMARY } from "@/components/settings/settings-btn";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
-import { useSaveUserSettings } from "@/hooks/query/use-user-settings";
-import {
-  locales,
-  languageLabels,
-  localeCode,
-  type AppLocale,
-} from "@/i18n/config";
 
 export type SettingsSection =
   | "general"
@@ -41,67 +28,6 @@ export type SettingsSection =
   | "about";
 
 const GUEST_SECTIONS: SettingsSection[] = ["general", "about"];
-
-function SchemePreview({ scheme }: { scheme: ChangeColorScheme }) {
-  const up = scheme === "cn" ? "#e11d48" : "#22c55e";
-  const down = scheme === "cn" ? "#16a34a" : "#f87171";
-  return (
-    <div className="mt-2 flex flex-col gap-1.5">
-      <div className="flex items-center gap-1.5">
-        <span
-          className="inline-block h-3 w-3 shrink-0 rounded-full"
-          style={{ backgroundColor: up }}
-          aria-hidden
-        />
-        <span
-          className="inline-block h-3 w-3 shrink-0 rounded-full"
-          style={{ backgroundColor: down }}
-          aria-hidden
-        />
-      </div>
-      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] tabular-nums">
-        <span className="font-semibold" style={{ color: up }}>
-          ▲ 128.50 +1.24%
-        </span>
-        <span className="font-semibold" style={{ color: down }}>
-          ▼ 96.20 −0.85%
-        </span>
-      </div>
-    </div>
-  );
-}
-
-function ThemeOptionIcon({ id }: { id: "light" | "dark" | "system" }) {
-  const common = {
-    className: "h-4 w-4 shrink-0 text-[var(--brand-text)]",
-    viewBox: "0 0 24 24",
-    fill: "none",
-    stroke: "currentColor",
-    strokeWidth: 1.8,
-    "aria-hidden": true as const,
-  };
-  if (id === "light") {
-    return (
-      <svg {...common}>
-        <circle cx="12" cy="12" r="4" />
-        <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
-      </svg>
-    );
-  }
-  if (id === "dark") {
-    return (
-      <svg {...common}>
-        <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3a7 7 0 0 0 11.5 11.5z" />
-      </svg>
-    );
-  }
-  return (
-    <svg {...common}>
-      <rect x="3" y="4" width="18" height="12" rx="2" />
-      <path d="M8 20h8M12 16v4" />
-    </svg>
-  );
-}
 
 function LoginCta({
   className,
@@ -138,103 +64,11 @@ export function SettingsPanel({
 }: Props) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
-  const locale = useLocale();
-  const pathname = usePathname();
-  const router = useRouter();
-  const { data: session, status, update } = useSession();
-  const { theme, setTheme } = useTheme();
-  const { changeColorScheme, setChangeColorScheme } = usePreference();
-  const [lang, setLang] = useState<AppLocale>(locale as AppLocale);
-  const [displayName, setDisplayName] = useState("");
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageKind, setMessageKind] = useState<"ok" | "error">("ok");
-  const [saving, setSaving] = useState(false);
-  const saveSettings = useSaveUserSettings();
+  const { data: session, status } = useSession();
   const loggedIn = Boolean(session?.user);
-
-  useEffect(() => {
-    setLang(locale as AppLocale);
-  }, [locale]);
-
-  useEffect(() => {
-    setDisplayName(session?.user?.name?.trim() || "");
-  }, [session?.user?.name]);
-
-  useEffect(() => {
-    try {
-      const flash = sessionStorage.getItem("settings-flash");
-      if (flash) {
-        sessionStorage.removeItem("settings-flash");
-        setMessageKind("ok");
-        setMessage(flash);
-      }
-    } catch {
-      /* ignore */
-    }
-  }, []);
-
-  useEffect(() => {
-    if (!message) return;
-    const timer = setTimeout(() => setMessage(null), 3500);
-    return () => clearTimeout(timer);
-  }, [message]);
 
   if (status === "loading") {
     return <PanelSkeleton rows={4} label={tCommon("loading")} />;
-  }
-
-  async function onSave(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setMessage(null);
-    setChangeColorScheme(changeColorScheme);
-
-    if (!loggedIn) {
-      setSaving(false);
-      const tip = t("savedLocal");
-      setMessageKind("ok");
-      setMessage(tip);
-      if (lang !== locale) {
-        try {
-          sessionStorage.setItem("settings-flash", tip);
-        } catch {
-          /* ignore */
-        }
-        router.replace(pathname || "/markets", { locale: lang });
-      }
-      return;
-    }
-
-    try {
-      const data = await saveSettings.mutateAsync({
-        name: displayName.trim() || undefined,
-        locale: lang,
-        theme: theme === "light" || theme === "dark" ? theme : "system",
-        changeColorScheme,
-      });
-      await update({
-        name: (data.user?.name ?? displayName.trim()) || null,
-        locale: lang,
-        theme,
-        changeColorScheme,
-      });
-      const tip = t("saved");
-      setMessageKind("ok");
-      setMessage(tip);
-      if (lang !== locale) {
-        try {
-          sessionStorage.setItem("settings-flash", tip);
-        } catch {
-          /* ignore */
-        }
-        router.replace(pathname || "/markets", { locale: lang });
-      }
-    } catch {
-      setMessageKind("error");
-      setMessage(t("saveError"));
-    } finally {
-      setSaving(false);
-    }
   }
 
   if (!GUEST_SECTIONS.includes(section) && !loggedIn) {
@@ -286,41 +120,7 @@ export function SettingsPanel({
   if (section === "account") {
     return (
       <div className="settings-ui space-y-0">
-        <form onSubmit={onSave} className="space-y-3.5 pb-4">
-          <label className="block space-y-2 text-sm">
-            <span className="block leading-snug text-[var(--muted)]">
-              {t("name")}
-            </span>
-            <input
-              value={displayName}
-              onChange={(e) => setDisplayName(e.target.value)}
-              maxLength={64}
-              placeholder={session?.user?.email?.split("@")[0] || ""}
-              className="qt-input h-9 w-full px-3 text-[14px] leading-none"
-            />
-          </label>
-          <div className="flex flex-wrap items-center gap-2.5">
-            <SubmitButton
-              loading={saving}
-              loadingLabel={tCommon("loading")}
-              className={SETTINGS_SUBMIT_PRIMARY}
-            >
-              {t("save")}
-            </SubmitButton>
-            {message ? (
-              <p
-                role="status"
-                className="text-xs"
-                style={{
-                  color: messageKind === "ok" ? "var(--up)" : "var(--down)",
-                }}
-              >
-                {messageKind === "ok" ? "✓ " : ""}
-                {message}
-              </p>
-            ) : null}
-          </div>
-        </form>
+        <SettingsAccountNameForm />
         <section className="space-y-2.5 border-t border-[var(--aw-hairline,var(--border))] pb-5 pt-5">
           <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
             {t("freemiumTitle")}
@@ -359,7 +159,6 @@ export function SettingsPanel({
     );
   }
 
-  // general
   return (
     <div className="settings-ui">
       {!loggedIn ? (
@@ -371,112 +170,7 @@ export function SettingsPanel({
           />
         </p>
       ) : null}
-      <form onSubmit={onSave} className="space-y-5">
-        <section className="space-y-2 border-b border-[var(--aw-hairline,var(--border))] pb-5">
-          <h3 className="text-[13px] font-semibold text-[var(--foreground)]">
-            {t("language")}
-          </h3>
-          <QtSelect
-            value={lang}
-            onChange={(v) => setLang(v as AppLocale)}
-            options={locales.map((l) => ({
-              value: l,
-              label: languageLabels[l],
-              badge: localeCode(l),
-            }))}
-          />
-        </section>
-
-        <section className="space-y-2 border-b border-[var(--aw-hairline,var(--border))] pb-5">
-          <h3 className="text-[13px] font-semibold text-[var(--foreground)]">
-            {t("theme")}
-          </h3>
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-            {(
-              [
-                { id: "light", label: t("themeLight") },
-                { id: "dark", label: t("themeDark") },
-                { id: "system", label: t("themeSystem") },
-              ] as const
-            ).map((opt) => {
-              const selected = (theme ?? "system") === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setTheme(opt.id)}
-                  className={`flex items-center gap-2 rounded-none border px-3 py-2.5 text-left text-[13px] font-medium transition ${
-                    selected
-                      ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
-                      : "border-[var(--border)] text-[var(--foreground)] hover:bg-[var(--sidebar-hover)]"
-                  }`}
-                >
-                  <ThemeOptionIcon id={opt.id} />
-                  {opt.label}
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="space-y-2 border-b border-[var(--aw-hairline,var(--border))] pb-5">
-          <h3 className="text-[13px] font-semibold text-[var(--foreground)]">
-            {t("changeColor")}
-          </h3>
-          <p className="text-[12px] leading-relaxed text-[var(--muted)]">
-            {t("changeColorHint")}
-          </p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {(
-              [
-                { id: "cn" as const, label: t("changeCn") },
-                { id: "us" as const, label: t("changeUs") },
-              ] as const
-            ).map((opt) => {
-              const selected = changeColorScheme === opt.id;
-              return (
-                <button
-                  key={opt.id}
-                  type="button"
-                  onClick={() => setChangeColorScheme(opt.id)}
-                  className={`rounded-none border px-3 py-2.5 text-left transition ${
-                    selected
-                      ? "border-[var(--brand)] bg-[var(--brand-soft)]"
-                      : "border-[var(--border)] hover:bg-[var(--sidebar-hover)]"
-                  }`}
-                >
-                  <div className="text-[13px] font-medium text-[var(--foreground)]">
-                    {opt.label}
-                  </div>
-                  <SchemePreview scheme={opt.id} />
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <div className="flex flex-wrap items-center gap-2.5 pt-1">
-          <SubmitButton
-            loading={saving}
-            loadingLabel={tCommon("loading")}
-            className={SETTINGS_SUBMIT_PRIMARY}
-          >
-            {t("save")}
-          </SubmitButton>
-          {message ? (
-            <p
-              role="status"
-              className="text-xs"
-              style={{
-                color: messageKind === "ok" ? "var(--up)" : "var(--down)",
-              }}
-            >
-              {messageKind === "ok" ? "✓ " : ""}
-              {message}
-            </p>
-          ) : null}
-        </div>
-      </form>
+      <SettingsGeneralForm />
     </div>
   );
 }

@@ -270,6 +270,8 @@ export function OptionStrategyDrawer({
       onClose={onClose}
       title={t("title")}
       subtitle={`${symbol} · ${expiry}`}
+      /* `aw` = App 直角 tokens; keep panel white (plain `.aw` paints parchment). */
+      className="aw !bg-[var(--panel)]"
     >
       <div className="flex flex-col gap-0 px-4 py-3 text-[12px]">
         {/* 1. Quote strip */}

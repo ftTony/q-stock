@@ -1,15 +1,22 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { QtSelect } from "@/components/ui/qt-select";
 import type { CryptoVendorId, EquityVendorId } from "@/lib/market/types";
 import { notifyMarketVendorsChanged } from "@/lib/market/creds-status-client";
 import { SettingsHint } from "@/components/settings/settings-hint";
+import { useFlashMessage } from "@/components/settings/use-flash-message";
 import {
   useMarketCredentials,
   useSaveMarketCredentials,
 } from "@/hooks/query/use-credentials";
+
+type VendorValues = {
+  equityVendor: EquityVendorId;
+  cryptoVendor: CryptoVendorId;
+};
 
 /**
  * Choose preferred equity broker (Longbridge / Futu) and crypto exchange
@@ -19,40 +26,41 @@ export function MarketVendorPrefs() {
   const t = useTranslations("settings");
   const { data: remote } = useMarketCredentials();
   const saveMut = useSaveMarketCredentials();
+  const { message, flash, clearFlash } = useFlashMessage(2500);
 
-  const [equity, setEquity] = useState<EquityVendorId>("longbridge");
-  const [crypto, setCrypto] = useState<CryptoVendorId>("binance");
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (remote?.equityVendor) setEquity(remote.equityVendor);
-    if (remote?.cryptoVendor) setCrypto(remote.cryptoVendor);
-  }, [remote?.equityVendor, remote?.cryptoVendor]);
+  const { control, reset, setValue, formState } = useForm<VendorValues>({
+    defaultValues: {
+      equityVendor: "longbridge",
+      cryptoVendor: "binance",
+    },
+  });
 
   useEffect(() => {
-    if (!message) return;
-    const timer = setTimeout(() => setMessage(null), 2500);
-    return () => clearTimeout(timer);
-  }, [message]);
+    if (!remote) return;
+    reset({
+      equityVendor: remote.equityVendor ?? "longbridge",
+      cryptoVendor: remote.cryptoVendor ?? "binance",
+    });
+  }, [remote, reset]);
 
   async function saveVendors(
     next: Partial<{ equityVendor: EquityVendorId; cryptoVendor: CryptoVendorId }>,
   ) {
-    setSaving(true);
-    setMessage(null);
+    clearFlash();
     try {
       const data = await saveMut.mutateAsync(next);
-      if (data.equityVendor) setEquity(data.equityVendor);
-      if (data.cryptoVendor) setCrypto(data.cryptoVendor);
+      if (data.equityVendor || data.cryptoVendor) {
+        setValue("equityVendor", data.equityVendor ?? "longbridge");
+        setValue("cryptoVendor", data.cryptoVendor ?? "binance");
+      }
       notifyMarketVendorsChanged(data);
-      setMessage(t("vendorSaved"));
+      flash("ok", t("vendorSaved"));
     } catch {
-      setMessage(t("credsSaveError"));
-    } finally {
-      setSaving(false);
+      flash("error", t("credsSaveError"));
     }
   }
+
+  const saving = saveMut.isPending || formState.isSubmitting;
 
   return (
     <section className="space-y-3 border-b border-[var(--aw-hairline,var(--border))] pb-5">
@@ -65,33 +73,45 @@ export function MarketVendorPrefs() {
       <div className="grid gap-4 sm:grid-cols-2">
         <div className="space-y-1.5">
           <span className="aw-metric-label block">{t("vendorEquity")}</span>
-          <QtSelect
-            value={equity}
-            onChange={(v) => {
-              const next = v as EquityVendorId;
-              setEquity(next);
-              void saveVendors({ equityVendor: next });
-            }}
-            options={[
-              { value: "longbridge", label: t("credsLongbridge") },
-              { value: "futu", label: t("credsFutu") },
-            ]}
+          <Controller
+            name="equityVendor"
+            control={control}
+            render={({ field }) => (
+              <QtSelect
+                value={field.value}
+                onChange={(v) => {
+                  const next = v as EquityVendorId;
+                  field.onChange(next);
+                  void saveVendors({ equityVendor: next });
+                }}
+                options={[
+                  { value: "longbridge", label: t("credsLongbridge") },
+                  { value: "futu", label: t("credsFutu") },
+                ]}
+              />
+            )}
           />
           <SettingsHint>{t("vendorEquityHint")}</SettingsHint>
         </div>
         <div className="space-y-1.5">
           <span className="aw-metric-label block">{t("vendorCrypto")}</span>
-          <QtSelect
-            value={crypto}
-            onChange={(v) => {
-              const next = v as CryptoVendorId;
-              setCrypto(next);
-              void saveVendors({ cryptoVendor: next });
-            }}
-            options={[
-              { value: "binance", label: t("credsBinance") },
-              { value: "okx", label: t("credsOkx") },
-            ]}
+          <Controller
+            name="cryptoVendor"
+            control={control}
+            render={({ field }) => (
+              <QtSelect
+                value={field.value}
+                onChange={(v) => {
+                  const next = v as CryptoVendorId;
+                  field.onChange(next);
+                  void saveVendors({ cryptoVendor: next });
+                }}
+                options={[
+                  { value: "binance", label: t("credsBinance") },
+                  { value: "okx", label: t("credsOkx") },
+                ]}
+              />
+            )}
           />
           <SettingsHint>{t("vendorCryptoHint")}</SettingsHint>
         </div>

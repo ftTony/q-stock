@@ -24,12 +24,17 @@ import {
   type StrikeRow,
 } from "./option-chain-utils";
 
+const SCROLL_EPS = 1;
+
 function syncLeft(
   left: number,
   ...els: Array<HTMLDivElement | null | undefined>
 ) {
+  const target = Math.round(left);
   for (const el of els) {
-    if (el && Math.abs(el.scrollLeft - left) > 0.5) el.scrollLeft = left;
+    if (el && Math.abs(el.scrollLeft - target) > SCROLL_EPS) {
+      el.scrollLeft = target;
+    }
   }
 }
 
@@ -73,6 +78,8 @@ export const OptionChainPanes = memo(function OptionChainPanes({
   const putHeadRef = useRef<HTMLDivElement>(null);
   const callBarRef = useRef<HTMLDivElement>(null);
   const putBarRef = useRef<HTMLDivElement>(null);
+  /** Blocks re-entrant scroll events while programmatically syncing peers. */
+  const syncLockRef = useRef(false);
   const [callInnerW, setCallInnerW] = useState(0);
   const [putInnerW, setPutInnerW] = useState(0);
 
@@ -81,7 +88,8 @@ export const OptionChainPanes = memo(function OptionChainPanes({
     if (!put || callMax <= 0) return;
     const putMax = put.scrollWidth - put.clientWidth;
     if (putMax <= 0) return;
-    const want = putMax * (1 - Math.min(1, Math.max(0, callLeft / callMax)));
+    const ratio = Math.min(1, Math.max(0, callLeft / callMax));
+    const want = Math.round(putMax * (1 - ratio));
     syncLeft(want, put, putHeadRef.current, putBarRef.current);
   };
 
@@ -90,34 +98,54 @@ export const OptionChainPanes = memo(function OptionChainPanes({
     if (!call || putMax <= 0) return;
     const callMax = call.scrollWidth - call.clientWidth;
     if (callMax <= 0) return;
-    const want = callMax * (1 - Math.min(1, Math.max(0, putLeft / putMax)));
+    const ratio = Math.min(1, Math.max(0, putLeft / putMax));
+    const want = Math.round(callMax * (1 - ratio));
     syncLeft(want, call, callHeadRef.current, callBarRef.current);
   };
 
+  /** Drive call side + mirrored put; ignore nested scroll events. */
+  const applyCallLeft = (left: number) => {
+    if (syncLockRef.current) return;
+    syncLockRef.current = true;
+    try {
+      const call = callBodyRef.current;
+      if (!call) return;
+      const callMax = call.scrollWidth - call.clientWidth;
+      syncLeft(left, call, callHeadRef.current, callBarRef.current);
+      mirrorPutFromCall(left, callMax);
+    } finally {
+      syncLockRef.current = false;
+    }
+  };
+
+  const applyPutLeft = (left: number) => {
+    if (syncLockRef.current) return;
+    syncLockRef.current = true;
+    try {
+      const put = putBodyRef.current;
+      if (!put) return;
+      const putMax = put.scrollWidth - put.clientWidth;
+      syncLeft(left, put, putHeadRef.current, putBarRef.current);
+      mirrorCallFromPut(left, putMax);
+    } finally {
+      syncLockRef.current = false;
+    }
+  };
+
   const onCallBodyScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    syncLeft(el.scrollLeft, callHeadRef.current, callBarRef.current);
-    mirrorPutFromCall(el.scrollLeft, el.scrollWidth - el.clientWidth);
+    applyCallLeft(e.currentTarget.scrollLeft);
   };
 
   const onPutBodyScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    syncLeft(el.scrollLeft, putHeadRef.current, putBarRef.current);
-    mirrorCallFromPut(el.scrollLeft, el.scrollWidth - el.clientWidth);
+    applyPutLeft(e.currentTarget.scrollLeft);
   };
 
   const onCallBarScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const body = callBodyRef.current;
-    if (body && Math.abs(body.scrollLeft - e.currentTarget.scrollLeft) > 0.5) {
-      body.scrollLeft = e.currentTarget.scrollLeft;
-    }
+    applyCallLeft(e.currentTarget.scrollLeft);
   };
 
   const onPutBarScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const body = putBodyRef.current;
-    if (body && Math.abs(body.scrollLeft - e.currentTarget.scrollLeft) > 0.5) {
-      body.scrollLeft = e.currentTarget.scrollLeft;
-    }
+    applyPutLeft(e.currentTarget.scrollLeft);
   };
 
   useLayoutEffect(() => {
@@ -139,25 +167,31 @@ export const OptionChainPanes = memo(function OptionChainPanes({
       const table = put.querySelector("table");
       if (table) ro.observe(table);
     }
-    if (call) {
-      const left = call.scrollWidth - call.clientWidth;
-      syncLeft(left, call, callHeadRef.current, callBarRef.current);
-    }
-    if (put) {
-      syncLeft(0, put, putHeadRef.current, putBarRef.current);
+    syncLockRef.current = true;
+    try {
+      if (call) {
+        const left = call.scrollWidth - call.clientWidth;
+        syncLeft(left, call, callHeadRef.current, callBarRef.current);
+      }
+      if (put) {
+        syncLeft(0, put, putHeadRef.current, putBarRef.current);
+      }
+    } finally {
+      syncLockRef.current = false;
     }
     return () => ro.disconnect();
   }, [rows.length, showCall, showPut]);
 
   // Keep fake thumbs aligned after spacer width commits.
   useLayoutEffect(() => {
-    const call = callBodyRef.current;
-    const put = putBodyRef.current;
-    if (call) {
-      syncLeft(call.scrollLeft, callBarRef.current);
-    }
-    if (put) {
-      syncLeft(put.scrollLeft, putBarRef.current);
+    syncLockRef.current = true;
+    try {
+      const call = callBodyRef.current;
+      const put = putBodyRef.current;
+      if (call) syncLeft(call.scrollLeft, callBarRef.current);
+      if (put) syncLeft(put.scrollLeft, putBarRef.current);
+    } finally {
+      syncLockRef.current = false;
     }
   }, [callInnerW, putInnerW]);
 

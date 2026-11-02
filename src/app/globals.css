@@ -315,9 +315,34 @@ select.qt-input::-ms-expand {
   line-height: 1.25;
 }
 
+/*
+ * One action-button height across Save / billing / creds.
+ * Beat qt-btn-primary padding + SubmitButton wrappers so all CTAs = field h-9.
+ */
+.settings-ui
+  :is(
+    button.qt-btn-primary,
+    a.qt-btn-primary,
+    button.qt-btn-ghost,
+    a.qt-btn-ghost,
+    .qt-btn.qt-btn-primary,
+    .qt-btn.qt-btn-ghost
+  ):not(.invite-action-btn) {
+  box-sizing: border-box;
+  height: 2.25rem !important;
+  min-height: 2.25rem !important;
+  max-height: 2.25rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+  border-radius: 0 !important;
+}
+
 /* Invite row actions stay compact (override settings-ui 14px). */
 .settings-ui .invite-action-btn {
   height: 28px !important;
+  min-height: 28px !important;
+  max-height: 28px !important;
   padding: 0 10px !important;
   font-size: 12px !important;
   font-weight: 500;

@@ -10,6 +10,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { useMounted } from "@/hooks/use-mounted";
+import { qtPortalShellClass } from "@/components/ui/qt-portal-shell";
 
 type MenuPos = { top: number; left: number; maxHeight: number };
 
@@ -176,6 +177,8 @@ export function QtDatePicker({
     maxT == null ||
     new Date(view.getFullYear(), view.getMonth(), 1, 12).getTime() <= maxT;
 
+  const portalShell = qtPortalShellClass(rootRef.current);
+
   const pop =
     mounted && open && pos
       ? createPortal(
@@ -190,7 +193,7 @@ export function QtDatePicker({
               width: 272,
               maxHeight: pos.maxHeight,
             }}
-            className="fixed z-[80] overflow-auto rounded-xl border border-[var(--border)] bg-[var(--panel)] p-2 shadow-[0_12px_40px_rgba(15,23,42,0.16)]"
+            className={`${portalShell} fixed z-[80] overflow-auto rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)] p-2 shadow-[0_12px_40px_rgba(15,23,42,0.16)]`}
           >
             <div className="mb-1 flex items-center justify-between">
               <button

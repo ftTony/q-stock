@@ -1,6 +1,7 @@
 "use client";
 
-import { FormEvent, useEffect, useState } from "react";
+import { useEffect } from "react";
+import { Controller, useForm } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
@@ -9,6 +10,7 @@ import {
   SETTINGS_BTN_GHOST,
   SETTINGS_SUBMIT_PRIMARY,
 } from "@/components/settings/settings-btn";
+import { useFlashMessage } from "@/components/settings/use-flash-message";
 import {
   presetModelsForVendor,
   type AiCredsStatus,
@@ -23,6 +25,14 @@ import { trackBillingClick } from "@/lib/billing/client-events";
 
 const CUSTOM = "__custom__";
 
+type AiFormValues = {
+  vendor: AiVendor;
+  apiKey: string;
+  modelPick: string;
+  modelCustom: string;
+  baseUrl: string;
+};
+
 export function AiCredentialsForm() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
@@ -31,54 +41,67 @@ export function AiCredentialsForm() {
   const deleteMut = useDeleteServiceCredentials();
   const status: AiCredsStatus | null = credsQuery.data?.ai ?? null;
   const loading = credsQuery.isLoading;
+  const { message, messageKind, flash, clearFlash } = useFlashMessage();
 
-  const [saving, setSaving] = useState(false);
-  const [message, setMessage] = useState<string | null>(null);
-  const [messageKind, setMessageKind] = useState<"ok" | "error">("ok");
+  const {
+    register,
+    control,
+    handleSubmit,
+    watch,
+    setValue,
+    reset,
+    formState: { isSubmitting },
+  } = useForm<AiFormValues>({
+    defaultValues: {
+      vendor: "deepseek",
+      apiKey: "",
+      modelPick: presetModelsForVendor("deepseek")[0],
+      modelCustom: "",
+      baseUrl: "",
+    },
+  });
 
-  const [vendor, setVendor] = useState<AiVendor>("deepseek");
-  const [apiKey, setApiKey] = useState("");
-  const [modelPick, setModelPick] = useState<string>(
-    presetModelsForVendor("deepseek")[0],
-  );
-  const [modelCustom, setModelCustom] = useState("");
-  const [baseUrl, setBaseUrl] = useState("");
+  const vendor = watch("vendor");
+  const modelPick = watch("modelPick");
+  const showBaseUrl = vendor !== "openai";
 
   useEffect(() => {
     const ai = credsQuery.data?.ai;
     if (!ai?.configured) return;
-    if (ai.vendor) setVendor(ai.vendor);
-    if (ai.baseUrl) setBaseUrl(ai.baseUrl);
+    const nextVendor = ai.vendor ?? "deepseek";
+    let nextPick = presetModelsForVendor(nextVendor)[0] || CUSTOM;
+    let nextCustom = "";
     if (ai.model && ai.vendor) {
       const presets = presetModelsForVendor(ai.vendor);
       if ((presets as readonly string[]).includes(ai.model)) {
-        setModelPick(ai.model);
-        setModelCustom("");
+        nextPick = ai.model;
       } else {
-        setModelPick(CUSTOM);
-        setModelCustom(ai.model);
+        nextPick = CUSTOM;
+        nextCustom = ai.model;
       }
     }
-  }, [credsQuery.data?.ai]);
-
-  useEffect(() => {
-    if (!message) return;
-    const timer = setTimeout(() => setMessage(null), 3500);
-    return () => clearTimeout(timer);
-  }, [message]);
+    reset({
+      vendor: nextVendor,
+      apiKey: "",
+      modelPick: nextPick,
+      modelCustom: nextCustom,
+      baseUrl: ai.baseUrl ?? "",
+    });
+  }, [credsQuery.data?.ai, reset]);
 
   useEffect(() => {
     const presets = presetModelsForVendor(vendor);
     if (vendor === "openai_compat") {
-      setModelPick(CUSTOM);
+      setValue("modelPick", CUSTOM);
       return;
     }
-    setModelPick((p) =>
-      (presets as readonly string[]).includes(p) || p === CUSTOM
-        ? p
-        : presets[0] || CUSTOM,
-    );
-  }, [vendor]);
+    const next =
+      (presets as readonly string[]).includes(modelPick) ||
+      modelPick === CUSTOM
+        ? modelPick
+        : presets[0] || CUSTOM;
+    if (next !== modelPick) setValue("modelPick", next);
+  }, [vendor, setValue, modelPick]);
 
   const presetModels = presetModelsForVendor(vendor);
   const modelOptions = [
@@ -86,54 +109,48 @@ export function AiCredentialsForm() {
     { value: CUSTOM, label: t("aiModelCustom") },
   ];
 
-  const showBaseUrl = vendor !== "openai";
-
-  async function onSave(e: FormEvent) {
-    e.preventDefault();
-    setSaving(true);
-    setMessage(null);
+  async function onSubmit(values: AiFormValues) {
+    clearFlash();
     const model =
-      modelPick === CUSTOM ? modelCustom.trim() : modelPick.trim();
+      values.modelPick === CUSTOM
+        ? values.modelCustom.trim()
+        : values.modelPick.trim();
     try {
       await saveMut.mutateAsync({
         ai: {
-          vendor,
-          apiKey: apiKey.trim() || undefined,
+          vendor: values.vendor,
+          apiKey: values.apiKey.trim() || undefined,
           model,
-          baseUrl: showBaseUrl ? baseUrl.trim() || undefined : undefined,
+          baseUrl:
+            values.vendor !== "openai"
+              ? values.baseUrl.trim() || undefined
+              : undefined,
         },
       });
-      setApiKey("");
-      setMessageKind("ok");
-      setMessage(t("aiSaved"));
+      setValue("apiKey", "");
+      flash("ok", t("aiSaved"));
       void trackBillingClick("click_byok");
     } catch (err) {
-      setMessageKind("error");
-      setMessage(err instanceof Error ? err.message : t("aiSaveError"));
-    } finally {
-      setSaving(false);
+      flash("error", err instanceof Error ? err.message : t("aiSaveError"));
     }
   }
 
   async function onClear() {
-    setSaving(true);
-    setMessage(null);
+    clearFlash();
     try {
       await deleteMut.mutateAsync("ai");
-      setApiKey("");
-      setMessageKind("ok");
-      setMessage(t("aiCleared"));
+      setValue("apiKey", "");
+      flash("ok", t("aiCleared"));
     } catch {
-      setMessageKind("error");
-      setMessage(t("aiSaveError"));
-    } finally {
-      setSaving(false);
+      flash("error", t("aiSaveError"));
     }
   }
 
   if (loading) {
     return <PanelSkeleton rows={3} label={tCommon("loading")} />;
   }
+
+  const busy = isSubmitting || deleteMut.isPending;
 
   return (
     <div className="space-y-3 border-t border-[var(--aw-hairline,var(--border))] pt-4">
@@ -157,23 +174,29 @@ export function AiCredentialsForm() {
         </p>
       </div>
 
-      <form onSubmit={onSave} className="space-y-3">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
         <div className="grid gap-3 sm:grid-cols-2">
           <div className="space-y-2">
             <span className="block text-xs text-[var(--muted)]">
               {t("aiVendor")}
             </span>
-            <QtSelect
-              value={vendor}
-              onChange={(v) => setVendor(v as AiVendor)}
-              options={[
-                { value: "deepseek", label: t("aiVendorDeepseek") },
-                { value: "openai", label: t("aiVendorOpenai") },
-                { value: "gemini", label: t("aiVendorGemini") },
-                { value: "anthropic", label: t("aiVendorAnthropic") },
-                { value: "openai_compat", label: t("aiVendorCompat") },
-              ]}
-              disabled={saving}
+            <Controller
+              name="vendor"
+              control={control}
+              render={({ field }) => (
+                <QtSelect
+                  value={field.value}
+                  onChange={(v) => field.onChange(v as AiVendor)}
+                  options={[
+                    { value: "deepseek", label: t("aiVendorDeepseek") },
+                    { value: "openai", label: t("aiVendorOpenai") },
+                    { value: "gemini", label: t("aiVendorGemini") },
+                    { value: "anthropic", label: t("aiVendorAnthropic") },
+                    { value: "openai_compat", label: t("aiVendorCompat") },
+                  ]}
+                  disabled={busy}
+                />
+              )}
             />
           </div>
           <label className="block space-y-2">
@@ -183,24 +206,29 @@ export function AiCredentialsForm() {
             <input
               type="password"
               autoComplete="off"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
+              {...register("apiKey")}
               placeholder={
                 status?.configured ? t("credsKeepPlaceholder") : undefined
               }
               className="qt-input h-9 w-full px-3 text-[14px] leading-none"
-              disabled={saving}
+              disabled={busy}
             />
           </label>
           <div className="space-y-2">
             <span className="block text-xs text-[var(--muted)]">
               {t("aiModel")}
             </span>
-            <QtSelect
-              value={modelPick}
-              onChange={setModelPick}
-              options={modelOptions}
-              disabled={saving}
+            <Controller
+              name="modelPick"
+              control={control}
+              render={({ field }) => (
+                <QtSelect
+                  value={field.value}
+                  onChange={field.onChange}
+                  options={modelOptions}
+                  disabled={busy}
+                />
+              )}
             />
           </div>
           {showBaseUrl ? (
@@ -210,16 +238,16 @@ export function AiCredentialsForm() {
               </span>
               <input
                 type="url"
-                value={baseUrl}
-                onChange={(e) => setBaseUrl(e.target.value)}
+                {...register("baseUrl", {
+                  required: vendor === "openai_compat",
+                })}
                 placeholder={
                   vendor === "openai_compat"
                     ? "https://api.example.com/v1"
                     : t("aiBaseUrlOptional")
                 }
                 className="qt-input h-9 w-full px-3 text-[14px] leading-none"
-                disabled={saving}
-                required={vendor === "openai_compat"}
+                disabled={busy}
               />
             </label>
           ) : null}
@@ -229,11 +257,9 @@ export function AiCredentialsForm() {
                 {t("aiModelId")}
               </span>
               <input
-                required
-                value={modelCustom}
-                onChange={(e) => setModelCustom(e.target.value)}
+                {...register("modelCustom", { required: true })}
                 className="qt-input h-9 w-full px-3 text-[14px] leading-none"
-                disabled={saving}
+                disabled={busy}
                 placeholder="claude-opus-4-20250514"
               />
             </label>
@@ -242,7 +268,7 @@ export function AiCredentialsForm() {
 
         <div className="flex flex-wrap items-center gap-2.5">
           <SubmitButton
-            loading={saving}
+            loading={isSubmitting}
             loadingLabel={tCommon("loading")}
             className={SETTINGS_SUBMIT_PRIMARY}
           >
@@ -251,8 +277,8 @@ export function AiCredentialsForm() {
           {status?.configured ? (
             <button
               type="button"
-              onClick={onClear}
-              disabled={saving}
+              onClick={() => void onClear()}
+              disabled={busy}
               className={SETTINGS_BTN_GHOST}
             >
               {t("credsClear")}
