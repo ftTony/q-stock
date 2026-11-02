@@ -812,28 +812,45 @@ html.aw-rail-resizing {
   display: none;
 }
 
-/* Right rail: hairline scrollbar (qt-scroll default 8px reads too thick here). */
-.aw-rail-scroll {
+/* Workbench hairline scrollbar (right rail + option chain Y share this). */
+.aw-rail-scroll,
+.aw .oc-board-y {
   scrollbar-width: thin;
   scrollbar-color: color-mix(in srgb, var(--muted) 28%, transparent) transparent;
 }
 
-.aw-rail-scroll::-webkit-scrollbar {
+.aw-rail-scroll::-webkit-scrollbar,
+.aw .oc-board-y::-webkit-scrollbar {
   width: 4px;
   height: 4px;
 }
 
-.aw-rail-scroll::-webkit-scrollbar-track {
+.aw-rail-scroll::-webkit-scrollbar-track,
+.aw .oc-board-y::-webkit-scrollbar-track {
   background: transparent;
 }
 
-.aw-rail-scroll::-webkit-scrollbar-thumb {
+.aw-rail-scroll::-webkit-scrollbar-thumb,
+.aw .oc-board-y::-webkit-scrollbar-thumb {
   background: color-mix(in srgb, var(--muted) 32%, transparent);
   border-radius: 999px;
 }
 
-.aw-rail-scroll::-webkit-scrollbar-thumb:hover {
+.aw-rail-scroll::-webkit-scrollbar-thumb:hover,
+.aw .oc-board-y::-webkit-scrollbar-thumb:hover {
   background: color-mix(in srgb, var(--muted) 48%, transparent);
+}
+
+.aw-rail-scroll::-webkit-scrollbar-button,
+.aw .oc-board-y::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.aw-rail-scroll::-webkit-scrollbar-corner,
+.aw .oc-board-y::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Secondary chip tabs (news/press, review filters): soft fill when active. */
@@ -931,20 +948,6 @@ html.aw-rail-resizing {
   overflow-y: auto;
   overscroll-behavior: contain;
 }
-.aw .oc-board-y::-webkit-scrollbar {
-  width: 10px;
-  height: 0;
-}
-.aw .oc-board-y::-webkit-scrollbar-track {
-  background: color-mix(in srgb, var(--muted) 12%, transparent);
-}
-.aw .oc-board-y::-webkit-scrollbar-thumb {
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--muted) 45%, transparent);
-}
-.aw .oc-board-y::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--muted) 65%, transparent);
-}
 
 /*
  * One hairline under the sticky header strip. Do not also put border-b on
@@ -979,32 +982,49 @@ html.aw-rail-resizing {
   display: none;
 }
 
-/* Always-visible H track under the chain (outside Y scroll). */
+/*
+ * Always-visible H track under the chain (outside Y scroll).
+ * Pane must be taller than a 4px thumb: Windows `scrollbar-width: thin`
+ * still reserves ~10–12px; a 4px box clips the bar to a hairline.
+ * Hit area = 10px; visual thumb kept thin via padding-box inset.
+ */
 .aw .oc-h-bar {
-  min-height: 12px;
+  min-height: 10px;
+  flex-shrink: 0;
 }
 .aw .oc-h-bar-pane {
-  height: 12px;
+  height: 10px;
   overflow-x: auto;
   overflow-y: hidden;
   overscroll-behavior-x: contain;
   scrollbar-width: thin;
-  scrollbar-color: color-mix(in srgb, var(--muted) 50%, transparent)
-    color-mix(in srgb, var(--muted) 12%, transparent);
+  scrollbar-color: color-mix(in srgb, var(--muted) 28%, transparent) transparent;
 }
 .aw .oc-h-bar-pane::-webkit-scrollbar {
   width: 0;
   height: 10px;
 }
 .aw .oc-h-bar-pane::-webkit-scrollbar-track {
-  background: color-mix(in srgb, var(--muted) 12%, transparent);
+  background: transparent;
 }
 .aw .oc-h-bar-pane::-webkit-scrollbar-thumb {
-  border-radius: 9999px;
-  background: color-mix(in srgb, var(--muted) 50%, transparent);
+  background: color-mix(in srgb, var(--muted) 32%, transparent);
+  border-radius: 999px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
 }
 .aw .oc-h-bar-pane::-webkit-scrollbar-thumb:hover {
-  background: color-mix(in srgb, var(--muted) 70%, transparent);
+  background: color-mix(in srgb, var(--muted) 48%, transparent);
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+.aw .oc-h-bar-pane::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+.aw .oc-h-bar-pane::-webkit-scrollbar-corner {
+  background: transparent;
 }
 
 /* Collapse spacer thead height; keep column widths for head/body align. */
