@@ -140,7 +140,7 @@ export function QtSelect({
               width: pos.width,
               maxHeight: pos.maxHeight,
             }}
-            className={`${portalShell} fixed z-[80] overflow-auto rounded-[var(--radius)] border border-[var(--border)] bg-[var(--panel)] p-1.5 shadow-[0_12px_40px_rgba(15,23,42,0.16)] qt-scroll`}
+            className={`${portalShell} fixed z-[80] overflow-auto rounded-[var(--radius)] border border-[var(--border)] !bg-[var(--panel)] p-1.5 shadow-[0_12px_40px_rgba(15,23,42,0.16)] qt-scroll`}
           >
             {options.map((opt, index) => {
               const active = opt.value === value;

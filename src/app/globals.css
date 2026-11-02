@@ -187,6 +187,17 @@ body {
   --radius-control: 0;
 }
 
+/*
+ * Portaled QtSelect / QtDatePicker menus: App 直角 without `.aw` parchment bg.
+ * Full `.aw` sets `background: var(--background)` and would tint the popover.
+ */
+.qt-portal-shell {
+  --radius: 0;
+  --radius-md: 0;
+  --radius-sm: 0;
+  --radius-control: 0;
+}
+
 a {
   color: inherit;
   text-decoration: none;
