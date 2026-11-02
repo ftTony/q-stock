@@ -165,13 +165,5 @@ export function SpotLine() {
   );
 }
 
-/**
- * Scrollbar styling lives in plain CSS (apple-workbench.css, class
- * `oc-scroll-pane`): Tailwind v4 arbitrary ::-webkit-scrollbar variants are
- * unreliable and leaked the system vertical scrollbar. Horizontal keeps the
- * 8px thumb; vertical is hidden — the outer rail owns vertical scrolling.
- */
-export const SCROLL_PANE = "oc-scroll-pane";
-
 /** Row height used for the spot-anchor row — taller than the data rows. */
 export const ANCHOR_ROW_H = "h-10";

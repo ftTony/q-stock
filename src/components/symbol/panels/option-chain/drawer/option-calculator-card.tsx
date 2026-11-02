@@ -129,14 +129,10 @@ export function OptionCalculatorCard({
   );
 
   return (
-    <div>
-      <div className="text-[12px] font-medium text-[var(--foreground)]">
-        {t("calcTitle")}
-      </div>
-      <div className="mt-2.5 flex flex-col gap-2.5">
+    <div className="flex flex-col gap-2.5">
           {/* theory results */}
           <div className="grid grid-cols-2 gap-x-4">
-            <div className="flex items-baseline justify-between">
+            <div className="flex items-baseline justify-between gap-2">
               <span className="text-[11px] text-[var(--muted)]">
                 {t("theoPrice")}
               </span>
@@ -144,7 +140,7 @@ export function OptionCalculatorCard({
                 {fmtNum(res?.theo ?? null, 3)}
               </span>
             </div>
-            <div className="flex items-baseline justify-between">
+            <div className="flex items-baseline justify-between gap-2">
               <span className="text-[11px] text-[var(--muted)]">
                 {t("distCurrent")}
               </span>
@@ -161,7 +157,7 @@ export function OptionCalculatorCard({
           <div className="grid grid-cols-5 gap-1 text-center">
             {greeks.map((g) => (
               <div key={g.k}>
-                <div className="text-[10px] uppercase text-[var(--muted)]">
+                <div className="text-[10px] tracking-wide text-[var(--muted)]">
                   {g.k}
                 </div>
                 <div className="truncate text-[12px] font-medium tabular-nums">
@@ -170,12 +166,12 @@ export function OptionCalculatorCard({
               </div>
             ))}
           </div>
-          {/* model toggle */}
+          {/* model toggle — sharp corners for App shell */}
           <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-[var(--muted)]">
+            <span className="w-16 shrink-0 text-[11px] text-[var(--muted)]">
               {t("model")}
             </span>
-            <div className="flex flex-1 overflow-hidden rounded-[var(--radius-md)] border border-[var(--aw-hairline,var(--border))] bg-[var(--input)]">
+            <div className="flex flex-1 overflow-hidden border border-[var(--aw-hairline,var(--border))] bg-[var(--input)]">
               {(["american", "european"] as const).map((m) => (
                 <button
                   key={m}
@@ -194,7 +190,7 @@ export function OptionCalculatorCard({
           </div>
           {/* valuation date + slider */}
           <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-[var(--muted)]">
+            <span className="w-16 shrink-0 text-[11px] text-[var(--muted)]">
               {t("valDate")}
             </span>
             <QtDatePicker
@@ -223,7 +219,7 @@ export function OptionCalculatorCard({
           />
           {/* spot */}
           <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-[var(--muted)]">
+            <span className="w-16 shrink-0 text-[11px] text-[var(--muted)]">
               {t("spotPrice")}
             </span>
             <input
@@ -239,7 +235,7 @@ export function OptionCalculatorCard({
           </div>
           {/* IV */}
           <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-[var(--muted)]">
+            <span className="w-16 shrink-0 text-[11px] text-[var(--muted)]">
               {t("ivLabel")}
             </span>
             {pctField(iv, setIv, "0.01", t("ivLabel"))}
@@ -249,13 +245,12 @@ export function OptionCalculatorCard({
           </div>
           {/* risk-free rate */}
           <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-[var(--muted)]">
+            <span className="w-16 shrink-0 text-[11px] text-[var(--muted)]">
               {t("rateLabel")}
             </span>
             {pctField(rate, setRate, "0.0001", t("rateLabel"))}
             {quick(t("defaultVal"), () => setRate(String(DEFAULT_RATE_PCT)))}
           </div>
-        </div>
     </div>
   );
 }

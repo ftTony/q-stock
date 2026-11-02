@@ -258,6 +258,7 @@
     "optFilterItm": "ITM",
     "optFilterOtm": "OTM",
     "optExpiryDays": "{n}d",
+    "optExpiryExpired": "Expired",
     "optContractsUnit": "",
     "optCol": {
       "contract": "Contract",

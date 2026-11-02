@@ -41,8 +41,6 @@ type OptionSnap = {
   low_price?: number;
 };
 
-const NEAR_SPOT = 30;
-
 function assertOptionMarket(assetType: AssetType) {
   if (assetType !== "stock" && assetType !== "hk") {
     throw new MarketDataError("Futu options are US/HK only", "futu");
@@ -52,17 +50,8 @@ function assertOptionMarket(assetType: AssetType) {
   }
 }
 
-function pickNearSpot<T extends { strike: number }>(
-  rows: T[],
-  spot: number,
-  take: number,
-): T[] {
-  if (!rows.length) return [];
-  if (!(spot > 0)) return rows.slice(0, take);
-  const sorted = [...rows].sort(
-    (a, b) => Math.abs(a.strike - spot) - Math.abs(b.strike - spot),
-  );
-  return sorted.slice(0, take).sort((a, b) => a.strike - b.strike);
+function sortByStrike<T extends { strike: number }>(rows: T[]): T[] {
+  return [...rows].sort((a, b) => a.strike - b.strike);
 }
 
 export async function fetchFutuOptionExpiries(
@@ -92,14 +81,14 @@ export async function fetchFutuOptionChain(
   symbol: string,
   assetType: AssetType,
   expiryYmd: string,
-  spot: number,
+  _spot: number,
 ): Promise<OptionChainBundle> {
   assertOptionMarket(assetType);
   if (!/^\d{4}-\d{2}-\d{2}$/.test(expiryYmd.trim())) {
     throw new MarketDataError("Invalid option expiry", "futu");
   }
   const code = toFutuSymbol(normalizeSymbol(symbol, assetType), assetType);
-  const key = `futu:opt-chain:v1:${code}:${expiryYmd}:${Math.round(spot * 100)}`;
+  const key = `futu:opt-chain:v2:${code}:${expiryYmd}`;
 
   return cachedFetch(key, 120_000, async () => {
     const { data } = await futuRequest<{ option_chain?: ChainContract[] }>(
@@ -130,8 +119,9 @@ export async function fetchFutuOptionChain(
       else putsRaw.push(row);
     }
 
-    const callsPick = pickNearSpot(callsRaw, spot, NEAR_SPOT);
-    const putsPick = pickNearSpot(putsRaw, spot, NEAR_SPOT);
+    // Full chain — UI scroll owns density; do not near-spot truncate.
+    const callsPick = sortByStrike(callsRaw);
+    const putsPick = sortByStrike(putsRaw);
     const codes = [...callsPick, ...putsPick].map((r) => r.symbol);
     const quoteMap = new Map<string, OptionRow>();
 

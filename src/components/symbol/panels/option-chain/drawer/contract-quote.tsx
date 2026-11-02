@@ -6,7 +6,6 @@ import type { CalcResult } from "../option-calculator";
 import { daysToExpiry } from "../option-chain-utils";
 import { fmtNum } from "./drawer-ui";
 
-/** One label/value cell of the contract quote grid. */
 function QuoteCell({
   label,
   value,
@@ -17,14 +16,16 @@ function QuoteCell({
   tone?: "up" | "down" | null;
 }) {
   return (
-    <div className="flex items-center justify-between gap-2 py-[3px]">
-      <span className="shrink-0 text-[11px] text-[var(--muted)]">{label}</span>
+    <div className="flex items-baseline justify-between gap-2 py-0.5">
+      <span className="shrink-0 text-[11px] leading-[18px] text-[var(--muted)]">
+        {label}
+      </span>
       <span
-        className={`truncate text-right text-[12px] font-medium tabular-nums ${
+        className={`truncate text-right text-[12px] leading-[18px] tabular-nums ${
           tone === "up"
-            ? "text-[var(--up)]"
+            ? "font-medium text-[var(--up)]"
             : tone === "down"
-              ? "text-[var(--down)]"
+              ? "font-medium text-[var(--down)]"
               : "text-[var(--foreground)]"
         }`}
       >
@@ -35,8 +36,8 @@ function QuoteCell({
 }
 
 /**
- * Contract quote detail (drawer top): prices, volume/OI, leverage,
- * intrinsic/time value, greeks and mark price for the target contract.
+ * Contract quote: price hero + always-visible detail grid.
+ * Kind/strike selectors live in the parent drawer toolbar.
  */
 export function ContractQuote({
   row,
@@ -65,6 +66,9 @@ export function ContractQuote({
       : "—";
   const days = daysToExpiry(expiry);
   const chg = row?.chgPct ?? null;
+  const last = row?.last != null && row.last > 0 ? row.last : null;
+  const mid = premium;
+  const display = mid ?? last;
   const intrinsic =
     premium != null
       ? isCall
@@ -77,7 +81,7 @@ export function ContractQuote({
       : null;
   const leverage =
     premium != null && premium > 0 && spot > 0 ? spot / premium : null;
-  const chgTone = chg == null ? null : chg >= 0 ? "up" : "down";
+  const chgTone = chg == null ? null : chg >= 0 ? ("up" as const) : ("down" as const);
 
   const cells: [string, string, "up" | "down" | null][] = [
     [t("high"), f2(row?.high), null],
@@ -119,20 +123,64 @@ export function ContractQuote({
   ];
 
   return (
-    <div>
-      <div className="mb-1.5 flex items-center justify-between">
-        <span className="text-[12px] font-semibold text-[var(--foreground)]">
-          {t("quoteTitle")}
-        </span>
-        <span className="text-[11px] text-[var(--muted)]">
-          {symbol} {formatNumber(strike, { maximumFractionDigits: 2 })}{" "}
-          {isCall ? t("callOpt") : t("putOpt")}
-        </span>
+    <div className="flex flex-col gap-2.5">
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="min-w-0">
+          <div className="truncate text-[11px] leading-[16px] text-[var(--muted)]">
+            {symbol} {formatNumber(strike, { maximumFractionDigits: 2 })}{" "}
+            {isCall ? t("callOpt") : t("putOpt")}
+          </div>
+          <div
+            className={`mt-1 text-[22px] font-semibold leading-none tracking-[-0.02em] tabular-nums ${
+              chgTone === "up"
+                ? "text-[var(--up)]"
+                : chgTone === "down"
+                  ? "text-[var(--down)]"
+                  : "text-[var(--foreground)]"
+            }`}
+          >
+            {display != null
+              ? formatNumber(display, {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              : "—"}
+          </div>
+        </div>
+        <div className="shrink-0 text-right text-[12px] tabular-nums">
+          {chg != null ? (
+            <span
+              className={
+                chgTone === "up" ? "text-[var(--up)]" : "text-[var(--down)]"
+              }
+            >
+              {chg >= 0 ? "+" : ""}
+              {formatNumber(chg, { maximumFractionDigits: 2 })}%
+            </span>
+          ) : (
+            <span className="text-[var(--muted)]">—</span>
+          )}
+          {last != null && mid != null ? (
+            <div className="mt-0.5 text-[11px] text-[var(--muted)]">
+              {t("latestPrice")}{" "}
+              {formatNumber(last, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </div>
+          ) : null}
+        </div>
       </div>
-      <div className="grid grid-cols-2 gap-x-4">
-        {cells.map(([label, value, tone]) => (
-          <QuoteCell key={label} label={label} value={value} tone={tone} />
-        ))}
+
+      <div>
+        <div className="mb-1.5 text-[12px] font-medium text-[var(--foreground)]">
+          {t("quoteTitle")}
+        </div>
+        <div className="grid grid-cols-2 gap-x-5 border-t border-[var(--aw-hairline,var(--border))] pt-2">
+          {cells.map(([label, value, tone]) => (
+            <QuoteCell key={label} label={label} value={value} tone={tone} />
+          ))}
+        </div>
       </div>
     </div>
   );

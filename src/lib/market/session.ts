@@ -71,6 +71,12 @@ export function isUsRegularSessionOpen(now = new Date()): boolean {
   return minutes >= 9 * 60 + 30 && minutes < 16 * 60;
 }
 
+/** True before 16:00 America/New_York (same calendar day, any weekday). */
+export function isBeforeUsRegularClose(now = new Date()): boolean {
+  const { minutes } = zonedClock(now, "America/New_York");
+  return minutes < 16 * 60;
+}
+
 /** Calendar trade date `YYYY-MM-DD` in America/New_York. */
 export function usTradeDate(now = new Date()): string {
   return new Intl.DateTimeFormat("en-CA", {

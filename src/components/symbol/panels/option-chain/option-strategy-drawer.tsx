@@ -29,6 +29,9 @@ import { OptionCalculatorCard } from "./drawer/option-calculator-card";
 import { PayoffChart } from "./drawer/payoff-chart";
 import { StrategyLegsTable } from "./drawer/strategy-legs-table";
 import {
+  CHIP_CLS,
+  CHIP_OFF,
+  CHIP_ON,
   DEFAULT_RATE_PCT,
   QT_TRIGGER,
   SECTION_CLS,
@@ -54,9 +57,8 @@ function optionFor(
 }
 
 /**
- * Options tool drawer: contract quote on top, then the P&L strategy builder
- * (chips → order book → legs → metrics → payoff chart), then the calculator.
- * Presentation pieces live in ./drawer/*; this file owns state and data.
+ * Options tool drawer: quote strip → book → strategy → legs/metrics →
+ * payoff chart → calculator. Presentation in ./drawer/*.
  */
 export function OptionStrategyDrawer({
   open,
@@ -84,9 +86,9 @@ export function OptionStrategyDrawer({
   const [long, setLong] = useState(true);
   const [verticalKind, setVerticalKind] = useState<"call" | "put">("call");
   const [legs, setLegs] = useState<StrategyLeg[]>([]);
-
-  /* Target contract for the quote card + calculator (follows the chain seed). */
-  const [quoteKind, setQuoteKind] = useState<"call" | "put">(seed?.kind ?? "call");
+  const [quoteKind, setQuoteKind] = useState<"call" | "put">(
+    seed?.kind ?? "call",
+  );
   const [quoteStrike, setQuoteStrike] = useState<number>(seed?.strike ?? 0);
 
   const needsFar = DUAL_EXPIRY_STRATEGIES.includes(strategy);
@@ -97,7 +99,6 @@ export function OptionStrategyDrawer({
   const [farExpiry, setFarExpiry] = useState(farDefault);
   useEffect(() => setFarExpiry(farDefault), [farDefault]);
 
-  /** Rebuild legs when the structure (not the strikes) changes. */
   useEffect(() => {
     if (!open) return;
     setLegs(
@@ -115,17 +116,17 @@ export function OptionStrategyDrawer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, strategy, long, verticalKind, farExpiry, expiry, seed, rows.length]);
 
-  /** Calendar / diagonal need the far expiry's chain for premiums. */
   const farQuery = useQuery({
-    queryKey: ["market", "options", assetType, symbol, farExpiry, spot] as const,
+    // Same key shape as useMarketOptionsChain — no live spot (avoids refetch thrash).
+    queryKey: ["market", "options", assetType, symbol, farExpiry] as const,
     enabled: open && needsFar && Boolean(farExpiry),
     staleTime: 30_000,
+    placeholderData: (prev) => prev,
     queryFn: () => {
       const qs = new URLSearchParams({
         symbol,
         assetType,
         expiry: farExpiry,
-        spot: String(spot),
       });
       return fetchJson<ChainResponse>(`/api/market/options?${qs}`);
     },
@@ -147,7 +148,10 @@ export function OptionStrategyDrawer({
     [legs, rows, farRows, farExpiry, needsFar],
   );
 
-  const eval_ = useMemo(() => evaluateStrategy(pricedLegs, spot), [pricedLegs, spot]);
+  const eval_ = useMemo(
+    () => evaluateStrategy(pricedLegs, spot),
+    [pricedLegs, spot],
+  );
 
   const strikes = useMemo(() => availableStrikes(rows), [rows]);
   const farStrikes = useMemo(
@@ -179,7 +183,12 @@ export function OptionStrategyDrawer({
               Math.abs(eval_.netPremium),
               { maximumFractionDigits: 0 },
             )}`,
-      tone: eval_.netPremium > 0 ? "text-[var(--up)]" : "text-[var(--down)]",
+      tone:
+        eval_.netPremium > 0
+          ? "text-[var(--up)]"
+          : eval_.netPremium < 0
+            ? "text-[var(--down)]"
+            : "",
     },
     {
       label: t("maxProfit"),
@@ -203,7 +212,6 @@ export function OptionStrategyDrawer({
     },
   ];
 
-  // Align the quote target with the chain seed when it changes.
   useEffect(() => {
     if (!open) return;
     if (seed) {
@@ -211,13 +219,14 @@ export function OptionStrategyDrawer({
       setQuoteStrike(seed.strike);
     } else if (strikes.length && !quoteStrike) {
       setQuoteStrike(
-        strikes.reduce((a, b) => (Math.abs(b - spot) < Math.abs(a - spot) ? b : a)),
+        strikes.reduce((a, b) =>
+          Math.abs(b - spot) < Math.abs(a - spot) ? b : a,
+        ),
       );
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, seed]);
 
-  /* Contract quote (top of drawer, follows the quote target). */
   const quoteRow = quoteStrike
     ? optionFor(rows, quoteKind, quoteStrike)
     : undefined;
@@ -262,11 +271,11 @@ export function OptionStrategyDrawer({
       title={t("title")}
       subtitle={`${symbol} · ${expiry}`}
     >
-      <div className="flex flex-col gap-3 p-4 text-[12px]">
-        {/* contract quote detail (top) */}
+      <div className="flex flex-col gap-0 px-4 py-3 text-[12px]">
+        {/* 1. Quote strip */}
         {quoteStrike ? (
-          <div className="flex flex-col gap-1.5">
-            <div className="flex items-center gap-2">
+          <div className="flex flex-col gap-2 pb-3">
+            <div className="flex flex-wrap items-center gap-2">
               {qt(
                 quoteKind,
                 (v) => setQuoteKind(v as "call" | "put"),
@@ -297,100 +306,88 @@ export function OptionStrategyDrawer({
               symbol={symbol}
               t={t}
             />
-            {/* order book of the quoted contract (replaces the old mark row) */}
-            {quoteRow ? (
-              <div className="mt-2">
-                <LegBook row={quoteRow} t={t} />
-              </div>
-            ) : null}
+            {quoteRow ? <LegBook row={quoteRow} t={t} /> : null}
           </div>
         ) : null}
 
-        {/* P&L tool section */}
+        {/* 2. Strategy structure */}
         <div className={SECTION_CLS}>
-          <div className="text-[12px] font-semibold text-[var(--foreground)]">
-            {t("payoffTool")}
+          <div className="flex flex-wrap gap-1">
+            {STRATEGY_IDS.map((id) => {
+              const on = id === strategy;
+              return (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => setStrategy(id)}
+                  className={`${CHIP_CLS} ${on ? CHIP_ON : CHIP_OFF}`}
+                >
+                  <span
+                    aria-hidden
+                    className="inline-flex w-[1em] shrink-0 items-center justify-center text-[14px] font-semibold leading-none"
+                  >
+                    {strategyGlyph(id)}
+                  </span>
+                  {t(strategyLabelKey(id))}
+                </button>
+              );
+            })}
           </div>
-          {/* strategy chips */}
-          <div className="mt-2 flex flex-wrap gap-1">
-          {STRATEGY_IDS.map((id) => {
-            const on = id === strategy;
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setStrategy(id)}
-                className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[12px] transition-colors ${
-                  on
-                    ? "bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]"
-                    : "text-[var(--muted)] hover:bg-[color-mix(in_srgb,var(--muted)_10%,transparent)] hover:text-[var(--foreground)]"
-                }`}
-              >
-                <span aria-hidden className="text-[11px] leading-none opacity-80">
-                  {strategyGlyph(id)}
-                </span>
-                {t(strategyLabelKey(id))}
-              </button>
-            );
-          })}
-        </div>
 
-        {/* structure controls */}
-        <div className="mt-2.5 flex flex-wrap items-center gap-2">
-          {strategy === "vertical"
-            ? qt(
-                verticalKind,
-                (v) => setVerticalKind(v as "call" | "put"),
-                [
-                  { value: "call", label: t("callOpt") },
-                  { value: "put", label: t("putOpt") },
-                ],
-                "vertical kind",
-              )
-            : null}
-          {strategy === "vertical" ||
-          strategy === "straddle" ||
-          strategy === "strangle"
-            ? qt(
-                long ? "long" : "short",
-                (v) => setLong(v === "long"),
-                [
-                  { value: "long", label: t("directionLong") },
-                  { value: "short", label: t("directionShort") },
-                ],
-                "direction",
-              )
-            : null}
-          {needsFar
-            ? qt(
-                farExpiry,
-                (v) => setFarExpiry(v),
-                expiries
-                  .filter((d) => d !== expiry)
-                  .map((d) => ({ value: d, label: d })),
-                "far expiry",
-              )
-            : null}
-          {needsFar && farQuery.isFetching ? (
-            <span className="text-[11px] text-[var(--muted)]">
-              {t("farLoading")}
-            </span>
-          ) : null}
-        </div>
+          <div className="mt-2.5 flex flex-wrap items-center gap-2">
+            {strategy === "vertical"
+              ? qt(
+                  verticalKind,
+                  (v) => setVerticalKind(v as "call" | "put"),
+                  [
+                    { value: "call", label: t("callOpt") },
+                    { value: "put", label: t("putOpt") },
+                  ],
+                  "vertical kind",
+                )
+              : null}
+            {strategy === "vertical" ||
+            strategy === "straddle" ||
+            strategy === "strangle"
+              ? qt(
+                  long ? "long" : "short",
+                  (v) => setLong(v === "long"),
+                  [
+                    { value: "long", label: t("directionLong") },
+                    { value: "short", label: t("directionShort") },
+                  ],
+                  "direction",
+                )
+              : null}
+            {needsFar
+              ? qt(
+                  farExpiry,
+                  (v) => setFarExpiry(v),
+                  expiries
+                    .filter((d) => d !== expiry)
+                    .map((d) => ({ value: d, label: d })),
+                  "far expiry",
+                )
+              : null}
+            {needsFar && farQuery.isFetching ? (
+              <span className="text-[11px] text-[var(--muted)]">
+                {t("farLoading")}
+              </span>
+            ) : null}
+          </div>
 
-        <div className="mt-2.5">
-          <StrategyLegsTable
-            legs={pricedLegs}
-            strikes={strikes}
-            farStrikes={farStrikes}
-            needsFar={needsFar}
-            farExpiry={farExpiry}
-            onChange={setLeg}
-            t={t}
-          />
-        </div>
+          <div className="mt-2.5">
+            <StrategyLegsTable
+              legs={pricedLegs}
+              strikes={strikes}
+              farStrikes={farStrikes}
+              needsFar={needsFar}
+              farExpiry={farExpiry}
+              onChange={setLeg}
+              t={t}
+            />
+          </div>
 
-        {/* metrics */}
           <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
             {metrics.map((m) => (
               <div key={m.label}>
@@ -404,34 +401,37 @@ export function OptionStrategyDrawer({
               </div>
             ))}
           </div>
-
-        {/* payoff chart */}
-          <div className="mt-3">
-            <div className="mb-1 flex items-center justify-between text-[11px] text-[var(--muted)]">
-              <span>{t("atExpiry")}</span>
-              <span>
-                {t("perContract")} · {t("spotLabel")}{" "}
-                {formatNumber(spot, { maximumFractionDigits: 2 })}
-              </span>
-            </div>
-            {eval_.prices.length ? (
-              <PayoffChart
-                prices={eval_.prices}
-                combined={eval_.combined}
-                perLeg={eval_.perLeg}
-                spot={spot}
-                breakevens={eval_.breakevens}
-                strikeMarks={strikeMarks}
-              />
-            ) : null}
-            <p className="mt-1 text-[11px] leading-relaxed text-[var(--muted)]">
-              {t("pickFromChain")}
-            </p>
-          </div>
         </div>
 
-        {/* calculator section */}
+        {/* 3. Payoff chart (primary visual) */}
         <div className={SECTION_CLS}>
+          <div className="mb-1.5 flex items-center justify-between text-[11px] text-[var(--muted)]">
+            <span>{t("atExpiry")}</span>
+            <span className="tabular-nums">
+              {t("perContract")} · {t("spotLabel")}{" "}
+              {formatNumber(spot, { maximumFractionDigits: 2 })}
+            </span>
+          </div>
+          {eval_.prices.length ? (
+            <PayoffChart
+              prices={eval_.prices}
+              combined={eval_.combined}
+              perLeg={eval_.perLeg}
+              spot={spot}
+              breakevens={eval_.breakevens}
+              strikeMarks={strikeMarks}
+            />
+          ) : null}
+          <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--muted)]">
+            {t("pickFromChain")}
+          </p>
+        </div>
+
+        {/* 4. Calculator — always visible */}
+        <div className={SECTION_CLS}>
+          <div className="mb-2 text-[12px] font-medium text-[var(--foreground)]">
+            {t("calcTitle")}
+          </div>
           <OptionCalculatorCard
             spot={spot}
             strike={quoteStrike}

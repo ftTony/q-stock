@@ -282,17 +282,8 @@ function ymdParts(ymd: string): { y: number; m: number; d: number } | null {
   return { y: Number(m[1]), m: Number(m[2]), d: Number(m[3]) };
 }
 
-function pickNearSpot<T extends { strike: number }>(
-  rows: T[],
-  spot: number,
-  take: number,
-): T[] {
-  if (!rows.length) return [];
-  if (!(spot > 0)) return rows.slice(0, take);
-  const sorted = [...rows].sort(
-    (a, b) => Math.abs(a.strike - spot) - Math.abs(b.strike - spot),
-  );
-  return sorted.slice(0, take).sort((a, b) => a.strike - b.strike);
+function sortByStrike<T extends { strike: number }>(rows: T[]): T[] {
+  return [...rows].sort((a, b) => a.strike - b.strike);
 }
 
 /** Longbridge OptionDirection: Unknown=0 Put=1 Call=2 (const enum — use literals). */
@@ -359,14 +350,14 @@ export async function fetchLbOptionChain(
   symbol: string,
   assetType: AssetType,
   expiryYmd: string,
-  spot: number,
+  _spot: number,
 ): Promise<OptionChainBundle> {
   const lbSym = requireLb(symbol, assetType);
   const parts = ymdParts(expiryYmd);
   if (!parts) {
     throw new MarketDataError("Invalid option expiry", "longbridge");
   }
-  const key = `lb:opt-chain:v4:${lbSym}:${expiryYmd}:${Math.round(spot * 100)}`;
+  const key = `lb:opt-chain:v5:${lbSym}:${expiryYmd}`;
 
   return cachedFetch(key, 120_000, async () => {
     const lb = await loadLb();
@@ -406,8 +397,9 @@ export async function fetchLbOptionChain(
       );
     }
 
-    const callsPick = pickNearSpot(callsRaw, spot, 30);
-    const putsPick = pickNearSpot(putsRaw, spot, 30);
+    // Full chain — UI scroll owns density; do not near-spot truncate.
+    const callsPick = sortByStrike(callsRaw);
+    const putsPick = sortByStrike(putsRaw);
     const symbols = [...callsPick, ...putsPick].map((c) => c.symbol);
     const quoteMap = new Map<string, OptionRow>();
 

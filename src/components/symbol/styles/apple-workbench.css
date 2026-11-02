@@ -919,51 +919,99 @@ html.aw-rail-resizing {
 /* ------------------------------------------------------------------ */
 
 /*
- * Call / put panes: horizontal scrollbar only. Vertical overflow is `hidden`
- * on purpose — an `auto` vertical axis produces a per-pane vertical scrollbar
- * in engines that ignore ::-webkit-scrollbar (Firefox et al.). The panes are
- * still programmatically scrollable on Y (scrollTop works on overflow:hidden),
- * and the outer rail + wheel forwarding own all vertical movement.
+ * Option chain scroll model:
+ * - `.oc-board`: column shell (Y region + pinned H bar).
+ * - `.oc-board-y`: only vertical scrollbar; headers sticky inside it.
+ * - `.oc-h-pane`: body H scroll (`overflow-y: clip`); native thumb hidden.
+ * - `.oc-h-bar` / `.oc-h-bar-pane`: H thumbs pinned under Y region (always visible).
+ * - `.oc-h-head`: clips H; scrollLeft synced from body (no thumb).
  */
-.aw .oc-scroll-pane {
-  overflow-x: auto;
-  overflow-y: hidden;
+.aw .oc-board-y {
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
-.aw .oc-scroll-pane::-webkit-scrollbar {
-  width: 0;
-  height: 8px;
+.aw .oc-board-y::-webkit-scrollbar {
+  width: 10px;
+  height: 0;
 }
-.aw .oc-scroll-pane::-webkit-scrollbar-track {
-  background: transparent;
+.aw .oc-board-y::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--muted) 12%, transparent);
 }
-.aw .oc-scroll-pane::-webkit-scrollbar-thumb {
+.aw .oc-board-y::-webkit-scrollbar-thumb {
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--muted) 35%, transparent);
+  background: color-mix(in srgb, var(--muted) 45%, transparent);
+}
+.aw .oc-board-y::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted) 65%, transparent);
 }
 
-/* Strike column: no scrollbars at all (synced programmatically). */
-.aw .oc-strike-pane {
-  overflow-x: hidden;
-  overflow-y: hidden;
-  scrollbar-width: none;
+/*
+ * One hairline under the sticky header strip. Do not also put border-b on
+ * call/put/strike head cells, and do not use border-t on the first body row
+ * (that stacked into a 2px line).
+ */
+.aw .oc-head-sticky {
+  box-shadow: none;
+  border-bottom: 1px solid var(--aw-hairline, var(--border));
 }
-.aw .oc-strike-pane::-webkit-scrollbar {
+
+.aw .oc-h-head {
+  overflow-x: hidden;
+  overflow-y: clip;
+}
+
+/*
+ * IMPORTANT: `overflow-x: auto` + `overflow-y: visible` computes to
+ * `overflow-y: auto` and puts a Y scrollbar inside call/put. Use `clip`.
+ * Native H thumb is hidden — use pinned `.oc-h-bar` instead.
+ */
+.aw .oc-h-pane {
+  overflow-x: auto;
+  overflow-y: clip;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.aw .oc-h-pane::-webkit-scrollbar {
+  width: 0;
+  height: 0;
   display: none;
 }
 
-/* Outer vertical rail (the only visible vertical scrollbar). */
-.aw .oc-vrail {
-  overflow-x: hidden;
-  overflow-y: auto;
+/* Always-visible H track under the chain (outside Y scroll). */
+.aw .oc-h-bar {
+  min-height: 12px;
 }
-.aw .oc-vrail::-webkit-scrollbar {
-  width: 8px;
-  height: 0;
+.aw .oc-h-bar-pane {
+  height: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-x: contain;
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--muted) 50%, transparent)
+    color-mix(in srgb, var(--muted) 12%, transparent);
 }
-.aw .oc-vrail::-webkit-scrollbar-track {
-  background: transparent;
+.aw .oc-h-bar-pane::-webkit-scrollbar {
+  width: 0;
+  height: 10px;
 }
-.aw .oc-vrail::-webkit-scrollbar-thumb {
+.aw .oc-h-bar-pane::-webkit-scrollbar-track {
+  background: color-mix(in srgb, var(--muted) 12%, transparent);
+}
+.aw .oc-h-bar-pane::-webkit-scrollbar-thumb {
   border-radius: 9999px;
-  background: color-mix(in srgb, var(--muted) 35%, transparent);
+  background: color-mix(in srgb, var(--muted) 50%, transparent);
+}
+.aw .oc-h-bar-pane::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted) 70%, transparent);
+}
+
+/* Collapse spacer thead height; keep column widths for head/body align. */
+.aw .oc-thead-spacer {
+  visibility: collapse;
+}
+
+.aw .oc-strike-col {
+  overflow: visible;
 }

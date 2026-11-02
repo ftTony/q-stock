@@ -4,14 +4,20 @@ import { formatNumber } from "@/lib/format-number";
 
 /**
  * Shared tokens for the option-strategy drawer.
- *
- * Big drawer sections are separated by one hairline (no tinted boxes), so each
- * section but the first reuses `SECTION_CLS` for its top divider.
+ * Sections use one hairline divider — no tinted cards / boxed disclosures.
  */
 export const FIELD_CLS = "qt-input h-8 px-2 text-[12px] tabular-nums";
-export const QT_TRIGGER = "h-7 rounded-[var(--radius-md)] px-2 text-[12px]";
+export const QT_TRIGGER = "h-7 rounded-none px-2 text-[12px]";
 export const SECTION_CLS =
   "border-t border-[var(--aw-hairline,var(--border))] pt-3";
+
+/** Sharp strategy chip (App 直角 — never rounded-full). */
+export const CHIP_CLS =
+  "inline-flex items-center gap-1.5 border px-2.5 py-1 text-[12px] transition-colors";
+export const CHIP_ON =
+  "border-[var(--brand)]/35 bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]";
+export const CHIP_OFF =
+  "border-transparent text-[var(--muted)] hover:border-[var(--aw-hairline,var(--border))] hover:text-[var(--foreground)]";
 
 /** Annual risk-free rate used by the quote greeks and the calculator default. */
 export const DEFAULT_RATE_PCT = 4.2158;

@@ -36,20 +36,22 @@ export function useMarketOptionsChain(opts: {
   symbol: string;
   assetType: AssetType;
   expiry: string | null;
-  spot: number;
+  /** Unused for cache identity — spot ticks must not remount the chain. */
+  spot?: number;
   enabled?: boolean;
 }) {
-  const { symbol, assetType, expiry, spot, enabled = true } = opts;
+  const { symbol, assetType, expiry, enabled = true } = opts;
   return useQuery({
-    queryKey: ["market", "options", assetType, symbol, expiry, spot] as const,
+    // Do not put live `spot` in the key — quote ticks would thrash isLoading → skeleton.
+    queryKey: ["market", "options", assetType, symbol, expiry] as const,
     enabled: enabled && Boolean(expiry),
     staleTime: 30_000,
+    placeholderData: (prev) => prev,
     queryFn: () => {
       const qs = new URLSearchParams({
         symbol,
         assetType,
         expiry: expiry!,
-        spot: String(spot),
       });
       return fetchJson<OptionsChain>(`/api/market/options?${qs}`);
     },

@@ -127,21 +127,21 @@ export function OptionChainBoard({
   const spotN = spot != null && spot > 0 ? spot : null;
   const dte = useMemo(() => daysToExpiry(expiry), [expiry]);
 
+  /*
+   * Dual call+put (Futu-style): keep every strike row; blank the side that
+   * fails moneyness inside the panes. Single-side view still filters rows.
+   */
   const filtered = useMemo(() => {
     return rows.filter((r) => {
       if (side === "call" && !r.call) return false;
       if (side === "put" && !r.put) return false;
-      if (!spotN || money === "all") return true;
+      if (!spotN || money === "all" || side === "all") return true;
       const callItm = r.strike < spotN;
       const putItm = r.strike > spotN;
       if (money === "itm") {
-        if (side === "call") return callItm;
-        if (side === "put") return putItm;
-        return callItm || putItm;
+        return side === "call" ? callItm : putItm;
       }
-      if (side === "call") return !callItm;
-      if (side === "put") return !putItm;
-      return !callItm || !putItm;
+      return side === "call" ? !callItm : !putItm;
     });
   }, [rows, side, money, spotN]);
 
@@ -186,7 +186,7 @@ export function OptionChainBoard({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex shrink-0 flex-wrap items-center gap-2 border-b border-[var(--aw-hairline,var(--border))] px-3 py-2 sm:px-4">
+      <div className="flex shrink-0 flex-wrap items-center gap-2 px-3 py-2 sm:px-4">
         <Segmented
           value={side}
           onChange={setSide}
@@ -220,7 +220,7 @@ export function OptionChainBoard({
         </button>
       </div>
 
-      <div className="flex shrink-0 items-center gap-1 border-b border-[var(--aw-hairline,var(--border))] py-2 pl-3 pr-2 sm:pl-4">
+      <div className="flex shrink-0 items-center gap-1 py-2 pl-3 pr-2 sm:pl-4">
         <div
           ref={chipRef}
           className="flex min-w-0 flex-1 gap-1.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
@@ -238,7 +238,11 @@ export function OptionChainBoard({
                     : "border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--foreground)]"
                 }`}
               >
-                {expiryChipLabel(d, (n) => t("optExpiryDays", { n }))}
+                {expiryChipLabel(
+                  d,
+                  (n) => t("optExpiryDays", { n }),
+                  t("optExpiryExpired"),
+                )}
               </button>
             );
           })}
@@ -301,6 +305,7 @@ export function OptionChainBoard({
             greeksBySide={greeksBySide}
             showCall={showCall}
             showPut={showPut}
+            money={money}
             symbol={symbol}
             seed={seed}
             onPickSeed={pickSeed}

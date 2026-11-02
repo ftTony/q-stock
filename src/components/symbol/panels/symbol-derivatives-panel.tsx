@@ -150,7 +150,7 @@ function OptionsDerivativesBody({
       spot={lastPrice}
       symbol={symbol}
       assetType={assetType}
-      loading={chainQuery.isLoading}
+      loading={chainQuery.isLoading && !chainQuery.data}
       empty={chainError || t("derivativesEmpty")}
     />
   );

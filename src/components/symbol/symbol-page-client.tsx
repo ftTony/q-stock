@@ -2,6 +2,7 @@
 
 import {
   useCallback,
+  useEffect,
   useMemo,
   type CSSProperties,
 } from "react";
@@ -53,6 +54,12 @@ export function SymbolPageClient({
   const isDesktop = useMinWidth(LG_MIN);
   const rail = useRailResize();
   const watch = useWatchlistResize();
+
+  // SSR LCP seed paints before client JS; remove once QuoteBar hydrates.
+  useEffect(() => {
+    document.getElementById("symbol-lcp-quote-seed")?.setAttribute("hidden", "");
+  }, []);
+
   const s = useSymbolPage(symbol, assetType, isIndex, initialQuote, {
     initialBars,
     // Desktop: earnings when plan rail open. H5 plan-first — skip competing fetch.
@@ -188,12 +195,12 @@ export function SymbolPageClient({
               onTabChange={
                 isDesktop
                   ? (id) => {
-                      p.setAiOpen(false);
-                      p.setMobilePlanOpen(false);
-                      if (id === "news" || id === "press") p.setDock("news");
-                      else p.setDock(null);
-                      s.setTab(id);
-                    }
+                    p.setAiOpen(false);
+                    p.setMobilePlanOpen(false);
+                    if (id === "news" || id === "press") p.setDock("news");
+                    else p.setDock(null);
+                    s.setTab(id);
+                  }
                   : undefined
               }
               showWatchlistExpand={isDesktop && !watch.open}
@@ -232,24 +239,24 @@ export function SymbolPageClient({
                   isDesktop
                     ? null
                     : ({ secondary }) => (
-                        <SymbolH5BelowSlot
-                          secondary={secondary}
-                          symbol={symbol}
-                          assetType={assetType}
-                          isIndex={isIndex}
-                          quote={s.quote}
-                          metrics={s.earningsMetrics}
-                          marketCap={marketCap}
-                          segment={p.mobileSegment}
-                          onSegmentChange={p.onMobileSegment}
-                          onOpenTrade={p.openTrade}
-                          focusPlanToken={p.planFocusKey}
-                          onBoundStrategyChange={p.onBoundStrategyChange}
-                          panelTab={panelTab}
-                          moreTabs={mobileMoreTabs}
-                          onMoreTabChange={p.onMoreTabChange}
-                        />
-                      )
+                      <SymbolH5BelowSlot
+                        secondary={secondary}
+                        symbol={symbol}
+                        assetType={assetType}
+                        isIndex={isIndex}
+                        quote={s.quote}
+                        metrics={s.earningsMetrics}
+                        marketCap={marketCap}
+                        segment={p.mobileSegment}
+                        onSegmentChange={p.onMobileSegment}
+                        onOpenTrade={p.openTrade}
+                        focusPlanToken={p.planFocusKey}
+                        onBoundStrategyChange={p.onBoundStrategyChange}
+                        panelTab={panelTab}
+                        moreTabs={mobileMoreTabs}
+                        onMoreTabChange={p.onMoreTabChange}
+                      />
+                    )
                 }
                 symbol={symbol}
                 assetType={assetType}

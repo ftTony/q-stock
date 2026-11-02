@@ -235,10 +235,6 @@ export function SymbolPlanPanel({
     <div className="space-y-3 p-3">
       <p className="aw-caption">{t("planSubtitle")}</p>
 
-      {msg ? (
-        <p className="text-[12px] text-[var(--down)]">{msg}</p>
-      ) : null}
-
       <div>
         <label className="aw-caption mb-1.5 block">{t("planBind")}</label>
         <QtSelect

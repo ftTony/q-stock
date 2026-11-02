@@ -1,4 +1,8 @@
 import type { OptionRow } from "@/lib/market/providers/longbridge-research";
+import {
+  isBeforeUsRegularClose,
+  usTradeDate,
+} from "@/lib/market/session";
 
 export type SideFilter = "all" | "call" | "put";
 export type MoneyFilter = "all" | "itm" | "otm";
@@ -8,6 +12,23 @@ export type StrikeRow = {
   call?: OptionRow;
   put?: OptionRow;
 };
+
+/**
+ * Whether a call/put at `strike` matches the moneyness filter.
+ * Call ITM: K < spot; Put ITM: K > spot. ATM (K === spot) is neither.
+ */
+export function sideMatchesMoney(
+  kind: "call" | "put",
+  strike: number,
+  spot: number,
+  money: MoneyFilter,
+): boolean {
+  if (money === "all" || !(spot > 0)) return true;
+  const callItm = strike < spot;
+  const putItm = strike > spot;
+  if (kind === "call") return money === "itm" ? callItm : !callItm;
+  return money === "itm" ? putItm : !putItm;
+}
 
 export type Greeks = {
   delta: number | null;
@@ -118,10 +139,15 @@ export function mergeStrikes(
   return [...map.values()].sort((a, b) => a.strike - b.strike);
 }
 
-export function daysToExpiry(ymd: string): number {
+function ymdUtcMs(ymd: string): number | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
-  if (!m) return 0;
-  const exp = Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+  if (!m) return null;
+  return Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3]));
+}
+
+export function daysToExpiry(ymd: string): number {
+  const exp = ymdUtcMs(ymd);
+  if (exp == null) return 0;
   const today = new Date();
   const start = Date.UTC(
     today.getFullYear(),
@@ -131,22 +157,34 @@ export function daysToExpiry(ymd: string): number {
   return Math.max(0, Math.round((exp - start) / 86_400_000));
 }
 
+/**
+ * Chip label for an expiry. Uses America/New_York trade date: past days are
+ * expired; expiry day before 16:00 ET still shows 1 day; after close → expired.
+ */
 export function expiryChipLabel(
   ymd: string,
   daysLabel: (n: number) => string,
+  expiredLabel = "Expired",
+  now = new Date(),
 ): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd);
   if (!m) return ymd;
-  const y = Number(m[1]);
   const mo = Number(m[2]);
   const d = Number(m[3]);
-  const exp = Date.UTC(y, mo - 1, d);
-  const today = new Date();
-  const start = Date.UTC(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
-  const days = Math.max(0, Math.round((exp - start) / 86_400_000));
-  return `${String(mo).padStart(2, "0")}/${String(d).padStart(2, "0")} (${daysLabel(days)})`;
+  const md = `${String(mo).padStart(2, "0")}/${String(d).padStart(2, "0")}`;
+
+  const todayEt = usTradeDate(now);
+  const expMs = ymdUtcMs(ymd);
+  const todayMs = ymdUtcMs(todayEt);
+  if (expMs == null || todayMs == null) return ymd;
+
+  const days = Math.round((expMs - todayMs) / 86_400_000);
+  if (days < 0) return `${md} (${expiredLabel})`;
+  if (days === 0) {
+    // 0DTE: still live until regular close.
+    return isBeforeUsRegularClose(now)
+      ? `${md} (${daysLabel(1)})`
+      : `${md} (${expiredLabel})`;
+  }
+  return `${md} (${daysLabel(days)})`;
 }

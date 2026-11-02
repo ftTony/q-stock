@@ -27,47 +27,56 @@ export function LegBook({
         ? (bidV / (bidV + askV)) * 100
         : 50;
   const hasVol = bidV > 0 || askV > 0;
+  const px = (v: number | null | undefined) =>
+    v != null && v > 0
+      ? formatNumber(v, { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+      : "—";
 
   return (
-    <div>
-      <div className="flex items-center gap-2 text-[11px]">
-        {hasVol ? (
-          <span className="ml-auto flex flex-1 items-center gap-1.5">
-            <span className="text-[var(--up)] tabular-nums">
-              {t("bidSide")} {formatNumber(bidShare, { maximumFractionDigits: 2 })}%
-            </span>
-            <span className="relative h-1.5 flex-1 overflow-hidden rounded-full bg-[color-mix(in_srgb,var(--down)_55%,transparent)]">
-              <span
-                className="absolute inset-y-0 left-0 rounded-full bg-[color-mix(in_srgb,var(--up)_75%,transparent)]"
-                style={{ width: `${bidShare}%` }}
-              />
-            </span>
-            <span className="text-[var(--down)] tabular-nums">
-              {t("askSide")}{" "}
-              {formatNumber(100 - bidShare, { maximumFractionDigits: 2 })}%
-            </span>
+    <div className="flex flex-col gap-1.5">
+      {hasVol ? (
+        <div className="flex items-center gap-1.5 text-[11px]">
+          <span className="shrink-0 tabular-nums text-[var(--up)]">
+            {t("bidSide")}{" "}
+            {formatNumber(bidShare, { maximumFractionDigits: 2 })}%
           </span>
-        ) : (
-          <span className="ml-auto text-[var(--muted)]">—</span>
-        )}
-      </div>
-      <div className="mt-1.5 grid grid-cols-2 gap-x-4 text-[12px]">
-        <div className="flex items-center justify-between py-0.5">
-          <span className="text-[var(--muted)]">{t("bidSide")}</span>
-          <span className="font-semibold tabular-nums text-[var(--up)]">
-            {row.bid != null ? formatNumber(row.bid, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"}
+          <span className="relative h-1 flex-1 overflow-hidden bg-[color-mix(in_srgb,var(--down)_45%,transparent)]">
+            <span
+              className="absolute inset-y-0 left-0 bg-[color-mix(in_srgb,var(--up)_70%,transparent)]"
+              style={{ width: `${bidShare}%` }}
+            />
           </span>
-          <span className="tabular-nums text-[var(--muted)]">
-            {row.bidVol != null ? `${formatNumber(row.bidVol)}${t("volUnit")}` : "—"}
+          <span className="shrink-0 tabular-nums text-[var(--down)]">
+            {t("askSide")}{" "}
+            {formatNumber(100 - bidShare, { maximumFractionDigits: 2 })}%
           </span>
         </div>
-        <div className="flex items-center justify-between py-0.5">
-          <span className="text-[var(--muted)]">{t("askSide")}</span>
-          <span className="font-semibold tabular-nums text-[var(--down)]">
-            {row.ask != null ? formatNumber(row.ask, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "—"}
+      ) : null}
+      <div className="grid grid-cols-2 gap-x-4 text-[12px]">
+        <div className="flex items-center gap-2 py-0.5">
+          <span className="w-8 shrink-0 text-[11px] text-[var(--muted)]">
+            {t("bidSide")}
           </span>
-          <span className="tabular-nums text-[var(--muted)]">
-            {row.askVol != null ? `${formatNumber(row.askVol)}${t("volUnit")}` : "—"}
+          <span className="min-w-0 flex-1 text-right font-medium tabular-nums text-[var(--up)]">
+            {px(row.bid)}
+          </span>
+          <span className="w-10 shrink-0 text-right tabular-nums text-[var(--muted)]">
+            {row.bidVol != null
+              ? `${formatNumber(row.bidVol)}${t("volUnit")}`
+              : "—"}
+          </span>
+        </div>
+        <div className="flex items-center gap-2 py-0.5">
+          <span className="w-8 shrink-0 text-[11px] text-[var(--muted)]">
+            {t("askSide")}
+          </span>
+          <span className="min-w-0 flex-1 text-right font-medium tabular-nums text-[var(--down)]">
+            {px(row.ask)}
+          </span>
+          <span className="w-10 shrink-0 text-right tabular-nums text-[var(--muted)]">
+            {row.askVol != null
+              ? `${formatNumber(row.askVol)}${t("volUnit")}`
+              : "—"}
           </span>
         </div>
       </div>
