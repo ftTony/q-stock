@@ -170,8 +170,8 @@ export function AppSidebar({ onNavigate }: Props) {
 
   return (
     <aside className="flex h-full w-full flex-col border-r border-[var(--border)] bg-[var(--sidebar)]">
-      {/* Match main topbar h-10 so the hairline aligns across the shell. */}
-      <div className="flex h-10 shrink-0 items-center justify-center border-b border-[var(--border)]">
+      {/* Same box as main `<header>`: h-[var(--wb-topbar-h)] + border-b (border-box). */}
+      <div className="box-border flex h-[var(--wb-topbar-h,40px)] shrink-0 items-center justify-center border-b border-[var(--border)]">
         <a href={homeHref} className="relative z-10" aria-label={t("markets")}>
           <SiteLogo height={22} priority variant="mark" />
         </a>

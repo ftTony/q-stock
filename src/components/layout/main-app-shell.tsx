@@ -114,18 +114,22 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
             : "flex min-h-dvh min-w-0 flex-1 flex-col bg-[var(--background)]"
         }
       >
+        {/*
+          Symbol desktop: topbar lives beside 自选 in SymbolWorkbenchTopbar
+          so Logo | 自选 | indices share one hairline. Keep shell header on H5.
+        */}
         <header
-          className={`sticky top-0 z-40 shrink-0 border-b border-[var(--border)] backdrop-blur-xl ${
+          className={`sticky top-0 z-40 box-border flex h-[var(--wb-topbar-h,40px)] shrink-0 items-center border-b border-[var(--border)] backdrop-blur-xl ${
             isSymbol
-              ? "bg-[var(--symbol-shell-bg)]/90"
+              ? "bg-[var(--symbol-shell-bg)]/90 lg:hidden"
               : "bg-[var(--background)]/90"
           }`}
         >
           <div
             className={
               isSymbol
-                ? "flex h-10 items-center gap-2 px-1.5 sm:gap-2 sm:px-2"
-                : "flex h-10 items-center gap-2 px-3 sm:gap-3 sm:px-5 lg:px-6"
+                ? "flex h-full min-h-0 w-full items-center gap-2 px-1.5 sm:gap-2 sm:px-2"
+                : "flex h-full min-h-0 w-full items-center gap-2 px-3 sm:gap-3 sm:px-5 lg:px-6"
             }
           >
             <div className="flex min-w-0 max-w-[38%] shrink items-center gap-1.5 sm:max-w-[min(42%,28rem)] sm:gap-3">

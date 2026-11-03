@@ -16,6 +16,7 @@ import { SymbolH5BelowSlot } from "@/components/symbol/page/symbol-h5-below-slot
 import { SymbolPageOverlays } from "@/components/symbol/page/symbol-page-overlays";
 import { SymbolQuoteBar } from "@/components/symbol/quote/symbol-quote-bar";
 import { feedStatusFromWs } from "@/components/symbol/quote/symbol-feed-status";
+import { SymbolWorkbenchTopbar } from "@/components/symbol/page/symbol-workbench-topbar";
 import { SymbolPageTabs } from "@/components/symbol/page/symbol-page-tabs";
 import {
   SymbolNavPendingOverlay,
@@ -185,6 +186,7 @@ export function SymbolPageClient({
 
         <div className="aw-workbench-main relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <SymbolNavPendingOverlay label={s.tCommon("loading")} />
+          <SymbolWorkbenchTopbar />
           <div className="shrink-0">
             <SymbolQuoteBar
               symbol={symbol}

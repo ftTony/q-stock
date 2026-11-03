@@ -130,7 +130,7 @@ export function SymbolQuoteBar({
         H5: back · ticker/price · search · (bound-rule chip) · trade.
         Unbound plan lives only in under-chart segment.
       */}
-      <div className="flex h-10 min-h-10 w-full min-w-0 max-w-full items-stretch px-1.5 sm:px-3 lg:flex-1 lg:px-4">
+      <div className="flex h-full min-h-0 w-full min-w-0 max-w-full items-stretch px-1.5 sm:px-3 lg:flex-1 lg:px-4">
         <div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-hidden sm:gap-1.5">
           {showWatchlistExpand && onExpandWatchlist ? (
             <>

@@ -235,17 +235,17 @@ html.aw-rail-resizing {
   display: none;
 }
 
-/* Shared 40px header strip with QuoteBar (H5 may grow to two rows). */
+/* Shared strip with shell topbar token so 自选 / quote hairlines match. */
 .aw-watchlist-head {
   box-sizing: border-box;
-  height: 40px;
-  min-height: 40px;
-  max-height: 40px;
+  height: var(--wb-topbar-h, 40px);
+  min-height: var(--wb-topbar-h, 40px);
+  max-height: var(--wb-topbar-h, 40px);
 }
 
 .aw-quote-bar {
   box-sizing: border-box;
-  min-height: 40px;
+  min-height: var(--wb-topbar-h, 40px);
 }
 
 @media (max-width: 1023px) {
@@ -257,8 +257,8 @@ html.aw-rail-resizing {
 
 @media (min-width: 1024px) {
   .aw-quote-bar {
-    height: 40px;
-    max-height: 40px;
+    height: var(--wb-topbar-h, 40px);
+    max-height: var(--wb-topbar-h, 40px);
   }
 }
 

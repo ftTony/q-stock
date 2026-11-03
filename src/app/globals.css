@@ -174,6 +174,8 @@ body {
   --radius-md: 0;
   --radius-sm: 0;
   --radius-control: 0;
+  /* Sidebar logo row + main topbar share one hairline (border-box). */
+  --wb-topbar-h: 40px;
   background: var(--background);
   color: var(--foreground);
   letter-spacing: -0.012em;
@@ -185,6 +187,7 @@ body {
   --radius-md: 0;
   --radius-sm: 0;
   --radius-control: 0;
+  --wb-topbar-h: 40px;
 }
 
 /*

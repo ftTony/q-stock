@@ -31,7 +31,7 @@ const PROVIDER_I18N: Record<ProviderId, string> = {
 
 const STORAGE_KEY = "qstock.dataSourceBadgePos.v1";
 const EDGE = 8;
-/** Matches main shell sticky header `h-10`. */
+/** Matches main shell sticky header `--wb-topbar-h`. */
 const TOPBAR_H = 40;
 /** Matches mobile bottom tab bar approx height. */
 const MOBILE_TAB_H = 68;

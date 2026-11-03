@@ -66,7 +66,7 @@ export function SymbolWatchlistPanel({
 
   return (
     <aside className="aw-watchlist-pane flex min-h-0 flex-col overflow-hidden bg-[var(--aw-canvas)]">
-      <div className="aw-watchlist-head flex h-10 min-h-10 shrink-0 items-center justify-between gap-1 border-b border-[var(--aw-hairline,var(--border))] px-2.5">
+      <div className="aw-watchlist-head flex shrink-0 items-center justify-between gap-1 border-b border-[var(--aw-hairline,var(--border))] px-2.5">
         <span className="text-[13px] font-semibold tracking-tight text-[var(--foreground)]">
           {t("watchlistDock")}
         </span>
