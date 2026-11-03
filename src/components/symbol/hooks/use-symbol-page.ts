@@ -29,6 +29,7 @@ import {
   quotePollIntervalMs,
   useQuoteChannels,
 } from "@/hooks/use-quote-socket";
+import { getUsMarketPhase } from "@/lib/market/session";
 import { queryKeys } from "@/lib/query/keys";
 import type { ServerMessage } from "@/lib/market/stream/protocol";
 import type {
@@ -112,8 +113,35 @@ export function useSymbolPage(
         qc.setQueryData(
           quoteKey,
           (prev: { quote?: Quote | null } | undefined) => {
-            const name = incoming.name?.trim() || prev?.quote?.name;
-            return { quote: name ? { ...incoming, name } : incoming };
+            const previous = prev?.quote;
+            return {
+              quote: {
+                ...incoming,
+                ...(incoming.name?.trim() || previous?.name
+                  ? { name: incoming.name?.trim() || previous?.name }
+                  : {}),
+                ...(incoming.preMarket || previous?.preMarket
+                  ? { preMarket: incoming.preMarket ?? previous?.preMarket }
+                  : {}),
+                ...(incoming.postMarket || previous?.postMarket
+                  ? { postMarket: incoming.postMarket ?? previous?.postMarket }
+                  : {}),
+                ...(incoming.overnight || previous?.overnight
+                  ? { overnight: incoming.overnight ?? previous?.overnight }
+                  : {}),
+                ...(incoming.regularSession || previous?.regularSession
+                  ? {
+                      regularSession:
+                        incoming.regularSession ?? previous?.regularSession,
+                    }
+                  : {}),
+                ...(incoming.activeSession
+                  ? { activeSession: incoming.activeSession }
+                  : previous?.activeSession
+                    ? { activeSession: previous.activeSession }
+                    : {}),
+              },
+            };
           },
         );
       };
@@ -152,6 +180,12 @@ export function useSymbolPage(
     refetchInterval: (query) => {
       const q = query.state.data?.quote;
       const hasPrice = q != null && q.price > 0;
+      const phase = assetType === "stock" ? getUsMarketPhase() : "regular";
+      if (phase === "pre" || phase === "post") {
+        // The WS feed carries regular quotes, so refresh REST extended quotes
+        // during pre/post-market instead of waiting for the regular session.
+        return 15_000;
+      }
       // No quote yet: mild poll. Otherwise trust quotePollIntervalMs
       // (5s degraded / 60s when push is live) — avoid a 3s storm.
       if (!hasPrice) return 5_000;

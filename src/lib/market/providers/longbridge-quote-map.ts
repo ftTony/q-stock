@@ -55,9 +55,20 @@ export function mapLbExtendedFields(q: LbSecurityQuote): {
   overnight?: ExtendedSessionQuote;
   activeSession: QuoteSession;
 } {
-  const preMarket = mapLbPrePost(q.preMarketQuote);
-  const postMarket = mapLbPrePost(q.postMarketQuote);
-  const overnight = mapLbPrePost(q.overnightQuote);
+  const regularPrice = dec(q.lastDone);
+  const mapSession = (snapshot: LbPrePost | null | undefined) => {
+    const extended = mapLbPrePost(snapshot);
+    if (!extended || !(regularPrice > 0)) return extended;
+    const change = extended.price - regularPrice;
+    return {
+      ...extended,
+      change,
+      percentChange: (change / regularPrice) * 100,
+    };
+  };
+  const preMarket = mapSession(q.preMarketQuote);
+  const postMarket = mapSession(q.postMarketQuote);
+  const overnight = mapSession(q.overnightQuote);
   const phase = getUsMarketPhase();
   let activeSession: QuoteSession = "regular";
   if (phase === "pre" && preMarket) activeSession = "pre";
@@ -80,6 +91,7 @@ export function applyActiveExtendedPrice<T extends {
   preMarket?: ExtendedSessionQuote;
   postMarket?: ExtendedSessionQuote;
   overnight?: ExtendedSessionQuote;
+  regularSession?: ExtendedSessionQuote;
   activeSession?: QuoteSession;
 }>(row: T): T {
   const session = row.activeSession;
@@ -93,12 +105,15 @@ export function applyActiveExtendedPrice<T extends {
   if (!ext) return row;
   return {
     ...row,
+    regularSession: row.regularSession ?? {
+      price: row.price,
+      change: row.change,
+      percentChange: row.percentChange,
+      timestamp: row.timestamp,
+    },
     price: ext.price,
     change: ext.change,
     percentChange: ext.percentChange,
-    ...(ext.high != null ? { high: ext.high } : {}),
-    ...(ext.low != null ? { low: ext.low } : {}),
-    ...(ext.volume != null ? { volume: ext.volume } : {}),
     ...(ext.timestamp != null ? { timestamp: ext.timestamp } : {}),
   };
 }

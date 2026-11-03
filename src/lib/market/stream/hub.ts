@@ -4,7 +4,7 @@ import {
   mergeIndexQuotes,
   quoteForIndexDef,
 } from "@/lib/market/index-quotes";
-import { fetchDepthBook, fetchTradeTicks } from "@/lib/market/book";
+import { fetchTradeTicks } from "@/lib/market/book";
 import {
   initFutuPush,
   isFutuPushAvailable,
@@ -56,6 +56,18 @@ const clients = new Map<WebSocket, ClientState>();
 /** channel key → sockets */
 const channelSubs = new Map<string, Set<WebSocket>>();
 
+type DepthPushSource = "futu" | "longbridge" | "rest";
+type QuotePushSource = "futu" | "longbridge" | "rest";
+type DepthPushState = {
+  source: DepthPushSource;
+  received: boolean;
+  timer?: ReturnType<typeof setTimeout>;
+};
+
+const FUTU_DEPTH_FIRST_FRAME_MS = 3_000;
+const depthPushStates = new Map<string, DepthPushState>();
+const futuDepthFailed = new Set<string>();
+
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
 let started = false;
@@ -67,6 +79,12 @@ const lastIndexBundles: Partial<
 
 function anyPushAvailable(): boolean {
   return isLongbridgePushAvailable() || isFutuPushAvailable();
+}
+
+function quotePushSource(): QuotePushSource {
+  if (isFutuPushAvailable()) return "futu";
+  if (isLongbridgePushAvailable()) return "longbridge";
+  return "rest";
 }
 
 function broadcastHello() {
@@ -136,6 +154,35 @@ function activeSymbolItems(): InternalSymbol[] {
   return [...out.values()];
 }
 
+function ensureDepthPushState(
+  item: InternalSymbol,
+  futuPush: boolean,
+  longbridgePush: boolean,
+): DepthPushSource {
+  const key = depthChannelKey(item.assetType, item.symbol);
+  const source: DepthPushSource = futuPush && !futuDepthFailed.has(key)
+    ? "futu"
+    : longbridgePush
+      ? "longbridge"
+      : "rest";
+  const previous = depthPushStates.get(key);
+  if (previous?.source === source) return source;
+
+  if (previous?.timer) clearTimeout(previous.timer);
+  const state: DepthPushState = { source, received: false };
+  depthPushStates.set(key, state);
+
+  if (source === "futu") {
+    state.timer = setTimeout(() => {
+      if (depthPushStates.get(key) !== state || state.received) return;
+      futuDepthFailed.add(key);
+      state.timer = undefined;
+      scheduleSyncBrokers();
+    }, FUTU_DEPTH_FIRST_FRAME_MS);
+  }
+  return source;
+}
+
 function scheduleSyncBrokers() {
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
@@ -144,28 +191,38 @@ function scheduleSyncBrokers() {
       depth: collectByType("depth"),
       trades: collectByType("trades"),
     };
-    void syncLongbridgeSubscriptions(wanted);
-    syncFutuSubscriptions(wanted);
-  }, 200);
-}
+    const futuPush = isFutuPushAvailable();
+    const longbridgePush = !futuPush && isLongbridgePushAvailable();
+    const quoteSource = quotePushSource();
+    const wantedDepthKeys = new Set(
+      wanted.depth.map((item) => depthChannelKey(item.assetType, item.symbol)),
+    );
+    for (const [key, state] of depthPushStates) {
+      if (wantedDepthKeys.has(key)) continue;
+      if (state.timer) clearTimeout(state.timer);
+      depthPushStates.delete(key);
+      futuDepthFailed.delete(key);
+    }
 
-async function sendBookSnapshot(
-  ws: WebSocket,
-  assetType: InternalSymbol["assetType"],
-  symbol: string,
-) {
-  if (assetType === "crypto") return;
-  try {
-    const book = await fetchDepthBook(symbol, assetType, 10);
-    send(ws, {
-      op: "depth",
-      assetType,
-      symbol: symbol.toUpperCase(),
-      book,
+    const futuDepth: InternalSymbol[] = [];
+    const longbridgeDepth: InternalSymbol[] = [];
+    for (const item of wanted.depth) {
+      const source = ensureDepthPushState(item, futuPush, longbridgePush);
+      if (source === "futu") futuDepth.push(item);
+      if (source === "longbridge") longbridgeDepth.push(item);
+    }
+
+    void syncLongbridgeSubscriptions({
+      quotes: quoteSource === "longbridge" ? wanted.quotes : [],
+      depth: longbridgeDepth,
+      trades: wanted.trades,
     });
-  } catch {
-    /* permission / empty — client may REST-fallback */
-  }
+    syncFutuSubscriptions({
+      quotes: quoteSource === "futu" ? wanted.quotes : [],
+      depth: futuDepth,
+      trades: wanted.trades,
+    });
+  }, 200);
 }
 
 async function sendTradesSnapshot(
@@ -191,7 +248,6 @@ async function sendTradesSnapshot(
 async function sendSnapshot(ws: WebSocket, channels: StreamChannel[]) {
   const wantSymbols: InternalSymbol[] = [];
   let wantIndices = false;
-  const depthWanted: InternalSymbol[] = [];
   const tradesWanted: InternalSymbol[] = [];
   for (const ch of channels) {
     if (ch.type === "indices") {
@@ -203,7 +259,6 @@ async function sendSnapshot(ws: WebSocket, channels: StreamChannel[]) {
       symbol: ch.symbol.toUpperCase(),
     };
     if (ch.type === "symbol") wantSymbols.push(it);
-    else if (ch.type === "depth") depthWanted.push(it);
     else if (ch.type === "trades") tradesWanted.push(it);
   }
   if (wantIndices) {
@@ -251,7 +306,6 @@ async function sendSnapshot(ws: WebSocket, channels: StreamChannel[]) {
   }
 
   await Promise.all([
-    ...depthWanted.map((it) => sendBookSnapshot(ws, it.assetType, it.symbol)),
     ...tradesWanted.map((it) =>
       sendTradesSnapshot(ws, it.assetType, it.symbol),
     ),
@@ -358,6 +412,7 @@ async function pollTick() {
   const quotes = await fetchQuotesFor(items);
   if (!quotes.length) return;
   seedAllQuoteCaches(quotes);
+  if (anyPushAvailable()) return;
 
   for (const q of quotes) {
     const key = symbolChannelKey(q.assetType, q.symbol);
@@ -383,11 +438,20 @@ async function pollTick() {
 }
 
 function bindDepthTrades(
+  source: Exclude<DepthPushSource, "rest">,
   setDepth: typeof setLongbridgeDepthHandler,
   setTrades: typeof setLongbridgeTradesHandler,
 ) {
   setDepth((internal, book) => {
-    broadcast(depthChannelKey(internal.assetType, internal.symbol), {
+    const key = depthChannelKey(internal.assetType, internal.symbol);
+    const state = depthPushStates.get(key);
+    if (!state || state.source !== source) return;
+    state.received = true;
+    if (state.timer) {
+      clearTimeout(state.timer);
+      state.timer = undefined;
+    }
+    broadcast(key, {
       op: "depth",
       assetType: internal.assetType,
       symbol: internal.symbol.toUpperCase(),
@@ -409,12 +473,24 @@ export async function startQuoteHub(): Promise<void> {
   if (started) return;
   started = true;
   await initLongbridgePush();
-  setLongbridgeQuoteHandler((quote) => emitQuote(quote));
-  bindDepthTrades(setLongbridgeDepthHandler, setLongbridgeTradesHandler);
+  setLongbridgeQuoteHandler((quote) => {
+    if (quotePushSource() === "longbridge") emitQuote(quote);
+  });
+  bindDepthTrades(
+    "longbridge",
+    setLongbridgeDepthHandler,
+    setLongbridgeTradesHandler,
+  );
 
-  setFutuPushAvailabilityHandler(() => broadcastHello());
-  setFutuQuoteHandler((quote) => emitQuote(quote));
-  bindDepthTrades(setFutuDepthHandler, setFutuTradesHandler);
+  setFutuPushAvailabilityHandler(() => {
+    futuDepthFailed.clear();
+    broadcastHello();
+    scheduleSyncBrokers();
+  });
+  setFutuQuoteHandler((quote) => {
+    if (quotePushSource() === "futu") emitQuote(quote);
+  });
+  bindDepthTrades("futu", setFutuDepthHandler, setFutuTradesHandler);
   await initFutuPush();
 
   pollTimer = setInterval(() => void pollTick(), pollIntervalMs());

@@ -74,6 +74,7 @@ export function QuoteStatsGrid({
   const mktCap = metricValue(metrics, "marketCapitalization");
   const pe = metricValue(metrics, "peTTM");
   const beta = metricValue(metrics, "beta");
+  const regularSession = quote.regularSession ?? quote;
 
   return (
     <div
@@ -84,10 +85,10 @@ export function QuoteStatsGrid({
       <StatCell label={t("low")}>{fmt(quote.low)}</StatCell>
       <StatCell label={t("prevClose")}>{fmt(quote.previousClose)}</StatCell>
       <StatCell label={t("changeAmt")}>
-        <ChangeAbs value={quote.change} />
+        <ChangeAbs value={regularSession.change} />
       </StatCell>
       <StatCell label={t("changePct")}>
-        <ChangePct value={quote.percentChange} />
+        <ChangePct value={regularSession.percentChange} />
       </StatCell>
       <StatCell label={t("amplitude")}>
         {amplitude != null ? `${amplitude.toFixed(2)}%` : "-"}

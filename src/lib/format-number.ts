@@ -38,6 +38,22 @@ export function formatTime(value: Date | number | string): string {
   return d.toLocaleTimeString("en-US", { hour12: false });
 }
 
+export function formatUsEasternDateTime(value: Date | number | string): string {
+  const d = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(d.getTime())) return "";
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/New_York",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(d);
+  const part = (type: Intl.DateTimeFormatPartTypes) =>
+    parts.find((item) => item.type === type)?.value ?? "";
+  return `${part("month")}/${part("day")} ${part("hour")}:${part("minute")}`;
+}
+
 export function formatDate(value: Date | number | string): string {
   const d = value instanceof Date ? value : new Date(value);
   if (Number.isNaN(d.getTime())) return "";

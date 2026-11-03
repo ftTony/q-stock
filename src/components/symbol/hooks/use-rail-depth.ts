@@ -21,8 +21,10 @@ import type { AssetType } from "@/lib/types";
 
 const REST_FALLBACK_MS = 4_000;
 const MAX_TICKS = 80;
-/** Wait for hub WS snapshot before REST seed when push is live. */
+/** Wait briefly for preferred broker push before REST fallback. */
 const WS_SEED_GRACE_MS = 2_500;
+/** Fall back to REST if the depth channel stops producing updates. */
+const PUSH_STALE_MS = 15_000;
 /**
  * Coalesce WS pushes into ≤ ~10 paints/sec.
  * Depth is latest-wins; trades batches merge before one React commit.
@@ -64,8 +66,8 @@ type PendingWs = {
 
 /**
  * Rail depth + time&sales.
- * Primary: quote-ws → Longbridge/Futu broker push (depth + trades channels).
- * Fallback: REST /api/market/depth|trades when WS/push unavailable.
+ * Primary: quote-ws → preferred broker push (depth + trades channels).
+ * Fallback: REST /api/market/depth|trades when push is unavailable or stale.
  * WS paints are rAF + 100ms coalesced to protect the main thread.
  */
 export function useRailDepth(
@@ -80,6 +82,7 @@ export function useRailDepth(
   const [detail, setDetail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const gotWsRef = useRef(false);
+  const lastWsBookAtRef = useRef(0);
 
   const pendingRef = useRef<PendingWs>({});
   const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -170,6 +173,7 @@ export function useRailDepth(
           return;
         }
         gotWsRef.current = true;
+        lastWsBookAtRef.current = Date.now();
         pendingRef.current.book = msg.book;
         pendingRef.current.clearStatus = true;
         scheduleFlush();
@@ -200,11 +204,12 @@ export function useRailDepth(
     onMessage,
   );
 
-  /** Broker push live → no REST poll; hub snapshot + push carry the book. */
+  /** Shared broker push is available; depth still falls back to REST if stale. */
   const pushLive = enabled && connected && push && !degraded;
 
   useEffect(() => {
     gotWsRef.current = false;
+    lastWsBookAtRef.current = 0;
     pendingRef.current = {};
     cancelFlush();
     setBook(null);
@@ -267,52 +272,52 @@ export function useRailDepth(
     }
 
     async function load() {
-      // Prefer WS: if push is live and we already got a hub frame, skip REST.
-      if (pushLive && gotWsRef.current) {
+      const depthPushFresh =
+        pushLive &&
+        gotWsRef.current &&
+        Date.now() - lastWsBookAtRef.current < PUSH_STALE_MS;
+      if (wantBook && depthPushFresh) {
         setLoading(false);
-        return;
+      } else {
+        try {
+          const [bookState, tickState] = await Promise.all([
+            wantBook ? loadBook() : Promise.resolve("ok" as const),
+            wantTicks ? loadTicks() : Promise.resolve("ok" as const),
+          ]);
+          if (cancelled) return;
+          const isLocked = bookState === "locked" || tickState === "locked";
+          if (isLocked) stopPoll = true;
+          setLocked(isLocked);
+          if (bookState === "ok" && tickState === "ok") setDetail(null);
+          const failed =
+            (wantBook && bookState !== "ok") ||
+            (wantTicks && tickState !== "ok");
+          setUnavailable(failed && mode !== "split");
+          if (mode === "split") setUnavailable(false);
+        } catch {
+          if (!cancelled) setUnavailable(true);
+        } finally {
+          if (!cancelled) setLoading(false);
+        }
       }
 
-      try {
-        const [bookState, tickState] = await Promise.all([
-          wantBook ? loadBook() : Promise.resolve("ok" as const),
-          wantTicks ? loadTicks() : Promise.resolve("ok" as const),
-        ]);
-        if (cancelled) return;
-        const isLocked = bookState === "locked" || tickState === "locked";
-        if (isLocked) stopPoll = true;
-        setLocked(isLocked);
-        if (bookState === "ok" && tickState === "ok") setDetail(null);
-        const failed =
-          (wantBook && bookState !== "ok") ||
-          (wantTicks && tickState !== "ok");
-        setUnavailable(failed && mode !== "split");
-        if (mode === "split") setUnavailable(false);
-      } catch {
-        if (!cancelled) setUnavailable(true);
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-
-      if (cancelled || stopPoll || pushLive) return;
-      const wait = enabled
-        ? quotePollIntervalMs({
-            enabled,
-            connected,
-            degraded,
-            push,
-          })
-        : REST_FALLBACK_MS;
+      if (cancelled || stopPoll) return;
+      const wait =
+        !enabled || (wantBook && !depthPushFresh)
+          ? REST_FALLBACK_MS
+          : quotePollIntervalMs({
+              enabled,
+              connected,
+              degraded,
+              push,
+            });
       timer = setTimeout(() => void load(), wait);
     }
 
     if (pushLive) {
-      // Give hub snapshot / first push a short window before REST seed.
+      // Give the preferred broker push time to deliver its first depth frame.
       timer = setTimeout(() => {
-        if (cancelled || gotWsRef.current) {
-          if (!cancelled) setLoading(false);
-          return;
-        }
+        if (cancelled) return;
         void load();
       }, WS_SEED_GRACE_MS);
     } else {

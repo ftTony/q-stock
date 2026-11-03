@@ -9,6 +9,7 @@ import {
   toLbWire,
   type InternalSymbol,
 } from "@/lib/market/stream/symbol-map";
+import { getUsMarketPhase } from "@/lib/market/session";
 import type { Quote } from "@/lib/types";
 
 type QuoteHandler = (quote: Quote) => void;
@@ -92,6 +93,8 @@ function mergePush(
   const change = lastDone - previousClose;
   const percentChange =
     previousClose > 0 ? (change / previousClose) * 100 : 0;
+  const regularSessionActive =
+    internal.assetType === "stock" && getUsMarketPhase() === "regular";
   const quote: Quote = {
     symbol: internal.symbol.toUpperCase(),
     assetType: internal.assetType,
@@ -111,6 +114,27 @@ function mergePush(
         : {}),
     // Push ticks omit static name — keep last known so UI does not flicker.
     ...(prev?.name ? { name: prev.name } : {}),
+    ...(prev?.preMarket ? { preMarket: prev.preMarket } : {}),
+    ...(prev?.postMarket ? { postMarket: prev.postMarket } : {}),
+    ...(prev?.overnight ? { overnight: prev.overnight } : {}),
+    ...(regularSessionActive
+      ? {
+          regularSession: {
+            price: lastDone,
+            change,
+            percentChange,
+            timestamp,
+          },
+          activeSession: "regular" as const,
+        }
+      : {
+          ...(prev?.regularSession
+            ? { regularSession: prev.regularSession }
+            : {}),
+          ...(prev?.activeSession
+            ? { activeSession: prev.activeSession }
+            : {}),
+        }),
   };
   lastByKey.set(key, quote);
   return quote;

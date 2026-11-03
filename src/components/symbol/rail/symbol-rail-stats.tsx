@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import type { EarningsMetric } from "@/components/market/earnings-panel";
 import { formatNumber } from "@/lib/format-number";
@@ -117,8 +117,6 @@ export function SymbolRailStats({
   const label = (key: string) => t(key as "high");
 
   const prev = quote?.previousClose ?? null;
-  const price = quote?.price ?? null;
-
   const mktCap =
     marketCap ??
     (() => {
@@ -133,12 +131,9 @@ export function SymbolRailStats({
   const weekLow = metricOf(metrics, "52WeekLow");
   const beta = metricOf(metrics, "beta");
 
-  const sharesOut = useMemo(() => {
-    const fromMetric = metricOf(metrics, "shareOutstanding");
-    if (fromMetric != null && fromMetric > 0) return fromMetric * 1e6;
-    if (mktCap != null && price != null && price > 0) return mktCap / price;
-    return null;
-  }, [metrics, mktCap, price]);
+  const sharesMetric = metricOf(metrics, "shareOutstanding");
+  const sharesOut =
+    sharesMetric != null && sharesMetric > 0 ? sharesMetric * 1e6 : null;
 
   const amplitude =
     quote && prev != null && prev > 0

@@ -372,25 +372,28 @@ export async function getLongbridgeEarnings(
       }
     }
 
-    // Market cap (Finnhub convention: millions) from shares × last price
-    if (
-      staticRes.status === "fulfilled" &&
-      quoteRes.status === "fulfilled"
-    ) {
+    if (staticRes.status === "fulfilled") {
       const info = staticRes.value?.[0];
-      const q = quoteRes.value?.[0];
       const shares = Number(info?.totalShares ?? 0);
-      const price =
-        q?.lastDone != null
-          ? typeof q.lastDone.toNumber === "function"
-            ? q.lastDone.toNumber()
-            : Number(q.lastDone)
-          : 0;
-      if (shares > 0 && price > 0) {
-        metrics.push({
-          key: "marketCapitalization",
-          value: (shares * price) / 1e6,
-        });
+      if (shares > 0) {
+        metrics.push({ key: "shareOutstanding", value: shares / 1e6 });
+      }
+
+      if (quoteRes.status === "fulfilled") {
+        // Finnhub convention: market cap and shares are reported in millions.
+        const q = quoteRes.value?.[0];
+        const price =
+          q?.lastDone != null
+            ? typeof q.lastDone.toNumber === "function"
+              ? q.lastDone.toNumber()
+              : Number(q.lastDone)
+            : 0;
+        if (shares > 0 && price > 0) {
+          metrics.push({
+            key: "marketCapitalization",
+            value: (shares * price) / 1e6,
+          });
+        }
       }
     }
 

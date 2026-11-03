@@ -12,6 +12,7 @@ import { SymbolShareMenu } from "@/components/symbol/quote/symbol-share-menu";
 import type { SymbolTab } from "@/components/symbol/tabs/symbol-tabs-panel";
 import { SymbolQuoteBarSearch } from "@/components/symbol/quote/symbol-quote-bar-search";
 import { IconWatchlistExpand } from "@/components/symbol/watchlist/watchlist-toggle-icons";
+import { primaryQuoteDisplay } from "@/lib/market/extended-hours";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
@@ -96,6 +97,7 @@ export function SymbolQuoteBar({
     btn?.focus();
   }
   const companyName = displayName(symbol, assetType, quote?.name);
+  const primaryQuote = quote ? primaryQuoteDisplay(quote) : null;
   const showCompanyName =
     Boolean(companyName) &&
     companyName.toUpperCase() !== symbol.toUpperCase();
@@ -181,15 +183,31 @@ export function SymbolQuoteBar({
                 {companyName}
               </span>
             ) : null}
-            {quote ? (
+            {quote && primaryQuote ? (
               <>
                 <div className="aw-price shrink-0 tabular-nums">
-                  <PriceText value={quote.price} change={quote.change} />
+                  <PriceText
+                    value={primaryQuote!.price}
+                    change={primaryQuote!.change}
+                  />
                 </div>
                 <div className="shrink-0 text-[12px] tabular-nums leading-none tracking-[-0.12px] sm:text-[13px]">
-                  <ChangePct value={quote.percentChange} />
+                  <ChangePct value={primaryQuote!.percentChange} />
                 </div>
+                {primaryQuote!.session !== "regular" ? (
+                  <span className="inline-flex h-4 shrink-0 items-center rounded border border-[var(--border)] px-1 text-[9px] font-medium leading-none text-[var(--muted)]">
+                    {t(
+                      primaryQuote!.session === "pre"
+                        ? "quoteSessionPre"
+                        : primaryQuote!.session === "post"
+                          ? "quoteSessionPost"
+                          : "quoteSessionOvernight",
+                    )}
+                  </span>
+                ) : null}
               </>
+            ) : quote ? (
+              <span className="aw-caption">{t("quoteExtendedUnavailable")}</span>
             ) : (
               <span className="aw-caption">—</span>
             )}

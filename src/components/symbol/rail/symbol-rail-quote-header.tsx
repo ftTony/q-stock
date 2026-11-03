@@ -4,7 +4,13 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { SymbolAlertStrip } from "@/components/symbol/quote/symbol-alert-strip";
 import { IconHeart } from "@/components/ui/icon-heart";
-import { formatPrice, formatTime } from "@/lib/format-number";
+import {
+  formatPrice,
+  formatTime,
+  formatUsEasternDateTime,
+} from "@/lib/format-number";
+import { regularQuoteDisplay } from "@/lib/market/extended-hours";
+import { getUsMarketPhase } from "@/lib/market/session";
 import { displayName } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
@@ -51,18 +57,36 @@ export function SymbolRailQuoteHeader({
 }: Props) {
   const t = useTranslations("symbol");
   const [timeLabel, setTimeLabel] = useState<string | null>(null);
+  const regularQuote = quote ? regularQuoteDisplay(quote) : null;
+  const showingPreviousClose =
+    quote?.assetType === "stock" && getUsMarketPhase() !== "regular";
 
   useEffect(() => {
+    const regularTimestamp = showingPreviousClose
+      ? quote?.regularSession?.timestamp
+      : undefined;
+    if (showingPreviousClose && regularTimestamp == null) {
+      setTimeLabel(null);
+      return;
+    }
     if (!updatedAt && !(quote?.timestamp)) {
       setTimeLabel(null);
       return;
     }
-    const d = updatedAt ?? new Date((quote?.timestamp ?? 0) * 1000);
-    setTimeLabel(formatTime(d));
-  }, [updatedAt, quote?.timestamp]);
+    setTimeLabel(
+      showingPreviousClose
+        ? formatUsEasternDateTime(regularTimestamp! * 1000)
+        : formatTime(updatedAt ?? (quote?.timestamp ?? 0) * 1000),
+    );
+  }, [
+    updatedAt,
+    quote?.timestamp,
+    quote?.regularSession?.timestamp,
+    showingPreviousClose,
+  ]);
 
   const name = displayName(symbol, assetType, quote?.name);
-  const up = quote != null ? quote.change >= 0 : true;
+  const up = regularQuote != null ? regularQuote.change >= 0 : true;
   const tone = up ? "text-[var(--up)]" : "text-[var(--down)]";
   const watchLabel = inWatchlist ? t("inWatchlist") : t("addWatchlist");
 
@@ -109,38 +133,41 @@ export function SymbolRailQuoteHeader({
         </div>
       </div>
 
-      {quote ? (
+      {regularQuote ? (
         <div className="mt-2.5">
           <div className={`flex flex-wrap items-end gap-x-2.5 gap-y-1 ${tone}`}>
             <span className="text-[30px] font-semibold leading-none tracking-[-0.45px] tabular-nums">
-              {formatPrice(quote.price, 3)}
+              {formatPrice(regularQuote.price, 3)}
             </span>
             <div className="mb-0.5 flex items-baseline gap-1.5 text-[14px] font-medium tabular-nums leading-none">
               <span aria-hidden>{up ? "▲" : "▼"}</span>
               <span>
                 {up ? "+" : ""}
-                {formatPrice(quote.change, 3)}
+                {formatPrice(regularQuote.change, 3)}
               </span>
               <span>
                 {up ? "+" : ""}
-                {quote.percentChange.toFixed(2)}%
+                {regularQuote.percentChange.toFixed(2)}%
               </span>
             </div>
           </div>
           <div className="mt-2 flex flex-wrap items-center gap-1.5">
             <span className="aw-caption leading-none">
-              {t("railLastLabel")}
+              {t(showingPreviousClose ? "quoteRegularCloseLabel" : "railLastLabel")}
               {timeLabel ? (
                 <span className="tabular-nums" suppressHydrationWarning>
                   {" "}
                   {timeLabel}
+                  {showingPreviousClose
+                    ? ` (${t("quoteEasternTimeLabel")})`
+                    : ""}
                 </span>
               ) : null}
             </span>
             <span className="inline-flex h-5 items-center rounded border border-[var(--border)] px-1.5 text-[12px] font-medium text-[var(--muted)]">
               {marketBadge(assetType)}
             </span>
-            {quote.bid != null && quote.ask != null ? (
+            {quote?.bid != null && quote.ask != null ? (
               <span className="inline-flex h-5 items-center rounded border border-[var(--brand)]/25 bg-[var(--brand-soft)] px-1.5 text-[12px] font-medium text-[var(--brand-text)]">
                 L1
               </span>

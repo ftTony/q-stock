@@ -65,6 +65,8 @@ export interface Quote {
   postMarket?: ExtendedSessionQuote;
   /** US overnight session. */
   overnight?: ExtendedSessionQuote;
+  /** Latest regular-session quote retained while an extended quote is active. */
+  regularSession?: ExtendedSessionQuote;
   /** Which session `price` / change currently reflect. */
   activeSession?: QuoteSession;
 }

@@ -12,6 +12,11 @@ import {
 } from "@/lib/market/types";
 import type { AssetType, OhlcvBar, SearchResult } from "@/lib/types";
 import { normalizeSymbol } from "@/lib/types";
+import {
+  activeExtendedQuote,
+  mergeExtendedQuoteFields,
+} from "@/lib/market/extended-hours";
+import { getUsMarketPhase } from "@/lib/market/session";
 
 export {
   getActiveProviders,
@@ -58,11 +63,13 @@ export async function getQuote(
   symbol: string,
   assetType: AssetType,
 ): Promise<QuoteWithSource> {
-  return withProviderFailover(
+  const quote = await withProviderFailover(
     assetType,
     (p) => p.getQuote(symbol, assetType),
     `quote ${symbol}`,
   );
+  const [enriched] = await supplementUsExtendedQuotes([quote]);
+  return enriched ?? quote;
 }
 
 export async function getQuotes(
@@ -120,7 +127,51 @@ export async function getQuotes(
       }
     }
   }
-  return out;
+  return supplementUsExtendedQuotes(out);
+}
+
+async function supplementUsExtendedQuotes(
+  quotes: QuoteWithSource[],
+): Promise<QuoteWithSource[]> {
+  const phase = getUsMarketPhase();
+  if (phase === "regular") return quotes;
+
+  const candidates = quotes.filter(
+    (quote) =>
+      quote.assetType === "stock" &&
+      (!activeExtendedQuote(quote, phase) || !quote.regularSession),
+  );
+  if (!candidates.length) return quotes;
+
+  const attempt = listEquityAttempts().find(
+    (candidate) => candidate.id === "longbridge",
+  );
+  const provider = getProvider("longbridge");
+  if (!attempt || !provider) return quotes;
+
+  try {
+    const extendedQuotes = await runWithEquityAttempt(attempt, () =>
+      provider.getQuotes(
+        candidates.map(({ symbol, assetType }) => ({ symbol, assetType })),
+      ),
+    );
+    const bySymbol = new Map(
+      extendedQuotes.map((quote) => [quote.symbol.toUpperCase(), quote]),
+    );
+    return quotes.map((quote) => {
+      if (quote.assetType !== "stock") return quote;
+      const extended = bySymbol.get(quote.symbol.toUpperCase());
+      return extended
+        ? mergeExtendedQuoteFields(quote, extended, phase)
+        : quote;
+    });
+  } catch (err) {
+    console.warn(
+      "[market] Longbridge extended quote supplement failed:",
+      err instanceof Error ? err.message : err,
+    );
+    return quotes;
+  }
 }
 
 export async function getDailyCandles(

@@ -1,6 +1,10 @@
 import type { ExtendedSessionQuote, Quote } from "@/lib/types";
 import { getUsMarketPhase, type UsMarketPhase } from "@/lib/market/session";
 
+export type QuoteDisplay = ExtendedSessionQuote & {
+  session: "pre" | "regular" | "post" | "overnight";
+};
+
 /** Pick the extended-hours snapshot that should drive primary display. */
 export function activeExtendedQuote(
   quote: Pick<Quote, "preMarket" | "postMarket" | "overnight" | "activeSession">,
@@ -21,6 +25,78 @@ export function activeExtendedQuote(
     if (quote.overnight) return { session: "overnight", quote: quote.overnight };
   }
   return null;
+}
+
+/** Main quote bar: prefer the currently active US extended session. */
+export function primaryQuoteDisplay(
+  quote: Quote,
+  phase: UsMarketPhase = getUsMarketPhase(),
+): QuoteDisplay | null {
+  const active =
+    quote.assetType === "stock" ? activeExtendedQuote(quote, phase) : null;
+  if (active) return { ...active.quote, session: active.session };
+
+  if (quote.assetType === "stock" && phase !== "regular") return null;
+  return {
+    price: quote.price,
+    change: quote.change,
+    percentChange: quote.percentChange,
+    timestamp: quote.timestamp,
+    session: "regular",
+  };
+}
+
+/** Rail header: keep showing the regular-session quote during extended hours. */
+export function regularQuoteDisplay(
+  quote: Quote,
+  phase: UsMarketPhase = getUsMarketPhase(),
+): ExtendedSessionQuote {
+  if (
+    phase !== "regular" &&
+    quote.activeSession &&
+    quote.activeSession !== "regular" &&
+    quote.regularSession
+  ) {
+    return quote.regularSession;
+  }
+  return {
+    price: quote.price,
+    change: quote.change,
+    percentChange: quote.percentChange,
+    timestamp: quote.timestamp,
+  };
+}
+
+/** Add extended-session data from a supplemental quote without replacing the primary quote. */
+export function mergeExtendedQuoteFields<T extends Quote>(
+  row: T,
+  fresh: Quote,
+  phase: UsMarketPhase = getUsMarketPhase(),
+): T {
+  const preMarket = fresh.preMarket ?? row.preMarket;
+  const postMarket = fresh.postMarket ?? row.postMarket;
+  const overnight = fresh.overnight ?? row.overnight;
+  const active = activeExtendedQuote(
+    { preMarket, postMarket, overnight },
+    phase,
+  );
+  if (!active) return row;
+
+  return {
+    ...row,
+    preMarket,
+    postMarket,
+    overnight,
+    activeSession: active.session,
+    regularSession:
+      fresh.regularSession ??
+      row.regularSession ?? {
+        price: row.price,
+        change: row.change,
+        percentChange: row.percentChange,
+        timestamp: row.timestamp,
+      },
+  };
 }
 
 /** Merge extended-session fields from a fresh quote onto a rank row. */
@@ -51,13 +127,16 @@ export function mergeExtendedOntoRank<T extends Quote>(
     preMarket,
     postMarket,
     overnight,
+    regularSession: fresh.regularSession ?? row.regularSession ?? {
+      price: row.price,
+      change: row.change,
+      percentChange: row.percentChange,
+      timestamp: row.timestamp,
+    },
     activeSession: active.session,
     price: active.quote.price,
     change: active.quote.change,
     percentChange: active.quote.percentChange,
-    ...(active.quote.high != null ? { high: active.quote.high } : {}),
-    ...(active.quote.low != null ? { low: active.quote.low } : {}),
-    ...(active.quote.volume != null ? { volume: active.quote.volume } : {}),
     ...(active.quote.timestamp != null
       ? { timestamp: active.quote.timestamp }
       : {}),

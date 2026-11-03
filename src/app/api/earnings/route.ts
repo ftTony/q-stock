@@ -237,21 +237,15 @@ export async function GET(req: Request) {
 
       /** Rail stats only — skip calendar / statements / Finnhub enrich fan-out. */
       if (metricsOnly && (assetType === "hk" || assetType === "stock")) {
+        let metrics: MetricRow[] = [];
+        const sources: string[] = [];
+
         if (isProviderEnabled("longbridge")) {
           try {
             const lb = await getLongbridgeEarnings(sym, assetType);
             if (lb?.metrics?.length) {
-              return NextResponse.json({
-                symbol: sym,
-                surprises: [],
-                calendar: { upcoming: [], recent: [] },
-                metrics: lb.metrics,
-                statement: null,
-                balance: null,
-                cashflow: null,
-                source: "longbridge",
-                degraded: false,
-              });
+              metrics = mergeMetrics(metrics, lb.metrics);
+              sources.push("longbridge");
             }
           } catch (err) {
             console.warn(
@@ -264,17 +258,8 @@ export async function GET(req: Request) {
           try {
             const futu = await getFutuEarnings(sym, assetType);
             if (futu?.metrics?.length) {
-              return NextResponse.json({
-                symbol: sym,
-                surprises: [],
-                calendar: { upcoming: [], recent: [] },
-                metrics: futu.metrics,
-                statement: null,
-                balance: null,
-                cashflow: null,
-                source: "futu",
-                degraded: false,
-              });
+              metrics = mergeMetrics(metrics, futu.metrics);
+              sources.push("futu");
             }
           } catch (err) {
             console.warn(
@@ -283,19 +268,42 @@ export async function GET(req: Request) {
             );
           }
         }
-        const fh = isProviderEnabled("finnhub")
-          ? await loadFinnhubFinBundle(sym)
-          : { metrics: [] as MetricRow[], series: [] as SeriesLike[] };
+        if (isProviderEnabled("finnhub")) {
+          try {
+            const fh = await loadFinnhubFinBundle(sym);
+            if (fh.metrics.length) {
+              metrics = mergeMetrics(metrics, fh.metrics);
+              sources.push("finnhub");
+            }
+          } catch (err) {
+            console.warn(
+              "[earnings] finnhub metrics failed:",
+              err instanceof Error ? err.message : err,
+            );
+          }
+        }
+
+        if (
+          !metrics.some((m) => m.key === "52WeekHigh") ||
+          !metrics.some((m) => m.key === "52WeekLow")
+        ) {
+          const week52 = await week52FromCandles(sym, assetType);
+          if (week52.length) {
+            metrics = mergeMetrics(metrics, week52);
+            sources.push("candles");
+          }
+        }
+
         return NextResponse.json({
           symbol: sym,
           surprises: [],
           calendar: { upcoming: [], recent: [] },
-          metrics: fh.metrics,
+          metrics,
           statement: null,
           balance: null,
           cashflow: null,
-          source: fh.metrics.length ? "finnhub" : null,
-          degraded: !fh.metrics.length,
+          source: sources.length ? sources.join("+") : null,
+          degraded: metrics.length === 0,
         });
       }
 
