@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  startTransition,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   quotePollIntervalMs,
   useQuoteChannels,
@@ -16,6 +23,11 @@ const REST_FALLBACK_MS = 4_000;
 const MAX_TICKS = 80;
 /** Wait for hub WS snapshot before REST seed when push is live. */
 const WS_SEED_GRACE_MS = 2_500;
+/**
+ * Coalesce WS pushes into ≤ ~10 paints/sec.
+ * Depth is latest-wins; trades batches merge before one React commit.
+ */
+const MIN_FLUSH_MS = 100;
 
 function reasonOf(data: { detail?: unknown }): string | null {
   return typeof data.detail === "string" && data.detail.trim()
@@ -41,10 +53,20 @@ function mergeAppend(prev: TradeTick[], batch: TradeTick[]): TradeTick[] {
   return [...fresh.reverse(), ...prev].slice(0, MAX_TICKS);
 }
 
+type PendingWs = {
+  book?: DepthBook;
+  /** Full replace (hub snapshot / REST-shaped). */
+  tradesReplace?: TradeTick[];
+  /** Incremental ticks since last flush. */
+  tradesAppend?: TradeTick[];
+  clearStatus?: boolean;
+};
+
 /**
  * Rail depth + time&sales.
  * Primary: quote-ws → Longbridge/Futu broker push (depth + trades channels).
  * Fallback: REST /api/market/depth|trades when WS/push unavailable.
+ * WS paints are rAF + 100ms coalesced to protect the main thread.
  */
 export function useRailDepth(
   mode: "book" | "ticks" | "split",
@@ -58,6 +80,74 @@ export function useRailDepth(
   const [detail, setDetail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const gotWsRef = useRef(false);
+
+  const pendingRef = useRef<PendingWs>({});
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const lastFlushAtRef = useRef(0);
+  const flushScheduledRef = useRef(false);
+
+  const cancelFlush = useCallback(() => {
+    if (flushTimerRef.current != null) {
+      clearTimeout(flushTimerRef.current);
+      flushTimerRef.current = null;
+    }
+    if (rafRef.current != null) {
+      cancelAnimationFrame(rafRef.current);
+      rafRef.current = null;
+    }
+    flushScheduledRef.current = false;
+  }, []);
+
+  const flushPending = useCallback(() => {
+    flushScheduledRef.current = false;
+    flushTimerRef.current = null;
+    rafRef.current = null;
+    lastFlushAtRef.current = performance.now();
+
+    const pending = pendingRef.current;
+    pendingRef.current = {};
+    if (
+      pending.book === undefined &&
+      pending.tradesReplace === undefined &&
+      !pending.tradesAppend?.length &&
+      !pending.clearStatus
+    ) {
+      return;
+    }
+
+    startTransition(() => {
+      if (pending.book !== undefined) setBook(pending.book);
+      if (pending.tradesReplace !== undefined) {
+        setTrades(pending.tradesReplace.slice(0, MAX_TICKS));
+      } else if (pending.tradesAppend?.length) {
+        const batch = pending.tradesAppend;
+        setTrades((prev) => mergeAppend(prev, batch));
+      }
+      if (pending.clearStatus) {
+        setUnavailable(false);
+        setLocked(false);
+        setLoading(false);
+        setDetail(null);
+      }
+    });
+  }, []);
+
+  const scheduleFlush = useCallback(() => {
+    if (flushScheduledRef.current) return;
+    flushScheduledRef.current = true;
+    const wait = Math.max(
+      0,
+      MIN_FLUSH_MS - (performance.now() - lastFlushAtRef.current),
+    );
+    flushTimerRef.current = setTimeout(() => {
+      flushTimerRef.current = null;
+      rafRef.current = requestAnimationFrame(() => {
+        rafRef.current = null;
+        flushPending();
+      });
+    }, wait);
+  }, [flushPending]);
 
   const wantBook = mode === "book" || mode === "split";
   const wantTicks = mode === "ticks" || mode === "split";
@@ -80,11 +170,9 @@ export function useRailDepth(
           return;
         }
         gotWsRef.current = true;
-        setBook(msg.book);
-        setUnavailable(false);
-        setLocked(false);
-        setLoading(false);
-        setDetail(null);
+        pendingRef.current.book = msg.book;
+        pendingRef.current.clearStatus = true;
+        scheduleFlush();
         return;
       }
       if (msg.op === "trades") {
@@ -92,18 +180,19 @@ export function useRailDepth(
           return;
         }
         gotWsRef.current = true;
-        setTrades((prev) =>
-          msg.mode === "append"
-            ? mergeAppend(prev, msg.trades)
-            : msg.trades.slice(0, MAX_TICKS),
-        );
-        setUnavailable(false);
-        setLocked(false);
-        setLoading(false);
-        setDetail(null);
+        if (msg.mode === "append") {
+          const prev = pendingRef.current.tradesAppend ?? [];
+          pendingRef.current.tradesAppend = [...prev, ...msg.trades];
+          pendingRef.current.tradesReplace = undefined;
+        } else {
+          pendingRef.current.tradesReplace = msg.trades.slice(0, MAX_TICKS);
+          pendingRef.current.tradesAppend = undefined;
+        }
+        pendingRef.current.clearStatus = true;
+        scheduleFlush();
       }
     },
-    [symbol, assetType],
+    [symbol, assetType, scheduleFlush],
   );
 
   const { enabled, connected, degraded, push } = useQuoteChannels(
@@ -116,13 +205,17 @@ export function useRailDepth(
 
   useEffect(() => {
     gotWsRef.current = false;
+    pendingRef.current = {};
+    cancelFlush();
     setBook(null);
     setTrades([]);
     setUnavailable(false);
     setLocked(false);
     setDetail(null);
     setLoading(true);
-  }, [mode, symbol, assetType]);
+  }, [mode, symbol, assetType, cancelFlush]);
+
+  useEffect(() => () => cancelFlush(), [cancelFlush]);
 
   useEffect(() => {
     if (!equity) {
