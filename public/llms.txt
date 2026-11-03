@@ -1,0 +1,33 @@
+# Q-Stock
+
+> Learning-oriented research terminal for US / HK / A-shares / crypto: watch markets, analyze symbols, paper-trade, and review. Not investment advice.
+
+Q-Stock is a multi-market web & H5 product (Next.js). Quotes failover across Longbridge, Futu (user OAuth or platform keys), and Finnhub; crypto via Binance/OKX. Default locale is English at the site root; other locales use a path prefix (e.g. `/zh-CN/...`).
+
+## Product
+
+- [Home](https://www.q-stock.cn/): Product overview and entry
+- [Markets](https://www.q-stock.cn/markets): Multi-market boards, ranks, industry heatmap
+- [Analysis](https://www.q-stock.cn/analysis): Symbol analysis entry cards
+- [Learn](https://www.q-stock.cn/learn): Investing education articles
+- [Tools](https://www.q-stock.cn/tools): Calculators and helper tools
+- [Multi-chart](https://www.q-stock.cn/multi-chart): Multi-pane chart workspace
+- [Pricing](https://www.q-stock.cn/pricing): Plans and billing
+- [About](https://www.q-stock.cn/about): Product and support
+
+## Locales
+
+- [简体中文首页](https://www.q-stock.cn/zh-CN): Same product in Simplified Chinese
+- [繁體中文首頁](https://www.q-stock.cn/zh-TW): Traditional Chinese
+- [日本語](https://www.q-stock.cn/ja): Japanese
+
+## Legal
+
+- [Privacy](https://www.q-stock.cn/privacy): Privacy policy
+- [Terms](https://www.q-stock.cn/terms): Terms of service
+- [Disclaimer](https://www.q-stock.cn/disclaimer): Risk and content disclaimer
+
+## Optional
+
+- [Sitemap](https://www.q-stock.cn/sitemap.xml): Crawlable URL index
+- [robots.txt](https://www.q-stock.cn/robots.txt): Crawler rules (auth and account paths disallowed)
