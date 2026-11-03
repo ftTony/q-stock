@@ -47,14 +47,15 @@ export function SegmentedControl<T extends string>({
   });
 
   const tradeSide = className.includes("aw-trade-side");
-  const pillInset = tradeSide ? 2 : 0;
+  /** Trade side is flush halves; other segmented uses may keep a hairline inset. */
+  const pillInset = 0;
 
   const measure = () => {
+    const root = rootRef.current;
     const idx = options.findIndex((o) => o.value === value);
     const btn = btnRefs.current[idx];
-    if (!btn) return;
-    // offset* is relative to the padded parent — avoids border-box drift
-    // from getBoundingClientRect that made the pill float off the last tab.
+    if (!root || !btn) return;
+    // Prefer offset* (padding-box) so border width does not shift the pill.
     const inset = pillInset;
     setPill({
       left: btn.offsetLeft + inset,
@@ -94,17 +95,18 @@ export function SegmentedControl<T extends string>({
     >
       <div
         aria-hidden
-        className={`pointer-events-none absolute left-0 top-0 rounded-none ${pillClass} ${
+        className={`pointer-events-none absolute rounded-none ${pillClass} ${
           tradeSide ? "aw-trade-side-pill" : ""
         } ${
           pill.ready
-            ? "transition-[transform,width,height,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            ? "transition-[left,top,width,height,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
             : "opacity-0"
         }`}
         style={{
+          left: pill.left,
+          top: pill.top,
           width: pill.width,
           height: pill.height,
-          transform: `translate(${pill.left}px, ${pill.top}px)`,
         }}
       />
       {options.map((opt, i) => {

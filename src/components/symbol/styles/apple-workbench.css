@@ -674,17 +674,20 @@ html.aw-rail-resizing {
   padding: 8px 6px;
 }
 
-/* Trade dock buy/sell — compact, clear up/down contrast */
+/* Trade dock buy/sell — App 直角; pill fills each half flush (no inset float). */
 .aw-trade-side {
   height: 34px;
-  border-radius: 8px;
-  border: 1px solid var(--aw-hairline);
+  width: 100%;
+  border-radius: 0;
+  border: 1px solid var(--aw-hairline, var(--border));
   background: var(--aw-pearl, var(--surface-2));
   overflow: hidden;
 }
 
 .aw-trade-side [role="tab"] {
   height: 100%;
+  flex: 1 1 0;
+  min-width: 0;
   padding: 0 10px;
   font-size: 13px;
   font-weight: 600;
@@ -693,8 +696,7 @@ html.aw-rail-resizing {
 }
 
 .aw-trade-side .aw-trade-side-pill {
-  /* Inset applied in SegmentedControl measure (pillInset); keep radius only. */
-  border-radius: 6px;
+  border-radius: 0;
 }
 
 .aw-tab {
@@ -726,6 +728,36 @@ html.aw-rail-resizing {
   z-index: 1;
   height: 2px;
   background: var(--aw-primary);
+}
+
+/* Sliding underline host — hide per-tab ::after; indicator is a sibling span. */
+.aw-tablist-slide .aw-tab[data-active="true"]::after {
+  content: none;
+  display: none;
+}
+
+@keyframes aw-rail-pane-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.aw-rail-pane-enter {
+  animation: aw-rail-pane-in 200ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aw-rail-pane-enter {
+    animation: none;
+  }
+  .aw-tablist-slide [aria-hidden="true"] {
+    transition: none !important;
+  }
 }
 
 /* QuoteBar secondary tabs: full row height so active mark sits on bar bottom edge */

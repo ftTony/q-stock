@@ -5,8 +5,14 @@ import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { setBoundStrategyId } from "@/components/symbol/plan/symbol-plan-binding";
 import { SymbolRailGuide } from "@/components/symbol/rail/symbol-rail-guide";
+import {
+  SymbolRailTabs,
+  type RailTab,
+} from "@/components/symbol/rail/symbol-rail-tabs";
 import { RailPanelSkeleton } from "@/components/ui/panel-skeleton";
 import type { AssetType } from "@/lib/types";
+
+export type { RailTab };
 
 const SymbolPlanPanel = dynamic(
   () =>
@@ -31,8 +37,6 @@ const SymbolRailMarket = dynamic(
     })),
   { ssr: false, loading: () => <RailPanelSkeleton rows={8} /> },
 );
-
-export type RailTab = "market" | "plan" | "review";
 
 type Props = {
   symbol: string;
@@ -156,31 +160,11 @@ export function SymbolOrderRail({
       }
     >
       {hideTabList ? null : (
-        <div
-          role="tablist"
-          className="flex shrink-0 items-stretch border-b border-[var(--aw-hairline,var(--border))]"
-        >
-          {railOptions.map((opt) => (
-            <button
-              key={opt.value}
-              type="button"
-              role="tab"
-              aria-selected={tab === opt.value}
-              data-active={tab === opt.value}
-              data-tour={
-                opt.value === "plan"
-                  ? "rail-plan"
-                  : opt.value === "review"
-                    ? "rail-review"
-                    : undefined
-              }
-              onClick={() => setTab(opt.value)}
-              className="aw-tab flex-1 justify-center"
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
+        <SymbolRailTabs
+          value={tab}
+          options={railOptions}
+          onChange={setTab}
+        />
       )}
 
       {hideTabList ? null : (
@@ -192,31 +176,37 @@ export function SymbolOrderRail({
       )}
 
       {tab === "market" && showMarket ? (
-        <RailScroll embed={embedInScroll}>
-          <SymbolRailMarket symbol={symbol} assetType={assetType} />
+        <RailScroll embed={embedInScroll} key="market">
+          <div className="aw-rail-pane-enter flex min-h-0 flex-1 flex-col">
+            <SymbolRailMarket symbol={symbol} assetType={assetType} />
+          </div>
         </RailScroll>
       ) : null}
 
       {tab === "plan" ? (
-        <RailScroll embed={embedInScroll}>
-          <SymbolPlanPanel
-            symbol={symbol}
-            assetType={assetType}
-            strategyId={strategyId}
-            onStrategyIdChange={handleStrategyIdChange}
-            onGoOrder={() => onRequestOrder?.()}
-          />
+        <RailScroll embed={embedInScroll} key="plan">
+          <div className="aw-rail-pane-enter flex min-h-0 flex-1 flex-col">
+            <SymbolPlanPanel
+              symbol={symbol}
+              assetType={assetType}
+              strategyId={strategyId}
+              onStrategyIdChange={handleStrategyIdChange}
+              onGoOrder={() => onRequestOrder?.()}
+            />
+          </div>
         </RailScroll>
       ) : null}
 
       {tab === "review" ? (
-        <RailScroll embed={embedInScroll}>
-          <SymbolReviewRail
-            symbol={symbol}
-            assetType={assetType}
-            strategyNameById={nameById}
-            onOpenPlan={() => setTab("plan")}
-          />
+        <RailScroll embed={embedInScroll} key="review">
+          <div className="aw-rail-pane-enter flex min-h-0 flex-1 flex-col">
+            <SymbolReviewRail
+              symbol={symbol}
+              assetType={assetType}
+              strategyNameById={nameById}
+              onOpenPlan={() => setTab("plan")}
+            />
+          </div>
         </RailScroll>
       ) : null}
     </div>
