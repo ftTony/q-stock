@@ -37,10 +37,12 @@ function settingsUrl(origin: string, locale: AppLocale, futu: string): URL {
 export async function GET(req: Request) {
   const url = new URL(req.url);
   const locale = pickLocale(url.searchParams.get("locale"));
+  const redirectUri = getFutuOAuthRedirectUri();
+  const origin = new URL(redirectUri).origin;
 
   const session = await auth();
   if (!session?.user?.id) {
-    const login = new URL(localizedPath(locale, "/login"), url.origin);
+    const login = new URL(localizedPath(locale, "/login"), origin);
     login.searchParams.set(
       "next",
       `${localizedPath(locale, "/settings")}?futu=need_login`,
@@ -51,14 +53,12 @@ export async function GET(req: Request) {
   const clientId = getFutuOAuthClientId();
   if (!clientId) {
     return NextResponse.redirect(
-      settingsUrl(url.origin, locale, "oauth_unavailable"),
+      settingsUrl(origin, locale, "oauth_unavailable"),
     );
   }
 
   const { codeVerifier, codeChallenge } = createPkcePair();
   const state = createOAuthState();
-  const redirectUri = getFutuOAuthRedirectUri();
-
   const oauthSession: FutuOAuthSession = {
     state,
     codeVerifier,
@@ -70,7 +70,7 @@ export async function GET(req: Request) {
   try {
     cookieValue = encryptJson(oauthSession);
   } catch {
-    return NextResponse.redirect(settingsUrl(url.origin, locale, "error"));
+    return NextResponse.redirect(settingsUrl(origin, locale, "error"));
   }
 
   const res = NextResponse.redirect(

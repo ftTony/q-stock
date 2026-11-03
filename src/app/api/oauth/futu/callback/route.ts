@@ -41,7 +41,8 @@ function settingsRedirect(
  */
 export async function GET(req: Request) {
   const url = new URL(req.url);
-  const origin = url.origin;
+  const redirectUri = getFutuOAuthRedirectUri();
+  const origin = new URL(redirectUri).origin;
   const code = url.searchParams.get("code")?.trim() || "";
   const state = url.searchParams.get("state")?.trim() || "";
   const oauthError = url.searchParams.get("error")?.trim();
@@ -87,7 +88,7 @@ export async function GET(req: Request) {
       code,
       codeVerifier: oauthSession.codeVerifier,
       clientId,
-      redirectUri: getFutuOAuthRedirectUri(),
+      redirectUri,
     });
 
     const payload: FutuBearerCreds = {
