@@ -157,12 +157,14 @@ export function IndustryHeatmap({
 
   const rects: TreemapRect[] = useMemo(() => {
     if (!w || !h || !items.length) return [];
-    return squarify(
-      items.map((c) => ({ id: c.id, weight: c.weight, data: c })),
-      w,
-      h,
-      2,
-    );
+    const seen = new Set<string>();
+    const nodes = [];
+    for (const c of items) {
+      if (!c.id || seen.has(c.id)) continue;
+      seen.add(c.id);
+      nodes.push({ id: c.id, weight: c.weight, data: c });
+    }
+    return squarify(nodes, w, h, 2);
   }, [items, w, h]);
 
   const overallUp = overall >= 0;

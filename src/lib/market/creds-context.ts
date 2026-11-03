@@ -10,6 +10,7 @@ import type {
   OkxCreds,
 } from "@/lib/market/creds-types";
 import type { CryptoVendorId, EquityVendorId } from "@/lib/market/types";
+import { isFutuOAuthConfigured } from "@/lib/market/providers/futu-oauth";
 
 const als = new AsyncLocalStorage<MarketCredsStore>();
 
@@ -61,7 +62,13 @@ function parseFutu(raw: unknown): FutuCreds | undefined {
   if (mode === "bearer") {
     const accessToken = String(o.accessToken ?? "").trim();
     if (!accessToken) return undefined;
-    return { mode: "bearer", accessToken };
+    const refreshToken = String(o.refreshToken ?? "").trim() || undefined;
+    const expiresAtRaw = Number(o.expiresAt);
+    const expiresAt =
+      Number.isFinite(expiresAtRaw) && expiresAtRaw > 0
+        ? expiresAtRaw
+        : undefined;
+    return { mode: "bearer", accessToken, refreshToken, expiresAt };
   }
   if (mode === "appkey") {
     const appKey = String(o.appKey ?? "").trim();
@@ -151,7 +158,11 @@ export async function loadUserMarketCreds(
 
 export async function getUserMarketCredsStatus(userId: string): Promise<{
   longbridge: { configured: boolean };
-  futu: { configured: boolean; mode?: "bearer" | "appkey" };
+  futu: {
+    configured: boolean;
+    mode?: "bearer" | "appkey";
+    oauthAvailable: boolean;
+  };
   binance: { configured: boolean };
   okx: { configured: boolean };
   fuyao: { configured: boolean };
@@ -164,6 +175,7 @@ export async function getUserMarketCredsStatus(userId: string): Promise<{
     futu: {
       configured: Boolean(store.futu),
       mode: store.futu?.mode,
+      oauthAvailable: isFutuOAuthConfigured(),
     },
     binance: { configured: Boolean(store.binance) },
     okx: { configured: Boolean(store.okx) },

@@ -1,11 +1,13 @@
 import type { IndustryHeatCell } from "@/lib/market/providers/longbridge-industry";
 import { getLongbridgeIndustryHeatmap } from "@/lib/market/providers/longbridge-industry";
 import { getFutuIndustryHeatmap } from "@/lib/market/providers/futu-industry";
-import { getMarketCreds } from "@/lib/market/creds-context";
-import { hasLongbridgeCreds } from "@/lib/market/providers/longbridge-client";
 import { isFutuConfigured } from "@/lib/market/providers/futu-http";
-import { isProviderEnabled } from "@/lib/market/router";
-import type { EquityVendorId } from "@/lib/market/types";
+import { hasLongbridgeCreds } from "@/lib/market/providers/longbridge-client";
+import {
+  isProviderEnabled,
+  listEquityAttempts,
+  runWithEquityAttempt,
+} from "@/lib/market/router";
 import type { AssetType } from "@/lib/types";
 
 export type { IndustryHeatCell, IndustryStock } from "@/lib/market/providers/longbridge-industry";
@@ -15,27 +17,19 @@ export type IndustryHeatmapResult = {
   source: "longbridge" | "futu" | null;
 };
 
-function equityOrder(): EquityVendorId[] {
-  const primary = getMarketCreds().equityVendor ?? "longbridge";
-  const secondary: EquityVendorId =
-    primary === "longbridge" ? "futu" : "longbridge";
-  return [primary, secondary];
-}
-
 export function isIndustryHeatmapAvailable(
   assetType?: AssetType,
 ): boolean {
   if (assetType === "crypto") return false;
-  for (const id of equityOrder()) {
-    if (id === "longbridge" && isProviderEnabled("longbridge") && hasLongbridgeCreds()) {
-      return true;
-    }
-    if (id === "futu" && isProviderEnabled("futu") && isFutuConfigured()) {
-      return true;
-    }
-  }
+  if (hasLongbridgeCreds() && isProviderEnabled("longbridge")) return true;
+  if (isFutuConfigured() && isProviderEnabled("futu")) return true;
   // Longbridge industry chart is public HTTP (works without BYOK for US/HK/CN)
-  if (assetType === "stock" || assetType === "hk" || assetType === "cn" || assetType === undefined) {
+  if (
+    assetType === "stock" ||
+    assetType === "hk" ||
+    assetType === "cn" ||
+    assetType === undefined
+  ) {
     return isProviderEnabled("longbridge");
   }
   return false;
@@ -49,32 +43,34 @@ export async function getIndustryHeatmap(
     return { industries: [], source: null };
   }
 
-  for (const id of equityOrder()) {
-    if (id === "longbridge" && isProviderEnabled("longbridge")) {
-      try {
-        const industries = await getLongbridgeIndustryHeatmap(assetType, limit);
+  for (const attempt of listEquityAttempts()) {
+    if (attempt.id === "finnhub") continue;
+    try {
+      if (attempt.id === "longbridge" && isProviderEnabled("longbridge")) {
+        const industries = await runWithEquityAttempt(attempt, () =>
+          getLongbridgeIndustryHeatmap(assetType, limit),
+        );
         if (industries.length > 0) {
           return { industries, source: "longbridge" };
         }
-      } catch (err) {
-        console.warn(
-          "[industry] longbridge failed:",
-          err instanceof Error ? err.message : err,
-        );
       }
-    }
-    if (id === "futu" && isProviderEnabled("futu") && isFutuConfigured()) {
-      try {
-        const industries = await getFutuIndustryHeatmap(assetType, limit);
+      if (
+        attempt.id === "futu" &&
+        isProviderEnabled("futu") &&
+        isFutuConfigured()
+      ) {
+        const industries = await runWithEquityAttempt(attempt, () =>
+          getFutuIndustryHeatmap(assetType, limit),
+        );
         if (industries.length > 0) {
           return { industries, source: "futu" };
         }
-      } catch (err) {
-        console.warn(
-          "[industry] futu failed:",
-          err instanceof Error ? err.message : err,
-        );
       }
+    } catch (err) {
+      console.warn(
+        `[industry] ${attempt.id}:${attempt.source} failed:`,
+        err instanceof Error ? err.message : err,
+      );
     }
   }
 

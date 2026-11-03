@@ -693,8 +693,7 @@ html.aw-rail-resizing {
 }
 
 .aw-trade-side .aw-trade-side-pill {
-  top: 2px;
-  bottom: 2px;
+  /* Inset applied in SegmentedControl measure (pillInset); keep radius only. */
   border-radius: 6px;
 }
 

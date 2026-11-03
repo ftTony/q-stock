@@ -16,9 +16,15 @@ export function envLongbridgeCreds(): LongbridgeCreds | undefined {
   return { appKey, appSecret, accessToken };
 }
 
-/** Env first, then user BYOK in ALS. */
+/**
+ * Respect `brokerCredsSource` when set (failover hop).
+ * Unset: user BYOK ?? platform env.
+ */
 export function resolveLongbridgeCreds(): LongbridgeCreds | undefined {
-  return envLongbridgeCreds() ?? getMarketCreds().longbridge;
+  const store = getMarketCreds();
+  if (store.brokerCredsSource === "user") return store.longbridge;
+  if (store.brokerCredsSource === "platform") return envLongbridgeCreds();
+  return store.longbridge ?? envLongbridgeCreds();
 }
 
 /** Platform Futu: Bearer token preferred, else AppKey + private key. */
@@ -34,8 +40,12 @@ export function envFutuCreds(): FutuCreds | undefined {
   return { mode: "appkey", appKey, privateKey, signAlg };
 }
 
+/** Same source pinning as Longbridge. */
 export function resolveFutuCreds(): FutuCreds | undefined {
-  return envFutuCreds() ?? getMarketCreds().futu;
+  const store = getMarketCreds();
+  if (store.brokerCredsSource === "user") return store.futu;
+  if (store.brokerCredsSource === "platform") return envFutuCreds();
+  return store.futu ?? envFutuCreds();
 }
 
 export function envBinanceCreds(): BinanceCreds | undefined {

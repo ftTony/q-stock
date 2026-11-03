@@ -9,6 +9,10 @@ export type LongbridgeCreds = {
 export type FutuBearerCreds = {
   mode: "bearer";
   accessToken: string;
+  /** Present after OAuth PKCE; used to renew accessToken. */
+  refreshToken?: string;
+  /** Unix ms when accessToken expires (optional for legacy/env tokens). */
+  expiresAt?: number;
 };
 
 export type FutuAppKeyCreds = {
@@ -35,6 +39,9 @@ export type FuyaoCreds = {
   apiKey: string;
 };
 
+/** Pin Longbridge/Futu resolve to user BYOK or platform env for one failover hop. */
+export type BrokerCredsSource = "user" | "platform";
+
 export type MarketCredsStore = {
   userId?: string;
   longbridge?: LongbridgeCreds;
@@ -46,6 +53,11 @@ export type MarketCredsStore = {
   equityVendor?: EquityVendorId;
   /** Preferred crypto exchange. */
   cryptoVendor?: CryptoVendorId;
+  /**
+   * When set, `resolveLongbridgeCreds` / `resolveFutuCreds` only read this source.
+   * Unset = user ?? platform (status / “any configured” checks).
+   */
+  brokerCredsSource?: BrokerCredsSource;
 };
 
 export function fingerprintLongbridge(c: LongbridgeCreds): string {

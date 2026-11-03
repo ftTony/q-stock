@@ -23,6 +23,15 @@ import { queryKeys } from "@/lib/query/keys";
 
 type Status = MarketCredsStatus;
 
+const FUTU_OAUTH_FLASH_KEY = "q-stock.futu-oauth";
+
+function mapFutuOAuthError(code: string, t: (key: string) => string): string {
+  if (code === "denied") return t("credsFutuOAuthDenied");
+  if (code === "need_login") return t("credsFutuOAuthNeedLogin");
+  if (code === "oauth_unavailable") return t("credsFutuOAuthUnavailable");
+  return t("credsFutuOAuthError");
+}
+
 export function MarketCredentialsForm({
   forceSetupKeys = false,
   onSetupKeysDone,
@@ -38,6 +47,7 @@ export function MarketCredentialsForm({
   const setupKeys =
     forceSetupKeys || searchParams.get("setupKeys") === "1";
   const panelRef = useRef<HTMLDivElement>(null);
+  const futuFlashHandled = useRef(false);
   const { message, messageKind, flash, clearFlash } = useFlashMessage();
 
   const { data: statusData, isLoading: loading, refetch } =
@@ -76,6 +86,56 @@ export function MarketCredentialsForm({
     if (!setupKeys || loading) return;
     panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [setupKeys, loading]);
+
+  /** OAuth callback lands on /settings?futu=… then modal via sessionStorage. */
+  useEffect(() => {
+    if (loading || futuFlashHandled.current) return;
+    let raw = searchParams.get("futu");
+    if (!raw) {
+      try {
+        raw = sessionStorage.getItem(FUTU_OAUTH_FLASH_KEY);
+        if (raw) sessionStorage.removeItem(FUTU_OAUTH_FLASH_KEY);
+      } catch {
+        raw = null;
+      }
+    }
+    if (!raw) return;
+    futuFlashHandled.current = true;
+
+    if (raw === "connected") {
+      void refetch().then((res) => {
+        try {
+          sessionStorage.removeItem(CREDS_DISMISS_KEY);
+        } catch {
+          /* ignore */
+        }
+        flash("ok", t("credsFutuConnected"));
+        if (setupKeys && hasAnyBrokerCreds(res.data)) {
+          onSetupKeysDone?.();
+          if (!forceSetupKeys) router.replace("/settings");
+        }
+      });
+    } else if (raw !== "need_login") {
+      flash("error", mapFutuOAuthError(raw, t));
+    }
+
+    if (searchParams.get("futu")) {
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete("futu");
+      const qs = next.toString();
+      router.replace(qs ? `/settings?${qs}` : "/settings");
+    }
+  }, [
+    loading,
+    searchParams,
+    refetch,
+    flash,
+    t,
+    setupKeys,
+    forceSetupKeys,
+    onSetupKeysDone,
+    router,
+  ]);
 
   function onCredsSaved(next: Status | undefined) {
     try {

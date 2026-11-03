@@ -38,18 +38,29 @@ export function SegmentedControl<T extends string>({
 }: Props<T>) {
   const rootRef = useRef<HTMLDivElement>(null);
   const btnRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const [pill, setPill] = useState({ left: 0, width: 0, ready: false });
+  const [pill, setPill] = useState({
+    left: 0,
+    top: 0,
+    width: 0,
+    height: 0,
+    ready: false,
+  });
+
+  const tradeSide = className.includes("aw-trade-side");
+  const pillInset = tradeSide ? 2 : 0;
 
   const measure = () => {
-    const root = rootRef.current;
     const idx = options.findIndex((o) => o.value === value);
     const btn = btnRefs.current[idx];
-    if (!root || !btn) return;
-    const rootBox = root.getBoundingClientRect();
-    const btnBox = btn.getBoundingClientRect();
+    if (!btn) return;
+    // offset* is relative to the padded parent — avoids border-box drift
+    // from getBoundingClientRect that made the pill float off the last tab.
+    const inset = pillInset;
     setPill({
-      left: btnBox.left - rootBox.left,
-      width: btnBox.width,
+      left: btn.offsetLeft + inset,
+      top: btn.offsetTop + inset,
+      width: Math.max(0, btn.offsetWidth - inset * 2),
+      height: Math.max(0, btn.offsetHeight - inset * 2),
       ready: true,
     });
   };
@@ -78,21 +89,22 @@ export function SegmentedControl<T extends string>({
   return (
     <div
       ref={rootRef}
-      className={`relative flex ${className}`}
+      className={`relative inline-flex items-stretch ${className}`}
       role="tablist"
     >
       <div
         aria-hidden
-        className={`pointer-events-none absolute bottom-1 left-0 top-1 rounded-none ${pillClass} ${
-          className.includes("aw-trade-side") ? "aw-trade-side-pill" : ""
+        className={`pointer-events-none absolute left-0 top-0 rounded-none ${pillClass} ${
+          tradeSide ? "aw-trade-side-pill" : ""
         } ${
           pill.ready
-            ? "transition-[transform,width,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
+            ? "transition-[transform,width,height,background-color] duration-300 ease-[cubic-bezier(0.22,1,0.36,1)]"
             : "opacity-0"
         }`}
         style={{
           width: pill.width,
-          transform: `translateX(${pill.left}px)`,
+          height: pill.height,
+          transform: `translate(${pill.left}px, ${pill.top}px)`,
         }}
       />
       {options.map((opt, i) => {
@@ -109,7 +121,7 @@ export function SegmentedControl<T extends string>({
             role="tab"
             aria-selected={selected}
             onClick={() => onChange(opt.value)}
-            className={`relative z-10 rounded-none transition-colors duration-300 ${buttonClassName} ${
+            className={`relative z-10 inline-flex items-center justify-center rounded-none transition-colors duration-300 ${buttonClassName} ${
               selected
                 ? textActive
                 : "text-[var(--muted)] hover:text-[var(--foreground)]"

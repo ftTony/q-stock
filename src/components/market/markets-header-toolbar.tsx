@@ -73,10 +73,10 @@ export function MarketsHeaderToolbar({
               key === "stock" ? "/markets" : `/markets?list=${key}`,
             );
           }}
-          className="rounded-none border border-[var(--border)] bg-[var(--panel)] p-0.5"
+          className="h-8 rounded-none border border-[var(--border)] bg-[var(--panel)] p-0.5"
           indicatorClassName="bg-[var(--brand-soft)]"
           activeTextClassName="text-[var(--brand-text)]"
-          buttonClassName="px-2.5 py-1.5 text-[11px] font-medium sm:text-xs"
+          buttonClassName="h-full px-2.5 text-[11px] font-medium leading-none sm:text-xs"
           options={[
             { value: "stock", label: t("stocks") },
             { value: "hk", label: t("hk") },

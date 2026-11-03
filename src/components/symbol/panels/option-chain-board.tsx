@@ -1,14 +1,25 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { useTranslations } from "next-intl";
 import { ListPanelSkeleton } from "@/components/ui/panel-skeleton";
+import { SideDrawer } from "@/components/ui/side-drawer";
 import { formatNumber } from "@/lib/format-number";
 import type { OptionRow } from "@/lib/market/providers/longbridge-research";
 import type { AssetType } from "@/lib/types";
 import { OptionChainPanes } from "./option-chain/option-chain-panes";
 import type { StrategySeed } from "./option-chain/option-strategy-drawer";
+import { OptionStrategyDrawerLoading } from "./option-chain/option-strategy-drawer-loading";
+import { OptionChainSettings } from "./option-chain/option-chain-settings";
+import {
+  DEFAULT_OPTION_CHAIN_PREFS,
+  limitRowsAroundSpot,
+  loadOptionChainPrefs,
+  orderedVisibleCols,
+  saveOptionChainPrefs,
+  type OptionChainPrefs,
+} from "./option-chain/option-chain-prefs";
 import {
   bsGreeks,
   daysToExpiry,
@@ -20,16 +31,18 @@ import {
 } from "./option-chain/option-chain-utils";
 
 /**
- * The strategy tool pulls in the binomial/BS pricer, the payoff chart and the
- * date picker — none of it is needed to render the chain, so it is split into
- * its own chunk and only fetched the first time the drawer opens.
+ * Heavy body (pricer / payoff / date picker) loads on first open.
+ * SideDrawer shell stays in this chunk so the panel slides in immediately.
  */
-const OptionStrategyDrawer = dynamic(
+const OptionStrategyDrawerBody = dynamic(
   () =>
     import("./option-chain/option-strategy-drawer").then((m) => ({
-      default: m.OptionStrategyDrawer,
+      default: m.OptionStrategyDrawerBody,
     })),
-  { ssr: false },
+  {
+    ssr: false,
+    loading: () => <OptionStrategyDrawerLoading />,
+  },
 );
 
 function avgIv(rows: OptionRow[]): number | null {
@@ -103,19 +116,34 @@ export function OptionChainBoard({
   const [side, setSide] = useState<SideFilter>("all");
   const [money, setMoney] = useState<MoneyFilter>("all");
   const [toolOpen, setToolOpen] = useState(false);
-  /** Set on first open so the drawer chunk loads on demand, then stays warm. */
-  const [toolReady, setToolReady] = useState(false);
+  /** Keep shell mounted after first open so close animation still has a host. */
+  const [toolMounted, setToolMounted] = useState(false);
   const [seed, setSeed] = useState<StrategySeed>(null);
+  const [prefs, setPrefs] = useState<OptionChainPrefs>(DEFAULT_OPTION_CHAIN_PREFS);
   const chipRef = useRef<HTMLDivElement>(null);
+  const tTool = useTranslations("symbol.optTool");
+
+  useEffect(() => {
+    setPrefs(loadOptionChainPrefs());
+  }, []);
+
+  const onPrefsChange = useCallback((next: OptionChainPrefs) => {
+    const normalized: OptionChainPrefs = {
+      ...next,
+      cols: orderedVisibleCols(next.cols),
+    };
+    setPrefs(normalized);
+    saveOptionChainPrefs(normalized);
+  }, []);
 
   const openTool = useCallback(() => {
-    setToolReady(true);
+    setToolMounted(true);
     setToolOpen(true);
   }, []);
 
   const pickSeed = useCallback((s: { kind: "call" | "put"; strike: number }) => {
     setSeed(s);
-    setToolReady(true);
+    setToolMounted(true);
     setToolOpen(true);
   }, []);
 
@@ -144,6 +172,16 @@ export function OptionChainBoard({
       return side === "call" ? !callItm : !putItm;
     });
   }, [rows, side, money, spotN]);
+
+  const visibleCols = useMemo(
+    () => orderedVisibleCols(prefs.cols),
+    [prefs.cols],
+  );
+
+  const displayed = useMemo(
+    () => limitRowsAroundSpot(filtered, spotN, prefs.rowLimit),
+    [filtered, spotN, prefs.rowLimit],
+  );
 
   const greeksBySide = useMemo(() => {
     const call = new Map<number, Greeks>();
@@ -175,14 +213,14 @@ export function OptionChainBoard({
 
   /** Insert spot marker after last strike strictly below spot. */
   const spotAfterIdx = useMemo(() => {
-    if (spotN == null || !filtered.length) return -1;
+    if (spotN == null || !displayed.length) return -1;
     let idx = -1;
-    for (let i = 0; i < filtered.length; i++) {
-      if (filtered[i]!.strike < spotN) idx = i;
+    for (let i = 0; i < displayed.length; i++) {
+      if (displayed[i]!.strike < spotN) idx = i;
       else break;
     }
     return idx;
-  }, [filtered, spotN]);
+  }, [displayed, spotN]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -210,9 +248,13 @@ export function OptionChainBoard({
             IV {formatNumber(chainIv, { maximumFractionDigits: 1 })}
           </span>
         ) : null}
+        <OptionChainSettings prefs={prefs} onChange={onPrefsChange} />
         <button
           type="button"
           onClick={openTool}
+          onMouseEnter={() => {
+            void import("./option-chain/option-strategy-drawer");
+          }}
           style={{ color: "var(--brand)" }}
           className="ml-auto inline-flex items-center text-[13px] font-medium tracking-[-0.08px] transition hover:underline"
         >
@@ -299,13 +341,14 @@ export function OptionChainBoard({
           </p>
         ) : (
           <OptionChainPanes
-            rows={filtered}
+            rows={displayed}
             spotN={spotN}
             spotAfterIdx={spotAfterIdx}
             greeksBySide={greeksBySide}
             showCall={showCall}
             showPut={showPut}
             money={money}
+            cols={visibleCols}
             symbol={symbol}
             seed={seed}
             onPickSeed={pickSeed}
@@ -314,18 +357,25 @@ export function OptionChainBoard({
         )}
       </div>
 
-      {toolReady ? (
-        <OptionStrategyDrawer
+      {toolMounted ? (
+        <SideDrawer
           open={toolOpen}
           onClose={() => setToolOpen(false)}
-          symbol={symbol ?? ""}
-          assetType={assetType ?? "stock"}
-          spot={spotN ?? 0}
-          expiry={expiry}
-          expiries={expiries}
-          rows={filtered}
-          seed={seed}
-        />
+          title={tTool("title")}
+          subtitle={`${symbol ?? ""} · ${expiry}`}
+          className="aw !bg-[var(--panel)]"
+        >
+          <OptionStrategyDrawerBody
+            open={toolOpen}
+            symbol={symbol ?? ""}
+            assetType={assetType ?? "stock"}
+            spot={spotN ?? 0}
+            expiry={expiry}
+            expiries={expiries}
+            rows={displayed}
+            seed={seed}
+          />
+        </SideDrawer>
       ) : null}
     </div>
   );

@@ -108,9 +108,10 @@ export async function getFutuIndustryHeatmap(
         })();
   if (!markets.length) return [];
 
-  const key = `futu:industry:v2:${markets.join("+")}:${limit}`;
+  const key = `futu:industry:v3:${markets.join("+")}:${limit}`;
   return cachedFetch(key, 120_000, async () => {
-    const plates: PlateRow[] = [];
+    /** SH+SZ lists can repeat the same plate_code (e.g. SH.LIST0948). */
+    const platesByCode = new Map<string, PlateRow>();
     for (const market of markets) {
       try {
         const { data } = await futuRequest<{ plate_list?: PlateRow[] }>(
@@ -119,7 +120,9 @@ export async function getFutuIndustryHeatmap(
           { query: { market, plate_class: "INDUSTRY" } },
         );
         for (const p of data.plate_list ?? []) {
-          if (p.code) plates.push(p);
+          const code = p.code?.trim();
+          if (!code || platesByCode.has(code)) continue;
+          platesByCode.set(code, p);
         }
       } catch (err) {
         console.warn(
@@ -128,6 +131,7 @@ export async function getFutuIndustryHeatmap(
         );
       }
     }
+    const plates = [...platesByCode.values()];
     if (!plates.length) return [];
 
     const plateSnaps = await snapshotCodes(plates.map((p) => p.code!));

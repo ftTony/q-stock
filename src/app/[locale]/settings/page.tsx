@@ -19,7 +19,21 @@ function SettingsDeepLink() {
     if (done.current) return;
     done.current = true;
     const setupKeys = searchParams.get("setupKeys") === "1";
-    settingsModal?.openSettings({ setupKeys });
+    const futu = searchParams.get("futu");
+    if (futu) {
+      try {
+        sessionStorage.setItem("q-stock.futu-oauth", futu);
+      } catch {
+        /* ignore */
+      }
+    }
+    settingsModal?.openSettings(
+      setupKeys
+        ? { setupKeys: true }
+        : futu
+          ? { section: "market" }
+          : undefined,
+    );
     if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
     } else {

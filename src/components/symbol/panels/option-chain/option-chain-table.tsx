@@ -13,6 +13,10 @@ import {
   fmtPx,
 } from "./option-chain-format";
 import type { Greeks } from "./option-chain-utils";
+import {
+  OPTION_CHAIN_COL_KEYS,
+  type OptionChainColKey,
+} from "./option-chain-prefs";
 
 export const TD = "px-2 py-1 text-center text-[12px] tabular-nums tracking-[-0.08px]";
 export const TH =
@@ -73,38 +77,32 @@ export function sideCells(
  * column and walking outwards. The left (call) pane renders it reversed so its
  * edge column is the strike-adjacent one; the right (put) pane uses it as-is.
  */
-const SIDE_FROM_STRIKE = [
-  "bid",
-  "ask",
-  "mid",
-  "last",
-  "chg",
-  "vol",
-  "oi",
-  "iv",
-  "delta",
-  "gamma",
-  "theta",
-  "breakeven",
-  "pop",
-  "sellerReturn",
-  "mark",
-] as const;
-const CALL_ORDER = [...SIDE_FROM_STRIKE].reverse();
-const PUT_ORDER = SIDE_FROM_STRIKE;
+export const SIDE_FROM_STRIKE = OPTION_CHAIN_COL_KEYS;
 
-export const SIDE_COL_COUNT = CALL_ORDER.length;
+function sideOrder(
+  cols: OptionChainColKey[],
+  isCall: boolean,
+): OptionChainColKey[] {
+  const set = new Set(cols);
+  const ordered = SIDE_FROM_STRIKE.filter((k) => set.has(k));
+  return isCall ? [...ordered].reverse() : ordered;
+}
+
+/** @deprecated Prefer passing visible `cols`; kept for call-sites that need a count. */
+export const SIDE_COL_COUNT = SIDE_FROM_STRIKE.length;
 
 export function SideGroup({
   d,
   bg,
   isCall,
+  cols,
 }: {
   d: SideCellData;
   bg: string;
   isCall: boolean;
+  cols: OptionChainColKey[];
 }) {
-  const order = isCall ? CALL_ORDER : PUT_ORDER;
+  const order = sideOrder(cols, isCall);
   return (
     <>
       {order.map((k) => (
@@ -119,11 +117,13 @@ export function SideGroup({
 export function SideHeader({
   t,
   isCall,
+  cols,
 }: {
   t: (k: string) => string;
   isCall: boolean;
+  cols: OptionChainColKey[];
 }) {
-  const order = isCall ? CALL_ORDER : PUT_ORDER;
+  const order = sideOrder(cols, isCall);
   return (
     <>
       {order.map((k) => (

@@ -1,15 +1,27 @@
 import crypto from "crypto";
-import type { FutuCreds } from "@/lib/market/creds-types";
+import { prisma } from "@/lib/db";
+import { encryptJson } from "@/lib/crypto/secret-box";
+import {
+  getMarketCreds,
+  invalidateUserMarketCredsCache,
+} from "@/lib/market/creds-context";
+import type { FutuBearerCreds, FutuCreds } from "@/lib/market/creds-types";
 import { resolveFutuCreds } from "@/lib/market/resolve-market-creds";
 import { MarketDataError } from "@/lib/market/types";
+import {
+  expiresAtFromExpiresIn,
+  getFutuOAuthClientId,
+  refreshAccessToken,
+  shouldRefreshAccessToken,
+} from "@/lib/market/providers/futu-oauth";
 
 /**
  * Futu OpenAPI cloud REST client — https://open.futunn.com/api/overview/getting-started
  * Host: https://webapi.futunn.com
  *
- * Auth: platform env first (`FUTU_*`), else per-request BYOK from ALS.
+ * Auth: user BYOK/OAuth from ALS first, else platform env (`FUTU_*`).
  * - Method 2: X-Api-Key + Ed25519/RSA signature
- * - Method 1: Authorization: Bearer {access_token}
+ * - Method 1: Authorization: Bearer {access_token} (OAuth PKCE + refresh)
  */
 
 const FUTU_HOST = process.env.FUTU_HTTP_URL?.trim() || "https://webapi.futunn.com";
@@ -19,8 +31,75 @@ let timeOffsetMs = 0;
 let timeSyncedAt = 0;
 const TIME_SYNC_TTL_MS = 5 * 60_000;
 
+/** In-flight refresh per user (small-server: bounded Map, prune after settle). */
+const refreshInflight = new Map<string, Promise<FutuBearerCreds>>();
+
 function currentFutuCreds(): FutuCreds | undefined {
   return resolveFutuCreds();
+}
+
+async function persistUserBearer(
+  userId: string,
+  next: FutuBearerCreds,
+): Promise<void> {
+  const payload = encryptJson(next);
+  await prisma.userMarketCredential.upsert({
+    where: { userId_provider: { userId, provider: "futu" } },
+    create: { userId, provider: "futu", payload },
+    update: { payload },
+  });
+  invalidateUserMarketCredsCache(userId);
+  const store = getMarketCreds();
+  if (store.userId === userId) {
+    store.futu = next;
+  }
+}
+
+/**
+ * Renew OAuth access_token when near expiry. Env-only tokens (no userId /
+ * no refreshToken) are returned unchanged.
+ */
+async function ensureFreshBearer(
+  creds: FutuBearerCreds,
+): Promise<FutuBearerCreds> {
+  if (!shouldRefreshAccessToken(creds.expiresAt) || !creds.refreshToken) {
+    return creds;
+  }
+  const clientId = getFutuOAuthClientId();
+  const userId = getMarketCreds().userId;
+  if (!clientId || !userId) return creds;
+
+  const existing = refreshInflight.get(userId);
+  if (existing) return existing;
+
+  const job = (async () => {
+    const tokens = await refreshAccessToken({
+      refreshToken: creds.refreshToken!,
+      clientId,
+    });
+    const next: FutuBearerCreds = {
+      mode: "bearer",
+      accessToken: tokens.accessToken,
+      // Futu does not rotate refresh_token on refresh.
+      refreshToken: tokens.refreshToken || creds.refreshToken,
+      expiresAt: expiresAtFromExpiresIn(tokens.expiresIn),
+    };
+    await persistUserBearer(userId, next);
+    return next;
+  })().finally(() => {
+    refreshInflight.delete(userId);
+  });
+
+  refreshInflight.set(userId, job);
+  try {
+    return await job;
+  } catch (err) {
+    console.warn(
+      "[futu-http] token refresh failed:",
+      err instanceof Error ? err.message : err,
+    );
+    return creds;
+  }
 }
 
 export function hasBearerAuth(): boolean {
@@ -126,8 +205,9 @@ async function buildAuthHeaders(
     if (creds.mode !== "bearer") {
       throw new MarketDataError("Futu credentials not configured", "futu");
     }
+    const fresh = await ensureFreshBearer(creds);
     return {
-      Authorization: `Bearer ${creds.accessToken}`,
+      Authorization: `Bearer ${fresh.accessToken}`,
       "Content-Type": "application/json",
     };
   }

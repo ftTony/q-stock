@@ -40,6 +40,18 @@ import {
 
 export type StrategySeed = { kind: "call" | "put"; strike: number } | null;
 
+export type OptionStrategyDrawerProps = {
+  open: boolean;
+  onClose: () => void;
+  symbol: string;
+  assetType: AssetType;
+  spot: number;
+  expiry: string;
+  expiries: string[];
+  rows: StrikeRow[];
+  seed: StrategySeed;
+};
+
 type ChainResponse = {
   unavailable?: boolean;
   calls?: unknown[];
@@ -57,12 +69,11 @@ function optionFor(
 }
 
 /**
- * Options tool drawer: quote strip → book → strategy → legs/metrics →
- * payoff chart → calculator. Presentation in ./drawer/*.
+ * Drawer body only — parent owns SideDrawer so the shell can open before this
+ * chunk finishes loading.
  */
-export function OptionStrategyDrawer({
+export function OptionStrategyDrawerBody({
   open,
-  onClose,
   symbol,
   assetType,
   spot,
@@ -70,17 +81,7 @@ export function OptionStrategyDrawer({
   expiries,
   rows,
   seed,
-}: {
-  open: boolean;
-  onClose: () => void;
-  symbol: string;
-  assetType: AssetType;
-  spot: number;
-  expiry: string;
-  expiries: string[];
-  rows: StrikeRow[];
-  seed: StrategySeed;
-}) {
+}: Omit<OptionStrategyDrawerProps, "onClose">) {
   const t = useTranslations("symbol.optTool");
   const [strategy, setStrategy] = useState<StrategyId>("single");
   const [long, setLong] = useState(true);
@@ -265,14 +266,6 @@ export function OptionStrategyDrawer({
   );
 
   return (
-    <SideDrawer
-      open={open}
-      onClose={onClose}
-      title={t("title")}
-      subtitle={`${symbol} · ${expiry}`}
-      /* `aw` = App 直角 tokens; keep panel white (plain `.aw` paints parchment). */
-      className="aw !bg-[var(--panel)]"
-    >
       <div className="flex flex-col gap-0 px-4 py-3 text-[12px]">
         {/* 1. Quote strip */}
         {quoteStrike ? (
@@ -444,6 +437,21 @@ export function OptionStrategyDrawer({
           />
         </div>
       </div>
+  );
+}
+
+/** Full drawer: shell + body (body can also be loaded separately for instant open). */
+export function OptionStrategyDrawer(props: OptionStrategyDrawerProps) {
+  const t = useTranslations("symbol.optTool");
+  return (
+    <SideDrawer
+      open={props.open}
+      onClose={props.onClose}
+      title={t("title")}
+      subtitle={`${props.symbol} · ${props.expiry}`}
+      className="aw !bg-[var(--panel)]"
+    >
+      <OptionStrategyDrawerBody {...props} />
     </SideDrawer>
   );
 }

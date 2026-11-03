@@ -63,7 +63,7 @@ ALERT_POLL_INTERVAL_MS=45000
 MARKET_DATA_PROVIDERS=longbridge,futu,finnhub,binance
 ```
 
-**凭证优先级**：服务端 `LONGBRIDGE_*` / `FUTU_*` / `FUYAO_API_KEY` / `BINANCE_API_KEY` / `OKX_*` 等环境变量 **优先**；未配置时，登录用户可在 **设置 → 行情数据源** 填写个人 BYOK（加密存 `UserMarketCredential`）。设置页「已配置」状态只反映用户自己的 Key，不含平台 env。
+**股票 failover**：（1）用户未配 Key/OAuth → 平台长桥 → 平台富途 → Finnhub；（2）用户仅富途 → 用户富途 → 平台长桥 → 平台富途 → Finnhub；（3）用户仅长桥 → 用户长桥 → 平台长桥 → 平台富途 → Finnhub。扶摇 / 币安 / OKX 仍 env 优先。富途设置页为 OAuth；长桥为填写 Key。设置页「已配置」只反映用户凭证。
 
 ### 2.3 启动数据库
 
@@ -138,8 +138,10 @@ curl -X POST "$APP_URL/api/admin/learn/articles" \
 | `DATABASE_URL` | 是 | Prisma PostgreSQL 连接串 |
 | `CREDENTIALS_ENCRYPTION_KEY` | 是* | 32 字节 hex/base64；加密用户 BYOK。缺则无法在设置页保存 Key |
 | `MARKET_DATA_PROVIDERS` | 否 | 行情源优先级 CSV，默认含 longbridge,futu,finnhub,binance |
-| `LONGBRIDGE_APP_KEY` / `APP_SECRET` / `ACCESS_TOKEN` | 否 | 平台长桥；三键齐全则优先于用户 BYOK |
-| `FUTU_ACCESS_TOKEN` | 否 | 平台富途 Bearer（推荐） |
+| `LONGBRIDGE_APP_KEY` / `APP_SECRET` / `ACCESS_TOKEN` | 否 | 平台长桥兜底；用户未填 Key 时使用 |
+| `FUTU_OAUTH_CLIENT_ID` | 否* | 用户设置页「去富途验证」；注册 public client 后填入 |
+| `FUTU_OAUTH_REDIRECT_URI` | 否 | 默认 `{APP_URL}/api/oauth/futu/callback`，须与注册时一致 |
+| `FUTU_ACCESS_TOKEN` | 否 | 平台富途 Bearer（服务端兜底） |
 | `FUTU_APP_KEY` + `FUTU_PRIVATE_KEY` | 否 | 平台富途 AppKey 签名（可选） |
 | `FUYAO_API_KEY` | 否 | 平台扶摇；优先于用户 BYOK |
 | `BINANCE_API_KEY` / `API_SECRET` | 否 | 可选；有 Key 时走官方 API Host |
@@ -168,8 +170,8 @@ curl -X POST "$APP_URL/api/admin/learn/articles" \
 
 说明：
 
-- **凭证解析**：实现见 [`src/lib/market/resolve-market-creds.ts`](../src/lib/market/resolve-market-creds.ts)——**env 优先，否则用户 BYOK（ALS）**。
-- **长桥 / 富途 / 扶摇等**：可只配平台 env，或只让用户在设置页自带 Key，或两者都配（运行时仍优先 env）。
+- **凭证解析**：[`resolve-market-creds.ts`](../src/lib/market/resolve-market-creds.ts) + [`router.ts`](../src/lib/market/router.ts) 的 `listEquityAttempts`（用户券商与平台券商分跳尝试）。
+- **长桥 / 富途**：平台 Key 始终可作为后续 hop；用户 Key/OAuth 仅作为更靠前的 hop。
 - 未配置 `RESEND_API_KEY` 且无 `SMTP_HOST` 时，提醒触发只写日志，不真正发信。
 - Compose 中 `web` / `worker` 的 `DATABASE_URL` 会覆盖为指向服务名 `db` 的内网地址。
 

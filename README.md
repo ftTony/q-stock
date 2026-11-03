@@ -9,7 +9,7 @@
 | 模块 | 说明 |
 |---|---|
 | 行情浏览 | 美股 / 港股 / **A 股** / 加密热门与涨跌榜；搜索；约 45s 静默刷新 |
-| 多源行情 | 股票：**长桥 ↔ 富途 → Finnhub**（设置页可选优先券商）；加密：**Binance ↔ OKX → Finnhub**；凭证 **平台 env 优先，否则用户 BYOK** |
+| 多源行情 | 股票：用户 Key/OAuth（若有）→ **平台长桥 → 平台富途 → Finnhub**；加密：**Binance ↔ OKX → Finnhub** |
 | 市场页 | KPI、排行榜（爱心自选）、行业热力（非加密）、港股 IPO、情绪条；顶栏多市场指数轮播 |
 | 个股详情 | 日/季/年 K（KLineChart + 画线）、MA/EMA/BOLL/RSI/MACD；紧凑报价头 + 爱心自选；右侧模拟下单 |
 | 资讯 Tab | 新闻（长桥→富途→Finnhub）、财报/公告、公司简介/高管、评论、情绪、AI 分析 |
@@ -17,7 +17,7 @@
 | 自选 & 资产 | 自选 CRUD（含 cn）、sparkline；Portfolio 资金/持仓/挂单/重置 |
 | 价格提醒 | ≥ / ≤ 触发邮件（Resend / SMTP）；Worker 轮询 |
 | 模拟交易 | 仅做多；市价 / 限价 / 止损；初始 **$100,000** |
-| 设置 | 语言 / 主题 / 涨跌色；长桥·富途·币安·OKX BYOK；多厂商 AI Key；邀请码 |
+| 设置 | 语言 / 主题 / 涨跌色；长桥 Key / 富途 OAuth·币安·OKX BYOK；多厂商 AI Key；邀请码 |
 | 体验 | 10 语言、亮暗主题、红涨绿跌/绿涨红跌；侧栏可收起（图标模式）；H5 底栏 |
 
 技术栈：Next.js 15 · TypeScript · Tailwind · KLineChart · Auth.js · Prisma · PostgreSQL · Docker。
@@ -81,7 +81,7 @@ docker compose up --build
 |---|---|
 | `MARKET_DATA_PROVIDERS` | 优先级 CSV；省略则按已配置凭证探测 |
 | `LONGBRIDGE_APP_KEY` / `SECRET` / `ACCESS_TOKEN` | 平台长桥（三键齐全） |
-| `FUTU_ACCESS_TOKEN` 或 `FUTU_APP_KEY` + `PRIVATE_KEY` | 平台富途 |
+| `FUTU_OAUTH_CLIENT_ID`（用户一键验证）/ `FUTU_ACCESS_TOKEN` 或 AppKey | 富途 OAuth + 平台兜底 |
 | `BINANCE_API_KEY` / `SECRET` | 可选 |
 | `OKX_API_KEY` / `SECRET` / `PASSPHRASE` | 可选 |
 | `FINNHUB_API_KEY` | 回退行情 + 大量资讯 |

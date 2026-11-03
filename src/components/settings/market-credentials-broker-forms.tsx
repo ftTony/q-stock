@@ -5,8 +5,6 @@ import { MarketFutuForm } from "@/components/settings/market-futu-form";
 import { MarketBinanceForm } from "@/components/settings/market-binance-form";
 import type { MarketCredsStatus } from "@/lib/market/creds-status-client";
 
-export type { FutuMode } from "@/components/settings/market-futu-form";
-
 type Props = {
   status: MarketCredsStatus | null;
   equityVendor: "longbridge" | "futu";
@@ -37,8 +35,6 @@ export function MarketCredentialsBrokerForms({
       {equityVendor === "futu" ? (
         <MarketFutuForm
           status={status}
-          onSaved={onSaved}
-          onError={onError}
           onClear={() => onClearProvider("futu")}
         />
       ) : null}

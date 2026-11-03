@@ -10,13 +10,13 @@ import {
 import { formatNumber } from "@/lib/format-number";
 import {
   ANCHOR_ROW_H,
-  SIDE_COL_COUNT,
   SideGroup,
   SideHeader,
   SpotAnchor,
   SpotLine,
   sideCells,
 } from "./option-chain-table";
+import type { OptionChainColKey } from "./option-chain-prefs";
 import {
   sideMatchesMoney,
   type Greeks,
@@ -52,6 +52,7 @@ export const OptionChainPanes = memo(function OptionChainPanes({
   showCall,
   showPut,
   money = "all",
+  cols,
   symbol,
   seed,
   onPickSeed,
@@ -67,11 +68,13 @@ export const OptionChainPanes = memo(function OptionChainPanes({
   showCall: boolean;
   showPut: boolean;
   money?: MoneyFilter;
+  cols: OptionChainColKey[];
   symbol?: string;
   seed?: { kind: "call" | "put"; strike: number } | null;
   onPickSeed?: (s: { kind: "call" | "put"; strike: number }) => void;
   t: (k: string) => string;
 }) {
+  const colCount = Math.max(cols.length, 1);
   const callBodyRef = useRef<HTMLDivElement>(null);
   const putBodyRef = useRef<HTMLDivElement>(null);
   const callHeadRef = useRef<HTMLDivElement>(null);
@@ -213,7 +216,7 @@ export const OptionChainPanes = memo(function OptionChainPanes({
             <table className="w-full border-collapse text-[12px] whitespace-nowrap">
               <thead>
                 <tr>
-                  <SideHeader t={t} isCall />
+                  <SideHeader t={t} isCall cols={cols} />
                 </tr>
               </thead>
             </table>
@@ -229,7 +232,7 @@ export const OptionChainPanes = memo(function OptionChainPanes({
             <table className="w-full border-collapse text-[12px] whitespace-nowrap">
               <thead>
                 <tr>
-                  <SideHeader t={t} isCall={false} />
+                  <SideHeader t={t} isCall={false} cols={cols} />
                 </tr>
               </thead>
             </table>
@@ -248,13 +251,13 @@ export const OptionChainPanes = memo(function OptionChainPanes({
               {/* Invisible thead keeps body column widths aligned with sticky head. */}
               <thead className="oc-thead-spacer" aria-hidden>
                 <tr>
-                  <SideHeader t={t} isCall />
+                  <SideHeader t={t} isCall cols={cols} />
                 </tr>
               </thead>
               <tbody>
                 {showTopAnchor ? (
                   <tr className={ANCHOR_ROW_H}>
-                    <td colSpan={SIDE_COL_COUNT} className="p-0">
+                    <td colSpan={colCount} className="p-0">
                       <SpotLine />
                     </td>
                   </tr>
@@ -291,11 +294,12 @@ export const OptionChainPanes = memo(function OptionChainPanes({
                           )}
                           bg={show && callItm ? itmBg : ""}
                           isCall
+                          cols={cols}
                         />
                       </tr>
                       {spotAfterIdx === i && spotN != null ? (
                         <tr className={ANCHOR_ROW_H}>
-                          <td colSpan={SIDE_COL_COUNT} className="p-0">
+                          <td colSpan={colCount} className="p-0">
                             <SpotLine />
                           </td>
                         </tr>
@@ -352,13 +356,13 @@ export const OptionChainPanes = memo(function OptionChainPanes({
             <table className="w-full border-collapse text-[12px] whitespace-nowrap">
               <thead className="oc-thead-spacer" aria-hidden>
                 <tr>
-                  <SideHeader t={t} isCall={false} />
+                  <SideHeader t={t} isCall={false} cols={cols} />
                 </tr>
               </thead>
               <tbody>
                 {showTopAnchor ? (
                   <tr className={ANCHOR_ROW_H}>
-                    <td colSpan={SIDE_COL_COUNT} className="p-0">
+                    <td colSpan={colCount} className="p-0">
                       <SpotLine />
                     </td>
                   </tr>
@@ -393,11 +397,12 @@ export const OptionChainPanes = memo(function OptionChainPanes({
                           )}
                           bg={show && putItm ? itmBg : ""}
                           isCall={false}
+                          cols={cols}
                         />
                       </tr>
                       {spotAfterIdx === i && spotN != null ? (
                         <tr className={ANCHOR_ROW_H}>
-                          <td colSpan={SIDE_COL_COUNT} className="p-0">
+                          <td colSpan={colCount} className="p-0">
                             <SpotLine />
                           </td>
                         </tr>

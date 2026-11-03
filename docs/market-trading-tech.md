@@ -92,7 +92,7 @@ interface MarketDataProvider {
 [`src/lib/market/router.ts`](../src/lib/market/router.ts)：
 
 1. 读取 `MARKET_DATA_PROVIDERS`（CSV）；未配置则按资产类型与「已配置」源过滤
-2. 股票（`stock`/`hk`/`cn`）：按用户 `equityVendor`（长桥或富途）排首选，再另一券商，再 Finnhub
+2. 股票（`stock`/`hk`/`cn`）：`listEquityAttempts()` — 有用户 Key/OAuth 时先打用户券商；再 **平台长桥 → 平台富途 → Finnhub**（每跳单独钉 `brokerCredsSource`）
 3. 加密：按 `cryptoVendor`（Binance 或 OKX）排首选，再另一所，再 Finnhub
 4. **「已配置」** = 平台 env（`LONGBRIDGE_*` / `FUTU_*` / …）**或** 请求 ALS 中的用户 BYOK（`resolve-market-creds.ts`）
 5. **`fuyao` 在 `isProviderEnabled` 中恒为 false**（代码保留，不参与链）
@@ -136,7 +136,7 @@ API 经 `withUserMarket(session?.user?.id, …)` 注入 BYOK 后再与 env 合�
 
 - 依赖 npm `longbridge`
 - `Config.fromApikey` + `QuoteContext.quote` / `candlesticks`
-- **凭证**：`resolveLongbridgeCreds()` — **`LONGBRIDGE_*` env 优先**，否则用户 BYOK（`UserMarketCredential` + ALS）
+- **凭证**：`resolveLongbridgeCreds()` — 跟随当前 failover 的 `brokerCredsSource`（`user` | `platform`）；未钉源时为用户 BYOK ?? env
 - Next 配置：`serverExternalPackages: ["longbridge"]`（原生绑定）
 
 #### 富途（`providers/futu.ts`）— 云端 OpenAPI，**不用 OpenD**
@@ -149,10 +149,7 @@ API 经 `withUserMarket(session?.user?.id, …)` 注入 BYOK 后再与 env 合�
 | 快照 | `POST /api/v1.0/quote/snapshot` body `{ code_list: ["US.AAPL"] }` |
 | 历史 K | `GET /api/v1.0/quote/{symbol}/history-kline?ktype=2\|4&…` |
 
-鉴权（`resolveFutuCreds()`）：
-
-1. 平台 env：`FUTU_ACCESS_TOKEN`（Bearer）或 `FUTU_APP_KEY` + `FUTU_PRIVATE_KEY`
-2. 否则用户设置页 BYOK（同上两种模式）
+鉴权（`resolveFutuCreds()`）：跟随 `brokerCredsSource`。用户侧为设置页 **OAuth 2.1 + PKCE**；平台侧为 `FUTU_ACCESS_TOKEN` 或 AppKey。Failover 见 `listEquityAttempts()`。
 
 #### Finnhub（`providers/finnhub.ts`）
 
@@ -266,11 +263,12 @@ CREDENTIALS_ENCRYPTION_KEY=
 # 平台 Finnhub（无长桥/富途时的兜底）
 FINNHUB_API_KEY=
 
-# 平台长桥 / 富途（可选；配置后优先于用户 BYOK）
+# 平台长桥 / 富途兜底（用户 BYOK / OAuth 均优先于 env）
 # LONGBRIDGE_APP_KEY=
 # LONGBRIDGE_APP_SECRET=
 # LONGBRIDGE_ACCESS_TOKEN=
-# FUTU_ACCESS_TOKEN=
+# FUTU_OAUTH_CLIENT_ID=   # 用户「去富途验证」
+# FUTU_ACCESS_TOKEN=      # 无用户 OAuth 时的平台兜底
 ```
 
 完整说明见 [启动与环境](./getting-started.md) 与仓库根目录 [.env.example](../.env.example)。

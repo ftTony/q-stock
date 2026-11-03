@@ -1,6 +1,9 @@
 import {
+  getProvider,
+  listEquityAttempts,
   listProvidersFor,
   listProvidersForCandles,
+  runWithEquityAttempt,
   withProviderFailover,
 } from "@/lib/market/router";
 import {
@@ -15,12 +18,41 @@ export {
   getProviderPriority,
   isProviderEnabled,
   listContentProviders,
+  listEquityAttempts,
   listProvidersFor,
   listProvidersForCandles,
 } from "@/lib/market/router";
-export type { ContentProviderId } from "@/lib/market/router";
+export type { ContentProviderId, EquityAttempt } from "@/lib/market/router";
 export type { MarketProviderId, QuoteWithSource } from "@/lib/market/types";
 export { MarketDataError } from "@/lib/market/types";
+
+function isEquityAsset(assetType: AssetType): boolean {
+  return assetType === "stock" || assetType === "hk" || assetType === "cn";
+}
+
+function consumeMatchedQuotes(
+  remaining: { symbol: string; assetType: AssetType }[],
+  quotes: QuoteWithSource[],
+) {
+  const gotKeys = new Set<string>();
+  for (const q of quotes) {
+    if (!(q.price > 0)) continue;
+    gotKeys.add(q.symbol.toUpperCase());
+    try {
+      gotKeys.add(normalizeSymbol(q.symbol, q.assetType).toUpperCase());
+    } catch {
+      /* ignore */
+    }
+  }
+  for (let i = remaining.length - 1; i >= 0; i--) {
+    const item = remaining[i]!;
+    const keys = [
+      item.symbol.toUpperCase(),
+      normalizeSymbol(item.symbol, item.assetType).toUpperCase(),
+    ];
+    if (keys.some((k) => gotKeys.has(k))) remaining.splice(i, 1);
+  }
+}
 
 export async function getQuote(
   symbol: string,
@@ -48,33 +80,38 @@ export async function getQuotes(
 
   const out: QuoteWithSource[] = [];
   for (const [assetType, group] of byType) {
+    const remaining = [...group];
+
+    if (isEquityAsset(assetType)) {
+      for (const attempt of listEquityAttempts()) {
+        if (!remaining.length) break;
+        const p = getProvider(attempt.id);
+        if (!p || p.supports?.(assetType) === false) continue;
+        try {
+          const quotes = await runWithEquityAttempt(attempt, () =>
+            p.getQuotes(remaining),
+          );
+          out.push(...quotes);
+          consumeMatchedQuotes(remaining, quotes);
+        } catch (err) {
+          console.warn(
+            `[market] batch quotes via ${attempt.id} (${attempt.source}) failed:`,
+            err instanceof Error ? err.message : err,
+          );
+        }
+      }
+      continue;
+    }
+
     const providers = listProvidersFor(assetType);
     if (!providers.length) continue;
 
-    const remaining = [...group];
     for (const p of providers) {
       if (!remaining.length) break;
       try {
         const quotes = await p.getQuotes(remaining);
         out.push(...quotes);
-        const gotKeys = new Set<string>();
-        for (const q of quotes) {
-          if (!(q.price > 0)) continue;
-          gotKeys.add(q.symbol.toUpperCase());
-          try {
-            gotKeys.add(normalizeSymbol(q.symbol, q.assetType).toUpperCase());
-          } catch {
-            /* ignore */
-          }
-        }
-        for (let i = remaining.length - 1; i >= 0; i--) {
-          const item = remaining[i]!;
-          const keys = [
-            item.symbol.toUpperCase(),
-            normalizeSymbol(item.symbol, item.assetType).toUpperCase(),
-          ];
-          if (keys.some((k) => gotKeys.has(k))) remaining.splice(i, 1);
-        }
+        consumeMatchedQuotes(remaining, quotes);
       } catch (err) {
         console.warn(
           `[market] batch quotes via ${p.id} failed:`,
@@ -150,16 +187,55 @@ export async function searchSymbols(
   const query = q.trim();
   if (!query) return [];
 
-  const providers = listProvidersFor(assetType);
-  const ordered =
-    assetType === "stock"
-      ? [
-          ...providers.filter((p) => p.id === "finnhub"),
-          ...providers.filter((p) => p.id !== "finnhub"),
-        ]
-      : providers;
+  if (isEquityAsset(assetType)) {
+    const equityAttempts = listEquityAttempts();
+    const attempts =
+      assetType === "stock"
+        ? [
+            ...equityAttempts.filter((a) => a.id === "finnhub"),
+            ...equityAttempts.filter((a) => a.id !== "finnhub"),
+          ]
+        : equityAttempts;
+    if (!attempts.length) {
+      throw new MarketDataError(
+        "No market data providers configured. Set broker/crypto keys in Settings, or FINNHUB_API_KEY.",
+      );
+    }
+    const errors: string[] = [];
+    let fallback: SearchResult[] | null = null;
+    for (const attempt of attempts) {
+      const p = getProvider(attempt.id);
+      if (!p) continue;
+      try {
+        const results = await runWithEquityAttempt(attempt, () =>
+          p.searchSymbols(query, assetType),
+        );
+        if (!results.length) continue;
+        if (isSyntheticBrokerHit(p.id, results)) {
+          fallback = results;
+          continue;
+        }
+        return results;
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        errors.push(`${attempt.id}:${attempt.source}: ${msg}`);
+        console.warn(
+          `[market] search ${query} via ${attempt.id} (${attempt.source}) failed:`,
+          msg,
+        );
+      }
+    }
+    if (fallback?.length) return fallback;
+    if (errors.length) {
+      throw new MarketDataError(
+        `All providers failed for search ${query}: ${errors.join(" | ")}`,
+      );
+    }
+    return [];
+  }
 
-  if (!ordered.length) {
+  const providers = listProvidersFor(assetType);
+  if (!providers.length) {
     throw new MarketDataError(
       "No market data providers configured. Set broker/crypto keys in Settings, or FINNHUB_API_KEY.",
     );
@@ -168,7 +244,7 @@ export async function searchSymbols(
   const errors: string[] = [];
   let fallback: SearchResult[] | null = null;
 
-  for (const p of ordered) {
+  for (const p of providers) {
     try {
       const results = await p.searchSymbols(query, assetType);
       if (!results.length) continue;
