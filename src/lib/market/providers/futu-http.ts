@@ -116,6 +116,55 @@ export function isFutuConfigured(): boolean {
   return Boolean(currentFutuCreds());
 }
 
+/** WebSocket quote push auth / refresh frames (same AppKey or Bearer as REST). */
+export type FutuWsAuthFrame = {
+  action: "auth" | "refresh";
+  id?: string;
+  data: Record<string, string | number>;
+};
+
+/**
+ * Build `auth` or `refresh` JSON for `wss://webapi-quote.futunn.com/ws`.
+ * AppKey signature payload: `{timestamp_ms}\\n{nonce}\\nWEBSOCKET\\nws/auth`
+ */
+export async function buildFutuWsAuthFrame(
+  kind: "auth" | "refresh" = "auth",
+): Promise<FutuWsAuthFrame> {
+  const creds = currentFutuCreds();
+  if (!creds) {
+    throw new MarketDataError("Futu credentials not configured", "futu");
+  }
+
+  if (creds.mode === "bearer") {
+    const fresh = await ensureFreshBearer(creds);
+    return {
+      action: kind,
+      id: `futu-ws-${kind}-${Date.now()}`,
+      data: {
+        ...(kind === "auth" ? { auth_type: "oauth2" } : {}),
+        authorization: `Bearer ${fresh.accessToken}`,
+      },
+    };
+  }
+
+  await syncServerTime();
+  const timestampMs = nowMs();
+  const nonce = crypto.randomBytes(12).toString("hex");
+  const payload = `${timestampMs}\n${nonce}\nWEBSOCKET\nws/auth`;
+  const signature = signPayload(payload, creds);
+  return {
+    action: kind,
+    id: `futu-ws-${kind}-${Date.now()}`,
+    data: {
+      ...(kind === "auth" ? { auth_type: "appkey" } : {}),
+      credential_id: creds.appKey,
+      authorization: signature,
+      timestamp_ms: timestampMs,
+      nonce,
+    },
+  };
+}
+
 /**
  * Accept PEM, base64 PKCS#8 DER (console one-liner), or hex DER.
  * Ed25519 PKCS#8 typically starts with MC4CAQAwBQYDK2VwBCIE when base64-encoded.

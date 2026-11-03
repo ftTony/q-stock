@@ -169,7 +169,7 @@ export function buildChartStyles(
           offsetTop: 0,
           offsetRight: 0,
           offsetBottom: 4,
-          borderRadius: 8,
+          borderRadius: 0,
           borderSize: 1,
           borderColor: tipBorder,
           color: tipBg,

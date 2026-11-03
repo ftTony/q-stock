@@ -51,7 +51,7 @@ export class QuoteSocketClient {
   private online = true;
   private lastRxAt = 0;
   private status: QuoteSocketStatus = "connecting";
-  /** From hub `hello.push` — Longbridge live push; false → rely on REST. */
+  /** From hub `hello.push` — Longbridge/Futu live push; false → rely on REST. */
   private pushLive = false;
   private lifecycleBound = false;
   /** Last fan-out message per channel — replay for late subscribers (same symbol). */
@@ -65,7 +65,7 @@ export class QuoteSocketClient {
     return this.status;
   }
 
-  /** Whether the hub reported Longbridge push as available. */
+  /** Whether the hub reported broker push as available. */
   getPushAvailable(): boolean {
     return this.pushLive;
   }

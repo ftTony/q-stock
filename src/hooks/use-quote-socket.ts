@@ -21,11 +21,11 @@ export type UseQuoteChannelsResult = {
   enabled: boolean;
   /** Live socket open */
   connected: boolean;
-  /** Hub reported Longbridge push available */
+  /** Hub reported broker push available (Longbridge and/or Futu) */
   push: boolean;
   /**
    * Prefer HTTP poll: WS offline / reconnecting / disabled,
-   * or connected but push unavailable (REST-only hub).
+   * or connected but broker push unavailable (REST-only hub).
    */
   degraded: boolean;
   status: QuoteSocketStatus;

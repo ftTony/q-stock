@@ -3,10 +3,11 @@ import {
   futuRequest,
   isFutuConfigured,
 } from "@/lib/market/providers/futu-http";
+import { futuSearchSymbols } from "@/lib/market/providers/futu-search";
 import { normalizeSymbol, toFutuSymbol } from "@/lib/market/symbols";
 import type { MarketDataProvider, QuoteWithSource } from "@/lib/market/types";
 import { MarketDataError } from "@/lib/market/types";
-import type { AssetType, OhlcvBar, SearchResult } from "@/lib/types";
+import type { AssetType, OhlcvBar } from "@/lib/types";
 
 /** History K-line: default/max num is 370 per docs. */
 const KLINE_PAGE_SIZE = 370;
@@ -211,46 +212,7 @@ export const futuProvider: MarketDataProvider = {
     return bars;
   },
 
-  async searchSymbols(q, assetType): Promise<SearchResult[]> {
-    if (assetType === "crypto") return [];
-    const query = q.trim().toUpperCase();
-    if (!query) return [];
-    const type: AssetType = assetType === "hk" ? "hk" : "stock";
-    const bare = query
-      .replace(/^(US|HK|SH|SZ|BJ)\./, "")
-      .replace(/\.(US|HK)$/, "");
-    const sym = normalizeSymbol(bare, type);
-    const code = toFutuSymbol(sym, type);
-
-    let description = `${sym} (Futu)`;
-    try {
-      const { data } = await futuRequest<{
-        basic_list?: Array<{
-          code?: string;
-          name?: string;
-          sc_name?: string;
-          tc_name?: string;
-        }>;
-      }>("POST", "/api/v1.0/quote/stock-basicinfo", {
-        body: { code_list: [code] },
-      });
-      const row = data.basic_list?.[0];
-      const name = (row?.sc_name || row?.name || row?.tc_name || "").trim();
-      if (name) description = name;
-    } catch {
-      /* search still returns the synthesized code */
-    }
-
-    return [
-      {
-        symbol: sym,
-        displaySymbol: code,
-        description,
-        assetType: type,
-        type: "Common Stock",
-      },
-    ];
-  },
+  searchSymbols: futuSearchSymbols,
 };
 
 async function fetchKlines(

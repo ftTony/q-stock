@@ -18,6 +18,10 @@ import { SymbolQuoteBar } from "@/components/symbol/quote/symbol-quote-bar";
 import { feedStatusFromWs } from "@/components/symbol/quote/symbol-feed-status";
 import { SymbolPageTabs } from "@/components/symbol/page/symbol-page-tabs";
 import {
+  SymbolNavPendingOverlay,
+  SymbolNavPendingProvider,
+} from "@/components/symbol/page/symbol-nav-pending";
+import {
   candleResolutionLabels,
   panelTabFor,
 } from "@/components/symbol/page/symbol-page-tab-utils";
@@ -127,6 +131,10 @@ export function SymbolPageClient({
   );
 
   return (
+    <SymbolNavPendingProvider
+      loadedSymbol={symbol}
+      loadedAssetType={assetType}
+    >
     <div
       className="aw aw-stack flex h-full min-h-0 max-w-full flex-1 flex-col overflow-hidden bg-[var(--aw-canvas)]"
       onContextMenu={(e) => {
@@ -175,7 +183,8 @@ export function SymbolPageClient({
           </>
         ) : null}
 
-        <div className="aw-workbench-main flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+        <div className="aw-workbench-main relative flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
+          <SymbolNavPendingOverlay label={s.tCommon("loading")} />
           <div className="shrink-0">
             <SymbolQuoteBar
               symbol={symbol}
@@ -372,5 +381,6 @@ export function SymbolPageClient({
         seoPeers={seoPeers}
       />
     </div>
+    </SymbolNavPendingProvider>
   );
 }

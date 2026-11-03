@@ -13,6 +13,10 @@ import {
 } from "@/components/symbol/watchlist/watchlist-toggle-icons";
 import { SymbolWatchlistSettingsModal } from "@/components/symbol/watchlist/symbol-watchlist-settings-modal";
 import { EmptyStateBlock } from "@/components/symbol/shared/symbol-empty-art";
+import {
+  isSymbolNavActive,
+  useSymbolNavPending,
+} from "@/components/symbol/page/symbol-nav-pending";
 import { RailPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { useWatchlist } from "@/hooks/query/use-watchlist";
 import { queryKeys } from "@/lib/query/keys";
@@ -36,6 +40,7 @@ export function SymbolWatchlistPanel({
   const tCommon = useTranslations("common");
   const { status } = useSession();
   const qc = useQueryClient();
+  const { pending, setPending } = useSymbolNavPending();
   const [settingsOpen, setSettingsOpen] = useState(false);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
 
@@ -122,9 +127,13 @@ export function SymbolWatchlistPanel({
         ) : (
           <ul>
             {rows.map((row) => {
-              const active =
-                row.symbol === currentSymbol &&
-                row.assetType === currentAssetType;
+              const active = isSymbolNavActive(
+                row.symbol,
+                row.assetType,
+                currentSymbol,
+                currentAssetType,
+                pending,
+              );
               const ch = row.quote?.percentChange ?? null;
               const name = displayName(
                 row.symbol,
@@ -136,6 +145,18 @@ export function SymbolWatchlistPanel({
                   <Link
                     href={`/symbol/${row.assetType}/${encodeURIComponent(row.symbol)}`}
                     data-active={active}
+                    onClick={() => {
+                      if (
+                        row.symbol === currentSymbol &&
+                        row.assetType === currentAssetType
+                      ) {
+                        return;
+                      }
+                      setPending({
+                        symbol: row.symbol,
+                        assetType: row.assetType,
+                      });
+                    }}
                     className="aw-watchlist-row grid items-center gap-x-1 px-2 py-1.5 transition hover:bg-[var(--aw-parchment,var(--surface-2))]"
                     style={
                       active

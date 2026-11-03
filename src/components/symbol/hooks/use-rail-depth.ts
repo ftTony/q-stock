@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   quotePollIntervalMs,
   useQuoteChannels,
@@ -14,6 +14,8 @@ import type { AssetType } from "@/lib/types";
 
 const REST_FALLBACK_MS = 4_000;
 const MAX_TICKS = 80;
+/** Wait for hub WS snapshot before REST seed when push is live. */
+const WS_SEED_GRACE_MS = 2_500;
 
 function reasonOf(data: { detail?: unknown }): string | null {
   return typeof data.detail === "string" && data.detail.trim()
@@ -39,6 +41,11 @@ function mergeAppend(prev: TradeTick[], batch: TradeTick[]): TradeTick[] {
   return [...fresh.reverse(), ...prev].slice(0, MAX_TICKS);
 }
 
+/**
+ * Rail depth + time&sales.
+ * Primary: quote-ws → Longbridge/Futu broker push (depth + trades channels).
+ * Fallback: REST /api/market/depth|trades when WS/push unavailable.
+ */
 export function useRailDepth(
   mode: "book" | "ticks" | "split",
   symbol: string,
@@ -50,6 +57,7 @@ export function useRailDepth(
   const [locked, setLocked] = useState(false);
   const [detail, setDetail] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const gotWsRef = useRef(false);
 
   const wantBook = mode === "book" || mode === "split";
   const wantTicks = mode === "ticks" || mode === "split";
@@ -71,6 +79,7 @@ export function useRailDepth(
         if (msg.symbol.toUpperCase() !== sym || msg.assetType !== assetType) {
           return;
         }
+        gotWsRef.current = true;
         setBook(msg.book);
         setUnavailable(false);
         setLocked(false);
@@ -82,6 +91,7 @@ export function useRailDepth(
         if (msg.symbol.toUpperCase() !== sym || msg.assetType !== assetType) {
           return;
         }
+        gotWsRef.current = true;
         setTrades((prev) =>
           msg.mode === "append"
             ? mergeAppend(prev, msg.trades)
@@ -101,9 +111,11 @@ export function useRailDepth(
     onMessage,
   );
 
+  /** Broker push live → no REST poll; hub snapshot + push carry the book. */
   const pushLive = enabled && connected && push && !degraded;
 
   useEffect(() => {
+    gotWsRef.current = false;
     setBook(null);
     setTrades([]);
     setUnavailable(false);
@@ -162,6 +174,12 @@ export function useRailDepth(
     }
 
     async function load() {
+      // Prefer WS: if push is live and we already got a hub frame, skip REST.
+      if (pushLive && gotWsRef.current) {
+        setLoading(false);
+        return;
+      }
+
       try {
         const [bookState, tickState] = await Promise.all([
           wantBook ? loadBook() : Promise.resolve("ok" as const),
@@ -183,7 +201,6 @@ export function useRailDepth(
         if (!cancelled) setLoading(false);
       }
 
-      // Live Depth/Trade push → stop REST poll (Futu push path).
       if (cancelled || stopPoll || pushLive) return;
       const wait = enabled
         ? quotePollIntervalMs({
@@ -196,7 +213,19 @@ export function useRailDepth(
       timer = setTimeout(() => void load(), wait);
     }
 
-    void load();
+    if (pushLive) {
+      // Give hub snapshot / first push a short window before REST seed.
+      timer = setTimeout(() => {
+        if (cancelled || gotWsRef.current) {
+          if (!cancelled) setLoading(false);
+          return;
+        }
+        void load();
+      }, WS_SEED_GRACE_MS);
+    } else {
+      void load();
+    }
+
     return () => {
       cancelled = true;
       if (timer) clearTimeout(timer);

@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { fetchDepthBook } from "@/lib/market/book";
 import {
   ADVANCED_QUOTES_REQUIRED,
   canUseAdvancedQuotes,
 } from "@/lib/market/advanced-quotes";
-import { fetchLbDepth } from "@/lib/market/providers/longbridge-book";
 import { MarketDataError } from "@/lib/market/types";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import { parseAssetType } from "@/lib/types";
@@ -36,7 +36,7 @@ export async function GET(req: Request) {
         );
       }
       try {
-        const book = await fetchLbDepth(symbol, assetType, 10);
+        const book = await fetchDepthBook(symbol, assetType, 10);
         return NextResponse.json(book);
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);

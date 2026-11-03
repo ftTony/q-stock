@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
+import { fetchTradeTicks } from "@/lib/market/book";
 import {
   ADVANCED_QUOTES_REQUIRED,
   canUseAdvancedQuotes,
 } from "@/lib/market/advanced-quotes";
-import { fetchLbTrades } from "@/lib/market/providers/longbridge-book";
 import { MarketDataError } from "@/lib/market/types";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import { parseAssetType } from "@/lib/types";
@@ -35,7 +35,7 @@ export async function GET(req: Request) {
         );
       }
       try {
-        const trades = await fetchLbTrades(symbol, assetType, 50);
+        const trades = await fetchTradeTicks(symbol, assetType, 50);
         return NextResponse.json({ trades });
       } catch (err) {
         const msg = err instanceof Error ? err.message : String(err);

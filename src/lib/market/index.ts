@@ -171,14 +171,19 @@ export async function getIntradayCandles(
 
 function isSyntheticBrokerHit(providerId: string, results: SearchResult[]) {
   if (results.length !== 1) return false;
-  if (providerId !== "longbridge" && providerId !== "futu") return false;
   const d = results[0]?.description ?? "";
-  return /\(Longbridge\)|\(Futu\)$/i.test(d);
+  if (providerId === "longbridge" || providerId === "futu") {
+    return /\(Longbridge\)|\(Futu\)$/i.test(d);
+  }
+  // Finnhub only has real multi-hit search for US; HK is an exact-ticker echo.
+  if (providerId === "finnhub") {
+    return /\(HK\)$/i.test(d);
+  }
+  return false;
 }
 
 /**
- * Symbol search prefers real multi-hit providers (Finnhub for US).
- * Longbridge/Futu only echo the typed ticker — keep as last resort.
+ * Equity search order: Futu keyword API → Finnhub → Longbridge (exact-ticker fallback).
  */
 export async function searchSymbols(
   q: string,
@@ -189,13 +194,13 @@ export async function searchSymbols(
 
   if (isEquityAsset(assetType)) {
     const equityAttempts = listEquityAttempts();
-    const attempts =
-      assetType === "stock"
-        ? [
-            ...equityAttempts.filter((a) => a.id === "finnhub"),
-            ...equityAttempts.filter((a) => a.id !== "finnhub"),
-          ]
-        : equityAttempts;
+    const prefer = ["futu", "finnhub", "longbridge"] as const;
+    const attempts = [
+      ...prefer.flatMap((id) => equityAttempts.filter((a) => a.id === id)),
+      ...equityAttempts.filter(
+        (a) => !(prefer as readonly string[]).includes(a.id),
+      ),
+    ];
     if (!attempts.length) {
       throw new MarketDataError(
         "No market data providers configured. Set broker/crypto keys in Settings, or FINNHUB_API_KEY.",

@@ -4,10 +4,17 @@ import {
   mergeIndexQuotes,
   quoteForIndexDef,
 } from "@/lib/market/index-quotes";
+import { fetchDepthBook, fetchTradeTicks } from "@/lib/market/book";
 import {
-  fetchLbDepth,
-  fetchLbTrades,
-} from "@/lib/market/providers/longbridge-book";
+  initFutuPush,
+  isFutuPushAvailable,
+  seedFutuQuoteCache,
+  setFutuDepthHandler,
+  setFutuPushAvailabilityHandler,
+  setFutuQuoteHandler,
+  setFutuTradesHandler,
+  syncFutuSubscriptions,
+} from "@/lib/market/stream/futu-push";
 import {
   initLongbridgePush,
   isLongbridgePushAvailable,
@@ -52,9 +59,27 @@ const channelSubs = new Map<string, Set<WebSocket>>();
 let pollTimer: ReturnType<typeof setInterval> | null = null;
 let syncTimer: ReturnType<typeof setTimeout> | null = null;
 let started = false;
+/** When broker push is live, only run every Nth REST poll tick. */
+let pollSkip = 0;
 const lastIndexBundles: Partial<
   Record<"stock" | "hk" | "cn", IndexQuote[]>
 > = {};
+
+function anyPushAvailable(): boolean {
+  return isLongbridgePushAvailable() || isFutuPushAvailable();
+}
+
+function broadcastHello() {
+  const msg: ServerMessage = { op: "hello", push: anyPushAvailable() };
+  for (const [client] of clients) {
+    send(client, msg);
+  }
+}
+
+function seedAllQuoteCaches(quotes: Quote[]) {
+  seedQuoteCache(quotes);
+  seedFutuQuoteCache(quotes);
+}
 
 function send(ws: WebSocket, msg: ServerMessage) {
   if (ws.readyState !== ws.OPEN) return;
@@ -111,14 +136,16 @@ function activeSymbolItems(): InternalSymbol[] {
   return [...out.values()];
 }
 
-function scheduleSyncLb() {
+function scheduleSyncBrokers() {
   if (syncTimer) clearTimeout(syncTimer);
   syncTimer = setTimeout(() => {
-    void syncLongbridgeSubscriptions({
+    const wanted = {
       quotes: activeSymbolItems(),
       depth: collectByType("depth"),
       trades: collectByType("trades"),
-    });
+    };
+    void syncLongbridgeSubscriptions(wanted);
+    syncFutuSubscriptions(wanted);
   }, 200);
 }
 
@@ -129,7 +156,7 @@ async function sendBookSnapshot(
 ) {
   if (assetType === "crypto") return;
   try {
-    const book = await fetchLbDepth(symbol, assetType, 10);
+    const book = await fetchDepthBook(symbol, assetType, 10);
     send(ws, {
       op: "depth",
       assetType,
@@ -148,7 +175,7 @@ async function sendTradesSnapshot(
 ) {
   if (assetType === "crypto") return;
   try {
-    const trades = await fetchLbTrades(symbol, assetType, 40);
+    const trades = await fetchTradeTicks(symbol, assetType, 40);
     send(ws, {
       op: "trades",
       assetType,
@@ -185,7 +212,7 @@ async function sendSnapshot(ws: WebSocket, channels: StreamChannel[]) {
 
   if (wantSymbols.length || wantIndices) {
     const quotes = await fetchQuotesFor(wantSymbols);
-    seedQuoteCache(quotes);
+    seedAllQuoteCaches(quotes);
     const msg: ServerMessage = { op: "snapshot" };
     if (quotes.length) {
       const symSet = new Set(
@@ -266,7 +293,7 @@ function handleSubscribe(ws: WebSocket, channels: StreamChannel[]) {
     normalized.push(n);
     addSub(ws, channelKey(n));
   }
-  scheduleSyncLb();
+  scheduleSyncBrokers();
   void sendSnapshot(ws, normalized);
 }
 
@@ -274,7 +301,7 @@ function handleUnsubscribe(ws: WebSocket, channels: StreamChannel[]) {
   for (const ch of channels) {
     removeSub(ws, channelKey(ch));
   }
-  scheduleSyncLb();
+  scheduleSyncBrokers();
 }
 
 function emitQuote(quote: Quote) {
@@ -320,12 +347,17 @@ async function pollTick() {
   const items = activeSymbolItems();
   if (!items.length) return;
 
-  // When longbridge push is live, still poll occasionally for indices/prevClose
-  // but throttle: if push available, poll at 2x interval by skipping... keep simple: always poll
-  // at QUOTE_POLL_MS — when push works, prices update faster; poll keeps indices coherent.
+  // Broker WS push carries live ticks; REST poll is a slow backup / prevClose seed.
+  if (anyPushAvailable()) {
+    pollSkip += 1;
+    if (pollSkip % 4 !== 0) return;
+  } else {
+    pollSkip = 0;
+  }
+
   const quotes = await fetchQuotesFor(items);
   if (!quotes.length) return;
-  seedQuoteCache(quotes);
+  seedAllQuoteCaches(quotes);
 
   for (const q of quotes) {
     const key = symbolChannelKey(q.assetType, q.symbol);
@@ -350,12 +382,11 @@ async function pollTick() {
   }
 }
 
-export async function startQuoteHub(): Promise<void> {
-  if (started) return;
-  started = true;
-  await initLongbridgePush();
-  setLongbridgeQuoteHandler((quote) => emitQuote(quote));
-  setLongbridgeDepthHandler((internal, book) => {
+function bindDepthTrades(
+  setDepth: typeof setLongbridgeDepthHandler,
+  setTrades: typeof setLongbridgeTradesHandler,
+) {
+  setDepth((internal, book) => {
     broadcast(depthChannelKey(internal.assetType, internal.symbol), {
       op: "depth",
       assetType: internal.assetType,
@@ -363,7 +394,7 @@ export async function startQuoteHub(): Promise<void> {
       book,
     });
   });
-  setLongbridgeTradesHandler((internal, trades) => {
+  setTrades((internal, trades) => {
     broadcast(tradesChannelKey(internal.assetType, internal.symbol), {
       op: "trades",
       assetType: internal.assetType,
@@ -372,15 +403,29 @@ export async function startQuoteHub(): Promise<void> {
       mode: "append",
     });
   });
+}
+
+export async function startQuoteHub(): Promise<void> {
+  if (started) return;
+  started = true;
+  await initLongbridgePush();
+  setLongbridgeQuoteHandler((quote) => emitQuote(quote));
+  bindDepthTrades(setLongbridgeDepthHandler, setLongbridgeTradesHandler);
+
+  setFutuPushAvailabilityHandler(() => broadcastHello());
+  setFutuQuoteHandler((quote) => emitQuote(quote));
+  bindDepthTrades(setFutuDepthHandler, setFutuTradesHandler);
+  await initFutuPush();
+
   pollTimer = setInterval(() => void pollTick(), pollIntervalMs());
   console.info(
-    `[quote-ws] hub started push=${isLongbridgePushAvailable()} pollMs=${pollIntervalMs()}`,
+    `[quote-ws] hub started lbPush=${isLongbridgePushAvailable()} futuPush=${isFutuPushAvailable()} pollMs=${pollIntervalMs()}`,
   );
 }
 
 export function attachClient(ws: WebSocket) {
   clients.set(ws, { ws, channels: new Set() });
-  send(ws, { op: "hello", push: isLongbridgePushAvailable() });
+  send(ws, { op: "hello", push: anyPushAvailable() });
 
   ws.on("message", (data) => {
     let msg: ClientMessage;
@@ -410,7 +455,7 @@ export function attachClient(ws: WebSocket) {
     if (st) {
       for (const key of st.channels) removeSub(ws, key);
       clients.delete(ws);
-      scheduleSyncLb();
+      scheduleSyncBrokers();
     }
   });
 }
