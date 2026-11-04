@@ -215,6 +215,11 @@ html.aw-rail-resizing {
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr) minmax(0, 0.85fr);
 }
 
+.aw-watchlist-row {
+  min-height: 44px;
+  box-sizing: border-box;
+}
+
 /* Match QuoteBar height so cols bottom hairline aligns with chart chrome. */
 .aw-watchlist-cols {
   box-sizing: border-box;
@@ -1199,6 +1204,32 @@ html.aw-rail-resizing {
   min-height: 36px;
   font-size: 12px;
   padding: 0 12px;
+}
+
+.aw-stack-collapse-btn {
+  display: inline-flex;
+  width: 36px;
+  min-width: 36px;
+  height: 36px;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 0;
+  border-left: 1px solid var(--aw-hairline, var(--border));
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.aw-stack-collapse-btn:hover,
+.aw-stack-collapse-btn:focus-visible {
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--aw-primary) 6%, transparent);
+  outline: none;
+}
+
+.aw-stack-bottom[data-collapsed="true"] .aw-stack-bottom-resizer {
+  opacity: 0.35;
 }
 
 /*

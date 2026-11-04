@@ -282,56 +282,77 @@ export function useSymbolTabData({
           }
           if (fundamentalsCached) return;
 
+          const needEarnings = !earningsLoadedRef.current;
+          const needCompany = !companyLoadedRef.current;
           const tasks: Promise<void>[] = [];
-          if (!earningsLoadedRef.current) {
+          if (needEarnings) {
             tasks.push(
               (async () => {
-                dispatch({ type: "set-earnings-loading", value: true });
+                const res = await fetch(
+                  `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+                );
+                const result = await res.json();
+                if (!isCurrentIdentity(requestIdentity)) return;
+                dispatch({
+                  type: "set-earnings",
+                  earnings: result.surprises ?? result.earnings ?? [],
+                  upcoming: result.calendar?.upcoming ?? [],
+                  recent: result.calendar?.recent ?? [],
+                  metrics: result.metrics ?? [],
+                  statement: result.statement ?? null,
+                  balance: result.balance ?? null,
+                  cashflow: result.cashflow ?? null,
+                  degraded: Boolean(result.degraded),
+                });
+                earningsLoadedRef.current = true;
+              })(),
+            );
+          }
+          if (needCompany) {
+            tasks.push(
+              (async () => {
                 try {
                   const res = await fetch(
-                    `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+                    `/api/company?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
                   );
                   const result = await res.json();
                   if (!isCurrentIdentity(requestIdentity)) return;
                   dispatch({
-                    type: "set-earnings",
-                    earnings: result.surprises ?? result.earnings ?? [],
-                    upcoming: result.calendar?.upcoming ?? [],
-                    recent: result.calendar?.recent ?? [],
-                    metrics: result.metrics ?? [],
-                    statement: result.statement ?? null,
-                    balance: result.balance ?? null,
-                    cashflow: result.cashflow ?? null,
-                    degraded: Boolean(result.degraded),
+                    type: "set-company",
+                    company: result.profile ?? null,
+                    officers: result.officers ?? [],
+                    degraded: !res.ok || Boolean(result.degraded),
                   });
-                  earningsLoadedRef.current = true;
+                } catch {
+                  if (!isCurrentIdentity(requestIdentity)) return;
+                  dispatch({
+                    type: "set-company",
+                    company: null,
+                    officers: [],
+                    degraded: true,
+                  });
                 } finally {
                   if (isCurrentIdentity(requestIdentity)) {
-                    dispatch({ type: "set-earnings-loading", value: false });
+                    companyLoadedRef.current = true;
                   }
                 }
               })(),
             );
           }
-          if (!companyLoadedRef.current) {
-            tasks.push(
-              (async () => {
-                const res = await fetch(
-                  `/api/company?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
-                );
-                const result = await res.json();
-                if (!isCurrentIdentity(requestIdentity)) return;
-                dispatch({
-                  type: "set-company",
-                  company: result.profile ?? null,
-                  officers: result.officers ?? [],
-                  degraded: !res.ok || Boolean(result.degraded),
-                });
-                companyLoadedRef.current = true;
-              })(),
-            );
+          // Hold loading until earnings + company both settle (avoid profile flashing「暂无」).
+          if (needEarnings || needCompany) {
+            dispatch({ type: "set-earnings-loading", value: true });
           }
-          await Promise.all(tasks);
+          try {
+            await Promise.all(tasks);
+          } finally {
+            if (
+              (needEarnings || needCompany) &&
+              isCurrentIdentity(requestIdentity)
+            ) {
+              dispatch({ type: "set-earnings-loading", value: false });
+            }
+          }
         } else if (activeTab === "press") {
           if (assetType === "crypto" || isIndex) {
             dispatch({ type: "set-press", press: [], degraded: false });

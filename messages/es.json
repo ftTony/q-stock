@@ -2101,6 +2101,8 @@
     "tabDerivatives": "Derivados",
     "tabEarnings": "Resultados",
     "tabProfile": "Empresa",
-    "resizeBottom": "Redimensionar panel inferior"
+    "resizeBottom": "Redimensionar panel inferior",
+    "collapseBottom": "Contraer panel inferior",
+    "expandBottom": "Expandir panel inferior"
   }
 }

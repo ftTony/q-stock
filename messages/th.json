@@ -2101,6 +2101,8 @@
     "tabDerivatives": "อนุพันธ์",
     "tabEarnings": "งบการเงิน",
     "tabProfile": "ข้อมูลบริษัท",
-    "resizeBottom": "ปรับความสูงแผงล่าง"
+    "resizeBottom": "ปรับความสูงแผงล่าง",
+    "collapseBottom": "ยุบแผงล่าง",
+    "expandBottom": "ขยายแผงล่าง"
   }
 }

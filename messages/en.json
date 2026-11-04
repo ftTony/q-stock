@@ -2163,6 +2163,8 @@
     "tabDerivatives": "Derivatives",
     "tabEarnings": "Earnings",
     "tabProfile": "Company",
-    "resizeBottom": "Resize bottom panel"
+    "resizeBottom": "Resize bottom panel",
+    "collapseBottom": "Collapse bottom panel",
+    "expandBottom": "Expand bottom panel"
   }
 }

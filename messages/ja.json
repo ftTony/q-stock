@@ -2101,6 +2101,8 @@
     "tabDerivatives": "デリバティブ",
     "tabEarnings": "決算",
     "tabProfile": "企業情報",
-    "resizeBottom": "下部パネルの高さ調整"
+    "resizeBottom": "下部パネルの高さ調整",
+    "collapseBottom": "下部パネルを折りたたむ",
+    "expandBottom": "下部パネルを展開"
   }
 }

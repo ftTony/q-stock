@@ -2101,6 +2101,8 @@
     "tabDerivatives": "파생상품",
     "tabEarnings": "실적",
     "tabProfile": "기업 정보",
-    "resizeBottom": "하단 패널 높이 조절"
+    "resizeBottom": "하단 패널 높이 조절",
+    "collapseBottom": "하단 패널 접기",
+    "expandBottom": "하단 패널 펼치기"
   }
 }

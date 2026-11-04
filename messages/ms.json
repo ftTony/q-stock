@@ -2101,6 +2101,8 @@
     "tabDerivatives": "Derivatif",
     "tabEarnings": "Pendapatan",
     "tabProfile": "Syarikat",
-    "resizeBottom": "Ubah saiz panel bawah"
+    "resizeBottom": "Ubah saiz panel bawah",
+    "collapseBottom": "Kuncupkan panel bawah",
+    "expandBottom": "Kembangkan panel bawah"
   }
 }

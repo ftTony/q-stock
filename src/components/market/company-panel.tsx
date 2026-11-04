@@ -6,12 +6,19 @@ type Density = "default" | "stack";
 export function CompanyProfilePanel({
   profile,
   density = "default",
+  loading = false,
 }: {
   profile: CompanyProfile | null;
   /** Stack bottom: single-column hairline rows (dock / mobile keep default). */
   density?: Density;
+  /** True while company/fundamentals fetch is in flight. */
+  loading?: boolean;
 }) {
   const t = useTranslations("company");
+  const tCommon = useTranslations("common");
+  if (loading && !profile) {
+    return <p className="aw-caption">{tCommon("loading")}</p>;
+  }
   if (!profile) {
     return <p className="aw-caption">{t("na")}</p>;
   }

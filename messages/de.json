@@ -2101,6 +2101,8 @@
     "tabDerivatives": "Derivate",
     "tabEarnings": "Ergebnisse",
     "tabProfile": "Unternehmen",
-    "resizeBottom": "Unteres Panel skalieren"
+    "resizeBottom": "Unteres Panel skalieren",
+    "collapseBottom": "Unteres Panel einklappen",
+    "expandBottom": "Unteres Panel ausklappen"
   }
 }

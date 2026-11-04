@@ -2163,6 +2163,8 @@
     "tabDerivatives": "衍生品",
     "tabEarnings": "财报",
     "tabProfile": "公司信息",
-    "resizeBottom": "调整底栏高度"
+    "resizeBottom": "调整底栏高度",
+    "collapseBottom": "收起底栏",
+    "expandBottom": "展开底栏"
   }
 }

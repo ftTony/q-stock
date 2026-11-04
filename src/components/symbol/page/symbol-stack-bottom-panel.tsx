@@ -244,6 +244,7 @@ export function SymbolStackBottomPanel({
       className="aw-stack-bottom flex shrink-0 flex-col overflow-hidden bg-[var(--aw-canvas)]"
       style={{ height: bottom.height }}
       data-resizing={bottom.dragging ? "true" : undefined}
+      data-collapsed={bottom.collapsed ? "true" : undefined}
     >
       <button
         type="button"
@@ -254,11 +255,11 @@ export function SymbolStackBottomPanel({
       />
 
       <div
-        className="aw-stack-tablist shrink-0 border-b border-[var(--aw-hairline,var(--border))]"
+        className="aw-stack-tablist flex shrink-0 items-stretch border-b border-[var(--aw-hairline,var(--border))]"
         role="tablist"
         aria-label={t("presetStack")}
       >
-        <div className="flex h-9 items-stretch overflow-x-auto qt-scroll">
+        <div className="flex min-w-0 flex-1 items-stretch overflow-x-auto qt-scroll">
           {items.map((item) => {
             const selected = active === item.id;
             return (
@@ -269,6 +270,7 @@ export function SymbolStackBottomPanel({
                 aria-selected={selected}
                 data-active={selected ? "true" : undefined}
                 onClick={() => {
+                  if (bottom.collapsed) bottom.expand();
                   onTabChange(item.id);
                   if (item.id === "news" || item.id === "press") {
                     onNewsFeedTabChange(item.id);
@@ -281,67 +283,112 @@ export function SymbolStackBottomPanel({
             );
           })}
         </div>
+        <button
+          type="button"
+          className="aw-stack-collapse-btn"
+          aria-expanded={!bottom.collapsed}
+          aria-label={
+            bottom.collapsed ? t("expandBottom") : t("collapseBottom")
+          }
+          title={bottom.collapsed ? t("expandBottom") : t("collapseBottom")}
+          onClick={bottom.toggleCollapsed}
+        >
+          <svg
+            className="h-3.5 w-3.5"
+            viewBox="0 0 24 24"
+            fill="none"
+            aria-hidden
+          >
+            {bottom.collapsed ? (
+              <path
+                d="M6 14.5L12 8.5l6 6"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            ) : (
+              <path
+                d="M6 9.5L12 15.5l6-6"
+                stroke="currentColor"
+                strokeWidth="1.75"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            )}
+          </svg>
+        </button>
       </div>
 
-      <SymbolStackBottomPanes
-        active={active}
-        mountNews={mountNews}
-        mountTrade={mountTrade}
-        mountAi={mountAi}
-        symbol={symbol}
-        assetType={assetType}
-        isIndex={isIndex}
-        quote={quote}
-        lastPrice={lastPrice}
-        percentChange={percentChange}
-        quoteName={quoteName}
-        bid={bid}
-        ask={ask}
-        boundStrategyId={boundStrategyId}
-        boundRuleName={boundRuleName}
-        onBoundStrategyChange={onBoundStrategyChange}
-        onOpenPlan={onOpenPlan}
-        onOpenAi={onOpenAi}
-        onNewsFeedTabChange={onNewsFeedTabChange}
-        news={news}
-        press={press}
-        comments={comments}
-        commentText={commentText}
-        onCommentTextChange={onCommentTextChange}
-        onPostComment={onPostComment}
-        onDeleteComment={onDeleteComment}
-        commentBusy={commentBusy}
-        canComment={canComment}
-        currentUserId={currentUserId}
-        tabLoading={tabLoading}
-        newsReady={newsReady}
-        pressReady={pressReady}
-        degraded={degraded}
-        earnings={earnings}
-        earningsUpcoming={earningsUpcoming}
-        earningsRecent={earningsRecent}
-        earningsMetrics={earningsMetrics}
-        earningsStatement={earningsStatement}
-        earningsBalance={earningsBalance}
-        earningsCashflow={earningsCashflow}
-        earningsLoading={earningsLoading}
-        company={company}
-        officers={officers}
-        tradeAuthed={tradeAuthed}
-        authStatus={authStatus}
-        ruleFooter={ruleFooter}
-        loadingLabel={tCommon("loading")}
-        degradedLabel={tCommon("degraded")}
-        errorLabel={tCommon("error")}
-        cryptoNaLabel={tEarn("cryptoNa")}
-        loginTitle={tTrading("loginTitle")}
-        loginBody={tTrading("loginBody")}
-        loginHint={tTrading("loginHint")}
-        commentsPlaceholder={tComments("placeholder")}
-        commentsPost={tComments("post")}
-        commentsEmpty={tComments("empty")}
-        commentsDelete={tComments("delete")}
-      />
+      {/* Keep panes mounted while collapsed — avoid trade/AI remount cost. */}
+      <div
+        className={
+          bottom.collapsed
+            ? "hidden"
+            : "flex min-h-0 flex-1 flex-col overflow-hidden"
+        }
+        aria-hidden={bottom.collapsed || undefined}
+      >
+        <SymbolStackBottomPanes
+          active={active}
+          mountNews={mountNews}
+          mountTrade={mountTrade}
+          mountAi={mountAi}
+          symbol={symbol}
+          assetType={assetType}
+          isIndex={isIndex}
+          quote={quote}
+          lastPrice={lastPrice}
+          percentChange={percentChange}
+          quoteName={quoteName}
+          bid={bid}
+          ask={ask}
+          boundStrategyId={boundStrategyId}
+          boundRuleName={boundRuleName}
+          onBoundStrategyChange={onBoundStrategyChange}
+          onOpenPlan={onOpenPlan}
+          onOpenAi={onOpenAi}
+          onNewsFeedTabChange={onNewsFeedTabChange}
+          news={news}
+          press={press}
+          comments={comments}
+          commentText={commentText}
+          onCommentTextChange={onCommentTextChange}
+          onPostComment={onPostComment}
+          onDeleteComment={onDeleteComment}
+          commentBusy={commentBusy}
+          canComment={canComment}
+          currentUserId={currentUserId}
+          tabLoading={tabLoading}
+          newsReady={newsReady}
+          pressReady={pressReady}
+          degraded={degraded}
+          earnings={earnings}
+          earningsUpcoming={earningsUpcoming}
+          earningsRecent={earningsRecent}
+          earningsMetrics={earningsMetrics}
+          earningsStatement={earningsStatement}
+          earningsBalance={earningsBalance}
+          earningsCashflow={earningsCashflow}
+          earningsLoading={earningsLoading}
+          company={company}
+          officers={officers}
+          tradeAuthed={tradeAuthed}
+          authStatus={authStatus}
+          ruleFooter={ruleFooter}
+          loadingLabel={tCommon("loading")}
+          degradedLabel={tCommon("degraded")}
+          errorLabel={tCommon("error")}
+          cryptoNaLabel={tEarn("cryptoNa")}
+          loginTitle={tTrading("loginTitle")}
+          loginBody={tTrading("loginBody")}
+          loginHint={tTrading("loginHint")}
+          commentsPlaceholder={tComments("placeholder")}
+          commentsPost={tComments("post")}
+          commentsEmpty={tComments("empty")}
+          commentsDelete={tComments("delete")}
+        />
+      </div>
     </div>
   );
 }

@@ -77,6 +77,7 @@ export function SymbolFundamentalsPanel({
 }: Props) {
   const t = useTranslations("symbol");
   const tEarn = useTranslations("earnings");
+  const tCommon = useTranslations("common");
 
   const availability = useMemo(() => {
     const hasMetrics = earningsMetrics.some((m) => METRIC_KEYS.has(m.key));
@@ -169,12 +170,13 @@ export function SymbolFundamentalsPanel({
           {
             id: "profile" as const,
             label: t("fundNavProfile"),
-            available: availability.profile || !earningsLoading,
+            // Always list 公司概况 — loading / empty / data all land here.
+            available: true,
           },
           {
             id: "officers" as const,
             label: t("fundNavOfficers"),
-            available: availability.officers,
+            available: availability.officers || earningsLoading,
           },
         ],
       },
@@ -222,7 +224,11 @@ export function SymbolFundamentalsPanel({
       />
       <div className="flex min-h-full min-w-0 flex-col sm:pl-5">
         {resolvedActive === "profile" ? (
-          <CompanyProfilePanel profile={company} density={density} />
+          <CompanyProfilePanel
+            profile={company}
+            density={density}
+            loading={earningsLoading}
+          />
         ) : null}
         {resolvedActive === "officers" ? (
           officers.length > 0 ? (
@@ -231,6 +237,8 @@ export function SymbolFundamentalsPanel({
               title={t("officers")}
               density={density}
             />
+          ) : earningsLoading ? (
+            <EmptyStateBlock art="statement" label={tCommon("loading")} />
           ) : (
             <EmptyStateBlock art="statement" label={t("fundNavEmpty")} />
           )
@@ -242,7 +250,7 @@ export function SymbolFundamentalsPanel({
               labels={statementLabels}
             />
           ) : earningsLoading ? (
-            <EmptyStateBlock art="statement" label={tEarn("empty")} />
+            <EmptyStateBlock art="statement" label={tCommon("loading")} />
           ) : (
             <EmptyStateBlock art="statement" label={t("fundNavNeedBroker")} />
           )
@@ -254,7 +262,7 @@ export function SymbolFundamentalsPanel({
               labels={statementLabels}
             />
           ) : earningsLoading ? (
-            <EmptyStateBlock art="statement" label={tEarn("empty")} />
+            <EmptyStateBlock art="statement" label={tCommon("loading")} />
           ) : (
             <EmptyStateBlock art="statement" label={t("fundNavNeedBroker")} />
           )
