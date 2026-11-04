@@ -123,9 +123,13 @@ export function SymbolDockNewsPanel({
       )}
 
       <div
-        className={`aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain ${
-          stack ? "px-3 pb-3 pt-1" : "px-5 pb-4 pt-0"
-        }`}
+        className={
+          stack
+            ? // Stack bottom: visible thin scrollbar; height comes from flex parent.
+              "qt-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pb-3 pt-1"
+            : // Dock drawer: hide native thumb (drawer chrome handles scroll cue).
+              "aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4 pt-0"
+        }
       >
         {feedTab === "news" ? (
           newsPending ? (

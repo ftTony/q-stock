@@ -242,7 +242,12 @@ export function SymbolStackBottomPanes({
     <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
       {mountNews ? (
         <PaneShell active={newsActive}>
-          <div className="min-h-0 flex-1 overflow-y-auto qt-scroll">
+          {/*
+            Flex shell only — do NOT put overflow-y-auto here.
+            Nested with SymbolDockNewsPanel's overscroll-contain traps the wheel
+            when the inner pane isn't the constrained scroller.
+          */}
+          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
             <SymbolDockNewsPanel
               feedTab={active === "press" ? "press" : "news"}
               onFeedTabChange={onNewsFeedTabChange}
