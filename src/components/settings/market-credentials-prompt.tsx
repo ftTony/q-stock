@@ -155,10 +155,15 @@ export function MarketCredentialsPrompt({
       <div
         role="status"
         aria-label={`${title}. ${body}`}
-        className="flex min-w-0 w-full max-w-full items-center justify-end gap-1.5 overflow-hidden pl-1 sm:gap-2.5 sm:pl-2 md:justify-start"
+        className="flex min-w-0 max-w-full items-center justify-end gap-1.5 overflow-hidden pl-1 sm:gap-2.5 sm:pl-2 md:justify-start"
       >
-        {/* Narrow: short CTA only, flush right — full marquee + actions on md+. */}
-        <div className="hidden min-w-0 flex-1 md:block">{marquee}</div>
+        {/*
+          Do NOT set w-full here — as a flex sibling of the index ticker it
+          would claim 100% width and collapse the indices to zero.
+        */}
+        <div className="hidden min-w-0 flex-1 overflow-hidden md:block">
+          {marquee}
+        </div>
         <div className="shrink-0 md:hidden">{primaryAction(true)}</div>
         <div className="hidden shrink-0 items-center gap-1.5 md:flex">
           {primaryAction(false)}

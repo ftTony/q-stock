@@ -35,11 +35,14 @@ export function SymbolWorkbenchTopbar({
   return (
     <>
       <div className="aw-workbench-topbar box-border hidden h-[var(--wb-topbar-h,40px)] shrink-0 items-center gap-2 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas)] px-2 lg:flex">
-        <div className="min-w-0 flex-1">
+        {/* Indices must stay shrink-0 — creds marquee used to be w-full and ate this. */}
+        <div className="shrink-0">
           <TopbarIndexTicker />
         </div>
-        <MarketCredentialsPrompt inline />
-        <div className="relative z-10 ml-auto flex shrink-0 items-center gap-0.5 bg-[var(--aw-canvas)] pl-1.5">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <MarketCredentialsPrompt inline />
+        </div>
+        <div className="relative z-10 flex shrink-0 items-center gap-0.5 bg-[var(--aw-canvas)] pl-1.5">
           <button
             type="button"
             title={t("open")}
