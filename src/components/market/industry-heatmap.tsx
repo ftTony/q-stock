@@ -170,8 +170,8 @@ export function IndustryHeatmap({
   const overallUp = overall >= 0;
 
   return (
-    <section className="space-y-3">
-      <div className="qt-panel overflow-hidden">
+    <section className="space-y-2 lg:space-y-3">
+      <div className="qt-panel mx-3 overflow-hidden lg:mx-0">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] px-3 py-2.5 sm:px-4">
           <div className="flex flex-wrap items-baseline gap-2">
             <h2 className="text-base font-semibold tracking-tight sm:text-lg">

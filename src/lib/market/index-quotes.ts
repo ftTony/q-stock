@@ -14,6 +14,7 @@ export function seedIndexQuotes(
     id: d.id,
     symbol: d.symbol,
     nameKey: d.nameKey,
+    shortNameKey: d.shortNameKey,
     assetType: d.assetType,
     price: null,
     change: null,
@@ -33,21 +34,26 @@ export function mergeIndexQuotes(
   if (!prev?.length) return next;
   const byId = new Map(prev.map((p) => [p.id, p]));
   return next.map((n) => {
-    if (hasPrice(n)) return n;
     const old = byId.get(n.id);
+    const withKeys = {
+      ...n,
+      nameKey: n.nameKey || old?.nameKey || "",
+      shortNameKey: n.shortNameKey || old?.shortNameKey,
+    };
+    if (hasPrice(withKeys)) return withKeys;
     if (old && hasPrice(old)) {
       return {
-        ...n,
+        ...withKeys,
         price: old.price,
         change: old.change,
         percentChange: old.percentChange,
-        open: n.open ?? old.open,
-        high: n.high ?? old.high,
-        low: n.low ?? old.low,
-        previousClose: n.previousClose ?? old.previousClose,
+        open: withKeys.open ?? old.open,
+        high: withKeys.high ?? old.high,
+        low: withKeys.low ?? old.low,
+        previousClose: withKeys.previousClose ?? old.previousClose,
       };
     }
-    return n;
+    return withKeys;
   });
 }
 
@@ -98,6 +104,7 @@ export function defsToIndexQuotes(
       id: d.id,
       symbol: d.symbol,
       nameKey: d.nameKey,
+      shortNameKey: d.shortNameKey,
       assetType: d.assetType,
       price: hasPrice(q) ? q!.price : null,
       change: hasPrice(q) ? (q!.change ?? null) : null,

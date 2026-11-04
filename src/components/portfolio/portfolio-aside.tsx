@@ -33,8 +33,8 @@ export function PortfolioAside({
   labels,
 }: Props) {
   return (
-    <section className="qt-panel grid overflow-hidden lg:grid-cols-2 lg:divide-x lg:divide-[var(--border)]">
-      <div className="flex min-h-0 flex-col border-b border-[var(--border)] p-4 lg:border-b-0">
+    <section className="qt-panel mx-3 grid overflow-hidden lg:mx-0 lg:grid-cols-2 lg:divide-x lg:divide-[var(--border)]">
+      <div className="flex min-h-0 flex-col border-b border-[var(--border)] p-3 sm:p-4 lg:border-b-0">
         <div className="flex items-center justify-between gap-2">
           <h2 className="text-sm font-semibold tracking-tight">
             {labels.narrative}
@@ -82,7 +82,7 @@ export function PortfolioAside({
         </ul>
       </div>
 
-      <div className="flex min-h-0 flex-col p-4">
+      <div className="flex min-h-0 flex-col p-3 sm:p-4">
         <h2 className="text-sm font-semibold tracking-tight">
           {labels.sentiment}
         </h2>

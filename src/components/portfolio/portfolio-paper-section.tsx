@@ -64,7 +64,7 @@ export function PortfolioPaperSection({
     "qt-btn qt-btn-ghost inline-flex h-8 items-center justify-center px-3 text-[12px] font-medium leading-none";
 
   return (
-    <section className="qt-panel space-y-4 p-4 sm:p-5">
+    <section className="qt-panel mx-3 space-y-3 p-3 sm:p-5 lg:mx-0 lg:space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="min-w-0">
           <h2 className="text-[15px] font-semibold tracking-tight sm:text-base">

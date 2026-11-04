@@ -50,6 +50,7 @@ function isAppPath(pathname: string) {
     "/multi-chart",
     "/strategies",
     "/settings",
+    "/mine",
   ];
   return prefixes.some(
     (p) => pathname === p || pathname.startsWith(`${p}/`),

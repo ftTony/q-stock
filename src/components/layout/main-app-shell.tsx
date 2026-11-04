@@ -1,7 +1,7 @@
 "use client";
 
 import { useLocale, useTranslations } from "next-intl";
-import { Link, usePathname } from "@/i18n/routing";
+import { usePathname } from "@/i18n/routing";
 import { localizedPath } from "@/i18n/config";
 import {
   AppSidebar,
@@ -10,76 +10,40 @@ import {
 import { TopBarActions } from "@/components/layout/topbar-actions";
 import { TopbarIndexTicker } from "@/components/layout/topbar-index-ticker";
 import { DataSourceBadge } from "@/components/layout/data-source-badge";
+import { MobileAppTabBar } from "@/components/layout/mobile-app-tab-bar";
 import { MarketCredentialsPrompt } from "@/components/settings/market-credentials-prompt";
 import { SettingsModalHost } from "@/components/settings/settings-modal-host";
 import { SiteLogo } from "@/components/brand/site-logo";
 import { SpotlightTour } from "@/components/onboarding/spotlight-tour";
-
-function IconGrid({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <rect x="3" y="3" width="7" height="7" rx="1.5" />
-      <rect x="14" y="3" width="7" height="7" rx="1.5" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" />
-      <rect x="14" y="14" width="7" height="7" rx="1.5" />
-    </svg>
-  );
-}
-
-function IconStar({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M12 3l2.7 5.5 6 .9-4.4 4.2 1 6-5.3-2.8L6.7 19.6l1-6L3.4 9.4l6-.9L12 3z" />
-    </svg>
-  );
-}
-
-function IconLab({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M9 3v7.2L4.8 18.5A1.8 1.8 0 0 0 6.4 21h11.2a1.8 1.8 0 0 0 1.6-2.5L15 10.2V3" />
-      <path d="M8.5 3h7" strokeLinecap="round" />
-    </svg>
-  );
-}
-
-function IconBag({ className = "h-4 w-4" }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
-      <path d="M4 7h16v12H4z" />
-      <path d="M8 7V5h8v2" />
-      <path d="M8 12h8M8 16h5" />
-    </svg>
-  );
-}
+import { LG_MIN, useMinWidth } from "@/hooks/use-min-width";
 
 /**
  * Mobile: logo + index + account chrome on top; main tabs on bottom.
  * Desktop: left sidebar nav; top bar keeps index + account chrome.
+ * H5 tab-bar changes must not alter desktop sidebar / gutters.
  */
 export function MainAppShell({ children }: { children: React.ReactNode }) {
   const t = useTranslations("nav");
   const locale = useLocale();
   const pathname = usePathname();
   const homeHref = localizedPath(locale, "/");
+  const isDesktop = useMinWidth(LG_MIN);
 
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
-  const isWatchlist = pathname.startsWith("/watchlist");
-  const isPortfolio = pathname.startsWith("/portfolio");
-  const isStrategiesNav = pathname.startsWith("/strategies");
   const isSymbol = pathname.startsWith("/symbol");
   const isStrategies = pathname.startsWith("/strategies");
   /** Fluid pages: H5 full-bleed; desktop keeps prior side gutters. */
   const isFluidMain =
     isMarkets ||
-    isWatchlist ||
+    pathname.startsWith("/watchlist") ||
     pathname.startsWith("/review") ||
-    isPortfolio ||
+    pathname.startsWith("/portfolio") ||
     isStrategies ||
     pathname.startsWith("/analysis") ||
     pathname.startsWith("/symbol") ||
     pathname.startsWith("/multi-chart") ||
-    pathname.startsWith("/alerts");
+    pathname.startsWith("/alerts") ||
+    pathname.startsWith("/mine");
   const mainRailClass = isFluidMain
     ? isSymbol
       ? "w-full px-0"
@@ -88,6 +52,9 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
         : "w-full px-0 lg:px-4 xl:px-6"
     : "mx-auto w-full max-w-6xl px-4 sm:px-6";
   const sidebarWidth = SIDEBAR_WIDTH_COLLAPSED;
+
+  // H5 tab bar only — never on desktop web; never on symbol (height).
+  const showMobileTabBar = !isDesktop && !isSymbol;
 
   return (
     <SettingsModalHost>
@@ -132,10 +99,11 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
                 : "flex h-full min-h-0 w-full items-center gap-2 px-3 sm:gap-3 sm:px-5 lg:px-6"
             }
           >
-            <div className="flex min-w-0 max-w-[38%] shrink items-center gap-1.5 sm:max-w-[min(42%,28rem)] sm:gap-3">
+            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden sm:max-w-[min(52%,36rem)] sm:gap-3 sm:flex-none">
               <a
                 href={homeHref}
                 className="relative z-10 flex shrink-0 items-center lg:hidden"
+                aria-label={t("markets")}
               >
                 <SiteLogo height={24} variant="compact" />
               </a>
@@ -144,19 +112,22 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
                 <TopbarIndexTicker />
               </div>
             </div>
-            <MarketCredentialsPrompt inline />
             <div
-              className={`relative z-10 ml-auto flex shrink-0 items-center pl-1.5 ${
+              className={`relative z-10 ml-auto flex shrink-0 items-center gap-1.5 pl-1.5 ${
                 isSymbol
                   ? "bg-[var(--symbol-shell-bg)]"
                   : "bg-[var(--background)]"
               }`}
             >
-              <TopBarActions
-                showMarketStatus={false}
-                showTheme
-                showLanguage
-              />
+              <MarketCredentialsPrompt inline />
+              {/* H5: theme / lang / account live under 「我的」— desktop only. */}
+              <div className="hidden lg:flex lg:items-center">
+                <TopBarActions
+                  showMarketStatus={false}
+                  showTheme
+                  showLanguage
+                />
+              </div>
             </div>
           </div>
         </header>
@@ -164,14 +135,16 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
         <main
           className={
             isSymbol
-              ? "flex min-h-0 flex-1 flex-col overflow-hidden pb-[calc(3.5rem+env(safe-area-inset-bottom,0px))] lg:pb-0"
+              ? isDesktop
+                ? "flex min-h-0 flex-1 flex-col overflow-hidden"
+                : "flex min-h-0 flex-1 flex-col overflow-hidden pb-[env(safe-area-inset-bottom,0px)]"
               : isFluidMain
-                ? `flex flex-1 flex-col pb-24 lg:pb-6 ${
-                    isStrategies
-                      ? "py-0 lg:py-3"
-                      : "py-0 lg:py-5"
+                ? `flex flex-1 flex-col ${isDesktop ? "pb-6" : "pb-24"} ${
+                    isStrategies ? "py-0 lg:py-3" : "py-0 lg:py-5"
                   }`
-                : "flex-1 py-5 pb-24 sm:py-6 lg:pb-6"
+                : isDesktop
+                  ? "flex-1 py-5 pb-6 sm:py-6"
+                  : "flex-1 py-5 pb-24 sm:py-6"
           }
         >
           <div
@@ -187,40 +160,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
 
         <DataSourceBadge />
 
-        <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-[var(--border)] bg-[var(--sidebar)]/95 backdrop-blur-xl lg:hidden">
-          <div className="grid grid-cols-4 gap-1 px-2 py-2 text-[11px]">
-            <Link
-              href="/markets"
-              data-tour="nav-watchlist"
-              className={`flex flex-col items-center gap-1 rounded-lg py-2 ${isMarkets ? "text-[var(--brand-text)]" : "text-[var(--muted)]"}`}
-            >
-              <IconGrid />
-              {t("markets")}
-            </Link>
-            <Link
-              href="/watchlist"
-              className={`flex flex-col items-center gap-1 rounded-lg py-2 ${isWatchlist ? "text-[var(--brand-text)]" : "text-[var(--muted)]"}`}
-            >
-              <IconStar />
-              {t("watchlist")}
-            </Link>
-            <Link
-              href="/portfolio"
-              data-tour="nav-portfolio"
-              className={`flex flex-col items-center gap-1 rounded-lg py-2 ${isPortfolio ? "text-[var(--brand-text)]" : "text-[var(--muted)]"}`}
-            >
-              <IconBag />
-              {t("portfolio")}
-            </Link>
-            <Link
-              href="/strategies"
-              className={`flex flex-col items-center gap-1 rounded-lg py-2 ${isStrategiesNav ? "text-[var(--brand-text)]" : "text-[var(--muted)]"}`}
-            >
-              <IconLab />
-              {t("strategies")}
-            </Link>
-          </div>
-        </nav>
+        {showMobileTabBar ? <MobileAppTabBar /> : null}
       </div>
       </div>
     </SettingsModalHost>

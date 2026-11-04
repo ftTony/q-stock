@@ -166,17 +166,17 @@ export default function PortfolioPage() {
     "qt-btn inline-flex h-8 items-center justify-center px-3 text-[13px] font-medium leading-none";
 
   return (
-    <div className="space-y-5 animate-[qtFade_0.45s_ease]">
-      <section className="flex flex-col gap-3 px-3 pt-3 sm:flex-row sm:items-center sm:justify-between lg:px-0 lg:pt-0">
+    <div className="space-y-2.5 animate-[qtFade_0.45s_ease] lg:space-y-5">
+      <section className="flex flex-col gap-2 px-3 pt-2 sm:flex-row sm:items-center sm:justify-between lg:gap-3 lg:px-0 lg:pt-0">
         <div className="min-w-0">
-          <h1 className="text-lg font-semibold tracking-tight sm:text-xl">
+          <h1 className="text-base font-semibold tracking-tight sm:text-xl">
             {t("title")}
           </h1>
-          <p className="mt-1 max-w-2xl text-[12px] leading-relaxed text-[var(--muted)] sm:text-[13px]">
+          <p className="mt-0.5 max-w-2xl text-[12px] leading-snug text-[var(--muted)] sm:mt-1 sm:text-[13px] sm:leading-relaxed">
             {t("desc")}
           </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           <Link href="/review" className={`${headerBtn} qt-btn-ghost`}>
             {t("openReview")}
           </Link>

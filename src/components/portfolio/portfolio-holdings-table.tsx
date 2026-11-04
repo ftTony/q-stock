@@ -42,8 +42,8 @@ export function PortfolioHoldingsTable({
   labels,
 }: Props) {
   return (
-    <section className="qt-panel overflow-hidden">
-      <div className="flex h-11 items-center justify-between border-b border-[var(--border)] px-4">
+    <section className="qt-panel mx-3 overflow-hidden lg:mx-0">
+      <div className="flex h-10 items-center justify-between border-b border-[var(--border)] px-3 sm:h-11 sm:px-4">
         <span className="text-[13px] font-semibold tracking-tight sm:text-sm">
           {labels.holdings}
         </span>

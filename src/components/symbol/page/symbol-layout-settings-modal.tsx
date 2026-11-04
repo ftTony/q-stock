@@ -27,20 +27,21 @@ const MODULE_ROWS: { key: LayoutModuleKey; labelKey: string }[] = [
 
 function LayoutThumb({ mode }: { mode: LayoutMode }) {
   if (mode === "stack") {
+    // Chart on top + tabbed feed below — must contrast so it doesn't read as a lone mid bar.
     return (
       <div
         className="flex h-16 w-full flex-col overflow-hidden border border-[var(--aw-hairline,var(--border))] bg-[var(--aw-parchment,var(--surface-2))]"
         aria-hidden
       >
-        <div className="min-h-0 flex-1 bg-[var(--panel)]" />
-        <div className="flex h-[38%] flex-col border-t border-[var(--aw-hairline,var(--border))]">
-          <div className="flex h-2.5 gap-0.5 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--muted)]/10 px-0.5">
-            <span className="flex-1 bg-[var(--brand)]/40" />
-            <span className="flex-1 bg-[var(--muted)]/25" />
-            <span className="flex-1 bg-[var(--muted)]/25" />
-            <span className="flex-1 bg-[var(--muted)]/25" />
+        <div className="min-h-0 flex-[5] bg-[color-mix(in_srgb,var(--muted)_14%,var(--panel))]" />
+        <div className="flex min-h-0 flex-[3] flex-col border-t-2 border-[var(--aw-hairline,var(--border))]">
+          <div className="flex h-2.5 shrink-0 gap-0.5 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--muted)]/15 px-0.5">
+            <span className="flex-1 bg-[var(--brand)]/50" />
+            <span className="flex-1 bg-[var(--muted)]/35" />
+            <span className="flex-1 bg-[var(--muted)]/35" />
+            <span className="flex-1 bg-[var(--muted)]/35" />
           </div>
-          <div className="min-h-0 flex-1 bg-[var(--panel)]" />
+          <div className="min-h-0 flex-1 bg-[color-mix(in_srgb,var(--brand)_8%,var(--panel))]" />
         </div>
       </div>
     );
@@ -52,7 +53,7 @@ function LayoutThumb({ mode }: { mode: LayoutMode }) {
       aria-hidden
     >
       <div className="w-[18%] border-r border-[var(--aw-hairline,var(--border))] bg-[var(--muted)]/15" />
-      <div className="min-w-0 flex-1 bg-[var(--panel)]" />
+      <div className="min-w-0 flex-1 bg-[color-mix(in_srgb,var(--muted)_10%,var(--panel))]" />
       <div className="flex w-[28%] flex-col border-l border-[var(--aw-hairline,var(--border))]">
         <div className="h-1/2 bg-[var(--up)]/35" />
         <div className="h-1/2 bg-[var(--down)]/35" />

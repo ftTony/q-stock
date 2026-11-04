@@ -192,7 +192,7 @@ export default function MarketsDashboard() {
   const sectionTitle = tab === "crypto" ? t("popular") : t("rankBoards");
 
   return (
-    <div className="space-y-5 animate-[qtFade_0.45s_ease]">
+    <div className="space-y-2.5 animate-[qtFade_0.45s_ease] lg:space-y-5">
       <TopToast
         key={toastKey}
         message={toastMsg}

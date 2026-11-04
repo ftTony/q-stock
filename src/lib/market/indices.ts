@@ -18,31 +18,82 @@ export type MarketIndexDef = {
   assetType: AssetType;
   /** i18n key under market.* */
   nameKey: string;
+  /** Compact topbar label (market.*Short). */
+  shortNameKey: string;
 };
 
 /** US: S&P 500, Nasdaq Composite, Dow Jones. */
 export const US_MARKET_INDICES: MarketIndexDef[] = [
-  { id: "SPX", symbol: "SPX", assetType: "stock", nameKey: "indexSpx" },
-  { id: "IXIC", symbol: "IXIC", assetType: "stock", nameKey: "indexIxic" },
-  { id: "DJI", symbol: "DJI", assetType: "stock", nameKey: "indexDji" },
+  {
+    id: "SPX",
+    symbol: "SPX",
+    assetType: "stock",
+    nameKey: "indexSpx",
+    shortNameKey: "indexSpxShort",
+  },
+  {
+    id: "IXIC",
+    symbol: "IXIC",
+    assetType: "stock",
+    nameKey: "indexIxic",
+    shortNameKey: "indexIxicShort",
+  },
+  {
+    id: "DJI",
+    symbol: "DJI",
+    assetType: "stock",
+    nameKey: "indexDji",
+    shortNameKey: "indexDjiShort",
+  },
 ];
 
 /** HK: Hang Seng, Hang Seng Tech, HS China Enterprises. */
 export const HK_MARKET_INDICES: MarketIndexDef[] = [
-  { id: "HSI", symbol: "HSI", assetType: "hk", nameKey: "indexHsi" },
-  { id: "HSTECH", symbol: "HSTECH", assetType: "hk", nameKey: "indexHstech" },
-  { id: "HSCEI", symbol: "HSCEI", assetType: "hk", nameKey: "indexHscei" },
+  {
+    id: "HSI",
+    symbol: "HSI",
+    assetType: "hk",
+    nameKey: "indexHsi",
+    shortNameKey: "indexHsiShort",
+  },
+  {
+    id: "HSTECH",
+    symbol: "HSTECH",
+    assetType: "hk",
+    nameKey: "indexHstech",
+    shortNameKey: "indexHstechShort",
+  },
+  {
+    id: "HSCEI",
+    symbol: "HSCEI",
+    assetType: "hk",
+    nameKey: "indexHscei",
+    shortNameKey: "indexHsceiShort",
+  },
 ];
 
 /** CN: Shanghai Composite, Shenzhen Component, ChiNext. */
 export const CN_MARKET_INDICES: MarketIndexDef[] = [
-  { id: "SSEC", symbol: "000001.SH", assetType: "cn", nameKey: "indexSsec" },
-  { id: "SZI", symbol: "399001.SZ", assetType: "cn", nameKey: "indexSzi" },
+  {
+    id: "SSEC",
+    symbol: "000001.SH",
+    assetType: "cn",
+    nameKey: "indexSsec",
+    shortNameKey: "indexSsecShort",
+  },
+  {
+    id: "SZI",
+    symbol: "399001.SZ",
+    assetType: "cn",
+    nameKey: "indexSzi",
+    shortNameKey: "indexSziShort",
+  },
   {
     id: "CHINEXT",
     symbol: "399006.SZ",
     assetType: "cn",
     nameKey: "indexChinext",
+    shortNameKey: "indexChinextShort",
   },
 ];
 

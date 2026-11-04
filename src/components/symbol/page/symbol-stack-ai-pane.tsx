@@ -79,7 +79,6 @@ export function SymbolStackAiPane({ symbol, assetType }: Props) {
           assetType={assetType}
           layout="page"
           chart={chart}
-          actionsInHeader
         />
         <div className="aw-stack-ai-chat-host flex min-h-0 flex-1 flex-col overflow-hidden">
           <AiChatPanel

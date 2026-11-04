@@ -12,9 +12,9 @@ export function MarketsKpiStrip({
   }[];
 }) {
   return (
-    <section className="qt-panel grid grid-cols-2 divide-y divide-[var(--border)] overflow-hidden sm:grid-cols-4 sm:divide-x sm:divide-y-0">
+    <section className="qt-panel mx-3 grid grid-cols-2 divide-y divide-[var(--border)] overflow-hidden sm:grid-cols-4 sm:divide-x sm:divide-y-0 lg:mx-0">
       {items.map((item) => (
-        <div key={item.key} className="min-w-0 px-4 py-3.5">
+        <div key={item.key} className="min-w-0 px-3 py-2.5 sm:px-4 sm:py-3.5">
           <div className="flex items-center justify-between gap-2 text-[11px] text-[var(--muted)]">
             <span className="truncate">{item.label}</span>
             {item.hintDot ? (

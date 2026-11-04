@@ -6,6 +6,8 @@ export type IndexQuote = {
   id: string;
   symbol: string;
   nameKey: string;
+  /** Compact topbar label key under market.* */
+  shortNameKey?: string;
   assetType: AssetType;
   price: number | null;
   change: number | null;

@@ -30,6 +30,27 @@ export function ChangePct({ value }: { value: number }) {
   );
 }
 
+/** Solid up/down chip — Futu-style watchlist 涨跌幅. */
+export function ChangePctBadge({
+  value,
+  className = "",
+}: {
+  value: number;
+  className?: string;
+}) {
+  const up = value >= 0;
+  return (
+    <span
+      className={`inline-flex min-w-[4.5rem] items-center justify-center px-1.5 py-[5px] text-[12px] font-medium tabular-nums leading-none text-white ${
+        up ? "bg-[var(--up)]" : "bg-[var(--down)]"
+      } ${className}`}
+    >
+      {up ? "+" : ""}
+      {value.toFixed(2)}%
+    </span>
+  );
+}
+
 /** Absolute change amount with sign, follows --up/--down. */
 export function ChangeAbs({ value }: { value: number }) {
   const up = value >= 0;

@@ -27,22 +27,35 @@ function IndexChip({ item }: { item: IndexQuote }) {
   const t = useTranslations("market");
   const pct = item.percentChange;
   const up = pct != null && pct >= 0;
-  let name = item.symbol;
+
+  let fullName = item.symbol;
   if (item.nameKey) {
     try {
-      name = t(item.nameKey as "indexSpx");
+      fullName = t(item.nameKey as "indexSpx");
     } catch {
-      name = item.symbol;
+      fullName = item.symbol;
     }
+  }
+
+  let shortName = item.symbol;
+  if (item.shortNameKey && t.has(item.shortNameKey as "indexSpxShort")) {
+    shortName = t(item.shortNameKey as "indexSpxShort");
+  } else {
+    const cjk = fullName.match(/[\u4e00-\u9fff]/);
+    shortName = cjk?.[0] ?? item.symbol;
   }
 
   return (
     <Link
       href={`/symbol/${item.assetType}/${item.symbol}`}
-      className="flex shrink-0 items-center gap-1.5 rounded-md px-1.5 py-1 transition hover:bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)] sm:gap-2 sm:px-2"
+      className="flex shrink-0 items-center gap-0.5 px-0.5 py-1 transition hover:bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)] sm:gap-1.5 sm:px-1.5"
+      title={fullName}
     >
-      <span className="max-w-[4rem] truncate text-[12px] leading-none tracking-[-0.08px] text-[var(--muted)] sm:max-w-[7rem]">
-        {name}
+      <span className="text-[12px] leading-none tracking-[-0.08px] text-[var(--muted)] sm:hidden">
+        {shortName}
+      </span>
+      <span className="hidden max-w-[7rem] truncate text-[12px] leading-none tracking-[-0.08px] text-[var(--muted)] sm:inline">
+        {fullName}
       </span>
       {item.price != null ? (
         <>
@@ -61,7 +74,7 @@ function IndexChip({ item }: { item: IndexQuote }) {
           </span>
         </>
       ) : (
-        <span className="h-3.5 w-10 animate-pulse rounded bg-[var(--surface-2)] sm:w-14" />
+        <span className="h-3.5 w-8 animate-pulse rounded bg-[var(--surface-2)] sm:w-14" />
       )}
     </Link>
   );
@@ -164,15 +177,10 @@ export function TopbarIndexTicker() {
   return (
     <div
       key={page}
-      className="flex min-w-0 items-center gap-1 overflow-hidden animate-[qtFade_0.35s_ease] sm:gap-1.5"
+      className="flex min-w-0 items-center gap-0.5 overflow-hidden animate-[qtFade_0.35s_ease] sm:gap-1"
     >
-      {slots.map((item, i) => (
-        <div
-          key={item.id}
-          className={
-            i === 0 ? "min-w-0 shrink" : "hidden min-w-0 shrink md:block"
-          }
-        >
+      {slots.map((item) => (
+        <div key={item.id} className="min-w-0 shrink-0">
           <IndexChip item={item} />
         </div>
       ))}
