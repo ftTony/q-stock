@@ -27,7 +27,7 @@ function toolClass(active = false) {
   }`;
 }
 
-/** Webull-style right cluster: screenshot · settings · fullscreen. */
+/** Right cluster: screenshot · fullscreen · settings. */
 export function CandleChartToolbarActions({
   flags,
   onFlagToggle,
@@ -43,6 +43,11 @@ export function CandleChartToolbarActions({
 
   return (
     <div className="ml-auto flex shrink-0 items-center gap-0.5 pl-1 lg:pl-2">
+      {/* Separate indicator cluster from chrome actions (shot / FS / settings). */}
+      <span
+        className="mx-1 hidden h-3 w-px shrink-0 bg-[var(--border)] lg:mx-1.5 lg:block"
+        aria-hidden
+      />
       {/* H5: only settings (owns type / indicators). Shot + FS clutter the period strip. */}
       <button
         type="button"
@@ -65,19 +70,6 @@ export function CandleChartToolbarActions({
           <circle cx="12" cy="13" r="3" />
         </svg>
       </button>
-
-      <CandleChartSettingsMenu
-        flags={flags}
-        onFlagToggle={onFlagToggle}
-        settings={settings}
-        onSettingsChange={onSettingsChange}
-        resolution={resolution}
-        onClearDrawings={onClearDrawings}
-        fullscreen={fullscreen}
-        onToggleFullscreen={onToggleFullscreen}
-        toolbar
-        iconClassName={ICON_TOOL}
-      />
 
       <button
         type="button"
@@ -114,6 +106,19 @@ export function CandleChartToolbarActions({
           </svg>
         )}
       </button>
+
+      <CandleChartSettingsMenu
+        flags={flags}
+        onFlagToggle={onFlagToggle}
+        settings={settings}
+        onSettingsChange={onSettingsChange}
+        resolution={resolution}
+        onClearDrawings={onClearDrawings}
+        fullscreen={fullscreen}
+        onToggleFullscreen={onToggleFullscreen}
+        toolbar
+        iconClassName={ICON_TOOL}
+      />
     </div>
   );
 }

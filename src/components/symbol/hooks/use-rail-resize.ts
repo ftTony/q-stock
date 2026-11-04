@@ -84,67 +84,82 @@ export function useRailResize() {
     });
   }, []);
 
-  const onResizeStart = useCallback((e: ReactPointerEvent<HTMLElement>) => {
-    e.preventDefault();
-    const startX = e.clientX;
-    const startW = widthRef.current;
-    setDragging(true);
-
-    const target = e.currentTarget;
-    target.setPointerCapture(e.pointerId);
-
-    const prevCursor = document.body.style.cursor;
-    const prevUserSelect = document.body.style.userSelect;
-    document.body.style.cursor = "ew-resize";
-    document.body.style.userSelect = "none";
-    document.documentElement.classList.add("aw-rail-resizing");
-
-    const cleanupCursor = () => {
-      document.body.style.cursor = prevCursor;
-      document.body.style.userSelect = prevUserSelect;
-      document.documentElement.classList.remove("aw-rail-resizing");
-    };
-
-    const onMove = (ev: PointerEvent) => {
-      // Drag handle left of rail: move left → wider rail
-      setWidth(clamp(startW + (startX - ev.clientX)));
-    };
-    const onUp = (ev: PointerEvent) => {
-      const next = clamp(startW + (startX - ev.clientX));
-      setWidth(next);
-      try {
-        localStorage.setItem(WIDTH_KEY, String(next));
-      } catch {
-        /* ignore */
-      }
-      setDragging(false);
-      cleanupCursor();
-      try {
-        target.releasePointerCapture(ev.pointerId);
-      } catch {
-        /* already released */
-      }
-      window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerup", onUp);
-      window.removeEventListener("pointercancel", onUp);
-    };
-
-    window.addEventListener("pointermove", onMove);
-    window.addEventListener("pointerup", onUp);
-    window.addEventListener("pointercancel", onUp);
+  const applyWidth = useCallback((next: number) => {
+    const value = clamp(next);
+    setWidth(value);
+    try {
+      localStorage.setItem(WIDTH_KEY, String(value));
+    } catch {
+      /* ignore */
+    }
+    return value;
   }, []);
 
-  const nudgeWidth = useCallback((delta: number) => {
-    setWidth((prev) => {
-      const next = clamp(prev + delta);
-      try {
-        localStorage.setItem(WIDTH_KEY, String(next));
-      } catch {
-        /* ignore */
-      }
-      return next;
-    });
-  }, []);
+  const onResizeStart = useCallback(
+    (e: ReactPointerEvent<HTMLElement>) => {
+      e.preventDefault();
+      const startX = e.clientX;
+      const startW = widthRef.current;
+      setDragging(true);
 
-  return { width, open, setOpen, dragging, onResizeStart, nudgeWidth };
+      const target = e.currentTarget;
+      target.setPointerCapture(e.pointerId);
+
+      const prevCursor = document.body.style.cursor;
+      const prevUserSelect = document.body.style.userSelect;
+      document.body.style.cursor = "ew-resize";
+      document.body.style.userSelect = "none";
+      document.documentElement.classList.add("aw-rail-resizing");
+
+      const cleanupCursor = () => {
+        document.body.style.cursor = prevCursor;
+        document.body.style.userSelect = prevUserSelect;
+        document.documentElement.classList.remove("aw-rail-resizing");
+      };
+
+      const onMove = (ev: PointerEvent) => {
+        // Drag handle left of rail: move left → wider rail
+        setWidth(clamp(startW + (startX - ev.clientX)));
+      };
+      const onUp = (ev: PointerEvent) => {
+        applyWidth(startW + (startX - ev.clientX));
+        setDragging(false);
+        cleanupCursor();
+        try {
+          target.releasePointerCapture(ev.pointerId);
+        } catch {
+          /* already released */
+        }
+        window.removeEventListener("pointermove", onMove);
+        window.removeEventListener("pointerup", onUp);
+        window.removeEventListener("pointercancel", onUp);
+      };
+
+      window.addEventListener("pointermove", onMove);
+      window.addEventListener("pointerup", onUp);
+      window.addEventListener("pointercancel", onUp);
+    },
+    [applyWidth],
+  );
+
+  const nudgeWidth = useCallback(
+    (delta: number) => {
+      applyWidth(widthRef.current + delta);
+    },
+    [applyWidth],
+  );
+
+  const resetWidth = useCallback(() => {
+    applyWidth(RAIL_DEFAULT);
+  }, [applyWidth]);
+
+  return {
+    width,
+    open,
+    setOpen,
+    dragging,
+    onResizeStart,
+    nudgeWidth,
+    resetWidth,
+  };
 }

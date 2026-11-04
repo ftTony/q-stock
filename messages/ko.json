@@ -2042,5 +2042,29 @@
     "syncHint": "Time ranges are not synced yet — compare structure visually; shared resolution only.",
     "back": "Back",
     "syncHintShort": "Ranges not synced · shared period only"
+  },
+  "symbolLayout": {
+    "open": "레이아웃",
+    "title": "레이아웃 설정",
+    "close": "닫기",
+    "tradingPanel": "워크벤치 레이아웃",
+    "presetSide": "좌우 배치",
+    "presetStack": "상하 배치",
+    "moduleWatchlist": "관심종목",
+    "moduleRail": "계획 패널",
+    "moduleChart": "차트",
+    "moduleNewsDock": "복기",
+    "reset": "레이아웃 초기화",
+    "chartHidden": "차트가 숨겨져 있습니다",
+    "chartHiddenAction": "차트 표시",
+    "tabNews": "뉴스",
+    "tabPress": "공시",
+    "tabTrade": "거래",
+    "tabAi": "AI",
+    "tabComments": "댓글",
+    "tabDerivatives": "파생상품",
+    "tabEarnings": "실적",
+    "tabProfile": "기업 정보",
+    "resizeBottom": "하단 패널 높이 조절"
   }
 }

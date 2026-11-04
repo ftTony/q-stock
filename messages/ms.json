@@ -2042,5 +2042,29 @@
     "syncHint": "Time ranges are not synced yet — compare structure visually; shared resolution only.",
     "back": "Back",
     "syncHintShort": "Ranges not synced · shared period only"
+  },
+  "symbolLayout": {
+    "open": "Susun atur",
+    "title": "Tetapan susun atur",
+    "close": "Tutup",
+    "tradingPanel": "Susun atur meja kerja",
+    "presetSide": "Sebelah menyebelah",
+    "presetStack": "Atas / bawah",
+    "moduleWatchlist": "Senarai pantau",
+    "moduleRail": "Panel pelan",
+    "moduleChart": "Carta",
+    "moduleNewsDock": "Ulas semula",
+    "reset": "Set semula susun atur",
+    "chartHidden": "Carta disembunyikan",
+    "chartHiddenAction": "Tunjuk carta",
+    "tabNews": "Berita",
+    "tabPress": "Pengumuman",
+    "tabTrade": "Dagangan",
+    "tabAi": "AI",
+    "tabComments": "Komen",
+    "tabDerivatives": "Derivatif",
+    "tabEarnings": "Pendapatan",
+    "tabProfile": "Syarikat",
+    "resizeBottom": "Ubah saiz panel bawah"
   }
 }

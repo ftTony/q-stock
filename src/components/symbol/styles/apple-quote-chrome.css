@@ -112,6 +112,15 @@
   }
 }
 
+/* Desktop stack layout: chart fills space above the bottom panel. */
+@media (min-width: 1024px) {
+  .aw-workbench-grid .aw-tab-chart--pinned {
+    height: auto;
+    flex: 1 1 0;
+    min-height: 0;
+  }
+}
+
 .aw-tab-chart .aw-surface-flush {
   border: none;
   border-radius: 0;

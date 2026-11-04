@@ -2042,5 +2042,29 @@
     "syncHint": "Time ranges are not synced yet — compare structure visually; shared resolution only.",
     "back": "Back",
     "syncHintShort": "Ranges not synced · shared period only"
+  },
+  "symbolLayout": {
+    "open": "เลย์เอาต์",
+    "title": "ตั้งค่าเลย์เอาต์",
+    "close": "ปิด",
+    "tradingPanel": "เลย์เอาต์โต๊ะทำงาน",
+    "presetSide": "ซ้าย-ขวา",
+    "presetStack": "บน-ล่าง",
+    "moduleWatchlist": "รายการติดตาม",
+    "moduleRail": "แผงแผน",
+    "moduleChart": "กราฟ",
+    "moduleNewsDock": "ทบทวน",
+    "reset": "รีเซ็ตเลย์เอาต์",
+    "chartHidden": "กราฟถูกซ่อน",
+    "chartHiddenAction": "แสดงกราฟ",
+    "tabNews": "ข่าว",
+    "tabPress": "ประกาศ",
+    "tabTrade": "ซื้อขาย",
+    "tabAi": "AI",
+    "tabComments": "ความคิดเห็น",
+    "tabDerivatives": "อนุพันธ์",
+    "tabEarnings": "งบการเงิน",
+    "tabProfile": "ข้อมูลบริษัท",
+    "resizeBottom": "ปรับความสูงแผงล่าง"
   }
 }

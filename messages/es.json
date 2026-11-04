@@ -2042,5 +2042,29 @@
     "syncHint": "Time ranges are not synced yet — compare structure visually; shared resolution only.",
     "back": "Back",
     "syncHintShort": "Ranges not synced · shared period only"
+  },
+  "symbolLayout": {
+    "open": "Diseño",
+    "title": "Ajustes de diseño",
+    "close": "Cerrar",
+    "tradingPanel": "Diseño del escritorio",
+    "presetSide": "Lado a lado",
+    "presetStack": "Arriba / abajo",
+    "moduleWatchlist": "Lista de seguimiento",
+    "moduleRail": "Panel de plan",
+    "moduleChart": "Gráfico",
+    "moduleNewsDock": "Repaso",
+    "reset": "Restablecer diseño",
+    "chartHidden": "El gráfico está oculto",
+    "chartHiddenAction": "Mostrar gráfico",
+    "tabNews": "Noticias",
+    "tabPress": "Comunicados",
+    "tabTrade": "Operar",
+    "tabAi": "AI",
+    "tabComments": "Comentarios",
+    "tabDerivatives": "Derivados",
+    "tabEarnings": "Resultados",
+    "tabProfile": "Empresa",
+    "resizeBottom": "Redimensionar panel inferior"
   }
 }

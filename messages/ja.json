@@ -2042,5 +2042,29 @@
     "syncHint": "Time ranges are not synced yet — compare structure visually; shared resolution only.",
     "back": "Back",
     "syncHintShort": "Ranges not synced · shared period only"
+  },
+  "symbolLayout": {
+    "open": "レイアウト",
+    "title": "レイアウト設定",
+    "close": "閉じる",
+    "tradingPanel": "ワークベンチ配置",
+    "presetSide": "左右分割",
+    "presetStack": "上下分割",
+    "moduleWatchlist": "ウォッチリスト",
+    "moduleRail": "計画パネル",
+    "moduleChart": "チャート",
+    "moduleNewsDock": "振り返り",
+    "reset": "レイアウトをリセット",
+    "chartHidden": "チャートは非表示です",
+    "chartHiddenAction": "チャートを表示",
+    "tabNews": "ニュース",
+    "tabPress": "開示",
+    "tabTrade": "取引",
+    "tabAi": "AI",
+    "tabComments": "コメント",
+    "tabDerivatives": "デリバティブ",
+    "tabEarnings": "決算",
+    "tabProfile": "企業情報",
+    "resizeBottom": "下部パネルの高さ調整"
   }
 }

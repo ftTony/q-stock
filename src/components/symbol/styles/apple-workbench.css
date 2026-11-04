@@ -215,11 +215,12 @@ html.aw-rail-resizing {
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr) minmax(0, 0.85fr);
 }
 
+/* Match QuoteBar height so cols bottom hairline aligns with chart chrome. */
 .aw-watchlist-cols {
   box-sizing: border-box;
-  height: 36px;
-  min-height: 36px;
-  max-height: 36px;
+  height: var(--wb-topbar-h, 40px);
+  min-height: var(--wb-topbar-h, 40px);
+  max-height: var(--wb-topbar-h, 40px);
   font-size: 12px;
   font-weight: 400;
   line-height: 1;
@@ -326,16 +327,15 @@ html.aw-rail-resizing {
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 50%;
+    /* Integer inset — avoid transform centering blur that reads as 2px */
+    left: 4px;
     width: 1px;
-    transform: translateX(-50%);
     background: var(--aw-hairline);
-    transition: background 0.12s ease, width 0.12s ease;
+    transition: background 0.12s ease;
   }
   .aw-watchlist-resizer:hover::after,
   .aw-watchlist-resizer:focus-visible::after,
   .aw-watchlist-resizer[data-dragging="true"]::after {
-    width: 2px;
     background: var(--aw-primary);
   }
 
@@ -374,6 +374,47 @@ html.aw-rail-resizing {
     background: var(--aw-canvas);
   }
 
+  /* Stack layout: chart above, resizable bottom tab panel. */
+  .aw-stack-bottom-resizer {
+    display: none;
+  }
+  button.aw-stack-bottom-resizer:not(:disabled) {
+    display: block;
+    flex: 0 0 8px;
+    width: 100%;
+    height: 8px;
+    margin-top: -4px;
+    margin-bottom: -4px;
+    position: relative;
+    z-index: 20;
+    cursor: ns-resize;
+    touch-action: none;
+    background: transparent;
+    border: none;
+    padding: 0;
+  }
+  /* Sole hairline between chart and stack panel (no panel border-t). */
+  button.aw-stack-bottom-resizer:not(:disabled)::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 4px;
+    height: 1px;
+    background: var(--aw-hairline);
+    transition: background 0.12s ease;
+    pointer-events: none;
+  }
+  button.aw-stack-bottom-resizer:not(:disabled):hover::after,
+  button.aw-stack-bottom-resizer:not(:disabled):focus-visible::after,
+  button.aw-stack-bottom-resizer:not(:disabled)[data-dragging="true"]::after {
+    background: var(--aw-primary);
+  }
+  .aw-stack-bottom[data-resizing="true"] {
+    user-select: none;
+    cursor: ns-resize;
+  }
+
   /*
    * Same hit model as watchlist resizer: 8px strip + ::after hairline.
    * Selector must beat globals `button:not(:disabled) { cursor: pointer }`.
@@ -401,13 +442,10 @@ html.aw-rail-resizing {
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 50%;
+    left: 4px;
     width: 1px;
-    transform: translateX(-50%);
     background: var(--aw-hairline);
-    transition:
-      background 0.12s ease,
-      width 0.12s ease;
+    transition: background 0.12s ease;
     pointer-events: none;
   }
   button.aw-workbench-resizer:not(:disabled):hover::after,
@@ -415,7 +453,6 @@ html.aw-rail-resizing {
   button.aw-workbench-resizer:not(:disabled)[data-dragging="true"]::after,
   .aw-workbench-grid[data-resizing="true"]
     button.aw-workbench-resizer:not(:disabled)::after {
-    width: 2px;
     background: var(--aw-primary);
   }
   .aw-workbench-rail {
@@ -906,7 +943,17 @@ html.aw-rail-resizing {
   padding: 10px 20px 16px;
 }
 
-/* Futu-style feed row: generous inset so hover fill breathes around title/meta. */
+/* Dock news/press — mobile keeps original roomy rows; denser type only ≥1024 */
+.aw-dock-feed-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aw-dock-feed-list > li + li {
+  border-top: none;
+}
+
 .aw-dock-feed-item {
   display: block;
   margin-inline: -12px;
@@ -918,7 +965,80 @@ html.aw-rail-resizing {
 }
 
 .aw-dock-feed-item:hover {
-  background: color-mix(in srgb, var(--aw-parchment, var(--surface-2)) 88%, transparent);
+  background: color-mix(
+    in srgb,
+    var(--aw-parchment, var(--surface-2)) 88%,
+    transparent
+  );
+}
+
+.aw-dock-feed-title {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: -0.2px;
+  color: var(--aw-ink, var(--foreground));
+}
+
+.aw-dock-feed-summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -0.12px;
+  color: var(--aw-ink-muted-48, var(--muted));
+}
+
+.aw-dock-feed-meta {
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.12px;
+  color: var(--aw-ink-muted-48, var(--muted));
+}
+
+@media (min-width: 1024px) {
+  .aw-dock-feed-list > li + li {
+    border-top: 1px solid var(--aw-hairline, var(--border));
+  }
+
+  .aw-dock-feed-item {
+    margin-inline: -4px;
+    padding: 10px 4px;
+    border-radius: 0;
+  }
+
+  .aw-dock-feed-item:hover {
+    background: color-mix(
+      in srgb,
+      var(--aw-parchment, var(--surface-2)) 70%,
+      transparent
+    );
+  }
+
+  .aw-dock-feed-title {
+    font-size: 12px;
+    line-height: 1.4;
+    letter-spacing: -0.12px;
+  }
+
+  .aw-dock-feed-summary {
+    font-size: 11px;
+    letter-spacing: -0.08px;
+    color: var(--aw-ink-muted-80, var(--muted));
+  }
+
+  .aw-dock-feed-meta {
+    margin-top: 6px;
+    font-size: 11px;
+    letter-spacing: -0.06px;
+  }
 }
 
 .aw-chip,
@@ -1066,3 +1186,260 @@ html.aw-rail-resizing {
 .aw .oc-strike-col {
   overflow: visible;
 }
+
+/* ── Desktop (≥1024) stack bottom only — never apply on mobile ── */
+@media (min-width: 1024px) {
+.aw-stack-bottom .aw-stack-tablist {
+  /* Outer keeps the shared hairline; scroll lives inside so underline isn't clipped. */
+  position: relative;
+}
+
+.aw-stack-bottom .aw-stack-tab {
+  height: 100%;
+  min-height: 36px;
+  font-size: 12px;
+  padding: 0 12px;
+}
+
+/*
+ * Underline sits inside the tab (bottom: 0), covering the tablist hairline
+ * under the active label — never above the text, never clipped by overflow-x.
+ */
+.aw-stack-bottom .aw-stack-tab[data-active="true"]::after {
+  left: 12px;
+  right: 12px;
+  bottom: 0;
+  height: 2px;
+  z-index: 1;
+}
+
+.aw-stack-bottom .aw-trade-side {
+  height: 32px;
+}
+
+.aw-stack-bottom .aw-trade-panel[data-density="stack"] .aw-metric-label {
+  margin-bottom: 4px;
+}
+
+/* Compact submit — stack ticket only; dock / mobile keep h-9 */
+.aw-stack-bottom .aw-trade-stack-submit {
+  height: 32px !important;
+  min-height: 32px !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  font-size: 12px !important;
+  line-height: 1 !important;
+  border-radius: 0 !important;
+}
+
+/* Stack trade: ticket | calm — only under .aw-stack-bottom */
+.aw-stack-bottom .aw-trade-stack-split {
+  min-height: 0;
+}
+
+.aw-stack-bottom .aw-trade-stack-divider {
+  width: 1px;
+  background: var(--aw-hairline, var(--border));
+}
+
+.aw-stack-bottom .aw-trade-stack-ticket,
+.aw-stack-bottom .aw-trade-stack-side {
+  min-width: 0;
+  flex: 1 1 50%;
+}
+
+/* Match tab text inset (10px); left/right columns share the same pad. */
+.aw-stack-bottom .aw-trade-stack-pad {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
+.aw-stack-bottom .aw-dock-comments[data-density="stack"] .aw-dock-comments-empty svg {
+  height: 2.75rem;
+}
+
+/* Stack news/press feed: hairline rows, clearer type scale + spacing */
+.aw-stack-feed-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aw-stack-feed-list > li + li {
+  border-top: 1px solid var(--aw-hairline, var(--border));
+}
+
+/* Stack feed reuses dock type scale; keep pad aligned with stack chrome */
+.aw-stack-feed-item {
+  display: block;
+  padding: 10px 4px;
+  color: inherit;
+  text-decoration: none;
+  transition: background 0.12s ease;
+}
+
+.aw-stack-feed-item:hover {
+  background: color-mix(
+    in srgb,
+    var(--aw-parchment, var(--surface-2)) 70%,
+    transparent
+  );
+}
+
+.aw-stack-feed-title {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.4;
+  letter-spacing: -0.12px;
+  color: var(--aw-ink, var(--foreground));
+}
+
+.aw-stack-feed-summary {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  margin: 4px 0 0;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.45;
+  letter-spacing: -0.08px;
+  color: var(--aw-ink-muted-80, var(--muted));
+}
+
+.aw-stack-feed-meta {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.3;
+  letter-spacing: -0.06px;
+  color: var(--aw-ink-muted-48, var(--muted));
+}
+
+/* Stack company profile / officers — same hairline rhythm as news */
+.aw-stack-company-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 4px 12px;
+  border-bottom: 1px solid var(--aw-hairline, var(--border));
+}
+
+.aw-stack-company-logo {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  object-fit: contain;
+  border-radius: 0;
+}
+
+.aw-stack-company-name {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.16px;
+  color: var(--aw-ink, var(--foreground));
+}
+
+.aw-stack-company-aka {
+  margin-top: 2px;
+  font-size: 12px;
+  line-height: 1.35;
+  color: var(--aw-ink-muted-48, var(--muted));
+}
+
+.aw-stack-company-brief {
+  margin: 0;
+  padding: 12px 4px;
+  border-bottom: 1px solid var(--aw-hairline, var(--border));
+  font-size: 12px;
+  line-height: 1.55;
+  letter-spacing: -0.08px;
+  color: var(--aw-ink-muted-80, var(--muted));
+}
+
+.aw-stack-company-site {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--aw-hairline, var(--border));
+  font-size: 12px;
+  color: var(--aw-ink-muted-48, var(--muted));
+}
+
+.aw-stack-company-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.aw-stack-company-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  min-height: 40px;
+  padding: 11px 4px;
+  border-bottom: 1px solid var(--aw-hairline, var(--border));
+}
+
+.aw-stack-company-row:last-child,
+.aw-stack-company-officer:last-child {
+  border-bottom: none;
+}
+
+.aw-stack-company-row dt {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-weight: 400;
+  letter-spacing: -0.06px;
+  color: var(--aw-ink-muted-48, var(--muted));
+}
+
+.aw-stack-company-row dd {
+  margin: 0;
+  min-width: 0;
+  text-align: right;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: -0.08px;
+  font-variant-numeric: tabular-nums;
+  color: var(--aw-ink, var(--foreground));
+}
+
+.aw-stack-company-section {
+  margin: 0 0 4px;
+  padding: 2px 4px 8px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: -0.08px;
+  color: var(--aw-ink-muted-48, var(--muted));
+  border-bottom: 1px solid var(--aw-hairline, var(--border));
+}
+
+.aw-stack-company-officer {
+  padding: 12px 4px 13px;
+  border-bottom: 1px solid var(--aw-hairline, var(--border));
+}
+
+.aw-stack-company-officer .aw-stack-feed-meta {
+  margin-top: 4px;
+}
+
+.aw-stack-company-officer .aw-stack-feed-summary {
+  margin-top: 6px;
+  -webkit-line-clamp: 3;
+}
+
+.aw-stack-company-role {
+  margin-top: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: -0.08px;
+  color: var(--aw-primary, var(--brand-text));
+}
+} /* end ≥1024 stack bottom */

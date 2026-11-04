@@ -2102,5 +2102,29 @@
     "syncHint": "Time ranges are not synced yet — compare structure visually; shared resolution only.",
     "back": "Back",
     "syncHintShort": "Ranges not synced · shared period only"
+  },
+  "symbolLayout": {
+    "open": "Layout",
+    "title": "Layout settings",
+    "close": "Close",
+    "tradingPanel": "Workbench layout",
+    "presetSide": "Side-by-side",
+    "presetStack": "Top / bottom",
+    "moduleWatchlist": "Watchlist",
+    "moduleRail": "Plan rail",
+    "moduleChart": "Chart",
+    "moduleNewsDock": "Review",
+    "reset": "Reset layout",
+    "chartHidden": "Chart is hidden",
+    "chartHiddenAction": "Show chart",
+    "tabNews": "News",
+    "tabPress": "Press",
+    "tabTrade": "Trade",
+    "tabAi": "AI",
+    "tabComments": "Comments",
+    "tabDerivatives": "Derivatives",
+    "tabEarnings": "Earnings",
+    "tabProfile": "Company",
+    "resizeBottom": "Resize bottom panel"
   }
 }

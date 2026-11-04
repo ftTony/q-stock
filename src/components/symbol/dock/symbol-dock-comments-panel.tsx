@@ -23,6 +23,8 @@ type Props = {
   commentsDelete: string;
   tabLoading: boolean;
   loadingLabel: string;
+  /** Stack bottom: top-align empty; tighter chrome. Dock/mobile keep default. */
+  density?: "default" | "stack";
 };
 
 function EmptyCommentsArt() {
@@ -96,8 +98,10 @@ export function SymbolDockCommentsPanel({
   commentsDelete,
   tabLoading,
   loadingLabel,
+  density = "default",
 }: Props) {
   const t = useTranslations("comments");
+  const stack = density === "stack";
 
   if (!canComment) {
     return (
@@ -113,12 +117,21 @@ export function SymbolDockCommentsPanel({
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
-      <div className="aw-dock-scroll flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain px-5 py-3">
+    <div
+      className="aw-dock-comments flex min-h-0 flex-1 flex-col"
+      data-density={density}
+    >
+      <div
+        className={`aw-dock-scroll flex min-h-0 flex-1 flex-col overflow-y-auto overscroll-contain ${
+          stack ? "px-3 py-2" : "px-5 py-3"
+        }`}
+      >
         {tabLoading ? (
           <ListPanelSkeleton rows={5} label={loadingLabel} />
         ) : comments.length === 0 ? (
-          <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 px-2 py-8 text-center">
+          <div
+            className="aw-dock-comments-empty flex min-h-0 flex-1 flex-col items-center justify-center gap-2.5 px-2 py-8 text-center"
+          >
             <EmptyCommentsArt />
             <p className="text-[12px] tracking-[-0.08px] text-[var(--muted)]">
               {commentsEmpty}
@@ -153,7 +166,11 @@ export function SymbolDockCommentsPanel({
         )}
       </div>
 
-      <div className="shrink-0 border-t border-[var(--aw-hairline,var(--border))] px-5 py-3">
+      <div
+        className={`shrink-0 border-t border-[var(--aw-hairline,var(--border))] ${
+          stack ? "px-3 py-2" : "px-5 py-3"
+        }`}
+      >
         <form onSubmit={onPostComment} className="flex items-center gap-2">
           <input
             value={commentText}

@@ -378,3 +378,109 @@
   white-space: pre-wrap;
   border: none;
 }
+
+/* ── Desktop stack bottom AI only (mobile / drawer desk unchanged) ── */
+@media (min-width: 1024px) {
+  .aw-stack-bottom .aw-stack-ai-pad {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  .aw-stack-bottom .aw-stack-ai.aw-ai-desk .aw-ai-section.aw-ai-chart {
+    padding: 8px 10px;
+  }
+
+  .aw-stack-bottom .aw-stack-ai.aw-ai-desk .aw-ai-desk-body {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-stack-ai-chat-host {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  .aw-stack-bottom .aw-stack-ai.aw-ai-desk .aw-ai-section.aw-ai-chat {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+    width: 100%;
+    padding: 0 10px 8px;
+    gap: 0;
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-ai-thread {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 4px 0 8px !important;
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-ai-composer,
+  .aw-stack-bottom .aw-stack-ai .aw-ai-legal {
+    flex-shrink: 0;
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-ai-thread-empty {
+    justify-content: center;
+    min-height: 0;
+    height: 100%;
+    padding: 8px 0;
+    gap: 8px;
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-ai-thread-empty-title {
+    font-size: 13px;
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-ai-thread-empty-hint {
+    font-size: 12px;
+    max-width: 22rem;
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-ai-composer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    padding: 8px 0 0;
+    border-top: 1px solid var(--aw-hairline, var(--border));
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-ai-input {
+    height: 36px;
+    font-size: 13px;
+    padding: 0 12px;
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-ai-send {
+    height: 36px;
+    min-height: 36px;
+    min-width: 64px;
+    padding: 0 14px;
+    font-size: 13px;
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-ai-history-link {
+    height: 36px;
+    padding: 0;
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-ai-legal {
+    margin: 0;
+    padding: 6px 0 0;
+    font-size: 11px;
+    line-height: 1.35;
+  }
+
+  .aw-stack-bottom .aw-stack-ai .aw-ai-pearl-btn.qt-btn,
+  .aw-stack-bottom .aw-stack-ai button.aw-ai-pearl-btn {
+    height: 28px;
+    min-height: 28px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+}

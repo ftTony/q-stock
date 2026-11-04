@@ -73,6 +73,7 @@ export default async function SymbolPage({ params }: Props) {
           "settings",
           "symbol",
           "symbolEmotion",
+          "symbolLayout",
           "symbolRail",
           "symbolShare",
           "strategies",

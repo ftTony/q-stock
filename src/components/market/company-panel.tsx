@@ -1,7 +1,16 @@
 import { useTranslations } from "next-intl";
 import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
 
-export function CompanyProfilePanel({ profile }: { profile: CompanyProfile | null }) {
+type Density = "default" | "stack";
+
+export function CompanyProfilePanel({
+  profile,
+  density = "default",
+}: {
+  profile: CompanyProfile | null;
+  /** Stack bottom: single-column hairline rows (dock / mobile keep default). */
+  density?: Density;
+}) {
   const t = useTranslations("company");
   if (!profile) {
     return <p className="aw-caption">{t("na")}</p>;
@@ -20,6 +29,60 @@ export function CompanyProfilePanel({ profile }: { profile: CompanyProfile | nul
       [t("secretary"), profile.secretary],
     ] as [string, string | undefined][]
   ).filter((row): row is [string, string] => row[1] != null && row[1] !== "");
+
+  const stack = density === "stack";
+
+  if (stack) {
+    return (
+      <div className="aw-stack-company">
+        <div className="aw-stack-company-head">
+          {profile.logo ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={profile.logo}
+              alt={profile.name || ""}
+              className="aw-stack-company-logo"
+            />
+          ) : null}
+          <div className="min-w-0">
+            <div className="aw-stack-company-name">{profile.name}</div>
+            {profile.companyName ? (
+              <div className="aw-stack-company-aka">{profile.companyName}</div>
+            ) : null}
+          </div>
+        </div>
+
+        {profile.brief ? (
+          <p className="aw-stack-company-brief">{profile.brief}</p>
+        ) : null}
+
+        {profile.website ? (
+          <div className="aw-stack-company-site">
+            <span>{t("website")}</span>
+            <a
+              href={profile.website}
+              target="_blank"
+              rel="noreferrer"
+              className="aw-text-link"
+            >
+              {profile.website.replace(/^https?:\/\//, "")}
+            </a>
+          </div>
+        ) : null}
+
+        {rows.length > 0 ? (
+          <dl className="aw-stack-company-list">
+            {rows.map(([label, value]) => (
+              <div key={label} className="aw-stack-company-row">
+                <dt>{label}</dt>
+                <dd>{value}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -86,26 +149,63 @@ export function CompanyProfilePanel({ profile }: { profile: CompanyProfile | nul
 export function OfficersPanel({
   officers,
   title,
+  density = "default",
 }: {
   officers: CompanyOfficer[];
   title?: string;
+  density?: Density;
 }) {
   const t = useTranslations("company");
   if (officers.length === 0) {
     return <p className="aw-caption">{t("noOfficers")}</p>;
   }
 
+  const stack = density === "stack";
+
   return (
-    <section>
+    <section className={stack ? "aw-stack-company" : undefined}>
       {title ? (
-        <h3 className="mb-3 text-[12px] font-semibold tracking-[-0.08px] text-[var(--muted)]">
+        <h3
+          className={
+            stack
+              ? "aw-stack-company-section"
+              : "mb-3 text-[12px] font-semibold tracking-[-0.08px] text-[var(--muted)]"
+          }
+        >
           {title}
         </h3>
       ) : null}
-      <ul className="grid grid-cols-1 gap-x-8 sm:grid-cols-2">
+      <ul
+        className={
+          stack
+            ? "aw-stack-company-list"
+            : "grid grid-cols-1 gap-x-8 sm:grid-cols-2"
+        }
+      >
         {officers.map((o, i) => {
           const secondary =
             o.nameEn && o.nameEn !== o.name ? o.nameEn : undefined;
+          if (stack) {
+            return (
+              <li key={i} className="aw-stack-company-officer">
+                <div className="aw-stack-feed-title">{o.name}</div>
+                {secondary ? (
+                  <div className="aw-stack-feed-meta">{secondary}</div>
+                ) : null}
+                {o.title ? (
+                  <div className="aw-stack-company-role">{o.title}</div>
+                ) : null}
+                {o.age != null ? (
+                  <div className="aw-stack-feed-meta">
+                    {t("age")}: {o.age}
+                  </div>
+                ) : null}
+                {o.bio ? (
+                  <p className="aw-stack-feed-summary">{o.bio}</p>
+                ) : null}
+              </li>
+            );
+          }
           return (
             <li
               key={i}

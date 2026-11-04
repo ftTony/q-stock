@@ -23,6 +23,7 @@ import { TradeAiLinks } from "@/components/trading/trade-ai-links";
 import { TradeCalmFields } from "@/components/trading/trade-calm-fields";
 import { TradeOpenOrders } from "@/components/trading/trade-open-orders";
 import { TradeOrderFields } from "@/components/trading/trade-order-fields";
+import { TradePanelStackLayout } from "@/components/trading/trade-panel-stack";
 import { TradeSubmitResult } from "@/components/trading/trade-submit-result";
 import { TradeTicketHeader } from "@/components/trading/trade-ticket-header";
 import type { AssetType } from "@/lib/types";
@@ -76,6 +77,8 @@ export function TradePanel({
   strategyId: strategyIdProp,
   strategyName = null,
   onStrategyIdChange,
+  /** Stack bottom: skip duplicate quote chrome; denser field grid. */
+  density = "default",
 }: {
   symbol: string;
   assetType: AssetType;
@@ -93,7 +96,9 @@ export function TradePanel({
   strategyId?: string;
   strategyName?: string | null;
   onStrategyIdChange?: (id: string, name?: string) => void;
+  density?: "default" | "stack";
 }) {
+  const stack = density === "stack";
   const t = useTranslations("trading");
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
@@ -311,15 +316,49 @@ export function TradePanel({
     );
   }
 
+  const submitH = stack ? "h-8 min-h-8" : "h-9";
+  const submitRadius = stack ? "!rounded-none" : "!rounded-[8px]";
+  const submitText = stack ? "!text-[12px]" : "!text-[13px]";
   const submitClass =
     side === "buy"
-      ? "h-9 w-full !rounded-[8px] !border !border-[color-mix(in_srgb,var(--up)_28%,var(--aw-hairline,var(--border)))] !bg-[color-mix(in_srgb,var(--up)_14%,var(--aw-canvas,#fff))] !text-[13px] !font-semibold !text-[var(--up)] hover:!bg-[color-mix(in_srgb,var(--up)_22%,var(--aw-canvas,#fff))] hover:!opacity-100"
-      : "h-9 w-full !rounded-[8px] !border !border-[color-mix(in_srgb,var(--down)_28%,var(--aw-hairline,var(--border)))] !bg-[color-mix(in_srgb,var(--down)_14%,var(--aw-canvas,#fff))] !text-[13px] !font-semibold !text-[var(--down)] hover:!bg-[color-mix(in_srgb,var(--down)_22%,var(--aw-canvas,#fff))] hover:!opacity-100";
+      ? `${submitH} w-full ${submitRadius} !border !border-[color-mix(in_srgb,var(--up)_28%,var(--aw-hairline,var(--border)))] !bg-[color-mix(in_srgb,var(--up)_14%,var(--aw-canvas,#fff))] ${submitText} !font-semibold !text-[var(--up)] hover:!bg-[color-mix(in_srgb,var(--up)_22%,var(--aw-canvas,#fff))] hover:!opacity-100`
+      : `${submitH} w-full ${submitRadius} !border !border-[color-mix(in_srgb,var(--down)_28%,var(--aw-hairline,var(--border)))] !bg-[color-mix(in_srgb,var(--down)_14%,var(--aw-canvas,#fff))] ${submitText} !font-semibold !text-[var(--down)] hover:!bg-[color-mix(in_srgb,var(--down)_22%,var(--aw-canvas,#fff))] hover:!opacity-100`;
+
+  const positionLine =
+    position && position.qty > 0 ? (
+      <p className="text-[12px] tabular-nums text-[var(--muted)]">
+        {t("position")}: {position.qty}
+        {position.avgCost != null
+          ? ` · ${t("avgCost")} $${fmtMoney(position.avgCost)}`
+          : ""}
+      </p>
+    ) : null;
+
+  const resultBanner = submitResult ? (
+    <TradeSubmitResult
+      kind={submitResult}
+      onDismiss={() => setSubmitResult(null)}
+    />
+  ) : null;
+
+  const draftBanner = aiDraft ? (
+    <div className="flex items-center justify-between gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-2 text-[12px] text-[var(--brand-text)]">
+      <span>{t("aiDraftBanner")}</span>
+      <button
+        type="button"
+        className="underline"
+        onClick={() => onDismissAiDraft?.()}
+      >
+        {t("aiDraftUndo")}
+      </button>
+    </div>
+  ) : null;
 
   return (
     <form
       onSubmit={onSubmit}
-      className="flex min-h-0 flex-1 flex-col"
+      className="aw-trade-panel flex min-h-0 flex-1 flex-col"
+      data-density={density}
     >
       <TopToast
         key={msgKey}
@@ -327,109 +366,125 @@ export function TradePanel({
         tone={msgTone}
         onDismiss={() => setMsg(null)}
       />
-      <TradeTicketHeader
-        symbol={symbol}
-        assetType={assetType}
-        name={quoteName}
-        lastPrice={lastPrice}
-        percentChange={percentChange}
-      />
-      <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2.5">
-        <div className="space-y-2.5">
-          {loading ? <p className="aw-caption">{t("loading")}</p> : null}
-
-          {submitResult ? (
-            <TradeSubmitResult
-              kind={submitResult}
-              onDismiss={() => setSubmitResult(null)}
-            />
-          ) : null}
-
-          {position && position.qty > 0 ? (
-            <p className="text-[12px] tabular-nums text-[var(--muted)]">
-              {t("position")}: {position.qty}
-              {position.avgCost != null
-                ? ` · ${t("avgCost")} $${fmtMoney(position.avgCost)}`
-                : ""}
-            </p>
-          ) : null}
-
-          <TradeOrderFields
-            side={side}
-            onSide={setSide}
-            orderType={orderType}
-            onOrderType={setOrderType}
-            qty={qty}
-            onQty={setQty}
-            limitPrice={limitPrice}
-            onLimitPrice={setLimitPrice}
-            stopPrice={stopPrice}
-            onStopPrice={setStopPrice}
-            bid={bid}
-            ask={ask}
-            lastPrice={lastPrice}
-          />
-
-          {aiDraft ? (
-            <div className="flex items-center justify-between gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-2 text-[12px] text-[var(--brand-text)]">
-              <span>{t("aiDraftBanner")}</span>
-              <button
-                type="button"
-                className="underline"
-                onClick={() => onDismissAiDraft?.()}
-              >
-                {t("aiDraftUndo")}
-              </button>
-            </div>
-          ) : null}
-
-          <TradeCalmFields
-            invalidationPrice={invalidationPrice}
-            onInvalidationPrice={setInvalidationPrice}
-            strategies={strategies}
-            strategyId={strategyId}
-            strategyName={strategyName}
-            onStrategyId={setStrategyId}
-            onOpenPlan={onOpenPlan}
-            equity={account?.cashBalance ?? null}
-            qty={qtyNum}
-            entry={estimatePrice}
-            stop={
-              orderType === "stop"
-                ? Number(stopPrice) || null
-                : Number(invalidationPrice) || null
-            }
+      {stack ? (
+        <TradePanelStackLayout
+          loading={loading}
+          positionLine={positionLine}
+          resultBanner={resultBanner}
+          draftBanner={draftBanner}
+          side={side}
+          onSide={setSide}
+          orderType={orderType}
+          onOrderType={setOrderType}
+          qty={qty}
+          onQty={setQty}
+          limitPrice={limitPrice}
+          onLimitPrice={setLimitPrice}
+          stopPrice={stopPrice}
+          onStopPrice={setStopPrice}
+          bid={bid}
+          ask={ask}
+          lastPrice={lastPrice}
+          invalidationPrice={invalidationPrice}
+          onInvalidationPrice={setInvalidationPrice}
+          strategies={strategies}
+          strategyId={strategyId}
+          strategyName={strategyName}
+          onStrategyId={setStrategyId}
+          onOpenPlan={onOpenPlan}
+          onOpenCalm={onOpenCalm}
+          onOpenAi={onOpenAi}
+          equity={account?.cashBalance ?? null}
+          qtyNum={qtyNum}
+          estimatePrice={estimatePrice}
+          estimateLabel={`$${fmtMoney(estimate)}`}
+          submitLabel={side === "buy" ? t("submitBuy") : t("submitSell")}
+          submitClass={submitClass}
+          busy={busy}
+          canSubmit={qtyNum > 0}
+          emotionTags={emotionTags}
+          onEmotionTags={setEmotionTags}
+          symbol={symbol}
+          assetType={assetType}
+          orders={orders}
+          onCancelOrder={(id) => void cancel(id)}
+        />
+      ) : (
+        <>
+          <TradeTicketHeader
             symbol={symbol}
             assetType={assetType}
-            emotionTags={emotionTags}
-            onEmotionTags={setEmotionTags}
+            name={quoteName}
+            lastPrice={lastPrice}
+            percentChange={percentChange}
           />
-
-          <TradeAiLinks onOpenCalm={onOpenCalm} onOpenAi={onOpenAi} />
-
-          <TradeOpenOrders
-            orders={orders}
-            busy={busy}
-            onCancel={(id) => void cancel(id)}
-          />
-        </div>
-      </div>
-
-      <div className="shrink-0 border-t border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas,var(--panel))] px-4 pb-2.5 pt-2">
-        <div className="mb-2 flex items-baseline justify-between gap-2">
-          <span className="aw-metric-label">{t("estimate")}</span>
-          <span className="aw-metric-value">${fmtMoney(estimate)}</span>
-        </div>
-        <SubmitButton
-          type="submit"
-          loading={busy}
-          loadingLabel={t("loading")}
-          disabled={!(qtyNum > 0)}
-          className={submitClass}
-        >
-          {side === "buy" ? t("submitBuy") : t("submitSell")}
-        </SubmitButton>
-      </div>
+          <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2.5">
+            <div className="space-y-2.5">
+              {loading ? <p className="aw-caption">{t("loading")}</p> : null}
+              {resultBanner}
+              {positionLine}
+              <TradeOrderFields
+                side={side}
+                onSide={setSide}
+                orderType={orderType}
+                onOrderType={setOrderType}
+                qty={qty}
+                onQty={setQty}
+                limitPrice={limitPrice}
+                onLimitPrice={setLimitPrice}
+                stopPrice={stopPrice}
+                onStopPrice={setStopPrice}
+                bid={bid}
+                ask={ask}
+                lastPrice={lastPrice}
+              />
+              {draftBanner}
+              <TradeCalmFields
+                invalidationPrice={invalidationPrice}
+                onInvalidationPrice={setInvalidationPrice}
+                strategies={strategies}
+                strategyId={strategyId}
+                strategyName={strategyName}
+                onStrategyId={setStrategyId}
+                onOpenPlan={onOpenPlan}
+                equity={account?.cashBalance ?? null}
+                qty={qtyNum}
+                entry={estimatePrice}
+                stop={
+                  orderType === "stop"
+                    ? Number(stopPrice) || null
+                    : Number(invalidationPrice) || null
+                }
+                symbol={symbol}
+                assetType={assetType}
+                emotionTags={emotionTags}
+                onEmotionTags={setEmotionTags}
+              />
+              <TradeAiLinks onOpenCalm={onOpenCalm} onOpenAi={onOpenAi} />
+              <TradeOpenOrders
+                orders={orders}
+                busy={busy}
+                onCancel={(id) => void cancel(id)}
+              />
+            </div>
+          </div>
+          <div className="shrink-0 border-t border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas,var(--panel))] px-4 pb-2.5 pt-2">
+            <div className="mb-1.5 flex items-baseline justify-between gap-2">
+              <span className="aw-metric-label">{t("estimate")}</span>
+              <span className="aw-metric-value">${fmtMoney(estimate)}</span>
+            </div>
+            <SubmitButton
+              type="submit"
+              loading={busy}
+              loadingLabel={t("loading")}
+              disabled={!(qtyNum > 0)}
+              className={submitClass}
+            >
+              {side === "buy" ? t("submitBuy") : t("submitSell")}
+            </SubmitButton>
+          </div>
+        </>
+      )}
     </form>
   );
 }

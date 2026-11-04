@@ -11,6 +11,7 @@ import {
 import { SymbolShareMenu } from "@/components/symbol/quote/symbol-share-menu";
 import type { SymbolTab } from "@/components/symbol/tabs/symbol-tabs-panel";
 import { SymbolQuoteBarSearch } from "@/components/symbol/quote/symbol-quote-bar-search";
+import { SymbolChartToolbarHostSlot } from "@/components/symbol/chart/symbol-chart-toolbar-host";
 import { IconWatchlistExpand } from "@/components/symbol/watchlist/watchlist-toggle-icons";
 import { primaryQuoteDisplay } from "@/lib/market/extended-hours";
 import { displayName } from "@/lib/market-names";
@@ -38,6 +39,11 @@ type Props = {
   onOpenAbout?: () => void;
   /** Live quote feed status (WS push / delayed poll / offline). */
   feedStatus?: FeedStatusKind;
+  /**
+   * Stack layout: host the chart toolbar in this strip so quote + tools
+   * share one row (chart section portals into the host).
+   */
+  embedChartToolbar?: boolean;
 };
 
 /** Drop noisy copy suffixes for the compact chip; full name stays in title. */
@@ -65,6 +71,7 @@ export function SymbolQuoteBar({
   aboutLabel,
   onOpenAbout,
   feedStatus,
+  embedChartToolbar = false,
 }: Props) {
   const t = useTranslations("symbol");
   const tRail = useTranslations("symbolRail");
@@ -213,52 +220,78 @@ export function SymbolQuoteBar({
             )}
           </div>
 
-          {/* Desktop: search + tabs inline */}
+          {/* Desktop: search + tabs, or stack: chart toolbar only (search after fullscreen). */}
           <div className="hidden min-w-0 flex-1 items-stretch lg:flex">
-            <SymbolQuoteBarSearch
-              assetType={assetType}
-              currentSymbol={symbol}
-            />
-            {showTabs ? (
+            {embedChartToolbar ? (
+              <SymbolChartToolbarHostSlot />
+            ) : (
               <>
-                <span
-                  aria-hidden
-                  className="mx-2 h-4 w-px shrink-0 self-center bg-[var(--aw-hairline,var(--border))]"
+                <SymbolQuoteBarSearch
+                  assetType={assetType}
+                  currentSymbol={symbol}
                 />
-                <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  <div
-                    role="tablist"
-                    aria-label={t("chartTab")}
-                    className="flex h-full w-max items-stretch"
-                  >
-                    {tabs!.map((item, index) => {
-                      const selected = tab === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          type="button"
-                          role="tab"
-                          id={`symbol-quote-tab-${item.id}`}
-                          aria-selected={selected}
-                          aria-controls="symbol-main-panel"
-                          tabIndex={selected ? 0 : -1}
-                          onClick={() => onTabChange!(item.id)}
-                          onKeyDown={(e) => onTabKeyDown(e, index)}
-                          data-active={selected}
-                          className="aw-tab aw-tab-quote"
-                        >
-                          {item.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                {showTabs ? (
+                  <>
+                    <span
+                      aria-hidden
+                      className="mx-2 h-4 w-px shrink-0 self-center bg-[var(--aw-hairline,var(--border))]"
+                    />
+                    <div className="min-w-0 flex-1 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+                      <div
+                        role="tablist"
+                        aria-label={t("chartTab")}
+                        className="flex h-full w-max items-stretch"
+                      >
+                        {tabs!.map((item, index) => {
+                          const selected = tab === item.id;
+                          return (
+                            <button
+                              key={item.id}
+                              type="button"
+                              role="tab"
+                              id={`symbol-quote-tab-${item.id}`}
+                              aria-selected={selected}
+                              aria-controls="symbol-main-panel"
+                              tabIndex={selected ? 0 : -1}
+                              onClick={() => onTabChange!(item.id)}
+                              onKeyDown={(e) => onTabKeyDown(e, index)}
+                              data-active={selected}
+                              className="aw-tab aw-tab-quote"
+                            >
+                              {item.label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </>
+                ) : null}
               </>
-            ) : null}
+            )}
           </div>
         </div>
 
-        <div className="aw-quote-actions relative z-10 flex shrink-0 items-center gap-0.5 pl-1 sm:gap-1 sm:pl-2 lg:gap-2 lg:pl-3">
+        <div
+          className={`aw-quote-actions relative z-10 flex shrink-0 items-center pl-1 sm:pl-2 lg:pl-3 ${
+            embedChartToolbar
+              ? "gap-1.5 sm:gap-2 lg:gap-3"
+              : "gap-0.5 sm:gap-1 lg:gap-2"
+          }`}
+        >
+          {embedChartToolbar ? (
+            <>
+              <span
+                aria-hidden
+                className="mx-0.5 hidden h-3 w-px shrink-0 bg-[var(--aw-hairline,var(--border))] lg:block"
+              />
+              <div className="hidden min-w-[11rem] max-w-[16rem] shrink-0 lg:mr-0.5 lg:block">
+                <SymbolQuoteBarSearch
+                  assetType={assetType}
+                  currentSymbol={symbol}
+                />
+              </div>
+            </>
+          ) : null}
           <div className="lg:hidden">
             <SymbolQuoteBarSearch
               assetType={assetType}

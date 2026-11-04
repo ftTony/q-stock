@@ -2102,5 +2102,29 @@
     "syncHint": "可視區間暫未同步，僅共用週期；先對照結構與節奏。",
     "back": "返回",
     "syncHintShort": "區間未同步 · 僅共用週期"
+  },
+  "symbolLayout": {
+    "open": "佈局",
+    "title": "佈局設定",
+    "close": "關閉",
+    "tradingPanel": "工作台佈局",
+    "presetSide": "左右佈局",
+    "presetStack": "上下佈局",
+    "moduleWatchlist": "自選",
+    "moduleRail": "計劃欄",
+    "moduleChart": "圖表",
+    "moduleNewsDock": "復盤",
+    "reset": "重設佈局",
+    "chartHidden": "圖表已隱藏",
+    "chartHiddenAction": "顯示圖表",
+    "tabNews": "新聞",
+    "tabPress": "公告",
+    "tabTrade": "交易",
+    "tabAi": "AI",
+    "tabComments": "評論",
+    "tabDerivatives": "衍生品",
+    "tabEarnings": "財報",
+    "tabProfile": "公司資訊",
+    "resizeBottom": "調整底欄高度"
   }
 }

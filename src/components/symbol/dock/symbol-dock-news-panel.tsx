@@ -20,9 +20,48 @@ type Props = {
   degradedLabel: string;
   errorLabel: string;
   loadingLabel: string;
+  /** Stack layout: feed type is a top-level tab — hide inner chips. */
+  hideFeedTabs?: boolean;
 };
 
-/** Combined news + press drawer — chip tabs, scrollable list, no divider lines. */
+function NewsItem({
+  href,
+  title,
+  summary,
+  meta,
+  stack,
+}: {
+  href: string;
+  title: string;
+  summary?: string | null;
+  meta: string;
+  stack: boolean;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noreferrer"
+      className={stack ? "aw-stack-feed-item" : "aw-dock-feed-item"}
+    >
+      <span className={stack ? "aw-stack-feed-title" : "aw-dock-feed-title"}>
+        {title}
+      </span>
+      {summary ? (
+        <p className={stack ? "aw-stack-feed-summary" : "aw-dock-feed-summary"}>
+          {summary}
+        </p>
+      ) : null}
+      {meta ? (
+        <div className={stack ? "aw-stack-feed-meta" : "aw-dock-feed-meta"}>
+          {meta}
+        </div>
+      ) : null}
+    </a>
+  );
+}
+
+/** Combined news + press drawer — chip tabs, scrollable list. */
 export function SymbolDockNewsPanel({
   feedTab,
   onFeedTabChange,
@@ -34,38 +73,49 @@ export function SymbolDockNewsPanel({
   degradedLabel,
   errorLabel,
   loadingLabel,
+  hideFeedTabs = false,
 }: Props) {
   const t = useTranslations("symbol");
   const showPress = assetType !== "crypto";
+  const stack = hideFeedTabs;
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div role="tablist" className="aw-dock-feed-tabs aw-dock-feed-tabs--nolines shrink-0">
-        <button
-          type="button"
-          role="tab"
-          aria-selected={feedTab === "news"}
-          data-active={feedTab === "news"}
-          onClick={() => onFeedTabChange("news")}
-          className="aw-dock-chip"
+      {stack ? null : (
+        <div
+          role="tablist"
+          className="aw-dock-feed-tabs aw-dock-feed-tabs--nolines shrink-0"
         >
-          {t("news")}
-        </button>
-        {showPress ? (
           <button
             type="button"
             role="tab"
-            aria-selected={feedTab === "press"}
-            data-active={feedTab === "press"}
-            onClick={() => onFeedTabChange("press")}
+            aria-selected={feedTab === "news"}
+            data-active={feedTab === "news"}
+            onClick={() => onFeedTabChange("news")}
             className="aw-dock-chip"
           >
-            {t("press")}
+            {t("news")}
           </button>
-        ) : null}
-      </div>
+          {showPress ? (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={feedTab === "press"}
+              data-active={feedTab === "press"}
+              onClick={() => onFeedTabChange("press")}
+              className="aw-dock-chip"
+            >
+              {t("press")}
+            </button>
+          ) : null}
+        </div>
+      )}
 
-      <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pb-4 pt-0">
+      <div
+        className={`aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain ${
+          stack ? "px-3 pb-3 pt-1" : "px-5 pb-4 pt-0"
+        }`}
+      >
         {feedTab === "news" ? (
           tabLoading ? (
             <ListPanelSkeleton rows={6} label={loadingLabel} className="pt-2" />
@@ -75,32 +125,25 @@ export function SymbolDockNewsPanel({
               label={degraded ? degradedLabel : errorLabel}
             />
           ) : (
-            <ul className="space-y-2">
+            <ul className={stack ? "aw-stack-feed-list" : "aw-dock-feed-list"}>
               {news.map((n, i) => (
                 <li key={`${n.url || n.headline}-${i}`}>
-                  <a
+                  <NewsItem
+                    stack={stack}
                     href={n.url || "#"}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="aw-dock-feed-item space-y-1"
-                  >
-                    <span className="block text-[14px] font-semibold leading-[1.35] tracking-[-0.2px] text-[var(--aw-ink)]">
-                      {n.headline}
-                    </span>
-                    {n.summary ? (
-                      <p className="aw-caption line-clamp-2 leading-[1.45]">
-                        {n.summary}
-                      </p>
-                    ) : null}
-                    <div className="aw-caption pt-0.5">
-                      {n.source}
-                      {n.datetime
-                        ? ` · ${formatDate(
+                    title={n.headline}
+                    summary={n.summary}
+                    meta={[
+                      n.source,
+                      n.datetime
+                        ? formatDate(
                             n.datetime > 1e12 ? n.datetime : n.datetime * 1000,
-                          )}`
-                        : ""}
-                    </div>
-                  </a>
+                          )
+                        : "",
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  />
                 </li>
               ))}
             </ul>
@@ -114,28 +157,23 @@ export function SymbolDockNewsPanel({
         ) : press.length === 0 ? (
           <EmptyStateBlock art="news" label={degradedLabel} />
         ) : (
-          <ul className="space-y-2">
+          <ul className={stack ? "aw-stack-feed-list" : "aw-dock-feed-list"}>
             {press.map((p, i) => (
               <li key={`${p.url || p.headline}-${i}`}>
-                <a
+                <NewsItem
+                  stack={stack}
                   href={p.url || "#"}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="aw-dock-feed-item space-y-1"
-                >
-                  <span className="block text-[14px] font-semibold leading-[1.35] tracking-[-0.2px] text-[var(--aw-ink)]">
-                    {p.headline || p.description || "Press release"}
-                  </span>
-                  {p.description && p.headline ? (
-                    <p className="aw-caption line-clamp-2 leading-[1.45]">
-                      {p.description}
-                    </p>
-                  ) : null}
-                  <div className="aw-caption pt-0.5">
-                    {p.datetime ? formatDate(p.datetime) : ""}
-                    {p.source ? ` · ${p.source}` : ""}
-                  </div>
-                </a>
+                  title={p.headline || p.description || "Press release"}
+                  summary={
+                    p.description && p.headline ? p.description : null
+                  }
+                  meta={[
+                    p.datetime ? formatDate(p.datetime) : "",
+                    p.source ?? "",
+                  ]
+                    .filter(Boolean)
+                    .join(" · ")}
+                />
               </li>
             ))}
           </ul>

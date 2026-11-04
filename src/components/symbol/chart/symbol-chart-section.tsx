@@ -9,8 +9,10 @@ import {
   useState,
   type MouseEvent as ReactMouseEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
+import { useChartToolbarHost } from "@/components/symbol/chart/symbol-chart-toolbar-host";
 import {
   CandleChart,
   type CandleChartHandle,
@@ -180,6 +182,74 @@ export const SymbolChartSection = memo(function SymbolChartSection({
     onChartSettingsChange({ ...chartSettings, chartType: type });
   };
 
+  const toolbarHost = useChartToolbarHost()?.host ?? null;
+  const toolbarInner = (
+    <>
+      <div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        {periods.map((key) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => onResolutionChange(key)}
+            data-active={resolution === key}
+            className="aw-toolbar-btn shrink-0"
+          >
+            {resolutionLabels[key]}
+          </button>
+        ))}
+        <span
+          className="mx-1 hidden h-3 w-px shrink-0 bg-[var(--border)] lg:block lg:mx-1.5"
+          aria-hidden
+        />
+        <div className="hidden shrink-0 lg:block">
+          <CandleChartTypeMenu
+            value={activeChartType}
+            onChange={onChartTypeChange}
+          />
+        </div>
+        <div
+          className="hidden shrink-0 items-center gap-0.5 lg:flex"
+          aria-label={indicatorsLabel}
+        >
+          <span className="mx-1.5 h-3 w-px bg-[var(--border)]" aria-hidden />
+          {primaryKeys.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onFlagToggle(key)}
+              data-active={flags[key]}
+              className="aw-toolbar-btn shrink-0"
+            >
+              {label}
+            </button>
+          ))}
+          {moreKeys.map(([key, label]) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => onFlagToggle(key)}
+              data-active={flags[key]}
+              className="aw-toolbar-btn shrink-0 text-[var(--muted)]"
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <CandleChartToolbarActions
+        flags={flags}
+        onFlagToggle={onFlagToggle}
+        settings={chartSettings}
+        onSettingsChange={onChartSettingsChange}
+        resolution={resolution}
+        onClearDrawings={() => chartRef.current?.clearDrawings()}
+        fullscreen={fullscreen}
+        onToggleFullscreen={() => chartRef.current?.toggleFullscreen()}
+        onScreenshot={() => chartRef.current?.captureScreenshot()}
+      />
+    </>
+  );
+
   return (
     <div className="aw-surface-flush flex h-full min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
       <TopToast
@@ -208,73 +278,18 @@ export const SymbolChartSection = memo(function SymbolChartSection({
           setSoonToast(tCommon("watchAdded"));
         }}
       />
-      <div className="aw-chart-toolbar relative z-20 flex shrink-0 flex-nowrap items-center gap-0.5 border-b border-[var(--border)] bg-[var(--surface)] px-2">
-        {/* Left cluster: periods + (desktop) type/indicators — keep flush left. */}
-        <div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {periods.map((key) => (
-            <button
-              key={key}
-              type="button"
-              onClick={() => onResolutionChange(key)}
-              data-active={resolution === key}
-              className="aw-toolbar-btn shrink-0"
-            >
-              {resolutionLabels[key]}
-            </button>
-          ))}
-          {/* Desktop only — H5 keeps type/indicators in the settings gear. */}
-          <span
-            className="mx-1 hidden h-3 w-px shrink-0 bg-[var(--border)] lg:block lg:mx-1.5"
-            aria-hidden
-          />
-          <div className="hidden shrink-0 lg:block">
-            <CandleChartTypeMenu
-              value={activeChartType}
-              onChange={onChartTypeChange}
-            />
-          </div>
-          <div
-            className="hidden shrink-0 items-center gap-0.5 lg:flex"
-            aria-label={indicatorsLabel}
-          >
-            <span className="mx-1.5 h-3 w-px bg-[var(--border)]" aria-hidden />
-            {primaryKeys.map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => onFlagToggle(key)}
-                data-active={flags[key]}
-                className="aw-toolbar-btn shrink-0"
-              >
-                {label}
-              </button>
-            ))}
-            {moreKeys.map(([key, label]) => (
-              <button
-                key={key}
-                type="button"
-                onClick={() => onFlagToggle(key)}
-                data-active={flags[key]}
-                className="aw-toolbar-btn shrink-0 text-[var(--muted)]"
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <CandleChartToolbarActions
-          flags={flags}
-          onFlagToggle={onFlagToggle}
-          settings={chartSettings}
-          onSettingsChange={onChartSettingsChange}
-          resolution={resolution}
-          onClearDrawings={() => chartRef.current?.clearDrawings()}
-          fullscreen={fullscreen}
-          onToggleFullscreen={() => chartRef.current?.toggleFullscreen()}
-          onScreenshot={() => chartRef.current?.captureScreenshot()}
-        />
-      </div>
+      {toolbarHost
+        ? createPortal(
+            <div className="aw-chart-toolbar relative z-20 flex min-w-0 flex-1 flex-nowrap items-center gap-0.5">
+              {toolbarInner}
+            </div>,
+            toolbarHost,
+          )
+        : (
+            <div className="aw-chart-toolbar relative z-20 flex shrink-0 flex-nowrap items-center gap-0.5 border-b border-[var(--border)] bg-[var(--surface)] px-2">
+              {toolbarInner}
+            </div>
+          )}
 
       {intradayEmpty ? (
         <div

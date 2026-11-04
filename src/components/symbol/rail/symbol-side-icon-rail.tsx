@@ -16,6 +16,8 @@ type Props = {
   /** Right quote/plan rail open — toggle lives on this far-right strip. */
   railOpen?: boolean;
   onToggleRail?: () => void;
+  /** Hide news/press entry when layout prefs turn the module off. */
+  showNews?: boolean;
 };
 
 const SW = 1.7;
@@ -150,8 +152,10 @@ export function SymbolSideIconRail({
   onSelect,
   railOpen = true,
   onToggleRail,
+  showNews = true,
 }: Props) {
   const t = useTranslations("symbol");
+  const items = showNews ? ITEMS : ITEMS.filter((item) => item.id !== "news");
 
   return (
     <nav aria-label={t("sideDock")} className="aw-side-icon-rail">
@@ -163,6 +167,7 @@ export function SymbolSideIconRail({
             aria-label={railOpen ? t("railCollapse") : t("railExpand")}
             aria-pressed={railOpen}
             onClick={onToggleRail}
+            data-rail-toggle="true"
             className="aw-side-icon-btn hidden lg:inline-flex"
           >
             {/* Open → arrow right (collapse panel); closed → arrow left (expand). */}
@@ -175,12 +180,12 @@ export function SymbolSideIconRail({
           <span aria-hidden className="aw-side-icon-rule hidden lg:block" />
         </>
       ) : null}
-      {ITEMS.map((item) => {
+      {items.map((item) => {
         const selected = active === item.id;
         const Icon = ICONS[item.id];
         return (
           <div key={item.id} className="contents">
-            {item.ruleBefore ? (
+            {item.ruleBefore && showNews ? (
               <span aria-hidden className="aw-side-icon-rule" />
             ) : null}
             <button

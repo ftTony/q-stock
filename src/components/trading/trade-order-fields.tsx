@@ -22,6 +22,8 @@ type Props = {
   bid: number | null;
   ask: number | null;
   lastPrice: number | null;
+  /** Stack bottom: order type + qty on one row. */
+  compact?: boolean;
 };
 
 const fieldLabel = "aw-metric-label mb-1 block";
@@ -43,8 +45,40 @@ export function TradeOrderFields({
   bid,
   ask,
   lastPrice,
+  compact = false,
 }: Props) {
   const t = useTranslations("trading");
+
+  const typeField = (
+    <div>
+      <label className={fieldLabel}>{t("orderType")}</label>
+      <QtSelect
+        value={orderType}
+        onChange={(v) => onOrderType(v as OrderType)}
+        triggerClassName={selectTrigger}
+        options={[
+          { value: "limit", label: t("limit") },
+          { value: "market", label: t("market") },
+          { value: "stop", label: t("stop") },
+        ]}
+      />
+    </div>
+  );
+
+  const qtyField = (
+    <div>
+      <label className={fieldLabel}>{t("qty")}</label>
+      <input
+        type="number"
+        min="0"
+        step="any"
+        required
+        value={qty}
+        onChange={(e) => onQty(e.target.value)}
+        className={fieldInput}
+      />
+    </div>
+  );
 
   return (
     <>
@@ -71,32 +105,14 @@ export function TradeOrderFields({
         ]}
       />
 
-      <div>
-        <label className={fieldLabel}>{t("orderType")}</label>
-        <QtSelect
-          value={orderType}
-          onChange={(v) => onOrderType(v as OrderType)}
-          triggerClassName={selectTrigger}
-          options={[
-            { value: "limit", label: t("limit") },
-            { value: "market", label: t("market") },
-            { value: "stop", label: t("stop") },
-          ]}
-        />
-      </div>
-
-      <div>
-        <label className={fieldLabel}>{t("qty")}</label>
-        <input
-          type="number"
-          min="0"
-          step="any"
-          required
-          value={qty}
-          onChange={(e) => onQty(e.target.value)}
-          className={fieldInput}
-        />
-      </div>
+      {compact ? (
+        <div className="grid grid-cols-2 gap-x-3 gap-y-2">{typeField}{qtyField}</div>
+      ) : (
+        <>
+          {typeField}
+          {qtyField}
+        </>
+      )}
 
       <TradeBidAsk
         bid={bid}

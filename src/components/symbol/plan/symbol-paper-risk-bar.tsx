@@ -76,6 +76,8 @@ export function SymbolPaperRiskBar({
   footer,
   /** P0: default collapsed one-line summary. */
   defaultExpanded = false,
+  /** Stack bottom: tighter chrome; footer inline when collapsed. */
+  dense = false,
 }: {
   symbol: string;
   assetType: AssetType;
@@ -83,6 +85,7 @@ export function SymbolPaperRiskBar({
   refreshKey?: number;
   footer?: ReactNode;
   defaultExpanded?: boolean;
+  dense?: boolean;
 }) {
   const t = useTranslations("paperRiskBar");
   const { data: session, status } = useSession();
@@ -111,7 +114,11 @@ export function SymbolPaperRiskBar({
   if (cash == null) {
     if (!footer) return null;
     return (
-      <div className="shrink-0 border-b border-[var(--aw-hairline,var(--border))] px-4 py-2">
+      <div
+        className={`shrink-0 border-b border-[var(--aw-hairline,var(--border))] ${
+          dense ? "px-2.5 py-1.5" : "px-4 py-2"
+        }`}
+      >
         {footer}
       </div>
     );
@@ -154,7 +161,11 @@ export function SymbolPaperRiskBar({
   const nearCap = symbolPct >= maxPct * 0.8;
 
   return (
-    <div className="shrink-0 border-b border-[var(--aw-hairline,var(--border))] px-4 py-2">
+    <div
+      className={`shrink-0 border-b border-[var(--aw-hairline,var(--border))] ${
+        dense ? "px-2.5 py-1.5" : "px-4 py-2"
+      }`}
+    >
       <button
         type="button"
         className="flex w-full items-baseline justify-between gap-2 text-left"
@@ -167,24 +178,28 @@ export function SymbolPaperRiskBar({
           <span className="text-[var(--border)]">·</span>
           <span className="mx-1 text-[var(--muted)]">{t("cash")}</span>
           <span className="font-medium">${money(cash)}</span>
-          <span className="text-[var(--border)]">·</span>
-          <span
-            className={`mx-1 font-medium ${
-              nearCap
-                ? "text-[color-mix(in_srgb,#ca8a04_90%,var(--foreground))]"
-                : ""
-            }`}
-          >
-            {t("symbolPct")} {symbolPct.toFixed(1)}%
-          </span>
-          {positionQty > 0 ? (
+          {dense ? null : (
             <>
               <span className="text-[var(--border)]">·</span>
-              <span className="mx-1 text-[var(--muted)]">
-                {t("positionQty")} {positionQty}
+              <span
+                className={`mx-1 font-medium ${
+                  nearCap
+                    ? "text-[color-mix(in_srgb,#ca8a04_90%,var(--foreground))]"
+                    : ""
+                }`}
+              >
+                {t("symbolPct")} {symbolPct.toFixed(1)}%
               </span>
+              {positionQty > 0 ? (
+                <>
+                  <span className="text-[var(--border)]">·</span>
+                  <span className="mx-1 text-[var(--muted)]">
+                    {t("positionQty")} {positionQty}
+                  </span>
+                </>
+              ) : null}
             </>
-          ) : null}
+          )}
         </span>
         <span className="shrink-0 text-[11px] text-[var(--muted)]">
           {expanded ? t("collapse") : t("expand")}
@@ -205,10 +220,18 @@ export function SymbolPaperRiskBar({
             tone={nearCap ? "warn" : "ok"}
             hint={`${t("maxSymbol")} ${maxPct.toFixed(2)}%`}
           />
+          {dense && positionQty > 0 ? (
+            <Cell
+              label={t("positionQty")}
+              value={String(positionQty)}
+            />
+          ) : null}
         </div>
       ) : null}
 
-      {footer ? <div className="mt-2">{footer}</div> : null}
+      {footer ? (
+        <div className={dense ? "mt-1" : "mt-2"}>{footer}</div>
+      ) : null}
     </div>
   );
 }

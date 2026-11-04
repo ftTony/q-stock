@@ -33,6 +33,10 @@ type Props = {
   degraded: boolean;
   company: CompanyProfile | null;
   officers: CompanyOfficer[];
+  /** Prefer this section when mounting (e.g. stack layout 财报 / 公司). */
+  initialSection?: FundamentalsSection;
+  /** Stack bottom: denser company rows; dock / mobile keep default. */
+  density?: "default" | "stack";
 };
 
 const METRIC_KEYS = new Set([
@@ -68,6 +72,8 @@ export function SymbolFundamentalsPanel({
   degraded,
   company,
   officers,
+  initialSection,
+  density = "default",
 }: Props) {
   const t = useTranslations("symbol");
   const tEarn = useTranslations("earnings");
@@ -106,6 +112,7 @@ export function SymbolFundamentalsPanel({
   ]);
 
   const defaultSection = ((): FundamentalsSection => {
+    if (initialSection) return initialSection;
     if (availability.income) return "income";
     if (availability.metrics) return "metrics";
     if (availability.balance) return "balance";
@@ -211,11 +218,15 @@ export function SymbolFundamentalsPanel({
       />
       <div className="flex min-h-full min-w-0 flex-col sm:pl-5">
         {resolvedActive === "profile" ? (
-          <CompanyProfilePanel profile={company} />
+          <CompanyProfilePanel profile={company} density={density} />
         ) : null}
         {resolvedActive === "officers" ? (
           officers.length > 0 ? (
-            <OfficersPanel officers={officers} title={t("officers")} />
+            <OfficersPanel
+              officers={officers}
+              title={t("officers")}
+              density={density}
+            />
           ) : (
             <EmptyStateBlock art="statement" label={t("fundNavEmpty")} />
           )
