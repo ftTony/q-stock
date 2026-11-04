@@ -124,6 +124,8 @@
   "symbol": {
     "chart": "K线",
     "news": "新闻",
+    "newsEmpty": "暂无新闻",
+    "pressEmpty": "暂无公告",
     "earnings": "财报",
     "fundamentals": "基本面",
     "press": "公告",

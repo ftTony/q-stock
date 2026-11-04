@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
+import { createPortal } from "react-dom";
 import { useTranslations } from "next-intl";
 import { ListPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { SideDrawer } from "@/components/ui/side-drawer";
@@ -29,6 +30,36 @@ import {
   type MoneyFilter,
   type SideFilter,
 } from "./option-chain/option-chain-utils";
+
+function ExpandGlyph({ expanded }: { expanded: boolean }) {
+  return expanded ? (
+    <svg
+      className="h-3.5 w-3.5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
+    </svg>
+  ) : (
+    <svg
+      className="h-3.5 w-3.5"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
+    </svg>
+  );
+}
 
 /**
  * Heavy body (pricer / payoff / date picker) loads on first open.
@@ -120,12 +151,32 @@ export function OptionChainBoard({
   const [toolMounted, setToolMounted] = useState(false);
   const [seed, setSeed] = useState<StrategySeed>(null);
   const [prefs, setPrefs] = useState<OptionChainPrefs>(DEFAULT_OPTION_CHAIN_PREFS);
+  const [expanded, setExpanded] = useState(false);
+  const [portalReady, setPortalReady] = useState(false);
   const chipRef = useRef<HTMLDivElement>(null);
   const tTool = useTranslations("symbol.optTool");
 
   useEffect(() => {
     setPrefs(loadOptionChainPrefs());
   }, []);
+
+  useEffect(() => {
+    setPortalReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!expanded) return;
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setExpanded(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.body.style.overflow = prev;
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [expanded]);
 
   const onPrefsChange = useCallback((next: OptionChainPrefs) => {
     const normalized: OptionChainPrefs = {
@@ -222,7 +273,7 @@ export function OptionChainBoard({
     return idx;
   }, [displayed, spotN]);
 
-  return (
+  const board = (
     <div className="flex min-h-0 flex-1 flex-col">
       <div className="flex shrink-0 flex-wrap items-center gap-2 px-3 py-2 sm:px-4">
         <Segmented
@@ -249,17 +300,31 @@ export function OptionChainBoard({
           </span>
         ) : null}
         <OptionChainSettings prefs={prefs} onChange={onPrefsChange} />
-        <button
-          type="button"
-          onClick={openTool}
-          onMouseEnter={() => {
-            void import("./option-chain/option-strategy-drawer");
-          }}
-          style={{ color: "var(--brand)" }}
-          className="ml-auto inline-flex items-center text-[13px] font-medium tracking-[-0.08px] transition hover:underline"
-        >
-          {t("openOptionsTool")}
-        </button>
+        <div className="ml-auto inline-flex items-center gap-2">
+          {/* Expand lives only in the compact stack pane; header owns exit when fullscreen. */}
+          {!expanded ? (
+            <button
+              type="button"
+              title={t("fullscreen")}
+              aria-label={t("fullscreen")}
+              onClick={() => setExpanded(true)}
+              className="inline-flex h-7 w-7 shrink-0 items-center justify-center text-[var(--muted)] transition hover:text-[var(--foreground)]"
+            >
+              <ExpandGlyph expanded={false} />
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={openTool}
+            onMouseEnter={() => {
+              void import("./option-chain/option-strategy-drawer");
+            }}
+            style={{ color: "var(--brand)" }}
+            className="inline-flex items-center text-[13px] font-medium tracking-[-0.08px] transition hover:underline"
+          >
+            {t("openOptionsTool")}
+          </button>
+        </div>
       </div>
 
       <div className="flex shrink-0 items-center gap-1 py-2 pl-3 pr-2 sm:pl-4">
@@ -379,4 +444,53 @@ export function OptionChainBoard({
       ) : null}
     </div>
   );
+
+  if (expanded && portalReady) {
+    return (
+      <>
+        <div className="flex min-h-0 flex-1 flex-col items-center justify-center gap-2 px-4 text-center">
+          <p className="text-[12px] text-[var(--muted)]">{t("fullscreen")}</p>
+          <button
+            type="button"
+            onClick={() => setExpanded(false)}
+            className="text-[13px] font-medium text-[var(--brand-text,var(--brand))] hover:underline"
+          >
+            {t("exitFullscreen")}
+          </button>
+        </div>
+        {createPortal(
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label={t("fullscreen")}
+            /* Override .aw { background: parchment } — fullscreen needs solid panel. */
+            className="aw fixed inset-0 z-[65] flex flex-col !bg-[var(--panel)]"
+          >
+            <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] px-4 py-2">
+              <div className="min-w-0 truncate text-[13px] font-medium tracking-[-0.08px] text-[var(--foreground)]">
+                {symbol ? `${symbol} · ` : null}
+                {t("derivativesTitle")}
+              </div>
+              <button
+                type="button"
+                onClick={() => setExpanded(false)}
+                title={t("exitFullscreen")}
+                aria-label={t("exitFullscreen")}
+                className="inline-flex h-8 items-center gap-1.5 px-2 text-[12px] text-[var(--muted)] transition hover:text-[var(--foreground)]"
+              >
+                <ExpandGlyph expanded />
+                {t("exitFullscreen")}
+              </button>
+            </div>
+            <div className="flex min-h-0 flex-1 flex-col overflow-hidden bg-[var(--panel)]">
+              {board}
+            </div>
+          </div>,
+          document.body,
+        )}
+      </>
+    );
+  }
+
+  return board;
 }

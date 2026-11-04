@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   EarningsPanel,
@@ -124,6 +124,10 @@ export function SymbolFundamentalsPanel({
   })();
 
   const [active, setActive] = useState<FundamentalsSection>(defaultSection);
+
+  useEffect(() => {
+    if (initialSection) setActive(initialSection);
+  }, [initialSection]);
 
   const groups = useMemo(
     () => [

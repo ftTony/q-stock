@@ -54,10 +54,14 @@ export function useSymbolPage(
   initialQuote: Quote | null = null,
   opts?: {
     prefetchEarnings?: boolean;
+    prefetchNews?: boolean;
+    prefetchPress?: boolean;
     initialBars?: OhlcvBar[] | null;
   },
 ) {
   const prefetchEarnings = opts?.prefetchEarnings ?? false;
+  const prefetchNews = opts?.prefetchNews ?? false;
+  const prefetchPress = opts?.prefetchPress ?? false;
   const locale = useLocale();
   const t = useTranslations("symbol");
   const tCommon = useTranslations("common");
@@ -86,6 +90,8 @@ export function useSymbolPage(
     locale,
     tab,
     prefetchEarnings,
+    prefetchNews,
+    prefetchPress,
   });
   const [commentText, setCommentText] = useState("");
   const [alertPrice, setAlertPrice] = useState("");
@@ -311,6 +317,9 @@ export function useSymbolPage(
     company: tabData.company,
     officers: tabData.officers,
     tabLoading: tabData.tabLoading,
+    newsReady: tabData.newsReady,
+    pressReady: tabData.pressReady,
+    commentsReady: tabData.commentsReady,
     sentiment: tabData.sentiment,
     loadingChart: candles.loadingChart,
     loadingMoreCandles: candles.loadingMoreCandles,

@@ -198,7 +198,9 @@ export const OptionChainPanes = memo(function OptionChainPanes({
     }
   }, [callInnerW, putInnerW]);
 
-  const itmBg = "bg-[color-mix(in_srgb,var(--muted)_8%,transparent)]";
+  /* Stronger than 8% muted so ITM blocks read clearly on dense chain / expand. */
+  const itmBg =
+    "bg-[color-mix(in_srgb,var(--brand)_7%,var(--panel))]";
   const showTopAnchor = spotAfterIdx < 0 && spotN != null;
 
   const callVisible = (strike: number) =>
@@ -222,7 +224,7 @@ export const OptionChainPanes = memo(function OptionChainPanes({
             </table>
           </div>
         ) : null}
-        <div className="flex w-[5rem] shrink-0 items-stretch">
+        <div className="flex w-[5rem] shrink-0 items-stretch bg-[var(--pearl)]">
           <div className="flex w-full items-center justify-center px-2 py-2 text-center text-[12px] font-semibold whitespace-nowrap text-[var(--foreground)]">
             {t("optCol.strike")}
           </div>
@@ -312,7 +314,7 @@ export const OptionChainPanes = memo(function OptionChainPanes({
           </div>
         ) : null}
 
-        <div className="oc-strike-col w-[5rem] shrink-0">
+        <div className="oc-strike-col w-[5rem] shrink-0 bg-[var(--pearl)]">
           <table className="w-full border-collapse text-[12px] whitespace-nowrap">
             <thead className="oc-thead-spacer" aria-hidden>
               <tr>

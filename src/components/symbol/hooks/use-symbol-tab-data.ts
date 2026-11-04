@@ -40,6 +40,10 @@ type State = {
   company: CompanyProfile | null;
   officers: CompanyOfficer[];
   tabLoading: boolean;
+  /** False until first news fetch settles (incl. silent prefetch). */
+  newsReady: boolean;
+  pressReady: boolean;
+  commentsReady: boolean;
   sentiment: SymbolSentiment;
   degraded: boolean;
 };
@@ -87,6 +91,9 @@ const INITIAL_STATE: State = {
   company: null,
   officers: [],
   tabLoading: false,
+  newsReady: false,
+  pressReady: false,
+  commentsReady: false,
   sentiment: null,
   degraded: false,
 };
@@ -102,7 +109,12 @@ function reducer(state: State, action: Action): State {
     case "set-earnings-loading":
       return { ...state, earningsLoading: action.value };
     case "set-news":
-      return { ...state, news: action.news, degraded: action.degraded };
+      return {
+        ...state,
+        news: action.news,
+        degraded: action.degraded,
+        newsReady: true,
+      };
     case "set-earnings":
       return {
         ...state,
@@ -125,9 +137,14 @@ function reducer(state: State, action: Action): State {
         degraded: state.degraded || action.degraded,
       };
     case "set-press":
-      return { ...state, press: action.press, degraded: action.degraded };
+      return {
+        ...state,
+        press: action.press,
+        degraded: action.degraded,
+        pressReady: true,
+      };
     case "set-comments":
-      return { ...state, comments: action.comments };
+      return { ...state, comments: action.comments, commentsReady: true };
     case "set-sentiment":
       return { ...state, sentiment: action.sentiment };
   }
@@ -141,7 +158,27 @@ type Args = {
   tab: SymbolTab;
   /** When true (e.g. side rail open), idle-prefetch metrics-only for rail stats. */
   prefetchEarnings?: boolean;
+  /** Idle-load news without flipping page tab (stack bottom default). */
+  prefetchNews?: boolean;
+  /** Idle-load press after news settle (stack, single request). */
+  prefetchPress?: boolean;
 };
+
+function scheduleIdle(run: () => void, timeout: number): () => void {
+  let idleId: number | undefined;
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
+  if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+    idleId = window.requestIdleCallback(run, { timeout });
+  } else {
+    timeoutId = setTimeout(run, Math.min(timeout, 2200));
+  }
+  return () => {
+    if (idleId != null && "cancelIdleCallback" in window) {
+      window.cancelIdleCallback(idleId);
+    }
+    if (timeoutId != null) clearTimeout(timeoutId);
+  };
+}
 
 export function useSymbolTabData({
   symbol,
@@ -150,10 +187,15 @@ export function useSymbolTabData({
   locale,
   tab,
   prefetchEarnings = false,
+  prefetchNews = false,
+  prefetchPress = false,
 }: Args) {
   const [data, dispatch] = useReducer(reducer, INITIAL_STATE);
   const earningsLoadedRef = useRef(false);
   const companyLoadedRef = useRef(false);
+  const newsLoadedRef = useRef(false);
+  const pressLoadedRef = useRef(false);
+  const commentsLoadedRef = useRef(false);
   const identity = `${assetType}:${symbol}`;
   const identityRef = useRef(identity);
   identityRef.current = identity;
@@ -186,157 +228,205 @@ export function useSymbolTabData({
     }
   }, [assetType, identity, isCurrentIdentity, isIndex, symbol]);
 
-  const loadTab = useCallback(async () => {
-    const requestIdentity = identity;
-    dispatch({ type: "reset-degraded" });
-    const fundamentalsCached =
-      tab === "fundamentals" &&
-      earningsLoadedRef.current &&
-      companyLoadedRef.current;
-    const showLoading = TAB_LOADING.has(tab) && !fundamentalsCached;
-    if (showLoading) dispatch({ type: "set-tab-loading", value: true });
-    try {
-      if (tab === "news") {
-        const res = await fetch(
-          `/api/news?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}&limit=24`,
-        );
-        const result = await res.json();
-        if (!isCurrentIdentity(requestIdentity)) return;
-        dispatch({
-          type: "set-news",
-          news: result.news ?? [],
-          degraded: !res.ok || Boolean(result.degraded),
-        });
-      } else if (tab === "fundamentals") {
-        if (assetType === "crypto" || isIndex) {
-          dispatch({
-            type: "set-earnings",
-            earnings: [],
-            upcoming: [],
-            recent: [],
-            metrics: [],
-            statement: null,
-            balance: null,
-            cashflow: null,
-            degraded: false,
-          });
-          dispatch({
-            type: "set-company",
-            company: null,
-            officers: [],
-            degraded: false,
-          });
-          return;
-        }
-        if (fundamentalsCached) return;
+  const loadTab = useCallback(
+    async (overrideTab?: SymbolTab, opts?: { silent?: boolean }) => {
+      const activeTab = overrideTab ?? tab;
+      const requestIdentity = identity;
+      dispatch({ type: "reset-degraded" });
+      const fundamentalsCached =
+        activeTab === "fundamentals" &&
+        earningsLoadedRef.current &&
+        companyLoadedRef.current;
+      const showLoading =
+        !opts?.silent && TAB_LOADING.has(activeTab) && !fundamentalsCached;
+      if (showLoading) dispatch({ type: "set-tab-loading", value: true });
+      try {
+        if (activeTab === "news") {
+          try {
+            const res = await fetch(
+              `/api/news?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}&limit=24`,
+            );
+            const result = await res.json();
+            if (!isCurrentIdentity(requestIdentity)) return;
+            dispatch({
+              type: "set-news",
+              news: result.news ?? [],
+              degraded: !res.ok || Boolean(result.degraded),
+            });
+            newsLoadedRef.current = true;
+          } catch {
+            if (!isCurrentIdentity(requestIdentity)) return;
+            dispatch({ type: "set-news", news: [], degraded: true });
+            newsLoadedRef.current = true;
+          }
+        } else if (activeTab === "fundamentals") {
+          if (assetType === "crypto" || isIndex) {
+            dispatch({
+              type: "set-earnings",
+              earnings: [],
+              upcoming: [],
+              recent: [],
+              metrics: [],
+              statement: null,
+              balance: null,
+              cashflow: null,
+              degraded: false,
+            });
+            dispatch({
+              type: "set-company",
+              company: null,
+              officers: [],
+              degraded: false,
+            });
+            return;
+          }
+          if (fundamentalsCached) return;
 
-        const tasks: Promise<void>[] = [];
-        if (!earningsLoadedRef.current) {
-          tasks.push(
-            (async () => {
-              dispatch({ type: "set-earnings-loading", value: true });
-              try {
+          const tasks: Promise<void>[] = [];
+          if (!earningsLoadedRef.current) {
+            tasks.push(
+              (async () => {
+                dispatch({ type: "set-earnings-loading", value: true });
+                try {
+                  const res = await fetch(
+                    `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+                  );
+                  const result = await res.json();
+                  if (!isCurrentIdentity(requestIdentity)) return;
+                  dispatch({
+                    type: "set-earnings",
+                    earnings: result.surprises ?? result.earnings ?? [],
+                    upcoming: result.calendar?.upcoming ?? [],
+                    recent: result.calendar?.recent ?? [],
+                    metrics: result.metrics ?? [],
+                    statement: result.statement ?? null,
+                    balance: result.balance ?? null,
+                    cashflow: result.cashflow ?? null,
+                    degraded: Boolean(result.degraded),
+                  });
+                  earningsLoadedRef.current = true;
+                } finally {
+                  if (isCurrentIdentity(requestIdentity)) {
+                    dispatch({ type: "set-earnings-loading", value: false });
+                  }
+                }
+              })(),
+            );
+          }
+          if (!companyLoadedRef.current) {
+            tasks.push(
+              (async () => {
                 const res = await fetch(
-                  `/api/earnings?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+                  `/api/company?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
                 );
                 const result = await res.json();
                 if (!isCurrentIdentity(requestIdentity)) return;
                 dispatch({
-                  type: "set-earnings",
-                  earnings: result.surprises ?? result.earnings ?? [],
-                  upcoming: result.calendar?.upcoming ?? [],
-                  recent: result.calendar?.recent ?? [],
-                  metrics: result.metrics ?? [],
-                  statement: result.statement ?? null,
-                  balance: result.balance ?? null,
-                  cashflow: result.cashflow ?? null,
-                  degraded: Boolean(result.degraded),
+                  type: "set-company",
+                  company: result.profile ?? null,
+                  officers: result.officers ?? [],
+                  degraded: !res.ok || Boolean(result.degraded),
                 });
-                earningsLoadedRef.current = true;
-              } finally {
-                if (isCurrentIdentity(requestIdentity)) {
-                  dispatch({ type: "set-earnings-loading", value: false });
-                }
-              }
-            })(),
-          );
+                companyLoadedRef.current = true;
+              })(),
+            );
+          }
+          await Promise.all(tasks);
+        } else if (activeTab === "press") {
+          if (assetType === "crypto" || isIndex) {
+            dispatch({ type: "set-press", press: [], degraded: false });
+            pressLoadedRef.current = true;
+            return;
+          }
+          try {
+            const res = await fetch(
+              `/api/press?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}&limit=24`,
+            );
+            const result = await res.json();
+            if (!isCurrentIdentity(requestIdentity)) return;
+            dispatch({
+              type: "set-press",
+              press: result.press ?? [],
+              degraded: Boolean(result.degraded),
+            });
+            pressLoadedRef.current = true;
+          } catch {
+            if (!isCurrentIdentity(requestIdentity)) return;
+            dispatch({ type: "set-press", press: [], degraded: true });
+            pressLoadedRef.current = true;
+          }
+        } else if (activeTab === "comments") {
+          try {
+            const res = await fetch(
+              `/api/comments?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
+            );
+            const result = await res.json();
+            if (!isCurrentIdentity(requestIdentity)) return;
+            dispatch({ type: "set-comments", comments: result.comments ?? [] });
+            commentsLoadedRef.current = true;
+          } catch {
+            if (!isCurrentIdentity(requestIdentity)) return;
+            dispatch({ type: "set-comments", comments: [] });
+            commentsLoadedRef.current = true;
+          }
         }
-        if (!companyLoadedRef.current) {
-          tasks.push(
-            (async () => {
-              const res = await fetch(
-                `/api/company?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}`,
-              );
-              const result = await res.json();
-              if (!isCurrentIdentity(requestIdentity)) return;
-              dispatch({
-                type: "set-company",
-                company: result.profile ?? null,
-                officers: result.officers ?? [],
-                degraded: !res.ok || Boolean(result.degraded),
-              });
-              companyLoadedRef.current = true;
-            })(),
-          );
+      } finally {
+        if (showLoading && isCurrentIdentity(requestIdentity)) {
+          dispatch({ type: "set-tab-loading", value: false });
         }
-        await Promise.all(tasks);
-      } else if (tab === "press") {
-        if (assetType === "crypto" || isIndex) {
-          dispatch({ type: "set-press", press: [], degraded: false });
-          return;
-        }
-        const res = await fetch(
-          `/api/press?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&locale=${encodeURIComponent(locale)}&limit=24`,
-        );
-        const result = await res.json();
-        if (!isCurrentIdentity(requestIdentity)) return;
-        dispatch({
-          type: "set-press",
-          press: result.press ?? [],
-          degraded: Boolean(result.degraded),
-        });
-      } else if (tab === "comments") {
-        const res = await fetch(
-          `/api/comments?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}`,
-        );
-        const result = await res.json();
-        if (!isCurrentIdentity(requestIdentity)) return;
-        dispatch({ type: "set-comments", comments: result.comments ?? [] });
       }
-    } finally {
-      if (isCurrentIdentity(requestIdentity)) {
-        dispatch({ type: "set-tab-loading", value: false });
-      }
-    }
-  }, [assetType, identity, isCurrentIdentity, isIndex, locale, symbol, tab]);
+    },
+    [assetType, identity, isCurrentIdentity, isIndex, locale, symbol, tab],
+  );
 
   useEffect(() => {
     dispatch({ type: "reset" });
     earningsLoadedRef.current = false;
     companyLoadedRef.current = false;
+    newsLoadedRef.current = false;
+    pressLoadedRef.current = false;
+    commentsLoadedRef.current = false;
   }, [identity]);
 
   useEffect(() => {
     if (!prefetchEarnings) return;
     let cancelled = false;
-    const run = () => {
+    const cancelIdle = scheduleIdle(() => {
       if (!cancelled) void loadEarningsMetrics();
-    };
-    let idleId: number | undefined;
-    let timeoutId: ReturnType<typeof setTimeout> | undefined;
-    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
-      idleId = window.requestIdleCallback(run, { timeout: 4500 });
-    } else {
-      timeoutId = setTimeout(run, 2200);
-    }
+    }, 4500);
     return () => {
       cancelled = true;
-      if (idleId != null && "cancelIdleCallback" in window) {
-        window.cancelIdleCallback(idleId);
-      }
-      if (timeoutId != null) clearTimeout(timeoutId);
+      cancelIdle();
     };
   }, [loadEarningsMetrics, prefetchEarnings]);
+
+  useEffect(() => {
+    if (!prefetchNews || newsLoadedRef.current) return;
+    let cancelled = false;
+    const cancelIdle = scheduleIdle(() => {
+      if (cancelled || newsLoadedRef.current) return;
+      void loadTab("news", { silent: true });
+    }, 2800);
+    return () => {
+      cancelled = true;
+      cancelIdle();
+    };
+  }, [loadTab, prefetchNews]);
+
+  useEffect(() => {
+    if (!prefetchPress || pressLoadedRef.current) return;
+    if (assetType === "crypto" || isIndex || assetType === "hk") return;
+    let cancelled = false;
+    // Wait longer so news can settle first; single press request only.
+    const cancelIdle = scheduleIdle(() => {
+      if (cancelled || pressLoadedRef.current) return;
+      void loadTab("press", { silent: true });
+    }, 4000);
+    return () => {
+      cancelled = true;
+      cancelIdle();
+    };
+  }, [assetType, isIndex, loadTab, prefetchPress]);
 
   useEffect(() => {
     if (tab !== "sentiment") return;
@@ -360,7 +450,18 @@ export function useSymbolTabData({
   }, [assetType, symbol, tab]);
 
   useEffect(() => {
-    if (TAB_LOADING.has(tab)) void loadTab();
+    if (!TAB_LOADING.has(tab)) return;
+    if (tab === "news" && newsLoadedRef.current) return;
+    if (tab === "press" && pressLoadedRef.current) return;
+    if (tab === "comments" && commentsLoadedRef.current) return;
+    if (
+      tab === "fundamentals" &&
+      earningsLoadedRef.current &&
+      companyLoadedRef.current
+    ) {
+      return;
+    }
+    void loadTab();
   }, [loadTab, tab]);
 
   return { ...data, loadTab };

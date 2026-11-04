@@ -124,6 +124,8 @@
   "symbol": {
     "chart": "Chart",
     "news": "News",
+    "newsEmpty": "No news yet",
+    "pressEmpty": "No press releases yet",
     "earnings": "Earnings",
     "fundamentals": "Fundamentals",
     "press": "Press",

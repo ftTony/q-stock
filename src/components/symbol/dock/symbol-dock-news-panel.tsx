@@ -16,10 +16,14 @@ type Props = {
   news: NewsRow[];
   press: PressRow[];
   tabLoading: boolean;
+  /** First news fetch settled (false while idle/silent prefetch pending). */
+  newsReady?: boolean;
+  pressReady?: boolean;
   degraded: boolean;
   degradedLabel: string;
   errorLabel: string;
   loadingLabel: string;
+  emptyLabel?: string;
   /** Stack layout: feed type is a top-level tab — hide inner chips. */
   hideFeedTabs?: boolean;
 };
@@ -69,15 +73,22 @@ export function SymbolDockNewsPanel({
   news,
   press,
   tabLoading,
+  newsReady = false,
+  pressReady = false,
   degraded,
   degradedLabel,
-  errorLabel,
   loadingLabel,
+  emptyLabel,
   hideFeedTabs = false,
 }: Props) {
   const t = useTranslations("symbol");
   const showPress = assetType !== "crypto";
   const stack = hideFeedTabs;
+  const newsPending = tabLoading || !newsReady;
+  const pressPending = tabLoading || !pressReady;
+  const newsEmptyLabel = degraded
+    ? degradedLabel
+    : (emptyLabel ?? t("newsEmpty"));
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -117,12 +128,12 @@ export function SymbolDockNewsPanel({
         }`}
       >
         {feedTab === "news" ? (
-          tabLoading ? (
+          newsPending ? (
             <ListPanelSkeleton rows={6} label={loadingLabel} className="pt-2" />
           ) : news.length === 0 ? (
             <EmptyStateBlock
               art="news"
-              label={degraded ? degradedLabel : errorLabel}
+              label={newsEmptyLabel}
             />
           ) : (
             <ul className={stack ? "aw-stack-feed-list" : "aw-dock-feed-list"}>
@@ -152,10 +163,13 @@ export function SymbolDockNewsPanel({
           <p className="aw-caption flex min-h-[12rem] items-center justify-center">
             N/A
           </p>
-        ) : tabLoading ? (
+        ) : pressPending ? (
           <ListPanelSkeleton rows={6} label={loadingLabel} className="pt-2" />
         ) : press.length === 0 ? (
-          <EmptyStateBlock art="news" label={degradedLabel} />
+          <EmptyStateBlock
+            art="news"
+            label={degraded ? degradedLabel : (emptyLabel ?? t("pressEmpty"))}
+          />
         ) : (
           <ul className={stack ? "aw-stack-feed-list" : "aw-dock-feed-list"}>
             {press.map((p, i) => (

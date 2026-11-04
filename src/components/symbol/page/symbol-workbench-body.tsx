@@ -135,6 +135,8 @@ export function SymbolWorkbenchBody({
       canComment={Boolean(s.session?.user)}
       currentUserId={s.session?.user?.id}
       tabLoading={s.tabLoading}
+      newsReady={s.newsReady}
+      pressReady={s.pressReady}
       degraded={s.degraded}
       earnings={s.earnings}
       earningsUpcoming={s.earningsUpcoming}
@@ -195,41 +197,8 @@ export function SymbolWorkbenchBody({
           onModuleChange={onModuleChange}
           onResetLayout={onResetLayout}
         />
-        {isStack ? (
-          <SymbolChartToolbarHostProvider>
-            <SymbolWorkbenchMainGrid
-              symbol={symbol}
-              assetType={assetType}
-              isIndex={isIndex}
-              isDesktop={isDesktop}
-              isStack={isStack}
-              layoutPrefs={layoutPrefs}
-              s={s}
-              p={p}
-              rail={rail}
-              watch={watch}
-              setWatchOpen={setWatchOpen}
-              setRailOpen={setRailOpen}
-              panelTab={panelTab}
-              desktopQuoteTabs={desktopQuoteTabs}
-              mobileMoreTabs={mobileMoreTabs}
-              chartSlot={chartSlot}
-              feedStatus={feedStatus}
-              marketCap={marketCap}
-              stackTab={stackTab}
-              setStackTab={setStackTab}
-              stackKey={stackKey}
-              newsFeedTab={newsFeedTab}
-              openTrade={openTrade}
-              onSideSelect={onSideSelect}
-              onToggleWatchlist={onToggleWatchlist}
-              aboutLabel={aboutLabel}
-              onOpenAbout={onOpenAbout}
-              stackBelow={stackBelow}
-              embedChartToolbar
-            />
-          </SymbolChartToolbarHostProvider>
-        ) : (
+        {/* Always mount HostProvider + single MainGrid so side↔stack does not remount CandleChart. */}
+        <SymbolChartToolbarHostProvider>
           <SymbolWorkbenchMainGrid
             symbol={symbol}
             assetType={assetType}
@@ -259,9 +228,9 @@ export function SymbolWorkbenchBody({
             aboutLabel={aboutLabel}
             onOpenAbout={onOpenAbout}
             stackBelow={stackBelow}
-            embedChartToolbar={false}
+            embedChartToolbar={isStack}
           />
-        )}
+        </SymbolChartToolbarHostProvider>
       </div>
     </div>
   );

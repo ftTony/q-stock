@@ -79,6 +79,8 @@ type Props = {
   commentsEmpty: string;
   commentsDelete: string;
   tabLoading: boolean;
+  newsReady?: boolean;
+  pressReady?: boolean;
   degraded: boolean;
   degradedLabel: string;
   errorLabel: string;
@@ -121,6 +123,8 @@ export function SymbolDockDrawers({
   commentsEmpty,
   commentsDelete,
   tabLoading,
+  newsReady = false,
+  pressReady = false,
   degraded,
   degradedLabel,
   errorLabel,
@@ -246,6 +250,8 @@ export function SymbolDockDrawers({
           news={news}
           press={press}
           tabLoading={tabLoading}
+          newsReady={newsReady}
+          pressReady={pressReady}
           degraded={degraded}
           degradedLabel={degradedLabel}
           errorLabel={errorLabel}

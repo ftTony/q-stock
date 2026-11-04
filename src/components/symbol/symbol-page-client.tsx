@@ -90,13 +90,22 @@ export function SymbolPageClient({
 
   const s = useSymbolPage(symbol, assetType, isIndex, initialQuote, {
     initialBars,
-    prefetchEarnings: isDesktop ? rail.open || isStack : false,
+    // Only prefetch earnings when rail is open or user is on fundamentals stack tabs.
+    prefetchEarnings:
+      isDesktop &&
+      (rail.open || stackTab === "earnings" || stackTab === "profile"),
+    // Stack defaults to news UI without flipping page tab off chart on first paint.
+    prefetchNews: isStack && stackTab === "news",
+    prefetchPress: isStack && stackTab === "news",
   });
 
-  /** Stack bottom defaults to news, but page tab starts at chart — sync so feeds load. */
+  /**
+   * Stack bottom: sync data tabs when user selects them.
+   * Default "news" uses idle prefetchNews instead of immediate setTab (chart first).
+   */
   useEffect(() => {
     if (!isStack) return;
-    if (stackTab === "news" || stackTab === "press" || stackTab === "comments") {
+    if (stackTab === "press" || stackTab === "comments") {
       s.setTab(stackTab);
       return;
     }
@@ -104,7 +113,7 @@ export function SymbolPageClient({
       s.setTab("fundamentals");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps -- s.setTab stable; avoid s identity churn
-  }, [isStack, stackTab]);
+  }, [isStack, stackTab, symbol]);
 
   const desktopQuoteTabs = useMemo(() => {
     if (isStack) return s.tabs.filter((x) => x.id === "chart");
@@ -344,6 +353,8 @@ export function SymbolPageClient({
           commentsEmpty={s.tComments("empty")}
           commentsDelete={s.tComments("delete")}
           tabLoading={s.tabLoading}
+          newsReady={s.newsReady}
+          pressReady={s.pressReady}
           degraded={s.degraded}
           degradedLabel={s.tCommon("degraded")}
           errorLabel={s.tCommon("error")}

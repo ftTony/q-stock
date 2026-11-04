@@ -1,28 +1,17 @@
 "use client";
 
-import dynamic from "next/dynamic";
-import { Suspense, useMemo, type FormEvent } from "react";
+import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
-import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import type { EarningsMetric } from "@/components/market/earnings-panel";
-import { SymbolDockCommentsPanel } from "@/components/symbol/dock/symbol-dock-comments-panel";
-import {
-  SymbolDockNewsPanel,
-  type NewsFeedTab,
-} from "@/components/symbol/dock/symbol-dock-news-panel";
-import { SymbolFundamentalsPanel } from "@/components/symbol/panels/symbol-fundamentals-panel";
-import { SymbolStackAiPane } from "@/components/symbol/page/symbol-stack-ai-pane";
+import type { NewsFeedTab } from "@/components/symbol/dock/symbol-dock-news-panel";
 import { useStackBottomResize } from "@/components/symbol/hooks/use-stack-bottom-resize";
+import { SymbolStackBottomPanes } from "@/components/symbol/page/symbol-stack-bottom-panes";
 import type {
   CommentRow,
   NewsRow,
   PressRow,
 } from "@/components/symbol/tabs/symbol-tabs-panel";
-import {
-  InlineLoading,
-  PanelSkeleton,
-} from "@/components/ui/panel-skeleton";
 import type { CompanyOfficer, CompanyProfile } from "@/lib/company";
 import type { EarningsStatement } from "@/lib/earnings/types";
 import type {
@@ -30,44 +19,6 @@ import type {
   EarningsSurprise,
 } from "@/components/market/earnings-panel";
 import type { AssetType, Quote } from "@/lib/types";
-
-const TradePanel = dynamic(
-  () =>
-    import("@/components/trading/trade-panel").then((m) => ({
-      default: m.TradePanel,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="p-4">
-        <PanelSkeleton rows={5} />
-      </div>
-    ),
-  },
-);
-
-const SymbolPaperRiskBar = dynamic(
-  () =>
-    import("@/components/symbol/plan/symbol-paper-risk-bar").then((m) => ({
-      default: m.SymbolPaperRiskBar,
-    })),
-  { ssr: false },
-);
-
-const SymbolDerivativesPanel = dynamic(
-  () =>
-    import("@/components/symbol/panels/symbol-derivatives-panel").then((m) => ({
-      default: m.SymbolDerivativesPanel,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="p-4">
-        <PanelSkeleton rows={6} />
-      </div>
-    ),
-  },
-);
 
 export type StackBottomTab =
   | "news"
@@ -78,6 +29,14 @@ export type StackBottomTab =
   | "derivatives"
   | "earnings"
   | "profile";
+
+/** Soft keep-alive candidates (heavy remount cost). Cap via LRU. */
+const SOFT_KEEP: ReadonlySet<StackBottomTab> = new Set([
+  "news",
+  "trade",
+  "ai",
+]);
+const SOFT_KEEP_MAX = 3;
 
 type Props = {
   symbol: string;
@@ -108,6 +67,8 @@ type Props = {
   canComment: boolean;
   currentUserId?: string;
   tabLoading: boolean;
+  newsReady?: boolean;
+  pressReady?: boolean;
   degraded: boolean;
   earnings: EarningsSurprise[];
   earningsUpcoming: EarningsCalendarRow[];
@@ -165,6 +126,12 @@ function tabsForAsset(
   return ALL_TABS;
 }
 
+function softKeepId(tab: StackBottomTab): StackBottomTab | null {
+  if (tab === "press") return "news";
+  if (SOFT_KEEP.has(tab)) return tab;
+  return null;
+}
+
 /** Desktop stack layout: resizable bottom tab strip + content. */
 export function SymbolStackBottomPanel({
   symbol,
@@ -195,6 +162,8 @@ export function SymbolStackBottomPanel({
   canComment,
   currentUserId,
   tabLoading,
+  newsReady = false,
+  pressReady = false,
   degraded,
   earnings,
   earningsUpcoming,
@@ -222,6 +191,26 @@ export function SymbolStackBottomPanel({
     [assetType, isIndex],
   );
   const active = items.some((x) => x.id === tab) ? tab : items[0]?.id ?? "news";
+
+  const [kept, setKept] = useState<StackBottomTab[]>(["news"]);
+
+  useEffect(() => {
+    setKept(["news"]);
+  }, [symbol, assetType]);
+
+  useEffect(() => {
+    const id = softKeepId(active);
+    if (!id) return;
+    setKept((prev) => {
+      const next = [id, ...prev.filter((x) => x !== id)];
+      return next.slice(0, SOFT_KEEP_MAX);
+    });
+  }, [active]);
+
+  const mountNews =
+    active === "news" || active === "press" || kept.includes("news");
+  const mountTrade = active === "trade" || kept.includes("trade");
+  const mountAi = active === "ai" || kept.includes("ai");
 
   const ruleFooter = boundRuleName ? (
     <div className="flex items-center justify-between gap-2">
@@ -294,146 +283,65 @@ export function SymbolStackBottomPanel({
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        {active === "news" || active === "press" ? (
-          <div className="min-h-0 flex-1 overflow-y-auto qt-scroll">
-            <SymbolDockNewsPanel
-              feedTab={active === "press" ? "press" : "news"}
-              onFeedTabChange={onNewsFeedTabChange}
-              assetType={assetType}
-              news={news}
-              press={press}
-              tabLoading={tabLoading}
-              degraded={degraded}
-              degradedLabel={tCommon("degraded")}
-              errorLabel={tCommon("error")}
-              loadingLabel={tCommon("loading")}
-              hideFeedTabs
-            />
-          </div>
-        ) : null}
-
-        {active === "trade" ? (
-          <div className="aw-stack-pane-trade flex min-h-0 flex-1 flex-col overflow-hidden">
-            {authStatus === "loading" ? (
-              <div className="flex flex-1 items-center justify-center p-4">
-                <InlineLoading label={tCommon("loading")} />
-              </div>
-            ) : !tradeAuthed ? (
-              <div className="flex flex-1 items-center justify-center p-4">
-                <AuthLoginGate
-                  compact
-                  title={tTrading("loginTitle")}
-                  body={tTrading("loginBody")}
-                  hint={tTrading("loginHint")}
-                />
-              </div>
-            ) : (
-              <>
-                <SymbolPaperRiskBar
-                  symbol={symbol}
-                  assetType={assetType}
-                  lastPrice={lastPrice}
-                  footer={ruleFooter}
-                  dense
-                />
-                <Suspense
-                  fallback={
-                    <div className="min-h-0 flex-1 p-4">
-                      <PanelSkeleton rows={5} label={tCommon("loading")} />
-                    </div>
-                  }
-                >
-                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                    <TradePanel
-                      symbol={symbol}
-                      assetType={assetType}
-                      lastPrice={lastPrice}
-                      percentChange={percentChange}
-                      quoteName={quoteName}
-                      bid={bid}
-                      ask={ask}
-                      onOpenAi={onOpenAi}
-                      onOpenPlan={onOpenPlan}
-                      strategyId={boundStrategyId ?? ""}
-                      strategyName={boundRuleName}
-                      onStrategyIdChange={(id, name) =>
-                        onBoundStrategyChange(name ?? null, id)
-                      }
-                      density="stack"
-                    />
-                  </div>
-                </Suspense>
-              </>
-            )}
-          </div>
-        ) : null}
-
-        {active === "ai" ? (
-          <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-            <SymbolStackAiPane symbol={symbol} assetType={assetType} />
-          </div>
-        ) : null}
-
-        {active === "comments" ? (
-          <div className="aw-stack-pane-comments flex min-h-0 flex-1 flex-col overflow-hidden">
-            <SymbolDockCommentsPanel
-              comments={comments}
-              commentText={commentText}
-              onCommentTextChange={onCommentTextChange}
-              onPostComment={onPostComment}
-              onDeleteComment={onDeleteComment}
-              commentBusy={commentBusy}
-              canComment={canComment}
-              currentUserId={currentUserId}
-              commentsPlaceholder={tComments("placeholder")}
-              commentsPost={tComments("post")}
-              commentsEmpty={tComments("empty")}
-              commentsDelete={tComments("delete")}
-              tabLoading={tabLoading}
-              loadingLabel={tCommon("loading")}
-              density="stack"
-            />
-          </div>
-        ) : null}
-
-        {active === "derivatives" ? (
-          <div className="min-h-0 flex-1 overflow-hidden">
-            <SymbolDerivativesPanel
-              symbol={symbol}
-              assetType={assetType}
-              lastPrice={lastPrice ?? quote?.price ?? null}
-            />
-          </div>
-        ) : null}
-
-        {active === "earnings" || active === "profile" ? (
-          <div className="min-h-0 flex-1 overflow-y-auto p-3 qt-scroll">
-            {assetType === "crypto" || isIndex ? (
-              <p className="text-[12px] text-[var(--muted)]">
-                {tEarn("cryptoNa")}
-              </p>
-            ) : (
-              <SymbolFundamentalsPanel
-                key={active}
-                earnings={earnings}
-                earningsUpcoming={earningsUpcoming}
-                earningsRecent={earningsRecent}
-                earningsMetrics={earningsMetrics}
-                earningsStatement={earningsStatement}
-                earningsBalance={earningsBalance}
-                earningsCashflow={earningsCashflow}
-                earningsLoading={earningsLoading}
-                degraded={degraded}
-                company={company}
-                officers={officers}
-                initialSection={active === "profile" ? "profile" : "income"}
-                density="stack"
-              />
-            )}
-          </div>
-        ) : null}
-      </div>
+      <SymbolStackBottomPanes
+        active={active}
+        mountNews={mountNews}
+        mountTrade={mountTrade}
+        mountAi={mountAi}
+        symbol={symbol}
+        assetType={assetType}
+        isIndex={isIndex}
+        quote={quote}
+        lastPrice={lastPrice}
+        percentChange={percentChange}
+        quoteName={quoteName}
+        bid={bid}
+        ask={ask}
+        boundStrategyId={boundStrategyId}
+        boundRuleName={boundRuleName}
+        onBoundStrategyChange={onBoundStrategyChange}
+        onOpenPlan={onOpenPlan}
+        onOpenAi={onOpenAi}
+        onNewsFeedTabChange={onNewsFeedTabChange}
+        news={news}
+        press={press}
+        comments={comments}
+        commentText={commentText}
+        onCommentTextChange={onCommentTextChange}
+        onPostComment={onPostComment}
+        onDeleteComment={onDeleteComment}
+        commentBusy={commentBusy}
+        canComment={canComment}
+        currentUserId={currentUserId}
+        tabLoading={tabLoading}
+        newsReady={newsReady}
+        pressReady={pressReady}
+        degraded={degraded}
+        earnings={earnings}
+        earningsUpcoming={earningsUpcoming}
+        earningsRecent={earningsRecent}
+        earningsMetrics={earningsMetrics}
+        earningsStatement={earningsStatement}
+        earningsBalance={earningsBalance}
+        earningsCashflow={earningsCashflow}
+        earningsLoading={earningsLoading}
+        company={company}
+        officers={officers}
+        tradeAuthed={tradeAuthed}
+        authStatus={authStatus}
+        ruleFooter={ruleFooter}
+        loadingLabel={tCommon("loading")}
+        degradedLabel={tCommon("degraded")}
+        errorLabel={tCommon("error")}
+        cryptoNaLabel={tEarn("cryptoNa")}
+        loginTitle={tTrading("loginTitle")}
+        loginBody={tTrading("loginBody")}
+        loginHint={tTrading("loginHint")}
+        commentsPlaceholder={tComments("placeholder")}
+        commentsPost={tComments("post")}
+        commentsEmpty={tComments("empty")}
+        commentsDelete={tComments("delete")}
+      />
     </div>
   );
 }

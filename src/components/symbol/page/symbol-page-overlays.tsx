@@ -54,6 +54,8 @@ type Props = {
   commentsEmpty: string;
   commentsDelete: string;
   tabLoading: boolean;
+  newsReady?: boolean;
+  pressReady?: boolean;
   degraded: boolean;
   degradedLabel: string;
   errorLabel: string;
@@ -121,6 +123,8 @@ export function SymbolPageOverlays(p: Props) {
           commentsEmpty={p.commentsEmpty}
           commentsDelete={p.commentsDelete}
           tabLoading={p.tabLoading}
+          newsReady={p.newsReady}
+          pressReady={p.pressReady}
           degraded={p.degraded}
           degradedLabel={p.degradedLabel}
           errorLabel={p.errorLabel}
