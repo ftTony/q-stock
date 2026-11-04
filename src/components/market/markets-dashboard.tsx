@@ -1,13 +1,11 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
-import { CryptoPopularTable } from "@/components/market/crypto-popular-table";
-import { IndustryHeatmap } from "@/components/market/industry-heatmap";
-import { MarketsAsidePanels } from "@/components/market/markets-aside-panels";
 import { MarketsHeaderToolbar } from "@/components/market/markets-header-toolbar";
 import { MarketsKpiStrip } from "@/components/market/markets-kpi-strip";
 import { RankBoardPanel } from "@/components/market/rank-board-panel";
@@ -24,9 +22,36 @@ import {
   useMarketNews,
   useMarketSentiment,
 } from "@/hooks/query/use-market";
+import { useMobileDeferredReady } from "@/hooks/use-mobile-deferred-ready";
 import { useSymbolSearch } from "@/hooks/query/use-symbol-search";
 import { formatTime } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
+
+const IndustryHeatmap = dynamic(
+  () =>
+    import("@/components/market/industry-heatmap").then((m) => ({
+      default: m.IndustryHeatmap,
+    })),
+  {
+    loading: () => (
+      <div className="mx-3 h-[220px] animate-pulse bg-[var(--panel)] lg:mx-0 lg:h-[360px]" />
+    ),
+  },
+);
+
+const MarketsAsidePanels = dynamic(
+  () =>
+    import("@/components/market/markets-aside-panels").then((m) => ({
+      default: m.MarketsAsidePanels,
+    })),
+);
+
+const CryptoPopularTable = dynamic(
+  () =>
+    import("@/components/market/crypto-popular-table").then((m) => ({
+      default: m.CryptoPopularTable,
+    })),
+);
 
 type Tab = AssetType;
 type Board = "hot" | "gainers" | "losers";
@@ -69,6 +94,9 @@ export default function MarketsDashboard() {
   const signedIn = Boolean(session?.user);
   const loginModal = useLoginModalOptional();
 
+  /** H5: defer below-fold news/heatmap until idle; desktop ready immediately. */
+  const heavyReady = useMobileDeferredReady(450);
+
   const boardsQuery = useMarketBoards(tab, {
     refetchInterval: (query) => {
       const data = query.state.data?.boards;
@@ -81,10 +109,10 @@ export default function MarketsDashboard() {
       return boardsHaveData(boards, tab) ? false : 45_000;
     },
   });
-  const newsQuery = useMarketNews(tab, tab !== "cn");
+  const newsQuery = useMarketNews(tab, heavyReady && tab !== "cn");
   const sentimentQuery = useMarketSentiment(
     tab,
-    tab !== "hk" && tab !== "cn",
+    heavyReady && tab !== "hk" && tab !== "cn",
   );
   const alertsQuery = useAlerts({ enabled: true });
   const watchlistQuery = useWatchlist({ enabled: signedIn });
@@ -239,7 +267,11 @@ export default function MarketsDashboard() {
         ]}
       />
 
-      {tab !== "crypto" && <IndustryHeatmap assetType={tab} />}
+      {tab !== "crypto" && heavyReady ? (
+        <IndustryHeatmap assetType={tab} />
+      ) : tab !== "crypto" ? (
+        <div className="mx-3 h-[220px] animate-pulse bg-[var(--panel)] lg:mx-0 lg:h-[360px]" />
+      ) : null}
 
       <section className="space-y-3">
         <div className="flex items-end justify-between gap-3 px-3 lg:px-0">
@@ -295,9 +327,9 @@ export default function MarketsDashboard() {
           ))}
       </section>
 
-      {tab !== "cn" && (
+      {tab !== "cn" && heavyReady ? (
         <MarketsAsidePanels tab={tab} news={news} sentiment={sentiment} />
-      )}
+      ) : null}
     </div>
   );
 }

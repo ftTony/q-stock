@@ -1,11 +1,18 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { fmtMoney } from "@/components/portfolio/format";
-import { PortfolioPositionsCharts } from "@/components/portfolio/portfolio-positions-charts";
 import type { PaperOrder, PaperPosition } from "@/components/portfolio/types";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
+
+const PortfolioPositionsCharts = dynamic(
+  () =>
+    import("@/components/portfolio/portfolio-positions-charts").then((m) => ({
+      default: m.PortfolioPositionsCharts,
+    })),
+);
 
 type Props = {
   cash: number;

@@ -1,5 +1,6 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { useMemo, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -10,9 +11,9 @@ import type { Quote } from "@/lib/types";
 import { MarketsKpiStrip } from "@/components/market/markets-kpi-strip";
 import { PortfolioPaperSection } from "@/components/portfolio/portfolio-paper-section";
 import { PortfolioHoldingsTable } from "@/components/portfolio/portfolio-holdings-table";
-import { PortfolioAside } from "@/components/portfolio/portfolio-aside";
 import { useAlerts } from "@/hooks/query/use-alerts";
 import { useMarketNews, useMarketSentiment } from "@/hooks/query/use-market";
+import { useMobileDeferredReady } from "@/hooks/use-mobile-deferred-ready";
 import {
   useAddWatchlistItem,
   useWatchlist,
@@ -32,6 +33,13 @@ import type {
   PortfolioRow,
 } from "@/components/portfolio/types";
 
+const PortfolioAside = dynamic(
+  () =>
+    import("@/components/portfolio/portfolio-aside").then((m) => ({
+      default: m.PortfolioAside,
+    })),
+);
+
 export default function PortfolioPage() {
   const t = useTranslations("portfolio");
   const tMarket = useTranslations("market");
@@ -42,6 +50,8 @@ export default function PortfolioPage() {
   const [tradeMsg, setTradeMsg] = useState<string | null>(null);
   const signedIn = Boolean(session?.user);
   const poll = signedIn ? 45_000 : false;
+  /** H5: defer news/sentiment; desktop unchanged. */
+  const asideReady = useMobileDeferredReady(500);
 
   const watchlist = useWatchlist({
     quotes: true,
@@ -49,8 +59,11 @@ export default function PortfolioPage() {
     refetchInterval: poll,
   });
   const alertsQuery = useAlerts({ enabled: signedIn, refetchInterval: poll });
-  const sentimentQuery = useMarketSentiment("stock", signedIn);
-  const newsQuery = useMarketNews("stock", signedIn);
+  const sentimentQuery = useMarketSentiment(
+    "stock",
+    signedIn && asideReady,
+  );
+  const newsQuery = useMarketNews("stock", signedIn && asideReady);
   const accountQuery = useTradingAccount(signedIn);
   const positionsQuery = useTradingPositions({
     quotes: true,
@@ -280,23 +293,25 @@ export default function PortfolioPage() {
         }}
       />
 
-      <PortfolioAside
-        news={news}
-        sentiment={sentiment}
-        bullish={bullish}
-        bearish={bearish}
-        neutral={neutral}
-        labels={{
-          narrative: tMarket("narrative"),
-          viewAll: tMarket("viewAll"),
-          unavailable: tMarket("unavailable"),
-          sentiment: tMarket("sentiment"),
-          bullish: tMarket("bullish"),
-          neutral: tMarket("neutral"),
-          bearish: tMarket("bearish"),
-          sentimentHint: tMarket("sentimentHint"),
-        }}
-      />
+      {asideReady ? (
+        <PortfolioAside
+          news={news}
+          sentiment={sentiment}
+          bullish={bullish}
+          bearish={bearish}
+          neutral={neutral}
+          labels={{
+            narrative: tMarket("narrative"),
+            viewAll: tMarket("viewAll"),
+            unavailable: tMarket("unavailable"),
+            sentiment: tMarket("sentiment"),
+            bullish: tMarket("bullish"),
+            neutral: tMarket("neutral"),
+            bearish: tMarket("bearish"),
+            sentimentHint: tMarket("sentimentHint"),
+          }}
+        />
+      ) : null}
     </div>
   );
 }

@@ -16,6 +16,7 @@ import {
   useQuoteChannels,
 } from "@/hooks/use-quote-socket";
 import { queryKeys } from "@/lib/query/keys";
+import { LG_MIN, useMinWidth } from "@/hooks/use-min-width";
 import type { ServerMessage } from "@/lib/market/stream/protocol";
 import type { AssetType } from "@/lib/types";
 
@@ -83,6 +84,7 @@ function IndexChip({ item }: { item: IndexQuote }) {
 /** Header ticker: auto-rotate US / HK / CN index triples (WS push + HTTP fallback). */
 export function TopbarIndexTicker() {
   const qc = useQueryClient();
+  const isDesktop = useMinWidth(LG_MIN);
   const [page, setPage] = useState(0);
   const [pollFast, setPollFast] = useState(true);
 
@@ -124,18 +126,35 @@ export function TopbarIndexTicker() {
   } = useQuoteChannels([{ type: "indices" }], onWsMessage);
 
   const interval = useMemo(() => {
-    if (pollFast || !wsPush || wsDegraded) return 3_000;
-    return quotePollIntervalMs({
+    if (pollFast || !wsPush || wsDegraded) {
+      // H5: avoid 3-market × 3s storms while prices warm up.
+      return isDesktop ? 3_000 : 8_000;
+    }
+    const base = quotePollIntervalMs({
       enabled: wsEnabled,
       connected: wsConnected,
       degraded: wsDegraded,
       push: wsPush,
     });
-  }, [pollFast, wsPush, wsDegraded, wsEnabled, wsConnected]);
+    if (!isDesktop && typeof base === "number") {
+      return Math.max(base, 20_000);
+    }
+    return base;
+  }, [pollFast, wsPush, wsDegraded, wsEnabled, wsConnected, isDesktop]);
 
-  const stockQ = useMarketIndices("stock", { refetchInterval: interval });
-  const hkQ = useMarketIndices("hk", { refetchInterval: interval });
-  const cnQ = useMarketIndices("cn", { refetchInterval: interval });
+  // Desktop: keep all three warm for instant rotate. H5: only active page.
+  const stockQ = useMarketIndices("stock", {
+    enabled: isDesktop || page === 0,
+    refetchInterval: interval,
+  });
+  const hkQ = useMarketIndices("hk", {
+    enabled: isDesktop || page === 1,
+    refetchInterval: interval,
+  });
+  const cnQ = useMarketIndices("cn", {
+    enabled: isDesktop || page === 2,
+    refetchInterval: interval,
+  });
 
   const bundles = useMemo(() => {
     const byMarket: Record<string, IndexQuote[]> = {

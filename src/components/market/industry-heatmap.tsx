@@ -201,7 +201,7 @@ export function IndustryHeatmap({
 
         <div
           ref={ref}
-          className="relative h-[360px] w-full bg-[var(--panel)] sm:h-[440px] lg:h-[520px]"
+          className="relative h-[220px] w-full bg-[var(--panel)] sm:h-[360px] lg:h-[520px]"
           onMouseLeave={scheduleHide}
         >
           {loading && <IndustryHeatmapSkeleton label={tCommon("loading")} />}
