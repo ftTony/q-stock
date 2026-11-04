@@ -1,17 +1,9 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { usePathname } from "@/i18n/routing";
 import { ConsoleWelcome } from "@/components/brand/console-welcome";
+import { MainAppShell } from "@/components/layout/main-app-shell";
 import { MarketingAppShell } from "@/components/layout/marketing-app-shell";
-
-const MainAppShell = dynamic(
-  () =>
-    import("@/components/layout/main-app-shell").then((m) => ({
-      default: m.MainAppShell,
-    })),
-  { ssr: true },
-);
 
 function isMarketingPath(pathname: string) {
   return (
@@ -58,9 +50,9 @@ function isAppPath(pathname: string) {
 }
 
 /**
- * Route shell by path so marketing/auth never pull sidebar + quote socket
- * into the initial JS graph. Unknown paths (404) use the same marketing
- * header as the homepage.
+ * Route shell by path. MainAppShell is a static import — Turbopack `next/dynamic`
+ * entry chunks for the shell have been flaky after HMR (Failed to load chunk).
+ * Marketing/auth still do not *render* the product chrome.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();

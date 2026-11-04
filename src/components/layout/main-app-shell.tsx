@@ -84,22 +84,24 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
         {/*
           Symbol desktop: topbar lives beside 自选 in SymbolWorkbenchTopbar
           so Logo | 自选 | indices share one hairline. Keep shell header on H5.
+          Do not put overflow-x-hidden on this column — it breaks position:sticky.
         */}
         <header
-          className={`sticky top-0 z-40 box-border flex h-[var(--wb-topbar-h,40px)] shrink-0 items-center border-b border-[var(--border)] backdrop-blur-xl ${
+          className={`sticky top-0 z-40 box-border flex h-[var(--wb-topbar-h,40px)] shrink-0 items-center border-b border-[var(--border)] ${
             isSymbol
-              ? "bg-[var(--symbol-shell-bg)]/90 lg:hidden"
-              : "bg-[var(--background)]/90"
+              ? "bg-[var(--symbol-shell-bg)] lg:hidden"
+              : "bg-[var(--background)]"
           }`}
         >
           <div
             className={
               isSymbol
-                ? "flex h-full min-h-0 w-full items-center gap-2 px-1.5 sm:gap-2 sm:px-2"
-                : "flex h-full min-h-0 w-full items-center gap-2 px-3 sm:gap-3 sm:px-5 lg:px-6"
+                ? "flex h-full min-h-0 w-full min-w-0 items-center gap-2 px-1.5 sm:gap-2 sm:px-2"
+                : "flex h-full min-h-0 w-full min-w-0 items-center gap-2 px-3 sm:gap-3 sm:px-5 lg:px-6"
             }
           >
-            <div className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden sm:max-w-[min(52%,36rem)] sm:gap-3 sm:flex-none">
+            {/* Indices — H5: full triple + logo, no clip; desktop may shrink before actions. */}
+            <div className="flex shrink-0 items-center gap-1.5 sm:gap-3 lg:min-w-0 lg:max-w-[min(40%,26rem)] lg:shrink lg:overflow-hidden">
               <a
                 href={homeHref}
                 className="relative z-10 flex shrink-0 items-center lg:hidden"
@@ -107,27 +109,28 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
               >
                 <SiteLogo height={24} variant="compact" />
               </a>
-              {/* Symbol H5: hide index ticker — quote bar under this row is already dense. */}
-              <div className={isSymbol ? "hidden min-w-0 lg:block" : "min-w-0"}>
+              {/* Symbol shell header is lg:hidden — H5 shows the same triple as markets. */}
+              <div className="shrink-0">
                 <TopbarIndexTicker />
               </div>
             </div>
+            {/* Credentials marquee — fills leftover; truncates before actions. */}
             <div
-              className={`relative z-10 ml-auto flex shrink-0 items-center gap-1.5 pl-1.5 ${
+              className={`relative z-10 min-w-0 flex-1 overflow-hidden pl-1.5 ${
                 isSymbol
                   ? "bg-[var(--symbol-shell-bg)]"
                   : "bg-[var(--background)]"
               }`}
             >
               <MarketCredentialsPrompt inline />
-              {/* H5: theme / lang / account live under 「我的」— desktop only. */}
-              <div className="hidden lg:flex lg:items-center">
-                <TopBarActions
-                  showMarketStatus={false}
-                  showTheme
-                  showLanguage
-                />
-              </div>
+            </div>
+            {/* Desktop chrome — always visible; H5 uses 「我的」. */}
+            <div className="relative z-10 hidden shrink-0 items-center bg-[var(--background)] pl-1 lg:flex">
+              <TopBarActions
+                showMarketStatus={false}
+                showTheme
+                showLanguage
+              />
             </div>
           </div>
         </header>
@@ -139,19 +142,18 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
                 ? "flex min-h-0 flex-1 flex-col overflow-hidden"
                 : "flex min-h-0 flex-1 flex-col overflow-hidden pb-[env(safe-area-inset-bottom,0px)]"
               : isFluidMain
-                ? `flex flex-1 flex-col ${isDesktop ? "pb-6" : "pb-24"} ${
+                ? // pb-24 only under lg — matches MobileAppTabBar `lg:hidden` (CSS wins over JS).
+                  `min-w-0 flex-1 flex-col overflow-x-clip pb-24 lg:pb-6 ${
                     isStrategies ? "py-0 lg:py-3" : "py-0 lg:py-5"
                   }`
-                : isDesktop
-                  ? "flex-1 py-5 pb-6 sm:py-6"
-                  : "flex-1 py-5 pb-24 sm:py-6"
+                : "min-w-0 flex-1 overflow-x-clip py-5 pb-24 sm:py-6 lg:pb-6"
           }
         >
           <div
             className={
               isSymbol || isFluidMain
-                ? `${mainRailClass} flex min-h-0 flex-1 flex-col`
-                : mainRailClass
+                ? `${mainRailClass} flex min-h-0 min-w-0 flex-1 flex-col`
+                : `${mainRailClass} min-w-0`
             }
           >
             {children}

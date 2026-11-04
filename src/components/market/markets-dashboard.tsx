@@ -34,7 +34,7 @@ const IndustryHeatmap = dynamic(
     })),
   {
     loading: () => (
-      <div className="mx-3 h-[220px] animate-pulse bg-[var(--panel)] lg:mx-0 lg:h-[360px]" />
+      <div className="mx-3 h-[360px] animate-pulse bg-[var(--panel)] lg:mx-0 lg:h-[440px]" />
     ),
   },
 );
@@ -220,7 +220,7 @@ export default function MarketsDashboard() {
   const sectionTitle = tab === "crypto" ? t("popular") : t("rankBoards");
 
   return (
-    <div className="space-y-2.5 animate-[qtFade_0.45s_ease] lg:space-y-5">
+    <div className="min-w-0 w-full space-y-2.5 animate-[qtFade_0.45s_ease] lg:space-y-5">
       <TopToast
         key={toastKey}
         message={toastMsg}
@@ -270,10 +270,10 @@ export default function MarketsDashboard() {
       {tab !== "crypto" && heavyReady ? (
         <IndustryHeatmap assetType={tab} />
       ) : tab !== "crypto" ? (
-        <div className="mx-3 h-[220px] animate-pulse bg-[var(--panel)] lg:mx-0 lg:h-[360px]" />
+        <div className="mx-3 h-[360px] animate-pulse bg-[var(--panel)] lg:mx-0 lg:h-[440px]" />
       ) : null}
 
-      <section className="space-y-3">
+      <section className="min-w-0 space-y-3">
         <div className="flex items-end justify-between gap-3 px-3 lg:px-0">
           <h2 className="text-base font-semibold tracking-tight sm:text-lg">
             {sectionTitle}
@@ -310,7 +310,7 @@ export default function MarketsDashboard() {
               t={t}
             />
           ) : (
-            <div className="qt-panel grid divide-y divide-[var(--border)] overflow-hidden xl:grid-cols-3 xl:divide-x xl:divide-y-0">
+            <div className="qt-panel grid min-w-0 divide-y divide-[var(--border)] overflow-hidden xl:grid-cols-3 xl:divide-x xl:divide-y-0">
               {boardMeta.map(({ key, title }) => (
                 <RankBoardPanel
                   key={key}

@@ -53,8 +53,8 @@ export function MarketsHeaderToolbar({
     "qt-btn inline-flex h-8 items-center justify-center px-3 text-[13px] font-medium leading-none";
 
   return (
-    <section className="flex flex-col gap-2 px-3 pt-2 sm:flex-row sm:items-center sm:justify-between lg:gap-3 lg:px-0 lg:pt-0">
-      <div className="min-w-0 space-y-0.5 lg:space-y-1">
+    <section className="flex min-w-0 flex-col gap-2 px-3 pt-2 sm:flex-row sm:items-center sm:justify-between lg:gap-3 lg:px-0 lg:pt-0">
+      <div className="min-w-0 flex-1 space-y-0.5 lg:space-y-1">
         <h1 className="text-base font-semibold tracking-tight sm:text-xl">
           {title}
         </h1>
@@ -63,7 +63,7 @@ export function MarketsHeaderToolbar({
         </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
+      <div className="flex min-w-0 max-w-full flex-wrap items-center gap-1.5 sm:gap-2">
         <SegmentedControl
           value={tab}
           onChange={(key) => {

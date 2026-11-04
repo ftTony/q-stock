@@ -196,10 +196,10 @@ export function TopbarIndexTicker() {
   return (
     <div
       key={page}
-      className="flex min-w-0 items-center gap-0.5 overflow-hidden animate-[qtFade_0.35s_ease] sm:gap-1"
+      className="flex shrink-0 items-center gap-0.5 animate-[qtFade_0.35s_ease] sm:min-w-0 sm:gap-1 sm:overflow-hidden"
     >
       {slots.map((item) => (
-        <div key={item.id} className="min-w-0 shrink-0">
+        <div key={item.id} className="shrink-0">
           <IndexChip item={item} />
         </div>
       ))}

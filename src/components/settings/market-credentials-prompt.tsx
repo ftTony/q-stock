@@ -155,9 +155,9 @@ export function MarketCredentialsPrompt({
       <div
         role="status"
         aria-label={`${title}. ${body}`}
-        className="flex min-w-0 flex-1 items-center gap-1.5 overflow-hidden border-l border-[var(--aw-hairline,var(--border))] pl-2 sm:gap-2.5 sm:pl-3"
+        className="flex min-w-0 w-full max-w-full items-center justify-end gap-1.5 overflow-hidden pl-1 sm:gap-2.5 sm:pl-2 md:justify-start"
       >
-        {/* Narrow: short CTA only — full marquee + actions overlap theme/lang/login. */}
+        {/* Narrow: short CTA only, flush right — full marquee + actions on md+. */}
         <div className="hidden min-w-0 flex-1 md:block">{marquee}</div>
         <div className="shrink-0 md:hidden">{primaryAction(true)}</div>
         <div className="hidden shrink-0 items-center gap-1.5 md:flex">

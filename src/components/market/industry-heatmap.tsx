@@ -15,20 +15,40 @@ function tileColor(pct: number): string {
   return "color-mix(in srgb, var(--muted) 45%, var(--panel))";
 }
 
-function useContainerSize() {
+function useContainerSize(remeasureKey?: string | number | boolean) {
   const ref = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   useEffect(() => {
     const el = ref.current;
-    if (!el || typeof ResizeObserver === "undefined") return;
-    const ro = new ResizeObserver((entries) => {
-      const cr = entries[0]?.contentRect;
-      if (!cr) return;
-      setSize({ w: Math.floor(cr.width), h: Math.floor(cr.height) });
-    });
+    if (!el) return;
+
+    const apply = () => {
+      const w = Math.floor(el.clientWidth);
+      const h = Math.floor(el.clientHeight);
+      if (w <= 0 || h <= 0) return;
+      setSize((prev) => (prev.w === w && prev.h === h ? prev : { w, h }));
+    };
+
+    apply();
+    const raf = requestAnimationFrame(apply);
+
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", apply);
+      return () => {
+        cancelAnimationFrame(raf);
+        window.removeEventListener("resize", apply);
+      };
+    }
+
+    // Prefer clientWidth/Height (content box) so tile layout matches the
+    // visible area — borderBoxSize can be wider and spill horizontally.
+    const ro = new ResizeObserver(() => apply());
     ro.observe(el);
-    return () => ro.disconnect();
-  }, []);
+    return () => {
+      cancelAnimationFrame(raf);
+      ro.disconnect();
+    };
+  }, [remeasureKey]);
   return { ref, ...size };
 }
 
@@ -54,7 +74,9 @@ export function IndustryHeatmap({
   >({});
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const enrichGen = useRef(0);
-  const { ref, w, h } = useContainerSize();
+  const { ref, w, h } = useContainerSize(
+    `${assetType}:${loading}:${items.length}`,
+  );
 
   function resolveCell(cell: IndustryHeatCell): {
     cell: IndustryHeatCell;
@@ -170,8 +192,8 @@ export function IndustryHeatmap({
   const overallUp = overall >= 0;
 
   return (
-    <section className="space-y-2 lg:space-y-3">
-      <div className="qt-panel mx-3 overflow-hidden lg:mx-0">
+    <section className="min-w-0 w-full space-y-2 lg:space-y-3">
+      <div className="qt-panel mx-3 min-w-0 overflow-hidden lg:mx-0">
         <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--border)] px-3 py-2.5 sm:px-4">
           <div className="flex flex-wrap items-baseline gap-2">
             <h2 className="text-base font-semibold tracking-tight sm:text-lg">
@@ -201,7 +223,7 @@ export function IndustryHeatmap({
 
         <div
           ref={ref}
-          className="relative h-[220px] w-full bg-[var(--panel)] sm:h-[360px] lg:h-[520px]"
+          className="relative h-[360px] w-full min-w-0 overflow-hidden bg-[var(--panel)] sm:h-[400px] lg:h-[440px] xl:h-[520px]"
           onMouseLeave={scheduleHide}
         >
           {loading && <IndustryHeatmapSkeleton label={tCommon("loading")} />}
