@@ -9,8 +9,12 @@
 #
 # Setup (once):
 #   1. Settings → Actions → General → Workflow permissions: Read and write
-#   2. Optional Variable NEXT_PUBLIC_QUOTE_WS_URL (wss://…/ws/quotes)
-#   3. Optional Variable DEPLOY_IMAGE_START_VERSION (default 0.1.5)
+#      (否则 GITHUB_TOKEN 推 GHCR 会 permission_denied: read_package)
+#   2. 若包早已用本机 docker push 建过：打开
+#      https://github.com/users/<owner>/packages/container/package/deploy-qstock-web
+#      → Package settings → Manage Actions access → Add this repo (Write)
+#      worker 包同样操作；或删掉旧包让 Actions 首次推送自动关联仓库
+#   3. Optional Variable NEXT_PUBLIC_QUOTE_WS_URL / DEPLOY_IMAGE_START_VERSION
 
 name: Docker
 
@@ -39,6 +43,9 @@ permissions:
 jobs:
   version:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: read
     outputs:
       version: ${{ steps.bump.outputs.version }}
       image_web: ${{ steps.names.outputs.web }}
@@ -104,6 +111,9 @@ jobs:
     needs: version
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    permissions:
+      contents: read
+      packages: write
     strategy:
       fail-fast: false
       matrix:
@@ -127,7 +137,7 @@ jobs:
         uses: docker/login-action@v3
         with:
           registry: ghcr.io
-          username: ${{ github.actor }}
+          username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Resolve quote WS URL
