@@ -105,7 +105,7 @@ export function ResearchCardPanel({
   return (
     <section className="space-y-2 border-t border-[var(--aw-hairline,var(--border))] pt-3 pb-1">
       <div className="flex items-baseline justify-between gap-2">
-        <h3 className="text-[13px] font-semibold text-[var(--foreground)]">
+        <h3 className="aw-caption-strong">
           {t("title")}
         </h3>
         <Link
@@ -115,7 +115,7 @@ export function ResearchCardPanel({
           {t("proHint")}
         </Link>
       </div>
-      <p className="text-[12px] leading-relaxed text-[var(--muted)]">
+      <p className="aw-caption leading-relaxed">
         {t("body")}
       </p>
       <form onSubmit={onSave} className="flex flex-col gap-2">

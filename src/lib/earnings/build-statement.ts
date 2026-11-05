@@ -128,7 +128,7 @@ export function buildEarningsStatement(input: {
   series?: SeriesLike[];
   maxPeriods?: number;
 }): EarningsStatement | null {
-  const maxPeriods = input.maxPeriods ?? 8;
+  const maxPeriods = input.maxPeriods ?? 40;
   const series = input.series ?? [];
   const periodsAll = collectPeriods(input.surprises, input.recent, series);
   if (!periodsAll.length) return null;

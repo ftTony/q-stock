@@ -46,7 +46,9 @@ function slugKey(name: string): string {
 
 function guessUnit(name: string): StatementUnit {
   if (/eps|每股收益|每股盈[餘余]/i.test(name)) return "eps";
-  if (/margin|ratio|rate|%|率|比重|占比/i.test(name)) return "percent";
+  // Cash flow amounts must stay currency (names may include 率 in yoy labels).
+  if (/cash\s*flow|现金流|现金流量/i.test(name)) return "currency";
+  if (/margin|ratio|\brate\b|%|率|比重|占比/i.test(name)) return "percent";
   return "currency";
 }
 
@@ -63,7 +65,7 @@ export function buildStatementFromReports(
   reports: ReportLike[],
   opts?: { maxPeriods?: number; maxRows?: number },
 ): EarningsStatement | null {
-  const maxPeriods = opts?.maxPeriods ?? 8;
+  const maxPeriods = opts?.maxPeriods ?? 40;
   const maxRows = opts?.maxRows ?? 24;
   if (!reports.length) return null;
 

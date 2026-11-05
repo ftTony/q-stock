@@ -1,227 +1,321 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import {
+  chronologicRow,
+  EARNINGS_YOY_COLOR,
+  filterByPeriodSelection,
+  type CompareMode,
+} from "@/components/market/earnings-compare";
 import { EarningsComboChart } from "@/components/market/earnings-combo-chart";
-import { formatNumber } from "@/lib/format-number";
-import type { EarningsStatement } from "@/lib/earnings/types";
+import {
+  EarningsPeriodPicker,
+  type PeriodPickerLabels,
+  type PeriodSelection,
+} from "@/components/market/earnings-period-picker";
+import { EarningsStatementTable } from "@/components/market/earnings-statement-table";
+import { QtSelect } from "@/components/ui/qt-select";
+import type { EarningsStatement, StatementRow } from "@/lib/earnings/types";
 
-type Labels = {
+export type EarningsStatementLabels = PeriodPickerLabels & {
   statementTitle: string;
   showYoy: string;
-  hideYoy: string;
+  showQoq: string;
+  compareOff: string;
   collapseChart: string;
   expandChart: string;
   currency: string;
+  periodAsOf: string;
   yoy: string;
+  qoq: string;
+  groupProfitability: string;
+  groupSolvency: string;
+  groupOperating: string;
   rowRevenue: string;
   rowEps: string;
   rowGrossMargin: string;
   rowOpMargin: string;
   rowNetMargin: string;
   rowRoe: string;
+  rowRoa: string;
+  rowCurrentRatio: string;
+  rowQuickRatio: string;
+  rowDebtToEquity: string;
+  rowDebtToAsset: string;
+  rowAssetTurnover: string;
+  rowInventoryTurnover: string;
+  rowReceivablesTurnover: string;
 };
 
-const ROW_LABEL_KEY: Record<string, keyof Labels> = {
+const ROW_LABEL_KEY: Record<string, keyof EarningsStatementLabels> = {
   revenue: "rowRevenue",
   eps: "rowEps",
   grossMargin: "rowGrossMargin",
   operatingMargin: "rowOpMargin",
   netMargin: "rowNetMargin",
   roe: "rowRoe",
+  roa: "rowRoa",
+  currentRatio: "rowCurrentRatio",
+  quickRatio: "rowQuickRatio",
+  debtToEquity: "rowDebtToEquity",
+  debtToAsset: "rowDebtToAsset",
+  assetTurnover: "rowAssetTurnover",
+  inventoryTurnover: "rowInventoryTurnover",
+  receivablesTurnover: "rowReceivablesTurnover",
 };
+
+const PROFIT_KEYS = [
+  "grossMargin",
+  "operatingMargin",
+  "netMargin",
+  "roe",
+  "roa",
+] as const;
+const SOLVENCY_KEYS = [
+  "currentRatio",
+  "quickRatio",
+  "debtToEquity",
+  "debtToAsset",
+] as const;
+const OPERATING_KEYS = [
+  "assetTurnover",
+  "inventoryTurnover",
+  "receivablesTurnover",
+] as const;
+
+const METRIC_KEYS = new Set<string>([
+  ...PROFIT_KEYS,
+  ...SOLVENCY_KEYS,
+  ...OPERATING_KEYS,
+]);
+
+const DEFAULT_PERIOD: PeriodSelection = { freq: "quarter", scope: "all" };
+
+type GroupId = "profit" | "solvency" | "operating" | "other";
 
 function rowLabel(
   key: string,
-  labels: Labels,
+  labels: EarningsStatementLabels,
   custom?: string,
 ): string {
   if (custom) return custom;
   const k = ROW_LABEL_KEY[key];
-  return k ? labels[k] : key;
+  return k ? String(labels[k]) : key;
 }
 
-function fmtValue(
-  v: number | null,
-  unit: "currency" | "eps" | "percent",
-): string {
-  if (v == null || Number.isNaN(v)) return "—";
-  if (unit === "percent") return `${v.toFixed(2)}%`;
-  if (unit === "eps") {
-    return formatNumber(v, {
-      maximumFractionDigits: 3,
-      minimumFractionDigits: 0,
-    });
-  }
-  const abs = Math.abs(v);
-  if (abs >= 1e12) return `${(v / 1e12).toFixed(2)}T`;
-  if (abs >= 1e9) return `${(v / 1e9).toFixed(2)}B`;
-  if (abs >= 1e6) return `${(v / 1e6).toFixed(2)}M`;
-  return formatNumber(v, { maximumFractionDigits: 2 });
+function pickRows(rows: StatementRow[], keys: readonly string[]): StatementRow[] {
+  const map = new Map(rows.map((r) => [r.key, r]));
+  return keys.map((k) => map.get(k)).filter((r): r is StatementRow => Boolean(r));
 }
 
-function fmtYoy(v: number | null): string {
-  if (v == null || Number.isNaN(v)) return "—";
-  const sign = v >= 0 ? "+" : "";
-  return `${sign}${v.toFixed(2)}%`;
+/** Prefer ratio series for 关键指标. */
+export function filterMetricsStatement(
+  statement: EarningsStatement,
+): EarningsStatement | null {
+  const rows = statement.rows.filter((r) => METRIC_KEYS.has(r.key));
+  if (!rows.length) return null;
+  return { periods: statement.periods, rows };
+}
+
+const INCOME_KEYS = new Set<string>([
+  "revenue",
+  "eps",
+  "grossMargin",
+  "operatingMargin",
+  "netMargin",
+  "grossProfit",
+  "operatingIncome",
+  "netIncome",
+  "ebit",
+  "ebitda",
+]);
+
+/** 利润表：收入/利润/EPS + 利润率，排除偿债与营运周转. */
+export function filterIncomeStatement(
+  statement: EarningsStatement,
+): EarningsStatement | null {
+  const rows = statement.rows.filter(
+    (r) => INCOME_KEYS.has(r.key) || (!METRIC_KEYS.has(r.key) && r.unit !== "ratio"),
+  );
+  // Prefer explicit income keys when present; otherwise keep non-metric rows.
+  const preferred = rows.filter((r) => INCOME_KEYS.has(r.key));
+  const use = preferred.length ? preferred : rows;
+  if (!use.length) return null;
+  return { periods: statement.periods, rows: use };
 }
 
 export function EarningsStatementSection({
   statement,
   labels,
+  showTitle = true,
+  variant = "statement",
 }: {
   statement: EarningsStatement;
-  labels: Labels;
+  labels: EarningsStatementLabels;
+  showTitle?: boolean;
+  /** metrics = 关键指标 groups; statement = 利润表等完整行 */
+  variant?: "metrics" | "statement";
 }) {
   const defaultKey = useMemo(() => {
-    const prefer = ["revenue", "eps", "grossMargin"];
+    const prefer =
+      variant === "metrics"
+        ? ["grossMargin", "operatingMargin", "netMargin", "roe"]
+        : ["revenue", "eps", "grossMargin", "operatingMargin"];
     for (const k of prefer) {
       if (statement.rows.some((r) => r.key === k)) return k;
     }
     return statement.rows[0]?.key ?? "eps";
-  }, [statement.rows]);
+  }, [statement.rows, variant]);
 
   const [selected, setSelected] = useState(defaultKey);
-  const [showYoy, setShowYoy] = useState(true);
+  const [compareMode, setCompareMode] = useState<CompareMode>("yoy");
   const [chartOpen, setChartOpen] = useState(true);
+  const [periodSel, setPeriodSel] = useState<PeriodSelection>(DEFAULT_PERIOD);
+  const [openGroups, setOpenGroups] = useState<Record<GroupId, boolean>>({
+    profit: true,
+    solvency: true,
+    operating: true,
+    other: true,
+  });
 
-  const activeKey = statement.rows.some((r) => r.key === selected)
+  useEffect(() => {
+    setSelected(defaultKey);
+  }, [defaultKey]);
+
+  const view = useMemo(
+    () => filterByPeriodSelection(statement, periodSel),
+    [statement, periodSel],
+  );
+
+  const activeKey = view.rows.some((r) => r.key === selected)
     ? selected
     : defaultKey;
-  const activeRow = statement.rows.find((r) => r.key === activeKey);
+  const activeRow = view.rows.find((r) => r.key === activeKey);
+
+  const tablePeriods = useMemo(
+    () => [...view.periods].reverse(),
+    [view.periods],
+  );
+  const tableRows = useMemo(
+    () => view.rows.map(chronologicRow),
+    [view.rows],
+  );
+  const tablePanKey = `${periodSel.freq}:${periodSel.scope}:${tablePeriods.length}`;
+
+  const profitRows = pickRows(tableRows, PROFIT_KEYS);
+  const solvencyRows = pickRows(tableRows, SOLVENCY_KEYS);
+  const operatingRows = pickRows(tableRows, OPERATING_KEYS);
+  const otherRows = tableRows.filter((r) => !METRIC_KEYS.has(r.key));
+  const hasData = view.periods.length > 0 && view.rows.length > 0;
 
   if (!statement.periods.length || !statement.rows.length) return null;
 
-  const btn =
-    "inline-flex h-7 items-center rounded-md px-2 text-[11px] font-medium text-[var(--muted)] hover:bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)] hover:text-[var(--foreground)]";
+  const periodPickerLabels: PeriodPickerLabels = {
+    freqAnnual: labels.freqAnnual,
+    freqQuarter: labels.freqQuarter,
+    freqCumulative: labels.freqCumulative,
+    scopeAll: labels.scopeAll,
+    scopeQ1: labels.scopeQ1,
+    scopeQ2: labels.scopeQ2,
+    scopeQ3: labels.scopeQ3,
+    scopeQ4: labels.scopeQ4,
+  };
+  const compareOptions = [
+    { value: "yoy", label: labels.showYoy },
+    { value: "qoq", label: labels.showQoq },
+    { value: "off", label: labels.compareOff },
+  ];
+  const compareLabel = compareMode === "qoq" ? labels.qoq : labels.yoy;
+  const cornerLabel =
+    variant === "metrics" ? labels.periodAsOf : labels.currency;
 
   return (
-    <section className="space-y-3">
+    <section className="w-full min-w-0 space-y-3">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 className="text-[13px] font-semibold tracking-[-0.15px] text-[var(--foreground)]">
-          {labels.statementTitle}
-        </h3>
-        <div className="flex flex-wrap items-center gap-1">
-          <button
-            type="button"
-            className={btn}
-            onClick={() => setShowYoy((v) => !v)}
-          >
-            {showYoy ? labels.hideYoy : labels.showYoy}
-          </button>
-          <button
-            type="button"
-            className={btn}
-            onClick={() => setChartOpen((v) => !v)}
-          >
-            {chartOpen ? labels.collapseChart : labels.expandChart}
-          </button>
+        <div className="flex min-w-0 flex-wrap items-center gap-1.5">
+          {showTitle ? (
+            <h3 className="mr-1 text-[13px] font-semibold tracking-[-0.15px] text-[var(--foreground)]">
+              {labels.statementTitle}
+            </h3>
+          ) : null}
+          <EarningsPeriodPicker
+            value={periodSel}
+            onChange={setPeriodSel}
+            labels={periodPickerLabels}
+          />
+          <QtSelect
+            value={compareMode}
+            onChange={(v) => setCompareMode(v as CompareMode)}
+            options={compareOptions}
+            aria-label={labels.showYoy}
+            triggerClassName="h-7 min-w-[6.5rem] rounded-none px-2 text-[12px]"
+          />
         </div>
+        <button
+          type="button"
+          className="inline-flex h-7 items-center rounded-none px-2 text-[11px] font-medium text-[var(--muted)] hover:bg-[color-mix(in_srgb,var(--foreground)_6%,transparent)] hover:text-[var(--foreground)]"
+          onClick={() => setChartOpen((v) => !v)}
+        >
+          {chartOpen ? labels.collapseChart : labels.expandChart}
+        </button>
       </div>
 
-      {chartOpen && activeRow ? (
+      {!hasData ? <p className="aw-caption py-6 text-center">—</p> : null}
+
+      {hasData && chartOpen && activeRow ? (
         <div className="space-y-2">
           <EarningsComboChart
-            statement={statement}
+            statement={view}
             rowKey={activeKey}
-            showYoy={showYoy}
+            compareMode={compareMode}
             valueLabel={rowLabel(activeKey, labels, activeRow.label)}
-            yoyLabel={labels.yoy}
+            compareLabel={compareLabel}
           />
           <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] text-[var(--muted)]">
             <span className="inline-flex items-center gap-1.5">
-              <span className="inline-block h-2.5 w-2.5 rounded-[2px] bg-[var(--brand)]" />
+              <span className="inline-block h-2.5 w-2.5 rounded-none bg-[var(--brand)]" />
               {rowLabel(activeKey, labels, activeRow.label)}
             </span>
-            {showYoy ? (
+            {compareMode !== "off" ? (
               <span className="inline-flex items-center gap-1.5">
                 <span
                   className="inline-block h-0.5 w-3"
-                  style={{ background: "#e8873a" }}
+                  style={{ background: EARNINGS_YOY_COLOR }}
                 />
-                {labels.yoy}
+                {compareLabel}
               </span>
             ) : null}
           </div>
-          <p className="text-[11px] text-[var(--muted)]">{labels.currency}</p>
         </div>
       ) : null}
 
-      <div className="overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <table className="w-full min-w-[480px] border-collapse text-[12px]">
-          <thead>
-            <tr className="border-b border-[var(--aw-hairline,var(--border))]">
-              <th className="sticky left-0 bg-[var(--panel,var(--background))] py-2 pr-3 text-left text-[11px] font-medium text-[var(--muted)]">
-                {" "}
-              </th>
-              {statement.periods.map((p) => (
-                <th
-                  key={p.label}
-                  className="px-2 py-2 text-right text-[11px] font-medium tabular-nums text-[var(--muted)]"
-                >
-                  {p.label}
-                </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {statement.rows.map((row) => {
-              const active = row.key === activeKey;
-              return (
-                <tr
-                  key={row.key}
-                  className={`cursor-pointer border-b border-[var(--aw-hairline,var(--border))] last:border-0 ${
-                    active
-                      ? "bg-[color-mix(in_srgb,var(--brand)_10%,transparent)]"
-                      : "hover:bg-[color-mix(in_srgb,var(--foreground)_4%,transparent)]"
-                  }`}
-                  onClick={() => {
-                    setSelected(row.key);
-                    setChartOpen(true);
-                  }}
-                >
-                  <td
-                    className={`sticky left-0 py-2.5 pr-3 text-left font-medium ${
-                      active
-                        ? "bg-[color-mix(in_srgb,var(--brand)_10%,var(--panel,var(--background)))]"
-                        : "bg-[var(--panel,var(--background))]"
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-1.5">
-                      <span
-                        className={`inline-block h-1.5 w-1.5 rounded-full ${
-                          active ? "bg-[var(--brand)]" : "bg-[var(--muted)] opacity-50"
-                        }`}
-                      />
-                      {rowLabel(row.key, labels, row.label)}
-                    </span>
-                  </td>
-                  {row.values.map((v, i) => (
-                    <td
-                      key={i}
-                      className="px-2 py-2.5 text-right tabular-nums leading-tight"
-                    >
-                      <div className="text-[var(--foreground)]">
-                        {fmtValue(v, row.unit)}
-                      </div>
-                      {showYoy ? (
-                        <div
-                          className={`text-[10px] ${
-                            (row.yoy[i] ?? 0) >= 0
-                              ? "text-[var(--up)]"
-                              : "text-[var(--down)]"
-                          }`}
-                        >
-                          {fmtYoy(row.yoy[i] ?? null)}
-                        </div>
-                      ) : null}
-                    </td>
-                  ))}
-                </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
+      {hasData ? (
+        <EarningsStatementTable
+          periods={tablePeriods}
+          profitRows={profitRows}
+          solvencyRows={solvencyRows}
+          operatingRows={operatingRows}
+          otherRows={otherRows}
+          variant={variant}
+          compareMode={compareMode}
+          activeKey={activeKey}
+          cornerLabel={cornerLabel}
+          groupProfitability={labels.groupProfitability}
+          groupSolvency={labels.groupSolvency}
+          groupOperating={labels.groupOperating}
+          otherTitle={labels.statementTitle}
+          openGroups={openGroups}
+          onToggleGroup={(id) =>
+            setOpenGroups((g) => ({ ...g, [id]: !g[id] }))
+          }
+          onSelectRow={(key) => {
+            setSelected(key);
+            setChartOpen(true);
+          }}
+          rowLabel={(key, custom) => rowLabel(key, labels, custom)}
+          panKey={tablePanKey}
+        />
+      ) : null}
     </section>
   );
 }

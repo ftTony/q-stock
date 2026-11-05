@@ -6,7 +6,7 @@ export type StatementPeriod = {
   quarter: number;
 };
 
-export type StatementUnit = "currency" | "eps" | "percent";
+export type StatementUnit = "currency" | "eps" | "percent" | "ratio";
 
 export type StatementRow = {
   key: string;

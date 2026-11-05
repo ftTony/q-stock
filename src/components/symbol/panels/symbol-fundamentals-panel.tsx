@@ -9,6 +9,7 @@ import {
   type EarningsSurprise,
 } from "@/components/market/earnings-panel";
 import { EarningsStatementSection } from "@/components/market/earnings-statement-section";
+import { buildEarningsStatementLabels } from "@/components/market/earnings-statement-labels";
 import {
   CompanyProfilePanel,
   OfficersPanel,
@@ -80,7 +81,18 @@ export function SymbolFundamentalsPanel({
   const tCommon = useTranslations("common");
 
   const availability = useMemo(() => {
-    const hasMetrics = earningsMetrics.some((m) => METRIC_KEYS.has(m.key));
+    const hasMetrics =
+      earningsMetrics.some((m) => METRIC_KEYS.has(m.key)) ||
+      Boolean(
+        earningsStatement?.rows.some(
+          (r) =>
+            r.unit === "percent" ||
+            r.key === "grossMargin" ||
+            r.key === "operatingMargin" ||
+            r.key === "netMargin" ||
+            r.key === "roe",
+        ),
+      );
     const hasIncome =
       earnings.some((s) => s.actual != null || s.estimate != null) ||
       Boolean(earningsStatement?.rows.length) ||
@@ -190,26 +202,14 @@ export function SymbolFundamentalsPanel({
     ? active
     : defaultSection;
 
-  const statementLabels = {
-    statementTitle:
-      resolvedActive === "balance"
-        ? t("fundNavBalance")
-        : resolvedActive === "cashflow"
-          ? t("fundNavCashflow")
-          : tEarn("statementTitle"),
-    showYoy: tEarn("showYoy"),
-    hideYoy: tEarn("hideYoy"),
-    collapseChart: tEarn("collapseChart"),
-    expandChart: tEarn("expandChart"),
-    currency: tEarn("currencyNote"),
-    yoy: tEarn("yoy"),
-    rowRevenue: tEarn("rowRevenue"),
-    rowEps: tEarn("rowEps"),
-    rowGrossMargin: tEarn("rowGrossMargin"),
-    rowOpMargin: tEarn("rowOpMargin"),
-    rowNetMargin: tEarn("rowNetMargin"),
-    rowRoe: tEarn("rowRoe"),
-  };
+  const statementLabels = buildEarningsStatementLabels(
+    (key) => tEarn(key as "yoy"),
+    resolvedActive === "balance"
+      ? t("fundNavBalance")
+      : resolvedActive === "cashflow"
+        ? t("fundNavCashflow")
+        : tEarn("statementTitle"),
+  );
 
   return (
     <div className="grid min-h-full grid-cols-1 gap-4 sm:grid-cols-[148px_1px_minmax(0,1fr)] sm:gap-0">

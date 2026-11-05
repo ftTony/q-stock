@@ -15,6 +15,7 @@ const SERIES_SPEC: Array<{
   /** If values look like 0–1.5 ratios, convert to percent. */
   asPercentRatio?: boolean;
 }> = [
+  // 盈利能力
   { fhKey: "grossMargin", outKey: "grossMargin", unit: "percent", asPercentRatio: true },
   {
     fhKey: "operatingMargin",
@@ -29,6 +30,38 @@ const SERIES_SPEC: Array<{
     asPercentRatio: true,
   },
   { fhKey: "roe", outKey: "roe", unit: "percent", asPercentRatio: true },
+  { fhKey: "roa", outKey: "roa", unit: "percent", asPercentRatio: true },
+  // 偿债能力
+  { fhKey: "currentRatio", outKey: "currentRatio", unit: "ratio" },
+  { fhKey: "quickRatio", outKey: "quickRatio", unit: "ratio" },
+  {
+    fhKey: "totalDebtToTotalEquity",
+    outKey: "debtToEquity",
+    unit: "ratio",
+  },
+  {
+    fhKey: "totalDebtToEquity",
+    outKey: "debtToEquity",
+    unit: "ratio",
+  },
+  {
+    fhKey: "totalDebtToTotalAsset",
+    outKey: "debtToAsset",
+    unit: "percent",
+    asPercentRatio: true,
+  },
+  // 营运能力
+  { fhKey: "assetTurnoverTTM", outKey: "assetTurnover", unit: "ratio" },
+  {
+    fhKey: "inventoryTurnoverTTM",
+    outKey: "inventoryTurnover",
+    unit: "ratio",
+  },
+  {
+    fhKey: "receivablesTurnoverTTM",
+    outKey: "receivablesTurnover",
+    unit: "ratio",
+  },
 ];
 
 function parseYearQuarter(period: string): { year: number; quarter: number } | null {
@@ -54,8 +87,9 @@ export function extractFinnhubQuarterlySeries(series: unknown): SeriesLike[] {
   const quarterly = (series as SeriesBucket | undefined)?.quarterly;
   if (!quarterly) return [];
 
-  const out: SeriesLike[] = [];
+  const byKey = new Map<string, SeriesLike>();
   for (const spec of SERIES_SPEC) {
+    if (byKey.has(spec.outKey)) continue;
     const arr = quarterly[spec.fhKey];
     if (!Array.isArray(arr) || !arr.length) continue;
     const points: SeriesLike["points"] = [];
@@ -70,8 +104,8 @@ export function extractFinnhubQuarterlySeries(series: unknown): SeriesLike[] {
       });
     }
     if (points.length) {
-      out.push({ key: spec.outKey, unit: spec.unit, points });
+      byKey.set(spec.outKey, { key: spec.outKey, unit: spec.unit, points });
     }
   }
-  return out;
+  return [...byKey.values()];
 }

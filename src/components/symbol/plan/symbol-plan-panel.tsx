@@ -256,7 +256,7 @@ export function SymbolPlanPanel({
         <div className="space-y-3 border-t border-[var(--aw-hairline,var(--border))] pt-3">
           <div className="flex flex-col items-center gap-2 py-2 text-center">
             <EmptyReviewArt />
-            <p className="text-[13px] tracking-[-0.08px] text-[var(--muted)]">
+            <p className="aw-caption max-w-[18rem]">
               {t("planEmpty")}
             </p>
           </div>
@@ -266,7 +266,7 @@ export function SymbolPlanPanel({
                 key={tpl.id}
                 className="flex items-center justify-between gap-2 py-2"
               >
-                <span className="min-w-0 truncate text-[13px] font-medium tracking-[-0.08px]">
+                <span className="aw-caption-strong min-w-0 truncate">
                   {tpl.name}
                 </span>
                 <SubmitButton

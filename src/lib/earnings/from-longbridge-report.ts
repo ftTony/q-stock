@@ -73,11 +73,21 @@ function yoyPct(raw: string | number | undefined | null): number | null {
   return Math.abs(n) <= 2.5 ? n * 100 : n;
 }
 
-function unitOf(account: LbAccount): StatementUnit {
-  if (account.percent) return "percent";
+function unitOf(account: LbAccount, kind: "BS" | "CF" | "IS"): StatementUnit {
   const name = `${account.name ?? ""} ${account.field ?? ""}`;
   if (/eps|每股收益/i.test(name)) return "eps";
-  if (/margin|ratio|rate|%|率/i.test(name)) return "percent";
+  // Cash-flow / balance lines are money. LB often sets `percent` when YoY
+  // exists — that must not force the value unit to %.
+  if (
+    kind === "CF" ||
+    kind === "BS" ||
+    /cash\s*flow|现金流|现金流量|总资产|总负债|股东权益/i.test(name)
+  ) {
+    return "currency";
+  }
+  if (account.percent) return "percent";
+  // Avoid bare `rate` (matches inside unrelated English words); require 率/%/margin.
+  if (/margin|ratio|\brate\b|%|率|比重|占比/i.test(name)) return "percent";
   return "currency";
 }
 
@@ -90,7 +100,7 @@ export function buildStatementFromLbReport(
   kind: "BS" | "CF" | "IS",
   opts?: { maxPeriods?: number; maxRows?: number },
 ): EarningsStatement | null {
-  const maxPeriods = opts?.maxPeriods ?? 8;
+  const maxPeriods = opts?.maxPeriods ?? 40;
   const maxRows = opts?.maxRows ?? 24;
   const root = list as LbFinancialReportsList | null | undefined;
   if (!root || typeof root !== "object") return null;
@@ -124,7 +134,7 @@ export function buildStatementFromLbReport(
     if (!key || !label) continue;
     let row = byRow.get(key);
     if (!row) {
-      row = { label, unit: unitOf(account), cells: new Map() };
+      row = { label, unit: unitOf(account, kind), cells: new Map() };
       byRow.set(key, row);
     }
     for (const cell of account.values ?? []) {

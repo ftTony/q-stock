@@ -1,0 +1,45 @@
+import type { EarningsStatementLabels } from "@/components/market/earnings-statement-section";
+
+/** Map next-intl `earnings` (or compatible) keys into statement section labels. */
+export function buildEarningsStatementLabels(
+  t: (key: string) => string,
+  title?: string,
+): EarningsStatementLabels {
+  return {
+    statementTitle: title ?? t("statementTitle"),
+    showYoy: t("showYoy"),
+    showQoq: t("showQoq"),
+    compareOff: t("compareOff"),
+    collapseChart: t("collapseChart"),
+    expandChart: t("expandChart"),
+    currency: t("currencyHeader"),
+    periodAsOf: t("periodAsOf"),
+    yoy: t("yoy"),
+    qoq: t("qoq"),
+    freqAnnual: t("freqAnnual"),
+    freqQuarter: t("freqQuarter"),
+    freqCumulative: t("freqCumulative"),
+    scopeAll: t("scopeAll"),
+    scopeQ1: t("scopeQ1"),
+    scopeQ2: t("scopeQ2"),
+    scopeQ3: t("scopeQ3"),
+    scopeQ4: t("scopeQ4"),
+    groupProfitability: t("groupProfitability"),
+    groupSolvency: t("groupSolvency"),
+    groupOperating: t("groupOperating"),
+    rowRevenue: t("rowRevenue"),
+    rowEps: t("rowEps"),
+    rowGrossMargin: t("rowGrossMargin"),
+    rowOpMargin: t("rowOpMargin"),
+    rowNetMargin: t("rowNetMargin"),
+    rowRoe: t("rowRoe"),
+    rowRoa: t("rowRoa"),
+    rowCurrentRatio: t("rowCurrentRatio"),
+    rowQuickRatio: t("rowQuickRatio"),
+    rowDebtToEquity: t("rowDebtToEquity"),
+    rowDebtToAsset: t("rowDebtToAsset"),
+    rowAssetTurnover: t("rowAssetTurnover"),
+    rowInventoryTurnover: t("rowInventoryTurnover"),
+    rowReceivablesTurnover: t("rowReceivablesTurnover"),
+  };
+}

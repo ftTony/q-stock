@@ -1,7 +1,13 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { EarningsCharts } from "@/components/market/earnings-charts";
+import {
+  EarningsStatementSection,
+  filterIncomeStatement,
+  filterMetricsStatement,
+} from "@/components/market/earnings-statement-section";
+import { buildEarningsStatementLabels } from "@/components/market/earnings-statement-labels";
+import { buildEarningsStatement } from "@/lib/earnings/build-statement";
 import { formatNumber } from "@/lib/format-number";
 import type { EarningsStatement } from "@/lib/earnings/types";
 
@@ -123,9 +129,22 @@ export function EarningsPanel({
   }
 
   const knownMetrics = metrics.filter((m) => METRIC_LABEL_KEYS[m.key]);
+  const metricsStatement = statement
+    ? filterMetricsStatement(statement)
+    : null;
+  const incomeSource =
+    statement ??
+    buildEarningsStatement({
+      surprises,
+      recent,
+    });
+  const incomeStatement = incomeSource
+    ? filterIncomeStatement(incomeSource)
+    : null;
   const showMetrics = view === "all" || view === "metrics";
   const showIncome = view === "all" || view === "income";
   const showCalendar = view === "all" || view === "calendar";
+  const statementLabels = buildEarningsStatementLabels((key) => t(key as "yoy"));
 
   const empty =
     surprises.length === 0 &&
@@ -142,7 +161,15 @@ export function EarningsPanel({
     );
   }
 
-  if (view === "metrics" && knownMetrics.length === 0) {
+  if (
+    view === "metrics" &&
+    !metricsStatement &&
+    knownMetrics.length === 0
+  ) {
+    return <p className="aw-caption">{t("empty")}</p>;
+  }
+
+  if (view === "income" && !incomeStatement) {
     return <p className="aw-caption">{t("empty")}</p>;
   }
 
@@ -155,60 +182,60 @@ export function EarningsPanel({
     "py-2.5 text-[13px] leading-[1.35] tracking-[-0.08px] text-[var(--foreground)]";
   const tdNum = `${td} text-right tabular-nums`;
 
+  const metricsGrid =
+    knownMetrics.length > 0 ? (
+      <section>
+        {view === "all" ? (
+          <h3 className={sectionTitle}>{t("metrics")}</h3>
+        ) : null}
+        <div
+          className={`grid grid-cols-2 gap-x-6 gap-y-3.5 sm:grid-cols-3 lg:grid-cols-4 ${
+            view === "all"
+              ? "border-t border-[var(--aw-hairline,var(--border))] pt-3"
+              : ""
+          }`}
+        >
+          {knownMetrics.map((m) => (
+            <div key={m.key} className="min-w-0 space-y-1">
+              <div className="text-[11px] leading-[1.3] tracking-[-0.08px] text-[var(--muted)]">
+                {t(METRIC_LABEL_KEYS[m.key] as "metricPeTtm")}
+              </div>
+              <div className="truncate text-[15px] font-semibold leading-[1.25] tracking-[-0.2px] tabular-nums text-[var(--foreground)]">
+                {fmtMetricValue(m.key, m.value)}
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+    ) : null;
+
   return (
     <div className="space-y-6">
-      {showIncome ? (
-        <EarningsCharts
-          surprises={surprises}
-          recent={recent}
-          statement={statement}
+      {showIncome && incomeStatement ? (
+        <EarningsStatementSection
+          statement={incomeStatement}
           labels={{
-            chartEps: t("chartEps"),
-            chartSurprise: t("chartSurprise"),
-            actual: t("epsActual"),
-            estimate: t("epsEst"),
+            ...statementLabels,
             statementTitle: t("statementTitle"),
-            showYoy: t("showYoy"),
-            hideYoy: t("hideYoy"),
-            collapseChart: t("collapseChart"),
-            expandChart: t("expandChart"),
-            currency: t("currencyNote"),
-            yoy: t("yoy"),
-            rowRevenue: t("rowRevenue"),
-            rowEps: t("rowEps"),
-            rowGrossMargin: t("rowGrossMargin"),
-            rowOpMargin: t("rowOpMargin"),
-            rowNetMargin: t("rowNetMargin"),
-            rowRoe: t("rowRoe"),
           }}
+          showTitle={view === "all"}
+          variant="statement"
         />
       ) : null}
 
-      {showMetrics && knownMetrics.length > 0 && (
-        <section>
-          {view === "all" ? (
-            <h3 className={sectionTitle}>{t("metrics")}</h3>
-          ) : null}
-          <div
-            className={`grid grid-cols-2 gap-x-6 gap-y-3.5 sm:grid-cols-3 lg:grid-cols-4 ${
-              view === "all"
-                ? "border-t border-[var(--aw-hairline,var(--border))] pt-3"
-                : ""
-            }`}
-          >
-            {knownMetrics.map((m) => (
-              <div key={m.key} className="min-w-0 space-y-1">
-                <div className="text-[11px] leading-[1.3] tracking-[-0.08px] text-[var(--muted)]">
-                  {t(METRIC_LABEL_KEYS[m.key] as "metricPeTtm")}
-                </div>
-                <div className="truncate text-[15px] font-semibold leading-[1.25] tracking-[-0.2px] tabular-nums text-[var(--foreground)]">
-                  {fmtMetricValue(m.key, m.value)}
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-      )}
+      {showMetrics && metricsStatement ? (
+        <EarningsStatementSection
+          statement={metricsStatement}
+          labels={{
+            ...statementLabels,
+            statementTitle: t("metrics"),
+          }}
+          showTitle={view === "all"}
+          variant="metrics"
+        />
+      ) : null}
+
+      {showMetrics && !metricsStatement ? metricsGrid : null}
 
       {showCalendar && upcoming.length > 0 && (
         <section>
