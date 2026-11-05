@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
-import { SYMBOL_RAIL_GUIDE_STORAGE_KEY } from "@/components/symbol/rail/symbol-rail-guide";
+import { SYMBOL_RAIL_GUIDE_STORAGE_KEY } from "@/components/symbol/rail/symbol-rail-guide-storage";
 
 const DISCLAIMER_KEYS = ["p1", "p2", "p3", "p4", "p5", "p6"] as const;
 

@@ -12,10 +12,9 @@ import {
   spotlightTipMutedClassName,
   spotlightTipTitleClassName,
 } from "@/components/onboarding/spotlight-chrome";
+import { SYMBOL_RAIL_GUIDE_STORAGE_KEY } from "@/components/symbol/rail/symbol-rail-guide-storage";
 
-/** v2: mask tour (v1 was the in-rail card list). */
-export const SYMBOL_RAIL_GUIDE_STORAGE_KEY =
-  "qstock:symbol-rail-guide-dismissed:v2";
+export { SYMBOL_RAIL_GUIDE_STORAGE_KEY };
 
 type Props = {
   onGoPlan: () => void;

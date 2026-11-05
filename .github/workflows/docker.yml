@@ -1,0 +1,117 @@
+# Build web + worker images and push to GHCR.
+#
+# Triggers:
+#   - push to main/master → :latest + short SHA
+#   - push v* tag → :1.2.3 / :1.2 (+ :latest on default branch pushes)
+#   - workflow_dispatch → same tags for the current ref
+#
+# Setup (once):
+#   1. Repo → Settings → Actions → General → Workflow permissions:
+#      Read and write permissions (packages: write via GITHUB_TOKEN).
+#   2. Optional repo Variable NEXT_PUBLIC_QUOTE_WS_URL
+#      (e.g. wss://your-domain.example/ws/quotes) — baked into the web image.
+#   3. Pull on a server (private packages):
+#      echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
+#
+# Images:
+#   ghcr.io/<owner>/q-stock:…          (Dockerfile target: runner)
+#   ghcr.io/<owner>/q-stock-worker:…   (Dockerfile target: worker)
+
+name: Docker
+
+on:
+  push:
+    branches: [main, master]
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      quote_ws_url:
+        description: "NEXT_PUBLIC_QUOTE_WS_URL bake-in (overrides repo variable)"
+        required: false
+        type: string
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: web
+            target: runner
+            suffix: q-stock
+            needs_quote_ws: true
+          - name: worker
+            target: worker
+            suffix: q-stock-worker
+            needs_quote_ws: false
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Image name (lowercase)
+        id: image
+        run: |
+          owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')
+          echo "name=ghcr.io/${owner}/${{ matrix.suffix }}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Resolve quote WS URL
+        id: quote
+        run: |
+          url=""
+          if [ "${{ matrix.needs_quote_ws }}" = "true" ]; then
+            url="${{ inputs.quote_ws_url }}"
+            if [ -z "$url" ]; then
+              url="${{ vars.NEXT_PUBLIC_QUOTE_WS_URL }}"
+            fi
+            if [ -z "$url" ]; then
+              echo "::warning::NEXT_PUBLIC_QUOTE_WS_URL unset; web image builds without a baked WS URL. Set repo Variable or pass workflow_dispatch input."
+            fi
+          fi
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+
+      - name: Docker metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ steps.image.outputs.name }}
+          tags: |
+            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,format=short
+
+      - name: Build and push (${{ matrix.name }})
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./Dockerfile
+          target: ${{ matrix.target }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          platforms: linux/amd64
+          build-args: |
+            NEXT_PUBLIC_QUOTE_WS_URL=${{ steps.quote.outputs.url }}
+          cache-from: type=gha,scope=${{ matrix.name }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.name }}
+          provenance: false

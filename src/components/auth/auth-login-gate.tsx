@@ -78,11 +78,13 @@ export function AuthLoginGate(props: {
   fill?: boolean;
 }) {
   const tNav = useTranslations("nav");
-  const tWatch = useTranslations("watchlist");
+  const tAuth = useTranslations("auth");
   const loginModal = useLoginModalOptional();
-  const title = props.title ?? tWatch("loginTitle");
-  const body = props.body ?? tWatch("loginBody");
-  const hint = props.hint ?? tWatch("loginHint");
+  // Defaults use shell `auth` so account surfaces (settings / mine) do not
+  // pull the watchlist dictionary; callers that need watchlist copy pass props.
+  const title = props.title ?? tAuth("loginTitle");
+  const body = props.body ?? "";
+  const hint = props.hint ?? "";
   const compact = Boolean(props.compact);
   const fill = Boolean(props.fill) && !compact;
   const ctaClass = compact ? AUTH_LOGIN_CTA_COMPACT : AUTH_LOGIN_CTA_DEFAULT;

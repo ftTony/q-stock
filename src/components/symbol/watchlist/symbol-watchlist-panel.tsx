@@ -32,6 +32,7 @@ export function SymbolWatchlistPanel({
   const t = useTranslations("symbol");
   const tMarket = useTranslations("market");
   const tCommon = useTranslations("common");
+  const tWatch = useTranslations("watchlist");
   const { status } = useSession();
   const qc = useQueryClient();
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -106,7 +107,12 @@ export function SymbolWatchlistPanel({
         <RailPanelSkeleton rows={8} label={tCommon("loading")} className="flex-1" />
       ) : status === "unauthenticated" ? (
         <div className="flex flex-1 flex-col items-center justify-center px-3 py-6">
-          <AuthLoginGate compact />
+          <AuthLoginGate
+            compact
+            title={tWatch("loginTitle")}
+            body={tWatch("loginBody")}
+            hint={tWatch("loginHint")}
+          />
         </div>
       ) : loading && rows.length === 0 ? (
         <RailPanelSkeleton rows={8} label={tCommon("loading")} className="flex-1" />
