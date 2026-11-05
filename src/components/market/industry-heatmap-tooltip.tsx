@@ -94,7 +94,7 @@ export function IndustryHeatmapTooltip({
 
   return (
     <div
-      className="fixed z-50 w-[280px] rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3.5 py-3 shadow-lg"
+      className="fixed z-50 w-[280px] rounded-none border border-[var(--border)] bg-[var(--panel)] px-3.5 py-3 shadow-lg"
       style={{ left, top }}
       role="tooltip"
       onMouseEnter={onEnter}
