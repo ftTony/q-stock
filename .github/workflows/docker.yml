@@ -1,32 +1,30 @@
 # Build web + worker images and push to GHCR.
 #
-# Triggers:
-#   - push to main/master → :latest + short SHA
-#   - push v* tag → :1.2.3 / :1.2 (+ :latest on default branch pushes)
-#   - workflow_dispatch → same tags for the current ref
+# Images:
+#   ghcr.io/<owner>/deploy-qstock-web:<semver>
+#   ghcr.io/<owner>/deploy-qstock-worker:<semver>
+#
+# Version: each run bumps patch of the latest web image tag (0.1.5 → 0.1.6).
+# First run (no tags yet) starts at 0.1.5, or repo Variable DEPLOY_IMAGE_START_VERSION.
 #
 # Setup (once):
-#   1. Repo → Settings → Actions → General → Workflow permissions:
-#      Read and write permissions (packages: write via GITHUB_TOKEN).
-#   2. Optional repo Variable NEXT_PUBLIC_QUOTE_WS_URL
-#      (e.g. wss://your-domain.example/ws/quotes) — baked into the web image.
-#   3. Pull on a server (private packages):
-#      echo $CR_PAT | docker login ghcr.io -u USERNAME --password-stdin
-#
-# Images:
-#   ghcr.io/<owner>/q-stock:…          (Dockerfile target: runner)
-#   ghcr.io/<owner>/q-stock-worker:…   (Dockerfile target: worker)
+#   1. Settings → Actions → General → Workflow permissions: Read and write
+#   2. Optional Variable NEXT_PUBLIC_QUOTE_WS_URL (wss://…/ws/quotes)
+#   3. Optional Variable DEPLOY_IMAGE_START_VERSION (default 0.1.5)
 
 name: Docker
 
 on:
   push:
     branches: [main, master]
-    tags: ["v*"]
   workflow_dispatch:
     inputs:
       quote_ws_url:
         description: "NEXT_PUBLIC_QUOTE_WS_URL bake-in (overrides repo variable)"
+        required: false
+        type: string
+      version_override:
+        description: "Force this version (skip auto +1), e.g. 0.1.9"
         required: false
         type: string
 
@@ -39,7 +37,71 @@ permissions:
   packages: write
 
 jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.bump.outputs.version }}
+      image_web: ${{ steps.names.outputs.web }}
+      image_worker: ${{ steps.names.outputs.worker }}
+    steps:
+      - name: Image names (lowercase owner)
+        id: names
+        run: |
+          owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')
+          echo "web=ghcr.io/${owner}/deploy-qstock-web" >> "$GITHUB_OUTPUT"
+          echo "worker=ghcr.io/${owner}/deploy-qstock-worker" >> "$GITHUB_OUTPUT"
+
+      - name: Resolve next version (patch +1)
+        id: bump
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          START: ${{ vars.DEPLOY_IMAGE_START_VERSION }}
+          OVERRIDE: ${{ inputs.version_override }}
+        run: |
+          set -euo pipefail
+          start_ver="${START:-0.1.5}"
+
+          if [ -n "${OVERRIDE:-}" ]; then
+            echo "version=${OVERRIDE#v}" >> "$GITHUB_OUTPUT"
+            echo "Using override version: ${OVERRIDE#v}"
+            exit 0
+          fi
+
+          owner_lc=$(echo "$OWNER" | tr '[:upper:]' '[:lower:]')
+          # Prefer user packages API; fall back to org.
+          tags=$(gh api \
+            -H "Accept: application/vnd.github+json" \
+            "/users/${owner_lc}/packages/container/deploy-qstock-web/versions?per_page=100" \
+            --jq '.[].metadata.container.tags[]?' 2>/dev/null || true)
+          if [ -z "${tags}" ]; then
+            tags=$(gh api \
+              -H "Accept: application/vnd.github+json" \
+              "/orgs/${owner_lc}/packages/container/deploy-qstock-web/versions?per_page=100" \
+              --jq '.[].metadata.container.tags[]?' 2>/dev/null || true)
+          fi
+
+          latest=$(printf '%s\n' $tags \
+            | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' \
+            | sort -t. -k1,1n -k2,2n -k3,3n \
+            | tail -n1 || true)
+
+          if [ -z "${latest}" ]; then
+            next="$start_ver"
+            echo "No existing semver tags; starting at ${next}"
+          else
+            major=${latest%%.*}
+            rest=${latest#*.}
+            minor=${rest%%.*}
+            patch=${rest#*.}
+            next="${major}.${minor}.$((patch + 1))"
+            echo "Latest ${latest} → next ${next}"
+          fi
+
+          echo "version=${next}" >> "$GITHUB_OUTPUT"
+
   build-and-push:
+    needs: version
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
@@ -48,21 +110,15 @@ jobs:
         include:
           - name: web
             target: runner
-            suffix: q-stock
+            image: ${{ needs.version.outputs.image_web }}
             needs_quote_ws: true
           - name: worker
             target: worker
-            suffix: q-stock-worker
+            image: ${{ needs.version.outputs.image_worker }}
             needs_quote_ws: false
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: Image name (lowercase)
-        id: image
-        run: |
-          owner=$(echo '${{ github.repository_owner }}' | tr '[:upper:]' '[:lower:]')
-          echo "name=ghcr.io/${owner}/${{ matrix.suffix }}" >> "$GITHUB_OUTPUT"
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -84,31 +140,25 @@ jobs:
               url="${{ vars.NEXT_PUBLIC_QUOTE_WS_URL }}"
             fi
             if [ -z "$url" ]; then
-              echo "::warning::NEXT_PUBLIC_QUOTE_WS_URL unset; web image builds without a baked WS URL. Set repo Variable or pass workflow_dispatch input."
+              echo "::warning::NEXT_PUBLIC_QUOTE_WS_URL unset; web image builds without a baked WS URL."
             fi
           fi
           echo "url=$url" >> "$GITHUB_OUTPUT"
 
-      - name: Docker metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ steps.image.outputs.name }}
-          tags: |
-            type=raw,value=latest,enable=${{ github.ref == format('refs/heads/{0}', github.event.repository.default_branch) || github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master' }}
-            type=semver,pattern={{version}}
-            type=semver,pattern={{major}}.{{minor}}
-            type=sha,format=short
-
-      - name: Build and push (${{ matrix.name }})
+      - name: Build and push (${{ matrix.name }}) ${{ needs.version.outputs.version }}
         uses: docker/build-push-action@v6
         with:
           context: .
           file: ./Dockerfile
           target: ${{ matrix.target }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ${{ matrix.image }}:${{ needs.version.outputs.version }}
+            ${{ matrix.image }}:latest
+          labels: |
+            org.opencontainers.image.version=${{ needs.version.outputs.version }}
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
           platforms: linux/amd64
           build-args: |
             NEXT_PUBLIC_QUOTE_WS_URL=${{ steps.quote.outputs.url }}
