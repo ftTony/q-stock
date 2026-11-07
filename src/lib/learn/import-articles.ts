@@ -1,5 +1,11 @@
-import type { PrismaClient } from "@prisma/client";
-import { LEARN_CATEGORIES, type LearnCategory } from "@/lib/learn/types";
+import type { Prisma, PrismaClient } from "@prisma/client";
+import {
+  LEARN_CATEGORIES,
+  type LearnBlock,
+  type LearnCategory,
+  type LearnFaqItem,
+  type LearnLink,
+} from "@/lib/learn/types";
 import { rebuildLearnSnapshot } from "@/lib/learn/rebuild-snapshot";
 
 const SLUG_RE = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
@@ -14,7 +20,41 @@ export type LearnImportInput = {
   title: Record<string, string>;
   summary: Record<string, string>;
   paragraphs: Record<string, string[]>;
+  /** Rich body — persisted inside the `paragraphs` Json column, see encodeBody. */
+  sections?: Record<string, LearnBlock[]>;
+  faq?: Record<string, LearnFaqItem[]>;
+  links?: Record<string, LearnLink[]>;
+  sourceNote?: Record<string, string>;
+  author?: string;
 };
+
+/**
+ * Legacy rows keep a bare string[]; articles with rich blocks store an object
+ * in the same column. `dbRowToLearnArticle` reads both shapes, so no migration
+ * is required and existing rows stay valid.
+ */
+function encodeBody(
+  item: LearnImportInput,
+  locale: string,
+): Prisma.InputJsonValue {
+  const plain = item.paragraphs[locale] ?? [];
+  const sections = item.sections?.[locale];
+  const faq = item.faq?.[locale];
+  const links = item.links?.[locale];
+  const sourceNote = item.sourceNote?.[locale];
+
+  if (!sections && !faq && !links && !sourceNote) return plain;
+
+  return {
+    v: 2,
+    paragraphs: plain,
+    ...(sections ? { sections } : {}),
+    ...(faq ? { faq } : {}),
+    ...(links ? { links } : {}),
+    ...(sourceNote ? { sourceNote } : {}),
+    ...(item.author ? { author: item.author } : {}),
+  } as unknown as Prisma.InputJsonValue;
+}
 
 function nonEmpty(s: unknown): s is string {
   return typeof s === "string" && s.trim().length > 0;
@@ -119,12 +159,12 @@ export async function upsertLearnArticles(
           locale,
           title: item.title[locale]!.trim(),
           summary: item.summary[locale]!.trim(),
-          paragraphs: item.paragraphs[locale] ?? [],
+          paragraphs: encodeBody(item, locale),
         },
         update: {
           title: item.title[locale]!.trim(),
           summary: item.summary[locale]!.trim(),
-          paragraphs: item.paragraphs[locale] ?? [],
+          paragraphs: encodeBody(item, locale),
         },
       });
     }

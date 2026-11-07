@@ -4,14 +4,19 @@ import { notFound } from "next/navigation";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { CompoundCalculator } from "@/components/tools/compound-calculator";
 import { DcaCalculator } from "@/components/tools/dca-calculator";
+import { DepositCalculator } from "@/components/tools/deposit-calculator";
+import { DividendTaxCalculator } from "@/components/tools/dividend-tax-calculator";
 import { MortgageCalculator } from "@/components/tools/mortgage-calculator";
 import { OptionsCalculator } from "@/components/tools/options-calculator";
+import { PensionCalculator } from "@/components/tools/pension-calculator";
 import { PositionCalculator } from "@/components/tools/position-calculator";
+import { RetirementCalculator } from "@/components/tools/retirement-calculator";
 import { RiskRewardCalculator } from "@/components/tools/risk-reward-calculator";
 import { ToolPageShell } from "@/components/tools/tool-page-shell";
 import { MarketingCtaBand } from "@/components/marketing/marketing-cta-band";
 import { ScopedMessages } from "@/components/providers/scoped-messages";
 import {
+  isToolAvailable,
   TOOL_CATALOG,
   getToolMeta,
   toolMessageKey,
@@ -28,7 +33,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale, slug } = await params;
   const meta = getToolMeta(slug);
-  if (!meta) {
+  // Mainland-statutory tools are not published outside zh-CN.
+  if (!meta || !isToolAvailable(meta, locale)) {
     return buildPageMetadata(locale, `/tools/${slug}`, {
       title: "Tools",
       robots: { index: false, follow: false },
@@ -53,8 +59,12 @@ function Calculator({ slug }: { slug: ToolSlug }) {
   if (slug === "risk-reward") return <RiskRewardCalculator />;
   if (slug === "dca") return <DcaCalculator />;
   if (slug === "compound") return <CompoundCalculator />;
+  if (slug === "deposit") return <DepositCalculator />;
+  if (slug === "dividend-tax") return <DividendTaxCalculator />;
   if (slug === "options") return <OptionsCalculator />;
-  return <MortgageCalculator />;
+  if (slug === "mortgage") return <MortgageCalculator />;
+  if (slug === "retirement") return <RetirementCalculator />;
+  return <PensionCalculator />;
 }
 
 export default async function ToolDetailPage({ params }: Props) {
@@ -62,7 +72,7 @@ export default async function ToolDetailPage({ params }: Props) {
   setRequestLocale(locale);
 
   const meta = getToolMeta(slug);
-  if (!meta) notFound();
+  if (!meta || !isToolAvailable(meta, locale)) notFound();
 
   const t = await getTranslations("tools");
   const key = toolMessageKey(meta);

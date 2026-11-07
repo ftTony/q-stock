@@ -49,6 +49,13 @@ type PageMetaOpts = {
   robots?: Metadata["robots"];
   /** Include hreflang map (default true for indexable pages). */
   hreflang?: boolean;
+  /** Editorial pages: switch Open Graph to `article` and emit publish dates. */
+  article?: {
+    publishedTime?: string;
+    modifiedTime?: string;
+    authors?: string[];
+    section?: string;
+  };
 };
 
 /** Per-route metadata with correct canonical (not the homepage). */
@@ -74,15 +81,35 @@ export async function buildPageMetadata(
         ? {}
         : { languages: languageAlternates(path) }),
     },
-    openGraph: {
-      type: "website",
-      locale: loc,
-      siteName: t("siteName"),
-      title,
-      description: opts.description ?? descriptionShort,
-      url: canonical,
-      images: ogImages(title),
-    },
+    openGraph: opts.article
+      ? {
+          type: "article",
+          locale: loc,
+          siteName: t("siteName"),
+          title,
+          description: opts.description ?? descriptionShort,
+          url: canonical,
+          images: ogImages(title),
+          ...(opts.article.publishedTime
+            ? { publishedTime: opts.article.publishedTime }
+            : {}),
+          ...(opts.article.modifiedTime
+            ? { modifiedTime: opts.article.modifiedTime }
+            : {}),
+          ...(opts.article.authors?.length
+            ? { authors: opts.article.authors }
+            : {}),
+          ...(opts.article.section ? { section: opts.article.section } : {}),
+        }
+      : {
+          type: "website",
+          locale: loc,
+          siteName: t("siteName"),
+          title,
+          description: opts.description ?? descriptionShort,
+          url: canonical,
+          images: ogImages(title),
+        },
     twitter: {
       card: "summary_large_image",
       title,

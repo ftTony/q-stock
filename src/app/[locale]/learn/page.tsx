@@ -9,6 +9,7 @@ import {
   learnText,
   listLearnArticleCards,
 } from "@/lib/learn/articles";
+import { isLearnArticleAvailable } from "@/lib/learn/locale-gating";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -31,7 +32,9 @@ export default async function LearnIndexPage({ params }: Props) {
     LEARN_CATEGORIES.map((key) => [key, t(`categories.${key}`)]),
   ) as Record<(typeof LEARN_CATEGORIES)[number], string>;
 
-  const articles = listLearnArticleCards().map((a) => ({
+  const articles = listLearnArticleCards()
+    .filter((a) => isLearnArticleAvailable(a.slug, locale))
+    .map((a) => ({
     slug: a.slug,
     category: a.category,
     categoryLabel: categoryLabels[a.category],

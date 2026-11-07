@@ -5,8 +5,9 @@ import {
   type AppLocale,
 } from "@/i18n/config";
 import { seoPublicOrigin } from "@/lib/seo/site-url";
-import { listLearnSlugs } from "@/lib/learn/articles";
+import { getLearnArticle, listLearnSlugs } from "@/lib/learn/articles";
 import { TOOL_CATALOG } from "@/lib/tools/catalog";
+import { ARTICLE_LOCALES } from "@/lib/learn/locale-gating";
 import { sitemapLocales } from "@/lib/seo/sitemap-locales";
 import {
   resolveSymbolsForMarket,
@@ -78,8 +79,11 @@ function absUrl(origin: string, locale: AppLocale, path: string): string {
 export function languageMapForPath(
   origin: string,
   path: string,
+  only?: readonly AppLocale[],
 ): Record<string, string> {
-  const langs = sitemapLocales();
+  const all = sitemapLocales();
+  const langs = only ? all.filter((l) => only.includes(l)) : all;
+  if (!langs.length) return {};
   const languages: Record<string, string> = {};
   for (const locale of langs) {
     languages[locale] = absUrl(origin, locale, path);
@@ -118,11 +122,22 @@ export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
   }
   for (const slug of listLearnSlugs()) {
     const path = `/learn/${slug}`;
-    const languages = languageMapForPath(origin, path);
-    for (const locale of sitemapLocales()) {
+    const only = ARTICLE_LOCALES[slug];
+    const languages = languageMapForPath(origin, path, only);
+    if (!Object.keys(languages).length) continue;
+    // Real editorial date; falling back to `now` for every article made the
+    // whole /learn cluster look "updated today" on each rebuild, which Google
+    // learns to ignore.
+    const article = getLearnArticle(slug);
+    const stamp = article?.updatedAt ?? article?.publishedAt;
+    const lastModified = stamp ? new Date(stamp) : now;
+    const locales = only
+      ? sitemapLocales().filter((l) => only.includes(l))
+      : sitemapLocales();
+    for (const locale of locales) {
       pushUnique(entries, seen, {
         url: languages[locale]!,
-        lastModified: now,
+        lastModified,
         changeFrequency: "monthly",
         priority: 0.55,
         languages,
@@ -130,8 +145,13 @@ export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
     }
   }
   for (const tool of TOOL_CATALOG) {
-    const languages = languageMapForPath(origin, tool.href);
-    for (const locale of sitemapLocales()) {
+    // Locale-gated tools (mainland-only rules) must not advertise hreflang
+    // alternates for locales where the page 404s.
+    const languages = languageMapForPath(origin, tool.href, tool.locales);
+    const locales = tool.locales
+      ? sitemapLocales().filter((l) => tool.locales!.includes(l))
+      : sitemapLocales();
+    for (const locale of locales) {
       pushUnique(entries, seen, {
         url: languages[locale]!,
         lastModified: now,

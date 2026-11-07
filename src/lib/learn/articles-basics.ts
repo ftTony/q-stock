@@ -3,18 +3,23 @@ import { LEARN_ARTICLE_FINANCIALS_BALANCE } from "@/lib/learn/articles-basics-fi
 import { LEARN_ARTICLE_FINANCIALS_CASHFLOW } from "@/lib/learn/articles-basics-financials-cashflow";
 import { LEARN_ARTICLE_FINANCIALS_INCOME } from "@/lib/learn/articles-basics-financials-income";
 import { LEARN_ARTICLE_FINANCIALS_OVERVIEW } from "@/lib/learn/articles-basics-financials-overview";
-import { LEARN_ARTICLE_CANDLE_ENGULFING } from "@/lib/learn/articles-basics-candle-engulfing";
-import { LEARN_ARTICLE_CANDLE_HAMMER } from "@/lib/learn/articles-basics-candle-hammer";
-import { LEARN_ARTICLE_CANDLE_PIERCING } from "@/lib/learn/articles-basics-candle-piercing";
-import { LEARN_ARTICLE_CANDLE_STARS } from "@/lib/learn/articles-basics-candle-stars";
-import { LEARN_ARTICLE_CANDLE_TWEEZER } from "@/lib/learn/articles-basics-candle-tweezer";
-import { LEARN_ARTICLES_INDICATOR_SERIES } from "@/lib/learn/articles-basics-indicator-series";
 import { LEARN_ARTICLE_INDICATORS } from "@/lib/learn/articles-basics-indicators";
 import { LEARN_ARTICLE_PICKING } from "@/lib/learn/articles-basics-picking";
 import { LEARN_ARTICLE_RETAIL_FOCUS } from "@/lib/learn/articles-basics-retail-focus";
+import { LEARN_ARTICLES_MERGED_CANDLES } from "@/lib/learn/articles-merged-candles";
+import { LEARN_ARTICLES_MERGED_TREND } from "@/lib/learn/articles-merged-trend";
+import { LEARN_ARTICLES_MERGED_VOLATILITY } from "@/lib/learn/articles-merged-volatility";
 import type { LearnArticle } from "@/lib/learn/types";
 
-/** Basics articles — depth aligned with kline-basics. */
+/**
+ * Basics articles — depth aligned with kline-basics.
+ *
+ * 2026-11 consolidation: five ~900-char candle pages became
+ * `candle-reversal-patterns`; the five indicator pages became
+ * `indicator-trend-momentum` (MA + MACD) and `indicator-volatility-toolkit`
+ * (RSI + Bollinger + ATR). Sixteen thin pages competing for the same
+ * long-tail queries now resolve to three pages with real depth.
+ */
 export const LEARN_ARTICLES_BASICS: LearnArticle[] = [
   LEARN_ARTICLE_RETAIL_FOCUS,
   LEARN_ARTICLE_PICKING,
@@ -24,12 +29,9 @@ export const LEARN_ARTICLES_BASICS: LearnArticle[] = [
   LEARN_ARTICLE_FINANCIALS_BALANCE,
   LEARN_ARTICLE_FINANCIALS_CASHFLOW,
   LEARN_ARTICLE_INDICATORS,
-  LEARN_ARTICLE_CANDLE_HAMMER,
-  LEARN_ARTICLE_CANDLE_ENGULFING,
-  LEARN_ARTICLE_CANDLE_PIERCING,
-  LEARN_ARTICLE_CANDLE_TWEEZER,
-  LEARN_ARTICLE_CANDLE_STARS,
-  ...LEARN_ARTICLES_INDICATOR_SERIES,
+  ...LEARN_ARTICLES_MERGED_CANDLES,
+  ...LEARN_ARTICLES_MERGED_TREND,
+  ...LEARN_ARTICLES_MERGED_VOLATILITY,
   {
     slug: "paper-review",
     category: "basics",

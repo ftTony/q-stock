@@ -1,10 +1,30 @@
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
+import { locales } from "./src/i18n/config";
+import { MERGED_LEARN_SLUGS } from "./src/lib/learn/merged-slugs";
 
 const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 /** Set SKIP_TYPECHECK=1 in Docker/CI after a separate `tsc` step to save build time. */
 const skipTypecheck = process.env.SKIP_TYPECHECK === "1";
+
+/**
+ * Learn pages merged on 2026-11-07 (16 thin pages → 4). Old URLs must 301 to
+ * the consolidated article or the accumulated link equity is simply lost.
+ * English is the default locale and carries no prefix (`localePrefix: as-needed`).
+ */
+function mergedLearnRedirects() {
+  return Object.entries(MERGED_LEARN_SLUGS).flatMap(([from, to]) => [
+    { source: `/learn/${from}`, destination: `/learn/${to}`, permanent: true },
+    ...locales
+      .filter((locale) => locale !== "en")
+      .map((locale) => ({
+        source: `/${locale}/learn/${from}`,
+        destination: `/${locale}/learn/${to}`,
+        permanent: true,
+      })),
+  ]);
+}
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -24,6 +44,9 @@ const nextConfig: NextConfig = {
       "@tanstack/react-query",
       "next-intl",
     ],
+  },
+  async redirects() {
+    return mergedLearnRedirects();
   },
   // Sitemap: index + children via lightweight routes (disk-first, not MetadataRoute).
   async rewrites() {

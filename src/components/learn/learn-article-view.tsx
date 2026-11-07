@@ -1,6 +1,8 @@
 import { getTranslations } from "next-intl/server";
 import { LearnArticleBody } from "@/components/learn/learn-article-body";
+import { LearnShare } from "@/components/learn/learn-share";
 import { Link } from "@/i18n/routing";
+import type { LearnBlock, LearnFaqItem, LearnLink } from "@/lib/learn/types";
 
 export type LearnRelatedArticle = {
   slug: string;
@@ -13,6 +15,13 @@ type Props = {
   summary: string;
   categoryLabel: string;
   paragraphs: string[];
+  sections?: LearnBlock[];
+  faq?: LearnFaqItem[];
+  links?: LearnLink[];
+  sourceNote?: string;
+  author?: string;
+  publishedAt?: string;
+  updatedAt?: string;
   illustrationSlug?: string;
   locale: string;
   ctaHref?: string;
@@ -24,12 +33,37 @@ export async function LearnArticleView({
   summary,
   categoryLabel,
   paragraphs,
+  sections,
+  faq,
+  links,
+  sourceNote,
+  author,
+  publishedAt,
+  updatedAt,
   illustrationSlug,
   locale,
   ctaHref,
   related,
 }: Props) {
   const t = await getTranslations("learn");
+  const ui = locale.startsWith("zh")
+    ? {
+        by: "作者",
+        updated: "最后更新",
+        faq: "常见问题",
+        links: "相关工具与页面",
+        note: "数据口径与来源",
+      }
+    : {
+        by: "By",
+        updated: "Last updated",
+        faq: "FAQ",
+        links: "Related tools & pages",
+        note: "Data & method",
+      };
+  const dateline = [author ? `${ui.by} ${author}` : null, updatedAt ?? publishedAt]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <div className="w-full animate-[qtFade_0.45s_ease]">
@@ -81,14 +115,81 @@ export async function LearnArticleView({
             <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[var(--muted)] sm:text-[15px] sm:leading-7">
               {summary}
             </p>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
+              {dateline ? (
+                <p className="text-[11px] text-[var(--muted)]">{dateline}</p>
+              ) : (
+                <span aria-hidden />
+              )}
+              <LearnShare title={title} locale={locale} />
+            </div>
           </div>
 
           <div className="px-5 py-6 sm:px-8 sm:py-8">
             <LearnArticleBody
               paragraphs={paragraphs}
+              sections={sections}
               illustrationSlug={illustrationSlug}
               locale={locale}
             />
+
+            {faq && faq.length > 0 ? (
+              <section className="mt-10 max-w-2xl border-t border-[var(--border)] pt-6">
+                <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
+                  {ui.faq}
+                </h2>
+                <dl className="mt-4 space-y-4">
+                  {faq.map((item, i) => (
+                    <div key={i} className="space-y-1.5">
+                      <dt className="text-[15px] font-medium leading-7 text-[var(--foreground)]">
+                        {item.q}
+                      </dt>
+                      <dd className="text-[15px] leading-7 text-[var(--foreground)]/85">
+                        {item.a}
+                      </dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            ) : null}
+
+            {links && links.length > 0 ? (
+              <section className="mt-8 max-w-2xl">
+                <h2 className="text-sm font-semibold tracking-tight">
+                  {ui.links}
+                </h2>
+                <ul className="mt-3 grid gap-2 sm:grid-cols-2">
+                  {links.map((item) => (
+                    <li key={item.href}>
+                      <Link
+                        href={item.href}
+                        className="flex items-center justify-between gap-3 rounded-xl border border-[var(--border)] bg-[var(--panel)] px-4 py-3 text-sm font-medium transition-colors hover:border-[var(--brand)]/40 hover:text-[var(--brand-text)]"
+                      >
+                        <span className="min-w-0 truncate">{item.label}</span>
+                        <span aria-hidden className="text-[var(--muted)]">
+                          →
+                        </span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ) : null}
+
+            {sourceNote ? (
+              <p className="mt-8 max-w-2xl rounded-xl border-l-[3px] px-4 py-3 text-[12px] leading-6 text-[var(--muted)]"
+                style={{
+                  borderColor: "var(--border)",
+                  background:
+                    "color-mix(in srgb, var(--surface-2) 60%, transparent)",
+                }}
+              >
+                <span className="font-medium">{ui.note}：</span>
+                {sourceNote}
+              </p>
+            ) : null}
+
+            <LearnShare title={title} locale={locale} variant="bar" />
           </div>
 
           <div

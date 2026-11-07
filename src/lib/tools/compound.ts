@@ -1,3 +1,10 @@
+import {
+  annuityFutureValue,
+  buildAnnuityYearRows,
+  effectiveFromNominal,
+  periodRateFromNominal,
+} from "@/lib/tools/annuity";
+
 export type CompoundFrequency =
   | "annual"
   | "semiannual"
@@ -6,6 +13,7 @@ export type CompoundFrequency =
 
 export type CompoundInput = {
   principal: number;
+  /** 名义年利率（%），按期分割到每个复利周期 */
   annualRatePercent: number;
   years: number;
   compoundFrequency: CompoundFrequency;
@@ -29,6 +37,10 @@ export type CompoundResult =
       profit: number;
       multiple: number;
       simpleInterestApprox: number;
+      /** 输入的名义年利率（%） */
+      nominalAnnual: number;
+      /** 按当前复利频率折算出的有效年化（%） */
+      effectiveAnnual: number;
       years: CompoundYearRow[];
     }
   | { ok: false; error: "invalid" };
@@ -40,22 +52,11 @@ function nPerYearOf(frequency: CompoundFrequency) {
   return 1;
 }
 
-function fvAt(
-  principal: number,
-  contribution: number,
-  N: number,
-  i: number,
-) {
-  const fvPrincipal = principal * (1 + i) ** N;
-  const fvContrib =
-    contribution === 0
-      ? 0
-      : i === 0
-        ? contribution * N
-        : contribution * (((1 + i) ** N - 1) / i);
-  return fvPrincipal + fvContrib;
-}
-
+/**
+ * 口径：名义年利率按复利频率均分（i = r / n）。
+ * 这是存款、贷款等「挂牌名义利率」的惯例，也正是「复利频率影响终值」的来源。
+ * 若要代入投资收益（有效年化），请用定投工具；两者换算见 annuity.ts。
+ */
 export function calcCompound(input: CompoundInput): CompoundResult {
   const {
     principal,
@@ -78,39 +79,41 @@ export function calcCompound(input: CompoundInput): CompoundResult {
 
   const nPerYear = nPerYearOf(compoundFrequency);
   const r = annualRatePercent / 100;
-  const i = r / nPerYear;
-  const N = Math.round(years * nPerYear);
-  if (N < 1) return { ok: false, error: "invalid" };
+  const periodRate = periodRateFromNominal(r, nPerYear);
+  const periods = Math.round(years * nPerYear);
+  if (periods < 1) return { ok: false, error: "invalid" };
 
-  const fv = fvAt(principal, contribution, N, i);
-  const totalContributed = principal + contribution * N;
+  const fv = annuityFutureValue({
+    principal,
+    contribution,
+    periods,
+    periodRate,
+  });
+  const totalContributed = principal + contribution * periods;
   const profit = fv - totalContributed;
   const multiple = totalContributed > 0 ? fv / totalContributed : 0;
   const simpleInterestApprox =
-    principal + principal * r * years + contribution * N;
-
-  const yearRows: CompoundYearRow[] = [];
-  const fullYears = Math.ceil(N / nPerYear);
-  for (let y = 1; y <= fullYears; y += 1) {
-    const periodsEnd = Math.min(y * nPerYear, N);
-    yearRows.push({
-      year: y,
-      value: fvAt(principal, contribution, periodsEnd, i),
-      contributed: principal + contribution * periodsEnd,
-    });
-  }
+    principal + principal * r * years + contribution * periods;
 
   return {
     ok: true,
     nPerYear,
-    periods: N,
-    periodRate: i,
+    periods,
+    periodRate,
     fv,
     totalContributed,
     profit,
     multiple,
     simpleInterestApprox,
-    years: yearRows,
+    nominalAnnual: annualRatePercent,
+    effectiveAnnual: effectiveFromNominal(annualRatePercent, nPerYear),
+    years: buildAnnuityYearRows({
+      principal,
+      contribution,
+      periods,
+      periodRate,
+      nPerYear,
+    }),
   };
 }
 

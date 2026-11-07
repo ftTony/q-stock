@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { formatToolNumber } from "@/lib/tools/catalog";
 import {
   DCA_EXAMPLE,
@@ -84,7 +85,15 @@ export function DcaCalculator() {
             />
           </Field>
         </div>
-        <p className="text-xs text-[var(--muted)]">{t("dca.note")}</p>
+        <p className="text-xs text-[var(--muted)]">
+          {t("dca.note")}{" "}
+          <Link
+            href="/tools/compound"
+            className="text-[var(--brand-text)] hover:underline"
+          >
+            {t("dca.compareCompound")}
+          </Link>
+        </p>
         <div className="flex flex-wrap gap-2 border-t border-[var(--border)] pt-4">
           <button
             type="button"
@@ -131,6 +140,12 @@ export function DcaCalculator() {
                 value={`${formatToolNumber(result.profitPct)}%`}
               />
             </dl>
+            <p className="text-xs leading-relaxed text-[var(--muted)]">
+              {t("dca.rateBridge", {
+                effective: formatToolNumber(result.effectiveAnnual, 2),
+                nominal: formatToolNumber(result.nominalAnnual, 2),
+              })}
+            </p>
             <div>
               <p className="mb-2 text-xs font-medium text-[var(--muted)]">
                 {t("dca.chartTitle")}

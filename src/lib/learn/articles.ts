@@ -1,5 +1,12 @@
 import { defaultLocale, type AppLocale } from "@/i18n/config";
 import { LEARN_ARTICLES_CORE } from "@/lib/learn/articles-core";
+import { LEARN_ARTICLES_SEO_CROSS_MARKET } from "@/lib/learn/articles-seo-cross-market";
+import { LEARN_ARTICLES_SEO_DERIVATIVES } from "@/lib/learn/articles-seo-derivatives";
+import { LEARN_ARTICLES_SEO_FUNDAMENTALS } from "@/lib/learn/articles-seo-fundamentals";
+import { LEARN_ARTICLES_SEO_METHODS } from "@/lib/learn/articles-seo-methods";
+import { LEARN_ARTICLES_SEO_PLANNING } from "@/lib/learn/articles-seo-planning";
+import { LEARN_ARTICLES_SEO_STRATEGY } from "@/lib/learn/articles-seo-strategy";
+import { LEARN_ARTICLES_SEO_TAX } from "@/lib/learn/articles-seo-tax";
 import { LEARN_ARTICLES_READING } from "@/lib/learn/articles-reading";
 import {
   readLearnArticleFile,
@@ -24,6 +31,13 @@ export { LEARN_CATEGORIES };
 export const LEARN_ARTICLES_SEED: LearnArticle[] = [
   ...LEARN_ARTICLES_CORE,
   ...LEARN_ARTICLES_READING,
+  ...LEARN_ARTICLES_SEO_CROSS_MARKET,
+  ...LEARN_ARTICLES_SEO_METHODS,
+  ...LEARN_ARTICLES_SEO_STRATEGY,
+  ...LEARN_ARTICLES_SEO_FUNDAMENTALS,
+  ...LEARN_ARTICLES_SEO_DERIVATIVES,
+  ...LEARN_ARTICLES_SEO_PLANNING,
+  ...LEARN_ARTICLES_SEO_TAX,
 ];
 
 /** @deprecated Prefer listLearnArticleCards / getLearnArticle. */
@@ -73,15 +87,13 @@ export function getLearnArticle(slug: string): LearnArticle | null {
  * Resolve localized copy.
  * Order: exact locale → zh-TW → zh-CN → en → defaultLocale.
  */
-export function learnText<T extends string | string[]>(
-  locale: string,
-  map: LearnLocaleMap<T>,
-): T {
+export function learnText<T>(locale: string, map: LearnLocaleMap<T>): T {
   const loc = locale as AppLocale;
-  if (map[loc] != null) return map[loc] as T;
+  const direct = map[loc];
+  if (direct != null) return direct;
   if (loc === "zh-TW" && map["zh-TW"] != null) return map["zh-TW"] as T;
-  if (loc.startsWith("zh") && map["zh-CN"] != null) return map["zh-CN"];
+  if (loc.startsWith("zh") && map["zh-CN"] != null) return map["zh-CN"] as T;
   if (map.en != null) return map.en;
-  if (map["zh-CN"] != null) return map["zh-CN"];
+  if (map["zh-CN"] != null) return map["zh-CN"] as T;
   return map[defaultLocale as AppLocale] as T;
 }

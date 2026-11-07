@@ -145,6 +145,12 @@ export function CompoundCalculator() {
                 value={formatToolNumber(result.simpleInterestApprox)}
               />
             </dl>
+            <p className="text-xs leading-relaxed text-[var(--muted)]">
+              {t("compound.rateBridge", {
+                nominal: formatToolNumber(result.nominalAnnual, 2),
+                effective: formatToolNumber(result.effectiveAnnual, 2),
+              })}
+            </p>
             <div>
               <p className="mb-2 text-xs font-medium text-[var(--muted)]">
                 {t("compound.chartTitle")}

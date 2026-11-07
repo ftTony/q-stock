@@ -212,11 +212,169 @@ function RiskRewardVisual() {
   );
 }
 
+function DepositVisual() {
+  return (
+    <Frame id="dep">
+      <path d="M44 96 H284" stroke="currentColor" strokeOpacity="0.16" />
+      {/* 本金基线：利息太薄，本金线几乎与终值线重合，正是这个工具要说的事 */}
+      <path
+        d="M48 72 H280"
+        stroke="currentColor"
+        strokeOpacity="0.3"
+        strokeDasharray="5 4"
+      />
+      <path
+        d="M48 70 C 120 68, 190 64, 280 58"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M48 70 C 120 68, 190 64, 280 58 L 280 72 H48 Z"
+        fill="url(#dep-fill)"
+      />
+      <rect
+        x="48"
+        y="28"
+        width="76"
+        height="24"
+        rx="8"
+        fill="var(--brand-soft)"
+        stroke="currentColor"
+        strokeOpacity="0.28"
+      />
+      <rect x="58" y="37" width="44" height="6" rx="3" fill="currentColor" fillOpacity="0.3" />
+      <circle cx="248" cy="102" r="11" fill="var(--panel)" stroke="currentColor" strokeOpacity="0.35" />
+      <path d="M242 102 H254" stroke="currentColor" strokeOpacity="0.4" />
+    </Frame>
+  );
+}
+
+function PensionVisual() {
+  return (
+    <Frame id="pen">
+      {/* 两根堆叠条：基础养老金 + 个人账户，比例约 1:1 是常见结构 */}
+      <rect x="44" y="40" width="150" height="18" rx="6" fill="var(--brand)" fillOpacity="0.7" />
+      <rect x="194" y="40" width="88" height="18" rx="6" fill="currentColor" fillOpacity="0.22" />
+      <rect x="44" y="66" width="104" height="10" rx="5" fill="currentColor" fillOpacity="0.12" />
+      <rect x="156" y="66" width="60" height="10" rx="5" fill="currentColor" fillOpacity="0.12" />
+      {/* 退休年龄柱：越晚退休，柱子越高但根数越少 */}
+      <path d="M44 106 H284" stroke="currentColor" strokeOpacity="0.16" />
+      {[
+        { x: 44, h: 14 },
+        { x: 88, h: 20 },
+        { x: 132, h: 26 },
+        { x: 176, h: 33 },
+        { x: 220, h: 41 },
+        { x: 264, h: 50 },
+      ].map((b, i) => (
+        <rect
+          key={b.x}
+          x={b.x}
+          y={106 - b.h}
+          width="20"
+          height={b.h}
+          rx="4"
+          fill="currentColor"
+          fillOpacity={0.16 + i * 0.09}
+          stroke="currentColor"
+          strokeOpacity="0.24"
+        />
+      ))}
+    </Frame>
+  );
+}
+
+function DividendTaxVisual() {
+  const rows = [
+    { y: 34, ratio: 1 },
+    { y: 56, ratio: 0.8 },
+    { y: 78, ratio: 0.72 },
+    { y: 100, ratio: 0.7 },
+  ];
+  return (
+    <Frame id="dtx">
+      {rows.map((r, i) => (
+        <g key={r.y}>
+          <rect
+            x="44"
+            y={r.y}
+            width="240"
+            height="14"
+            rx="7"
+            fill="currentColor"
+            fillOpacity="0.08"
+          />
+          <rect
+            x="44"
+            y={r.y}
+            width={240 * r.ratio}
+            height="14"
+            rx="7"
+            fill={i === 0 ? "var(--brand)" : "currentColor"}
+            fillOpacity={i === 0 ? 0.72 : 0.26 + i * 0.03}
+          />
+        </g>
+      ))}
+      {/* 第一根上标出税开始扣的位置：两条短竖线，示意被扣掉的那一截 */}
+      <path d="M216 30 V52" stroke="currentColor" strokeOpacity="0.45" strokeDasharray="3 3" />
+      <path d="M236 30 V52" stroke="currentColor" strokeOpacity="0.45" strokeDasharray="3 3" />
+    </Frame>
+  );
+}
+
+function RetirementVisual() {
+  return (
+    <Frame id="ret">
+      {/* 累积期上升、退休后转为支出：峰值即为「够不够」的那一点 */}
+      <path d="M44 106 H284" stroke="currentColor" strokeOpacity="0.16" />
+      <path
+        d="M44 100 C 88 92, 120 78, 158 60 S 210 40, 232 36"
+        stroke="currentColor"
+        strokeOpacity="0.3"
+        strokeWidth="2"
+        strokeDasharray="4 3"
+      />
+      <path
+        d="M44 100 C 88 92, 120 78, 158 60 S 210 40, 232 36 C 250 44, 264 62, 276 86"
+        stroke="var(--brand)"
+        strokeWidth="2.6"
+        strokeLinecap="round"
+      />
+      <path
+        d="M44 100 C 88 92, 120 78, 158 60 S 210 40, 232 36 C 250 44, 264 62, 276 86 L 276 106 L 44 106 Z"
+        fill="url(#ret-fill)"
+      />
+      <path
+        d="M232 24 V104"
+        stroke="currentColor"
+        strokeOpacity="0.22"
+        strokeDasharray="3 3"
+      />
+      <circle cx="232" cy="36" r="4.5" fill="var(--brand)" />
+      <rect
+        x="196"
+        y="86"
+        width="52"
+        height="16"
+        rx="8"
+        fill="var(--brand-soft)"
+        stroke="currentColor"
+        strokeOpacity="0.22"
+      />
+    </Frame>
+  );
+}
+
 const VISUALS: Record<ToolSlug, () => React.ReactNode> = {
   position: PositionVisual,
   "risk-reward": RiskRewardVisual,
   dca: DcaVisual,
   compound: CompoundVisual,
+  retirement: RetirementVisual,
+  deposit: DepositVisual,
+  "dividend-tax": DividendTaxVisual,
+  pension: PensionVisual,
   options: OptionsVisual,
   mortgage: MortgageVisual,
 };

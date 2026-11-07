@@ -1,9 +1,17 @@
+import {
+  annuityFutureValue,
+  buildAnnuityYearRows,
+  nominalFromEffective,
+  periodRateFromEffective,
+} from "@/lib/tools/annuity";
+
 export type DcaFrequency = "weekly" | "biweekly" | "monthly";
 
 export type DcaInput = {
   contribution: number;
   frequency: DcaFrequency;
   periods: number;
+  /** 有效年化（%），即真实年收益；按期开方换算每期利率 */
   annualRatePercent: number;
   initialPrincipal: number;
 };
@@ -24,6 +32,10 @@ export type DcaResult =
       totalContributed: number;
       profit: number;
       profitPct: number;
+      /** 输入的有效年化（%） */
+      effectiveAnnual: number;
+      /** 等价的名义年利率（%），按同频率复利 */
+      nominalAnnual: number;
       years: DcaYearRow[];
     }
   | { ok: false; error: "invalid" | "rate" };
@@ -36,20 +48,12 @@ function nPerYearOf(frequency: DcaFrequency) {
   return 12;
 }
 
-function fvAt(
-  initialPrincipal: number,
-  contribution: number,
-  periods: number,
-  i: number,
-) {
-  const fvInitial = initialPrincipal * (1 + i) ** periods;
-  const fvAnnuity =
-    i === 0
-      ? contribution * periods
-      : contribution * (((1 + i) ** periods - 1) / i);
-  return fvInitial + fvAnnuity;
-}
-
+/**
+ * 口径：有效年化按频率开方（i = (1+r)^(1/n) − 1）。
+ * 定投代入的通常是基金/指数年化收益，属于有效年化；
+ * 直接除以 12 会低估每期收益，收益率越高差距越大。
+ * 与复利工具（名义年利率 ÷ n）的换算见 annuity.ts。
+ */
 export function calcDca(input: DcaInput): DcaResult {
   const {
     contribution,
@@ -74,34 +78,35 @@ export function calcDca(input: DcaInput): DcaResult {
   if (r <= -1) return { ok: false, error: "rate" };
 
   const nPerYear = nPerYearOf(frequency);
-  const i = (1 + r) ** (1 / nPerYear) - 1;
-  const fv = fvAt(initialPrincipal, contribution, periods, i);
+  const periodRate = periodRateFromEffective(r, nPerYear);
+  const fv = annuityFutureValue({
+    principal: initialPrincipal,
+    contribution,
+    periods,
+    periodRate,
+  });
   const totalContributed = initialPrincipal + contribution * periods;
   const profit = fv - totalContributed;
   const profitPct =
     totalContributed > 0 ? (profit / totalContributed) * 100 : 0;
 
-  const years: DcaYearRow[] = [];
-  const fullYears = Math.ceil(periods / nPerYear);
-  for (let y = 1; y <= fullYears; y += 1) {
-    const periodsEnd = Math.min(y * nPerYear, periods);
-    years.push({
-      year: y,
-      periodsEnd,
-      contributed: initialPrincipal + contribution * periodsEnd,
-      value: fvAt(initialPrincipal, contribution, periodsEnd, i),
-    });
-  }
-
   return {
     ok: true,
     nPerYear,
-    periodRate: i,
+    periodRate,
     fv,
     totalContributed,
     profit,
     profitPct,
-    years,
+    effectiveAnnual: annualRatePercent,
+    nominalAnnual: nominalFromEffective(annualRatePercent, nPerYear),
+    years: buildAnnuityYearRows({
+      principal: initialPrincipal,
+      contribution,
+      periods,
+      periodRate,
+      nPerYear,
+    }),
   };
 }
 

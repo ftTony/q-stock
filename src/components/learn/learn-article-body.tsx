@@ -1,5 +1,6 @@
 import { LearnIndicatorIllustration } from "@/components/learn/learn-indicator-illustration";
 import { LearnStrategyWalkthrough } from "@/components/learn/learn-strategy-walkthrough";
+import type { LearnBlock } from "@/lib/learn/types";
 
 type Block =
   | { type: "lead"; text: string }
@@ -80,15 +81,169 @@ function toBlocks(paragraphs: string[]): Block[] {
   return blocks;
 }
 
+function headingId(text: string, index: number) {
+  const base = text
+    .trim()
+    .toLowerCase()
+    .replace(/[^\p{L}\p{N}]+/gu, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(0, 40);
+  return `s${index}${base ? `-${base}` : ""}`;
+}
+
+/** Rich body: headings, lists and tables give crawlers a real document outline. */
+function RichBlocks({
+  blocks,
+  illustrationSlug,
+  locale,
+}: {
+  blocks: LearnBlock[];
+  illustrationSlug?: string;
+  locale: string;
+}) {
+  return (
+    <>
+      {blocks.map((block, i) => {
+        if (block.type === "p") {
+          const isLead = i === 0;
+          return (
+            <div key={i}>
+              <p
+                className={
+                  isLead
+                    ? "border-l-[3px] border-[var(--brand-text)] pl-4 text-base font-medium leading-8 text-[var(--foreground)] sm:text-[17px] sm:leading-8"
+                    : "text-[15px] leading-7 text-[var(--foreground)]/90"
+                }
+              >
+                {block.text}
+              </p>
+              {isLead && illustrationSlug?.startsWith("strategy-") ? (
+                <LearnStrategyWalkthrough locale={locale} />
+              ) : isLead && illustrationSlug ? (
+                <LearnIndicatorIllustration
+                  slug={illustrationSlug}
+                  locale={locale}
+                />
+              ) : null}
+            </div>
+          );
+        }
+
+        if (block.type === "h2") {
+          return (
+            <h2
+              key={i}
+              id={headingId(block.text, i)}
+              className="scroll-mt-24 pt-2 text-lg font-semibold tracking-tight text-[var(--foreground)] sm:text-xl"
+            >
+              {block.text}
+            </h2>
+          );
+        }
+
+        if (block.type === "ul") {
+          return (
+            <ul key={i} className="space-y-2 pl-1">
+              {block.items.map((item, j) => (
+                <li
+                  key={j}
+                  className="flex gap-3 text-[15px] leading-7 text-[var(--foreground)]/90"
+                >
+                  <span
+                    aria-hidden
+                    className="mt-[0.7rem] h-1.5 w-1.5 shrink-0 rounded-full"
+                    style={{ background: "var(--brand-text)" }}
+                  />
+                  <span className="min-w-0">{item}</span>
+                </li>
+              ))}
+            </ul>
+          );
+        }
+
+        if (block.type === "table") {
+          return (
+            <figure key={i} className="space-y-2">
+              <div className="overflow-x-auto rounded-xl border border-[var(--border)]">
+                <table className="w-full border-collapse text-left text-[13px]">
+                  <thead>
+                    <tr style={{ background: "var(--brand-soft)" }}>
+                      {block.head.map((cell, j) => (
+                        <th
+                          key={j}
+                          scope="col"
+                          className="whitespace-nowrap px-3 py-2.5 font-semibold text-[var(--brand-text)]"
+                        >
+                          {cell}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {block.rows.map((row, j) => (
+                      <tr key={j} className="border-t border-[var(--border)]">
+                        {row.map((cell, k) => (
+                          <td
+                            key={k}
+                            className="px-3 py-2.5 align-top leading-6 text-[var(--foreground)]/90"
+                          >
+                            {cell}
+                          </td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {block.caption ? (
+                <figcaption className="text-[11px] leading-relaxed text-[var(--muted)]">
+                  {block.caption}
+                </figcaption>
+              ) : null}
+            </figure>
+          );
+        }
+
+        return (
+          <p
+            key={i}
+            className="rounded-xl border-l-[3px] px-4 py-3 text-[13px] leading-6 text-[var(--muted)]"
+            style={{
+              borderColor: "var(--border)",
+              background: "color-mix(in srgb, var(--surface-2) 60%, transparent)",
+            }}
+          >
+            {block.text}
+          </p>
+        );
+      })}
+    </>
+  );
+}
+
 export function LearnArticleBody({
   paragraphs,
+  sections,
   illustrationSlug,
   locale,
 }: {
   paragraphs: string[];
+  sections?: LearnBlock[];
   illustrationSlug?: string;
   locale: string;
 }) {
+  if (sections?.length) {
+    return (
+      <div className="w-full max-w-2xl space-y-6">
+        <RichBlocks
+          blocks={sections}
+          illustrationSlug={illustrationSlug}
+          locale={locale}
+        />
+      </div>
+    );
+  }
+
   const blocks = toBlocks(paragraphs);
 
   return (

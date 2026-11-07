@@ -4,7 +4,7 @@ import { MarketingCtaBand } from "@/components/marketing/marketing-cta-band";
 import { ScopedMessages } from "@/components/providers/scoped-messages";
 import { ToolCardVisual } from "@/components/tools/tool-card-visual";
 import { Link } from "@/i18n/routing";
-import { TOOL_CATALOG, toolMessageKey } from "@/lib/tools/catalog";
+import { toolMessageKey, toolsForLocale } from "@/lib/tools/catalog";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -22,6 +22,8 @@ export default async function ToolsIndexPage({ params }: Props) {
   const { locale } = await params;
   setRequestLocale(locale);
   const t = await getTranslations("tools");
+  // Mainland-statutory calculators (pension, deposit) stay on zh-CN only.
+  const tools = toolsForLocale(locale);
 
   return (
     <ScopedMessages namespaces={["marketing"]}>
@@ -46,7 +48,7 @@ export default async function ToolsIndexPage({ params }: Props) {
           </div>
 
           <ul className="grid gap-3 sm:grid-cols-2">
-            {TOOL_CATALOG.map((tool) => {
+            {tools.map((tool) => {
               const key = toolMessageKey(tool);
               return (
                 <li key={tool.slug}>
