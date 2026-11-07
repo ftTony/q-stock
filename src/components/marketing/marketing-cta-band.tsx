@@ -10,7 +10,7 @@ const ADVANCED_QUOTES_FALLBACK: Record<string, string> = {
   en: "Advanced quotes",
 };
 
-/** Shared bottom CTA + site links (learn/tools/pricing live in marketing header). */
+/** Shared bottom CTA + site links (learn/tools live in marketing header, pricing in footer). */
 export function MarketingCtaBand({
   compact = false,
 }: {
@@ -46,6 +46,9 @@ export function MarketingCtaBand({
           </p>
           <p className="mt-1 text-sm text-[var(--muted)]">{t("ctaBandBody")}</p>
           <nav className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-[var(--muted)]">
+            <Link href="/pricing" className="hover:text-[var(--foreground)]">
+              {t("footerPricing")}
+            </Link>
             <Link href="/about" className="hover:text-[var(--foreground)]">
               {t("footerAbout")}
             </Link>
