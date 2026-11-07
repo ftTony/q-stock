@@ -1291,7 +1291,7 @@
   "marketing": {
     "seoDescription": "智能投资 · 价值发现 · AI 辅助决策。美股、港股、A股与数字货币行情、自选、提醒与模拟复盘。",
     "heroLine": "智能投资 · 价值发现 · AI 辅助决策",
-    "heroSupport": "多市场行情、同业对比与 AI 读图，帮你更冷静地看盘与复盘——学习参考，不构成投资建议。",
+    "heroSupport": "四市场行情、同业对比、规则回放与 AI 过程解读。每个结论都标清依据与失效条件——不替你下单，也不承诺收益。",
     "ctaEnter": "进入行情",
     "ctaPaper": "试试模拟交易",
     "ctaStory": "了解理念",
@@ -1322,6 +1322,22 @@
       "alerts": {
         "title": "价格提醒",
         "body": "为关键价位设提醒，少刷屏、少冲动。"
+      },
+      "lab": {
+        "title": "规则实验室",
+        "body": "写下规则，用历史日 K 回放，看它在过去到底赚不赚钱。"
+      },
+      "learn": {
+        "title": "投资知识",
+        "body": "37 篇从指标到纪律的导读，10 种语言，可当工具文档查。"
+      },
+      "tools": {
+        "title": "计算工具",
+        "body": "仓位、定投、复利、期权盈亏，纯前端算，不用登录。"
+      },
+      "multi": {
+        "title": "多图对比",
+        "body": "同屏两三只标的同时看走势，找相对强弱。"
       }
     },
     "aiHighlight": {
@@ -1372,12 +1388,12 @@
       "capabilities": {
         "eyebrow": "01 · 能力",
         "title": "能做什么",
-        "subtitle": "以 AI 问股为核心，行情、自选与对比作配套——克制、可核对。"
+        "subtitle": "行情与对比负责看，规则回放负责验，模拟与复盘负责改。"
       }
     },
     "featureOpen": "打开",
-    "trustEyebrow": "02 · 信任",
-    "storyEyebrow": "03 · 缘起",
+    "trustEyebrow": "04 · 信任",
+    "storyEyebrow": "05 · 缘起",
     "storyQuote": "冷静看盘，认真复盘，比追逐热点更长久。",
     "footerLearn": "投资知识",
     "dotNav": "页面导航",
@@ -1389,7 +1405,59 @@
     "footerPricing": "定价",
     "footerAdvancedQuotes": "高级行情",
     "footerTerms": "服务条款",
-    "footerPrivacy": "隐私政策"
+    "footerPrivacy": "隐私政策",
+    "heroTitleLine1": "看盘、回放、复盘，",
+    "heroTitleLine2": "一条链走完。",
+    "ctaDeploy": "自己部署",
+    "snapshotTitle": "市场总览",
+    "snapshotLive": "快照",
+    "snapshotNote": "来自平台行情源，非实时推送",
+    "snapshotCta": "看完整行情",
+    "snapshotEmpty": "行情暂不可用",
+    "snapshotEmptyBody": "稍后再试，或直接进入行情页查看。",
+    "evidenceEyebrow": "02 · 证据",
+    "evidenceTitle": "不是「我有一套方法」，是「你可以自己验」",
+    "evidenceItems": {
+      "replay": {
+        "title": "规则可回放",
+        "body": "参数、区间、成交假设都摆出来，结论不服可以自己改参数再跑一遍。"
+      },
+      "invalidate": {
+        "title": "结果带失效条件",
+        "body": "不只说赚了多少，也说哪种行情下这套规则会失灵。"
+      },
+      "share": {
+        "title": "过程可分享",
+        "body": "生成只读链接，发给朋友看推理过程，而不是发一张收益截图。"
+      }
+    },
+    "evidenceCard": {
+      "title": "规则回放 · 示例",
+      "tag": "版式示例",
+      "assetLabel": "标的",
+      "assetValue": "00700 · 港股",
+      "rangeLabel": "区间",
+      "rangeValue": "2023-01 → 2025-06",
+      "tfLabel": "周期",
+      "tfValue": "日 K",
+      "note": "示意图表，非真实回放结果。到规则实验室可以跑你自己的。",
+      "cta": "去跑自己的规则"
+    },
+    "dualEyebrow": "03 · 两种用法",
+    "dualTitle": "直接用，或者装到你自己的服务器",
+    "dualDirect": {
+      "title": "直接用",
+      "body": "注册即可看四市场行情。Free 终身 5 次 AI 体验，邀请好友每次 +5；Pro 每月 100 次。",
+      "cta": "免费开始"
+    },
+    "dualDeploy": {
+      "title": "自己部署",
+      "body": "代码与 Docker 编排都在仓库里，行情 Key 用你自己的（BYOK），数据只落在你的库。",
+      "cta": "看部署方式",
+      "note": "# 自行 clone 仓库、填好 .env 之后"
+    },
+    "dotEvidence": "证据",
+    "dotDeploy": "两种用法"
   },
   "disclaimer": {
     "title": "免责声明",

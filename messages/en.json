@@ -1291,7 +1291,7 @@
   "marketing": {
     "seoDescription": "Calm research, paper practice, and honest review. US, HK, A-shares and crypto quotes, peer compare, AI chart reads with invalidation—not stock tips. Learning only; not investment advice.",
     "heroLine": "Calm research. Paper practice. Honest review.",
-    "heroSupport": "US, HK, A-shares & crypto in one place—quotes, peer compare, and AI that explains structure and invalidation, not order tickets. A personal market desk for calmer retail. Learning only; not investment advice.",
+    "heroSupport": "Four markets, peer comparison, rule replays and AI that explains its reasoning. Every call states its basis and its invalidation point. No order tickets, no return promises.",
     "ctaEnter": "Open markets",
     "ctaPaper": "Try paper trading",
     "ctaStory": "What you can do",
@@ -1322,6 +1322,22 @@
       "alerts": {
         "title": "Price alerts",
         "body": "Set levels that matter—less refresh, less impulse."
+      },
+      "lab": {
+        "title": "Strategy lab",
+        "body": "Write a rule, replay it on daily bars, see whether it would have worked."
+      },
+      "learn": {
+        "title": "Learn",
+        "body": "37 guides from indicators to discipline, in 10 languages."
+      },
+      "tools": {
+        "title": "Calculators",
+        "body": "Position size, DCA, compounding, option P&L — client-side, no login."
+      },
+      "multi": {
+        "title": "Multi-chart",
+        "body": "Two or three symbols on one canvas to read relative strength."
       }
     },
     "aiHighlight": {
@@ -1372,12 +1388,12 @@
       "capabilities": {
         "eyebrow": "01 · Capabilities",
         "title": "What you can do",
-        "subtitle": "Markets, watchlists, compare, and AI around one idea: restrained tools you can check—not shouty tips."
+        "subtitle": "Quotes and compare help you look, replays help you check, paper and review help you correct."
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "02 · Trust",
-    "storyEyebrow": "03 · Origin",
+    "trustEyebrow": "04 · Trust",
+    "storyEyebrow": "05 · Origin",
     "storyQuote": "Calm watching and honest review last longer than chasing heat.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1389,7 +1405,59 @@
     "footerPricing": "Pricing",
     "footerAdvancedQuotes": "Advanced quotes",
     "footerTerms": "Terms of Service",
-    "footerPrivacy": "Privacy Policy"
+    "footerPrivacy": "Privacy Policy",
+    "heroTitleLine1": "Watch, backtest, review —",
+    "heroTitleLine2": "one chain, end to end.",
+    "ctaDeploy": "Self-host",
+    "snapshotTitle": "Market snapshot",
+    "snapshotLive": "Snapshot",
+    "snapshotNote": "From platform quote sources, not a live stream",
+    "snapshotCta": "Open markets",
+    "snapshotEmpty": "Quotes unavailable",
+    "snapshotEmptyBody": "Try again later, or open the markets page directly.",
+    "evidenceEyebrow": "02 · Evidence",
+    "evidenceTitle": "Not “I have a method” — “you can check it”",
+    "evidenceItems": {
+      "replay": {
+        "title": "Rules you can replay",
+        "body": "Parameters, window and fill assumptions are all shown. Disagree, change a parameter, run it again."
+      },
+      "invalidate": {
+        "title": "Results carry invalidation",
+        "body": "Not just what it earned, but which regime would break the rule."
+      },
+      "share": {
+        "title": "Share the reasoning",
+        "body": "Generate a read-only link to the process instead of posting a profit screenshot."
+      }
+    },
+    "evidenceCard": {
+      "title": "Rule replay · sample",
+      "tag": "Layout sample",
+      "assetLabel": "Symbol",
+      "assetValue": "00700 · HK",
+      "rangeLabel": "Window",
+      "rangeValue": "2023-01 → 2025-06",
+      "tfLabel": "Timeframe",
+      "tfValue": "Daily",
+      "note": "Illustrative chart, not a real replay result. Run your own in the strategy lab.",
+      "cta": "Run your own rule"
+    },
+    "dualEyebrow": "03 · Two ways to use it",
+    "dualTitle": "Use it here, or run it on your own server",
+    "dualDirect": {
+      "title": "Use it here",
+      "body": "Sign up and browse four markets. Free includes 5 lifetime AI runs, +5 per invite; Pro gives 100 per month.",
+      "cta": "Start free"
+    },
+    "dualDeploy": {
+      "title": "Self-host",
+      "body": "Code and Docker compose live in the repo. Quotes use your own keys (BYOK) and data stays in your database.",
+      "cta": "How to deploy",
+      "note": "# after cloning the repo and filling .env"
+    },
+    "dotEvidence": "Evidence",
+    "dotDeploy": "Two ways to use it"
   },
   "disclaimer": {
     "title": "Disclaimer",

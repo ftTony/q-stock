@@ -1,9 +1,7 @@
-"use client";
-
-import type { CSSProperties, ReactNode, Ref } from "react";
-import { useTranslations } from "next-intl";
+import { getTranslations } from "next-intl/server";
+import type { CSSProperties, ReactNode } from "react";
 import { MarketingCtaBand } from "@/components/marketing/marketing-cta-band";
-import { useSectionReveal } from "@/components/marketing/use-section-reveal";
+import { Reveal } from "@/components/marketing/reveal";
 
 const TRUST_KEYS = ["learnOnly", "dataBound", "calm", "privacy"] as const;
 
@@ -16,27 +14,6 @@ const TRUST_INDEX: Record<(typeof TRUST_KEYS)[number], string> = {
 
 const SCREEN =
   "relative flex min-h-[calc(100dvh-3.5rem)] snap-start snap-always flex-col justify-center pb-20 pt-12";
-
-function Reveal({
-  inView,
-  delay = 0,
-  className = "",
-  children,
-}: {
-  inView: boolean;
-  delay?: number;
-  className?: string;
-  children: ReactNode;
-}) {
-  return (
-    <div
-      className={`mkt-reveal ${inView ? "is-in" : ""} ${className}`}
-      style={{ ["--mkt-delay" as string]: `${delay}ms` }}
-    >
-      {children}
-    </div>
-  );
-}
 
 function ScrollHint({ href, label }: { href: string; label: string }) {
   return (
@@ -63,52 +40,46 @@ function ScrollHint({ href, label }: { href: string; label: string }) {
 
 function ScreenShell({
   id,
-  sectionRef,
   nextHref,
+  nextLabel,
   children,
   style,
-  className = "",
 }: {
   id: string;
-  sectionRef: Ref<HTMLElement | null>;
   nextHref?: string;
+  nextLabel?: string;
   children: ReactNode;
   style?: CSSProperties;
-  className?: string;
 }) {
-  const t = useTranslations("marketing");
   return (
-    <section
-      id={id}
-      ref={sectionRef}
-      className={`${SCREEN} ${className}`}
-      style={style}
-    >
+    <section id={id} className={SCREEN} style={style}>
       <div className="mx-auto w-full max-w-5xl px-4 sm:px-6">{children}</div>
-      {nextHref ? <ScrollHint href={nextHref} label={t("scrollNext")} /> : null}
+      {nextHref ? (
+        <ScrollHint href={nextHref} label={nextLabel ?? ""} />
+      ) : null}
     </section>
   );
 }
 
-export function MarketingTrustScreen() {
-  const t = useTranslations("marketing");
-  const { ref, visible } = useSectionReveal(0.2);
+/** 「为何可信」屏：服务端组件。 */
+export async function MarketingTrustScreen() {
+  const t = await getTranslations("marketing");
 
   return (
-    <ScreenShell id="trust" sectionRef={ref} nextHref="#story">
-      <Reveal inView={visible}>
+    <ScreenShell id="trust" nextHref="#story" nextLabel={t("scrollNext")}>
+      <Reveal>
         <p className="text-xs font-semibold tracking-[0.16em] text-[var(--muted)] uppercase">
           {t("trustEyebrow")}
         </p>
       </Reveal>
-      <Reveal inView={visible} delay={80}>
+      <Reveal delay={80}>
         <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
           {t("trustTitle")}
         </h2>
       </Reveal>
       <div className="mt-10 grid gap-4 sm:grid-cols-2">
         {TRUST_KEYS.map((key, i) => (
-          <Reveal key={key} inView={visible} delay={140 + i * 80}>
+          <Reveal key={key} delay={140 + i * 80} className="h-full">
             <div
               className="flex h-full gap-4 rounded-2xl border border-[var(--border)] p-5 sm:p-6"
               style={{
@@ -134,14 +105,13 @@ export function MarketingTrustScreen() {
   );
 }
 
-export function MarketingStoryScreen() {
-  const t = useTranslations("marketing");
-  const { ref, visible } = useSectionReveal(0.2);
+/** 「缘起」屏 + CTA 带：服务端组件（CTA 按钮仍是客户端组件）。 */
+export async function MarketingStoryScreen() {
+  const t = await getTranslations("marketing");
 
   return (
     <section
       id="story"
-      ref={ref}
       className="relative flex min-h-[calc(100dvh-3.5rem)] snap-start snap-always flex-col pb-0 pt-12"
       style={{
         background: "color-mix(in srgb, var(--panel) 40%, transparent)",
@@ -150,29 +120,29 @@ export function MarketingStoryScreen() {
       <div className="mx-auto flex w-full max-w-5xl flex-1 flex-col justify-center px-4 sm:px-6">
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)] lg:gap-14">
           <div>
-            <Reveal inView={visible}>
+            <Reveal>
               <p className="text-xs font-semibold tracking-[0.16em] text-[var(--muted)] uppercase">
                 {t("storyEyebrow")}
               </p>
             </Reveal>
-            <Reveal inView={visible} delay={80}>
+            <Reveal delay={80}>
               <h2 className="mt-2 text-2xl font-semibold tracking-tight sm:text-3xl md:text-4xl">
                 {t("storyTitle")}
               </h2>
             </Reveal>
-            <Reveal inView={visible} delay={150}>
+            <Reveal delay={150}>
               <p className="mt-5 text-sm leading-relaxed sm:text-base">
                 {t("storyP1")}
               </p>
             </Reveal>
-            <Reveal inView={visible} delay={220}>
+            <Reveal delay={220}>
               <p className="mt-4 text-sm leading-relaxed text-[var(--muted)] sm:text-base">
                 {t("storyP2")}
               </p>
             </Reveal>
           </div>
 
-          <Reveal inView={visible} delay={180}>
+          <Reveal delay={180}>
             <blockquote
               className="rounded-2xl border border-[var(--border)] px-5 py-6 sm:px-6 sm:py-8"
               style={{

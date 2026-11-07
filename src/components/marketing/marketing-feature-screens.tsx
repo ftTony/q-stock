@@ -7,21 +7,38 @@ import { Link } from "@/i18n/routing";
 import { useSectionReveal } from "@/components/marketing/use-section-reveal";
 import { useMounted } from "@/hooks/use-mounted";
 
-type FeatureKey = "markets" | "watchlist" | "analysis" | "paper" | "alerts";
+type FeatureKey =
+  | "markets"
+  | "watchlist"
+  | "analysis"
+  | "lab"
+  | "paper"
+  | "learn"
+  | "tools"
+  | "multi"
+  | "alerts";
 
 /** Supporting tools around the AI hero. */
 const SUPPORTING: FeatureKey[] = [
   "markets",
   "watchlist",
   "analysis",
+  "lab",
   "paper",
+  "learn",
+  "tools",
+  "multi",
 ];
 
 const HREF: Record<FeatureKey | "ai", string> = {
   markets: "/markets",
   watchlist: "/watchlist",
   analysis: "/analysis",
+  lab: "/strategies",
   paper: "/portfolio",
+  learn: "/learn",
+  tools: "/tools",
+  multi: "/multi-chart",
   alerts: "/alerts",
   ai: "/login",
 };
@@ -120,6 +137,36 @@ function FeatureIcon({ name }: { name: FeatureKey | "ai" }) {
         <svg {...common}>
           <path d="M7 3.5h10a1.5 1.5 0 0 1 1.5 1.5v14a1.5 1.5 0 0 1-1.5 1.5H7a1.5 1.5 0 0 1-1.5-1.5V5A1.5 1.5 0 0 1 7 3.5z" />
           <path d="M9.5 8h5M9.5 12h5M9.5 16h3.5" />
+        </svg>
+      );
+    case "lab":
+      return (
+        <svg {...common}>
+          <path d="M4 17l4-4 3 2 5-7 4 3" />
+          <path d="M4 21h16" />
+        </svg>
+      );
+    case "learn":
+      return (
+        <svg {...common}>
+          <path d="M4 5.5A1.5 1.5 0 0 1 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z" />
+          <path d="M20 5.5A1.5 1.5 0 0 0 18.5 4H13v16h5.5A1.5 1.5 0 0 0 20 18.5z" />
+        </svg>
+      );
+    case "tools":
+      return (
+        <svg {...common}>
+          <rect x="4" y="3" width="16" height="18" rx="2" />
+          <path d="M8 7h8M8 11h3M13 11h3M8 15h3M13 15h3" />
+        </svg>
+      );
+    case "multi":
+      return (
+        <svg {...common}>
+          <rect x="3" y="4" width="8" height="7" rx="1.5" />
+          <rect x="13" y="4" width="8" height="7" rx="1.5" />
+          <rect x="3" y="13" width="8" height="7" rx="1.5" />
+          <rect x="13" y="13" width="8" height="7" rx="1.5" />
         </svg>
       );
     case "alerts":

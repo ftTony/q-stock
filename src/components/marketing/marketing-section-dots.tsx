@@ -6,6 +6,8 @@ import { useTranslations } from "next-intl";
 const SECTIONS = [
   { id: "hero", labelKey: "dotHero" as const },
   { id: "features", labelKey: "dotFeatures" as const },
+  { id: "evidence", labelKey: "dotEvidence" as const },
+  { id: "deploy", labelKey: "dotDeploy" as const },
   { id: "trust", labelKey: "dotTrust" as const },
   { id: "story", labelKey: "dotStory" as const },
 ];

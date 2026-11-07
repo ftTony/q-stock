@@ -5,28 +5,16 @@ import { useEffect, useTransition, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { HeroAtmosphere } from "@/components/marketing/hero-atmosphere";
+import {
+  MarketSnapshotCard,
+  type SnapshotRowView,
+} from "@/components/marketing/market-snapshot-card";
 import { useSectionReveal } from "@/components/marketing/use-section-reveal";
 
 const MarketingFeatureScreens = dynamic(
   () =>
     import("@/components/marketing/marketing-feature-screens").then((m) => ({
       default: m.MarketingFeatureScreens,
-    })),
-  { ssr: true },
-);
-
-/** Trust + story share one chunk (same module). */
-const MarketingTrustAndStory = dynamic(
-  () =>
-    import("@/components/marketing/marketing-trust-story").then((m) => ({
-      default: function MarketingTrustAndStory() {
-        return (
-          <>
-            <m.MarketingTrustScreen />
-            <m.MarketingStoryScreen />
-          </>
-        );
-      },
     })),
   { ssr: true },
 );
@@ -87,9 +75,12 @@ function ScrollHint({ href }: { href: string }) {
   );
 }
 
-function HeroScreen() {
+function HeroScreen({
+  snapshot,
+}: {
+  snapshot: { rows: SnapshotRowView[]; asOf: string | null };
+}) {
   const t = useTranslations("marketing");
-  const tApp = useTranslations("app");
   const tCommon = useTranslations("common");
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -99,64 +90,92 @@ function HeroScreen() {
     <section id="hero" ref={ref} className={`${SCREEN} overflow-hidden`}>
       <HeroAtmosphere inView={visible} />
       <div className="relative z-[1] mx-auto w-full max-w-5xl px-4 sm:px-6">
-        <Reveal inView={visible} delay={0}>
-          <h1 className="max-w-3xl text-4xl font-semibold tracking-tight sm:text-5xl md:text-6xl">
-            {tApp("name")}
-          </h1>
-        </Reveal>
-        <Reveal inView={visible} delay={90}>
-          <p className="mt-5 max-w-xl text-sm leading-relaxed text-[var(--muted)] sm:text-[15px]">
-            {t("heroSupport")}
-          </p>
-        </Reveal>
-        <Reveal inView={visible} delay={180}>
-          <div className="mt-8 flex flex-wrap items-center gap-3">
-            <button
-              type="button"
-              disabled={pending}
-              onMouseEnter={() => router.prefetch("/markets")}
-              onFocus={() => router.prefetch("/markets")}
-              onClick={() => startTransition(() => router.push("/markets"))}
-              className="qt-btn qt-btn-primary h-11 px-5 text-sm disabled:opacity-70"
-            >
-              {pending ? tCommon("loading") : t("ctaEnter")}
-            </button>
-            <button
-              type="button"
-              disabled={pending}
-              onMouseEnter={() => router.prefetch("/portfolio")}
-              onFocus={() => router.prefetch("/portfolio")}
-              onClick={() => startTransition(() => router.push("/portfolio"))}
-              className="qt-btn qt-btn-ghost h-11 px-5 text-sm disabled:opacity-70"
-            >
-              {t("ctaPaper")}
-            </button>
-            <a
-              href="#features"
-              className="text-sm font-medium text-[var(--muted)] underline-offset-2 hover:text-[var(--foreground)] hover:underline"
-            >
-              {t("ctaStory")}
-            </a>
+        <div className="grid items-center gap-8 lg:grid-cols-[1.04fr_0.96fr] lg:gap-14">
+          <div className="min-w-0">
+            <Reveal inView={visible} delay={0}>
+              <p className="text-[11px] font-semibold tracking-[0.16em] text-[var(--muted)] uppercase">
+                {t("heroLine")}
+              </p>
+            </Reveal>
+            <Reveal inView={visible} delay={60}>
+              <h1 className="mt-3 text-[30px] font-semibold tracking-tight sm:text-4xl md:text-5xl">
+                <span className="block">{t("heroTitleLine1")}</span>
+                <span className="block">{t("heroTitleLine2")}</span>
+              </h1>
+            </Reveal>
+            <Reveal inView={visible} delay={120}>
+              <p className="mt-4 max-w-xl text-sm leading-relaxed text-[var(--muted)] sm:mt-5 sm:text-[15px]">
+                {t("heroSupport")}
+              </p>
+            </Reveal>
+            <Reveal inView={visible} delay={180}>
+              <div className="mt-6 flex flex-wrap items-center gap-2.5 sm:mt-8 sm:gap-3">
+                <button
+                  type="button"
+                  disabled={pending}
+                  onMouseEnter={() => router.prefetch("/markets")}
+                  onFocus={() => router.prefetch("/markets")}
+                  onClick={() => startTransition(() => router.push("/markets"))}
+                  className="qt-btn qt-btn-primary h-11 px-5 text-sm disabled:opacity-70"
+                >
+                  {pending ? tCommon("loading") : t("ctaEnter")}
+                </button>
+                <button
+                  type="button"
+                  disabled={pending}
+                  onMouseEnter={() => router.prefetch("/pricing")}
+                  onFocus={() => router.prefetch("/pricing")}
+                  onClick={() => startTransition(() => router.push("/pricing"))}
+                  className="qt-btn qt-btn-ghost h-11 px-5 text-sm disabled:opacity-70"
+                >
+                  {t("ctaDeploy")}
+                </button>
+                <a
+                  href="#features"
+                  className="hidden text-sm font-medium text-[var(--muted)] underline-offset-2 hover:text-[var(--foreground)] hover:underline sm:inline"
+                >
+                  {t("ctaStory")}
+                </a>
+              </div>
+            </Reveal>
+            <Reveal inView={visible} delay={240}>
+              <p className="mt-5 max-w-2xl text-xs leading-relaxed text-[var(--muted)]">
+                {t("disclaimerShort")}{" "}
+                <Link
+                  href="/disclaimer"
+                  className="underline-offset-2 hover:text-[var(--foreground)] hover:underline"
+                >
+                  {t("footerDisclaimer")}
+                </Link>
+              </p>
+            </Reveal>
           </div>
-        </Reveal>
-        <Reveal inView={visible} delay={260}>
-          <p className="mt-6 max-w-2xl text-xs leading-relaxed text-[var(--muted)]">
-            {t("disclaimerShort")}{" "}
-            <Link
-              href="/disclaimer"
-              className="underline-offset-2 hover:text-[var(--foreground)] hover:underline"
-            >
-              {t("footerDisclaimer")}
-            </Link>
-          </p>
-        </Reveal>
+
+          <Reveal inView={visible} delay={140} className="min-w-0">
+            <MarketSnapshotCard rows={snapshot.rows} asOf={snapshot.asOf} />
+          </Reveal>
+        </div>
       </div>
       <ScrollHint href="#features" />
     </section>
   );
 }
 
-export function MarketingLanding() {
+export function MarketingLanding({
+  snapshot,
+  evidence,
+  dualChannel,
+  trustAndStory,
+}: {
+  snapshot: { rows: SnapshotRowView[]; asOf: string | null };
+  /**
+   * 证据 / 双通道 / 信任+缘起 三段由服务端渲染后经 props 传入，
+   * 区块本体不进客户端 JS 包（入场动画由内嵌的客户端 `Reveal` 负责）。
+   */
+  evidence: ReactNode;
+  dualChannel: ReactNode;
+  trustAndStory: ReactNode;
+}) {
   useEffect(() => {
     document.documentElement.classList.add("mkt-lock");
     return () => document.documentElement.classList.remove("mkt-lock");
@@ -165,9 +184,11 @@ export function MarketingLanding() {
   return (
     <div className="relative">
       <MarketingSectionDots />
-      <HeroScreen />
+      <HeroScreen snapshot={snapshot} />
       <MarketingFeatureScreens />
-      <MarketingTrustAndStory />
+      {evidence}
+      {dualChannel}
+      {trustAndStory}
     </div>
   );
 }
