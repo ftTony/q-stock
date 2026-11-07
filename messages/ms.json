@@ -2196,5 +2196,101 @@
     "resizeBottom": "Ubah saiz panel bawah",
     "collapseBottom": "Kuncupkan panel bawah",
     "expandBottom": "Kembangkan panel bawah"
+  },
+  "lab": {
+    "seo": {
+      "title": "Makmal Strategi: main semula peraturan pada sejarah sebenar",
+      "description": "Tulis syarat masuk dan keluar sebagai peraturan, main semula pada lilin harian sebenar dan lihat pulangan, susut maksimum, kadar menang serta setiap dagangan — termasuk tempoh apabila peraturan itu gagal."
+    },
+    "hero": {
+      "eyebrow": "Makmal Strategi",
+      "title": "Main semula dahulu, baru percaya",
+      "lede": "Tiada kod. Pilih simbol dan tempoh, tulis syarat masuk dan keluar, dan dalam beberapa minit anda dapat pulangan, susut, kadar menang serta setiap dagangan — termasuk bila peraturan itu berhenti berkesan.",
+      "ctaPrimary": "Jalankan main semula",
+      "ctaSecondary": "Lihat apa yang ia tidak boleh beritahu",
+      "note": "Kad di sebelah bukan ilustrasi — ia hasil sebenar yang dijana oleh enjin makmal."
+    },
+    "card": {
+      "title": "Main semula sebenar",
+      "tag": "Boleh diulang",
+      "ruleLabel": "Peraturan",
+      "ruleValue": "Beli apabila MA10 melintasi ke atas MA20, jual apabila melintasi ke bawah",
+      "symbolLabel": "Simbol dan tempoh",
+      "barsValue": "{bars} lilin harian",
+      "return": "Pulangan peraturan",
+      "buyHold": "Beli dan pegang",
+      "maxDd": "Susut maksimum",
+      "winRate": "Kadar menang",
+      "trades": "Dagangan",
+      "sharpe": "Sharpe",
+      "legendRule": "Ekuiti peraturan",
+      "legendBuyHold": "Beli dan pegang",
+      "footNote": "CSI 300 (000300.SH). Gelinciran {slip} bps, diisi pada harga tutup hari isyarat, modal permulaan 100,000."
+    },
+    "read": {
+      "eyebrow": "02 · Cara membacanya",
+      "title": "Kadar menang {winRate}% tetap mengalahkan beli dan pegang",
+      "body": "Hanya sekitar {winRate}% daripada {trades} dagangan menang, tetapi kemenangan lebih besar (nisbah untung/rugi {ratio}), jadi peraturan berakhir {edge} mata di hadapan beli dan pegang — dengan kos menanggung susut {dd}%. Menilai hanya pada kadar menang akan membuat anda terlepas; menilai hanya pada pulangan akan membuat anda abaikan susut.",
+      "points": {
+        "benchmark": {
+          "kicker": "Mula dengan penanda aras",
+          "title": "Jika tidak mampu kalahkan beli dan pegang, ia bukan strategi",
+          "body": "Halangan pertama ialah pulangan jika tidak berbuat apa-apa; selepas itu barulah pulangan lebihan bermakna."
+        },
+        "drawdown": {
+          "kicker": "Kemudian susut",
+          "title": "Susut menentukan sama ada anda mampu pegang",
+          "body": "Pulangan ialah markah di atas kertas; susut ialah apa yang anda lalui sebenar semasa memegang."
+        },
+        "winrate": {
+          "kicker": "Akhir sekali kadar menang dan kekerapan",
+          "title": "Kadar menang rendah bukan bermakna rugi",
+          "body": "Yang menentukan hasil bukan berapa kali anda betul, tetapi berapa banyak anda untung apabila betul dan rugi apabila salah."
+        }
+      }
+    },
+    "window": {
+      "eyebrow": "03 · Tukar tempoh",
+      "title": "Peraturan sama, simbol sama, tempoh lebih pendek: untung bertukar rugi",
+      "body": "Tetapkan tempoh kepada {from} → {to} ({bars} lilin harian) dan peraturan MA10/20 yang sama memberi {ret}, manakala beli dan pegang memberi {bh}. Keputusan main semula hanya bermakna dengan tempohnya — pulangan tanpa tempoh bukan keputusan.",
+      "colA": "2023-08→2026-10",
+      "colB": "2023-01→2025-06",
+      "rows": {
+        "return": "Pulangan peraturan",
+        "buyHold": "Beli dan pegang",
+        "maxDd": "Susut maksimum",
+        "winRate": "Kadar menang",
+        "trades": "Dagangan"
+      },
+      "footNote": "Lajur kiri ialah tempoh penuh kad di atas; lajur kanan ialah tempoh yang dipendekkan. Kedua-duanya termasuk gelinciran 5 bps."
+    },
+    "limit": {
+      "eyebrow": "04 · Had",
+      "title": "Main semula tidak meramal — ia menapis",
+      "items": {
+        "sample": {
+          "title": "Bias dalam sampel",
+          "body": "Parameter telah dilaras pada sejarah yang sama yang anda uji, jadi ia sentiasa nampak baik. Tukar tempoh dan ia tidak lagi nampak baik."
+        },
+        "survivor": {
+          "title": "Bias kemandirian",
+          "body": "Simbol yang dinyahsenarai atau lama digantung biasanya tiada dalam sampel, jadi pulangan sejarah dilebih-lebihkan secara sistematik."
+        },
+        "cost": {
+          "title": "Geseran dan kapasiti",
+          "body": "Main semula menolak gelinciran tetap dan mengabaikan kesan pasaran serta kapasiti. Dagangan sebenar biasanya lebih teruk."
+        },
+        "regime": {
+          "title": "Masa depan berbeza",
+          "body": "Peraturan yang berkesan dalam satu rejim tidak semestinya berkesan dalam rejim seterusnya — struktur pasaran berubah."
+        }
+      }
+    },
+    "cta": {
+      "title": "Jalankan peraturan anda sendiri",
+      "body": "Pilih simbol yang anda ada pandangan, tulis syaratnya, dan dapatkan jawapan dalam beberapa minit. Kongsi hasilnya dengan pautan baca sahaja.",
+      "primary": "Jalankan main semula",
+      "secondary": "Baca metodologi"
+    }
   }
 }

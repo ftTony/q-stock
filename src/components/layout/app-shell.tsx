@@ -15,7 +15,8 @@ function isMarketingPath(pathname: string) {
     pathname.startsWith("/learn") ||
     pathname.startsWith("/tools") ||
     pathname.startsWith("/pricing") ||
-    pathname.startsWith("/advanced-quotes")
+    pathname.startsWith("/advanced-quotes") ||
+    pathname.startsWith("/lab")
   );
 }
 

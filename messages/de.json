@@ -2196,5 +2196,101 @@
     "resizeBottom": "Unteres Panel skalieren",
     "collapseBottom": "Unteres Panel einklappen",
     "expandBottom": "Unteres Panel ausklappen"
+  },
+  "lab": {
+    "seo": {
+      "title": "Strategie-Labor: eine Regel an echten Kursen nachspielen",
+      "description": "Schreiben Sie Ein- und Ausstiegsbedingungen als Regeln, spielen Sie sie auf echten Tageskerzen nach und sehen Sie Rendite, Drawdown, Trefferquote und jeden Trade – inklusive des Zeitraums, in dem die Regel versagt."
+    },
+    "hero": {
+      "eyebrow": "Strategie-Labor",
+      "title": "Erst nachspielen, dann vertrauen",
+      "lede": "Kein Code. Symbol und Zeitraum wählen, Ein- und Ausstiegsbedingungen notieren – nach wenigen Minuten stehen Rendite, Drawdown, Trefferquote und jeder Trade fest, samt des Zeitraums, in dem die Regel nicht mehr funktioniert.",
+      "ctaPrimary": "Replay starten",
+      "ctaSecondary": "Was es nicht kann",
+      "note": "Die Karte rechts ist keine Illustration, sondern ein echtes Ergebnis der Labor-Engine."
+    },
+    "card": {
+      "title": "Ein echtes Replay",
+      "tag": "Reproduzierbar",
+      "ruleLabel": "Regel",
+      "ruleValue": "Kaufen, wenn MA10 MA20 von unten kreuzt; verkaufen beim Gegensignal",
+      "symbolLabel": "Symbol und Zeitraum",
+      "barsValue": "{bars} Tageskerzen",
+      "return": "Rendite der Regel",
+      "buyHold": "Kaufen und halten",
+      "maxDd": "Max. Drawdown",
+      "winRate": "Trefferquote",
+      "trades": "Trades",
+      "sharpe": "Sharpe",
+      "legendRule": "Kapital der Regel",
+      "legendBuyHold": "Kaufen und halten",
+      "footNote": "CSI 300 (000300.SH). {slip} Basispunkte Slippage, Ausführung zum Schlusskurs des Signaltags, Startkapital 100.000."
+    },
+    "read": {
+      "eyebrow": "02 · So liest man sie",
+      "title": "Auch mit {winRate} % Trefferquote vor Kaufen-und-Halten",
+      "body": "Nur rund {winRate} % der {trades} Trades waren Gewinner, aber die Gewinne waren größer (Gewinn-Verlust-Verhältnis {ratio}). Die Regel liegt damit {edge} Punkte vor Kaufen-und-Halten – um den Preis eines Drawdowns von {dd} %. Nur auf die Trefferquote zu schauen hieße, sie zu übersehen; nur auf die Rendite zu schauen hieße, den Drawdown zu ignorieren.",
+      "points": {
+        "benchmark": {
+          "kicker": "Zuerst die Benchmark",
+          "title": "Wer Kaufen-und-Halten nicht schlägt, ist keine Strategie",
+          "body": "Die erste Hürde ist die Rendite des Nichtstuns. Erst danach zählt die Überrendite."
+        },
+        "drawdown": {
+          "kicker": "Dann der Drawdown",
+          "title": "Der Drawdown entscheidet, ob man dabei bleibt",
+          "body": "Rendite ist das Ergebnis auf Papier, der Drawdown das, was man beim Halten wirklich erlebt."
+        },
+        "winrate": {
+          "kicker": "Dann Trefferquote und Häufigkeit",
+          "title": "Eine niedrige Trefferquote ist kein Verlust",
+          "body": "Entscheidend ist nicht, wie oft man richtig liegt, sondern wie viel man gewinnt, wenn man richtig liegt, und verliert, wenn man falsch liegt."
+        }
+      }
+    },
+    "window": {
+      "eyebrow": "03 · Zeitraum ändern",
+      "title": "Gleiche Regel, gleiches Symbol, kürzerer Zeitraum: aus Gewinn wird Verlust",
+      "body": "Setzt man den Zeitraum auf {from} → {to} ({bars} Tageskerzen), liefert dieselbe MA10/20-Regel {ret}, während Kaufen-und-Halten {bh} bringt. Ein Replay-Ergebnis ist nur mit Zeitraum aussagekräftig – eine Rendite ohne Zeitraum ist kein Ergebnis.",
+      "colA": "2023-08→2026-10",
+      "colB": "2023-01→2025-06",
+      "rows": {
+        "return": "Rendite der Regel",
+        "buyHold": "Kaufen und halten",
+        "maxDd": "Max. Drawdown",
+        "winRate": "Trefferquote",
+        "trades": "Trades"
+      },
+      "footNote": "Linke Spalte: der volle Zeitraum der Karte oben. Rechte Spalte: der verkürzte Zeitraum. Beide mit 5 Basispunkten Slippage."
+    },
+    "limit": {
+      "eyebrow": "04 · Grenzen",
+      "title": "Ein Replay sagt nichts voraus, es schließt aus",
+      "items": {
+        "sample": {
+          "title": "In-Sample-Verzerrung",
+          "body": "Die Parameter wurden an derselben Historie justiert, die Sie testen – sie sehen deshalb immer gut aus. Ein anderer Zeitraum entlarvt sie."
+        },
+        "survivor": {
+          "title": "Survivorship Bias",
+          "body": "Delistete und lange ausgesetzte Titel fehlen meist in der Stichprobe, was historische Renditen systematisch zu hoch erscheinen lässt."
+        },
+        "cost": {
+          "title": "Reibung und Kapazität",
+          "body": "Das Replay zieht feste Slippage ab und ignoriert Markteinfluss und Kapazität. Im echten Handel ist es meist schlechter."
+        },
+        "regime": {
+          "title": "Die Zukunft ist anders",
+          "body": "Eine Regel, die in einem Regime funktioniert hat, muss im nächsten nicht funktionieren. Marktstrukturen ändern sich."
+        }
+      }
+    },
+    "cta": {
+      "title": "Lassen Sie Ihre eigene Regel laufen",
+      "body": "Wählen Sie ein Symbol, zu dem Sie eine Meinung haben, notieren Sie die Bedingungen – nach Minuten steht das Ergebnis. Teilen lässt es sich per Nur-Lese-Link.",
+      "primary": "Replay starten",
+      "secondary": "Methode lesen"
+    }
   }
 }

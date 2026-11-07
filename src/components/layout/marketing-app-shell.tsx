@@ -18,7 +18,7 @@ import { useMounted } from "@/hooks/use-mounted";
 const MARKETING_LINKS = [
   { href: "/" as const, labelKey: "home" as const },
   { href: "/markets" as const, labelKey: "markets" as const },
-  { href: "/strategies" as const, labelKey: "strategies" as const },
+  { href: "/lab" as const, labelKey: "strategies" as const },
   { href: "/tools" as const, labelKey: "tools" as const },
   { href: "/learn" as const, labelKey: "learn" as const },
 ];

@@ -2463,5 +2463,101 @@
     "resizeBottom": "Resize bottom panel",
     "collapseBottom": "Collapse bottom panel",
     "expandBottom": "Expand bottom panel"
+  },
+  "lab": {
+    "seo": {
+      "title": "Strategy Lab: replay a rule on real market history",
+      "description": "Write your entry and exit conditions as rules, replay them on real daily bars, and see the return, drawdown, win rate and every trade — plus the window where the rule breaks down."
+    },
+    "hero": {
+      "eyebrow": "Strategy Lab",
+      "title": "Replay it before you trust it",
+      "lede": "No code. Pick a symbol and a window, write down the entry and exit conditions, and get the return, drawdown, win rate and every trade in minutes — including the window where the rule stops working.",
+      "ctaPrimary": "Run a replay",
+      "ctaSecondary": "See what it can't tell you",
+      "note": "The card on the right is not an illustration — it is a real result produced by the lab engine."
+    },
+    "card": {
+      "title": "A real replay",
+      "tag": "Reproducible",
+      "ruleLabel": "Rule",
+      "ruleValue": "Buy when MA10 crosses above MA20, sell when it crosses below",
+      "symbolLabel": "Symbol and window",
+      "barsValue": "{bars} daily bars",
+      "return": "Rule return",
+      "buyHold": "Buy and hold",
+      "maxDd": "Max drawdown",
+      "winRate": "Win rate",
+      "trades": "Trades",
+      "sharpe": "Sharpe",
+      "legendRule": "Rule equity",
+      "legendBuyHold": "Buy and hold",
+      "footNote": "CSI 300 (000300.SH). {slip} bps slippage, filled at the signal day's close, starting capital 100,000."
+    },
+    "read": {
+      "eyebrow": "02 · How to read it",
+      "title": "A {winRate}% win rate still beat buy and hold",
+      "body": "Only about {winRate}% of the {trades} trades were winners, but the winners were bigger (payoff ratio {ratio}), so the rule finished {edge} points ahead of buy and hold — at the cost of sitting through a {dd}% drawdown. Judge it by win rate alone and you would skip it; judge it by return alone and you would ignore the drawdown.",
+      "points": {
+        "benchmark": {
+          "kicker": "Start with the benchmark",
+          "title": "If it can't beat buy and hold, it isn't a strategy",
+          "body": "The first bar every rule has to clear is the return of doing nothing. Only then does excess return matter."
+        },
+        "drawdown": {
+          "kicker": "Then the drawdown",
+          "title": "Drawdown decides whether you can hold it",
+          "body": "Return is the score on paper. Drawdown is what you actually live through while holding."
+        },
+        "winrate": {
+          "kicker": "Then win rate and frequency",
+          "title": "A low win rate is not a loss",
+          "body": "What decides the outcome is not how often you are right, but how much you make when right and lose when wrong."
+        }
+      }
+    },
+    "window": {
+      "eyebrow": "03 · Change the window",
+      "title": "Same rule, same symbol, shorter window: it flips from a gain to a loss",
+      "body": "Set the window to {from} → {to} ({bars} daily bars) and the same MA10/20 rule returns {ret}, while buy and hold returns {bh}. A replay result only means something with its window attached — a return without a window is not a result.",
+      "colA": "2023-08→2026-10",
+      "colB": "2023-01→2025-06",
+      "rows": {
+        "return": "Rule return",
+        "buyHold": "Buy and hold",
+        "maxDd": "Max drawdown",
+        "winRate": "Win rate",
+        "trades": "Trades"
+      },
+      "footNote": "Left column is the full window used in the card above; right column is the shortened window. Both include 5 bps slippage."
+    },
+    "limit": {
+      "eyebrow": "04 · Limits",
+      "title": "A replay doesn't predict — it eliminates",
+      "items": {
+        "sample": {
+          "title": "In-sample bias",
+          "body": "The parameters were tuned on the same history you are testing, so they always look good. Change the window and they stop looking good."
+        },
+        "survivor": {
+          "title": "Survivorship bias",
+          "body": "Delisted and long-suspended names are usually missing from the sample, which systematically inflates historical returns."
+        },
+        "cost": {
+          "title": "Friction and capacity",
+          "body": "A replay deducts a fixed slippage and ignores market impact and capacity. Live trading is usually worse."
+        },
+        "regime": {
+          "title": "The future is different",
+          "body": "A rule that worked in one regime is not guaranteed to work in the next. Market structure changes."
+        }
+      }
+    },
+    "cta": {
+      "title": "Run a rule of your own",
+      "body": "Pick a symbol you have a view on, write the conditions down, and get an answer in minutes. You can share the result with a read-only link.",
+      "primary": "Run a replay",
+      "secondary": "Read the method"
+    }
   }
 }

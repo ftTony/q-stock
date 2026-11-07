@@ -2196,5 +2196,101 @@
     "resizeBottom": "Redimensionar panel inferior",
     "collapseBottom": "Contraer panel inferior",
     "expandBottom": "Expandir panel inferior"
+  },
+  "lab": {
+    "seo": {
+      "title": "Laboratorio de estrategias: reproduce una regla con historial real",
+      "description": "Escribe tus condiciones de entrada y salida como reglas, reprodúcelas con velas diarias reales y obtén el rendimiento, la caída máxima, la tasa de acierto y cada operación, además del periodo en el que la regla deja de funcionar."
+    },
+    "hero": {
+      "eyebrow": "Laboratorio de estrategias",
+      "title": "Reprodúcela antes de confiar en ella",
+      "lede": "Sin código. Elige un valor y un periodo, escribe las condiciones de entrada y salida y obtén en minutos el rendimiento, la caída máxima, la tasa de acierto y cada operación, incluido el periodo en el que la regla se rompe.",
+      "ctaPrimary": "Ejecutar una reproducción",
+      "ctaSecondary": "Ver qué no puede decirte",
+      "note": "La tarjeta de la derecha no es una ilustración: es un resultado real generado por el motor del laboratorio."
+    },
+    "card": {
+      "title": "Una reproducción real",
+      "tag": "Reproducible",
+      "ruleLabel": "Regla",
+      "ruleValue": "Comprar cuando la MA10 cruza al alza la MA20; vender en el cruce a la baja",
+      "symbolLabel": "Valor y periodo",
+      "barsValue": "{bars} velas diarias",
+      "return": "Rentabilidad de la regla",
+      "buyHold": "Comprar y mantener",
+      "maxDd": "Caída máxima",
+      "winRate": "Tasa de acierto",
+      "trades": "Operaciones",
+      "sharpe": "Sharpe",
+      "legendRule": "Capital de la regla",
+      "legendBuyHold": "Comprar y mantener",
+      "footNote": "CSI 300 (000300.SH). Deslizamiento de {slip} puntos básicos, ejecución al cierre del día de la señal, capital inicial 100.000."
+    },
+    "read": {
+      "eyebrow": "02 · Cómo leerla",
+      "title": "Un acierto del {winRate}% aun así superó a comprar y mantener",
+      "body": "Solo alrededor del {winRate}% de las {trades} operaciones fueron ganadoras, pero las ganadoras fueron mayores (ratio ganancia/pérdida {ratio}), así que la regla terminó {edge} puntos por delante de comprar y mantener, a cambio de soportar una caída del {dd}%. Juzgarla solo por la tasa de acierto te haría descartarla; juzgarla solo por la rentabilidad te haría ignorar la caída.",
+      "points": {
+        "benchmark": {
+          "kicker": "Primero la referencia",
+          "title": "Si no supera a comprar y mantener, no es una estrategia",
+          "body": "El primer listón es la rentabilidad de no hacer nada; solo después importa el exceso."
+        },
+        "drawdown": {
+          "kicker": "Después la caída",
+          "title": "La caída decide si puedes mantenerla",
+          "body": "La rentabilidad es la nota sobre el papel; la caída es lo que vives mientras mantienes."
+        },
+        "winrate": {
+          "kicker": "Por último, acierto y frecuencia",
+          "title": "Un acierto bajo no es una pérdida",
+          "body": "Lo que decide el resultado no es cuántas veces aciertas, sino cuánto ganas cuando aciertas y cuánto pierdes cuando fallas."
+        }
+      }
+    },
+    "window": {
+      "eyebrow": "03 · Cambia el periodo",
+      "title": "Misma regla, mismo valor, periodo más corto: la ganancia se vuelve pérdida",
+      "body": "Si pones el periodo en {from} → {to} ({bars} velas diarias), la misma regla MA10/20 rinde {ret}, mientras que comprar y mantener rinde {bh}. Un resultado de reproducción solo significa algo con su periodo: una rentabilidad sin periodo no es un resultado.",
+      "colA": "2023-08→2026-10",
+      "colB": "2023-01→2025-06",
+      "rows": {
+        "return": "Rentabilidad de la regla",
+        "buyHold": "Comprar y mantener",
+        "maxDd": "Caída máxima",
+        "winRate": "Tasa de acierto",
+        "trades": "Operaciones"
+      },
+      "footNote": "La columna izquierda es el periodo completo de la tarjeta de arriba; la derecha, el periodo recortado. Ambas incluyen 5 puntos básicos de deslizamiento."
+    },
+    "limit": {
+      "eyebrow": "04 · Límites",
+      "title": "Una reproducción no predice: descarta",
+      "items": {
+        "sample": {
+          "title": "Sesgo dentro de la muestra",
+          "body": "Los parámetros se ajustaron con el mismo historial que estás probando, así que siempre lucen bien. Cambia el periodo y dejan de lucir bien."
+        },
+        "survivor": {
+          "title": "Sesgo de supervivencia",
+          "body": "Los valores excluidos o suspendidos mucho tiempo suelen faltar en la muestra, lo que infla sistemáticamente el historial."
+        },
+        "cost": {
+          "title": "Fricción y capacidad",
+          "body": "La reproducción descuenta un deslizamiento fijo e ignora el impacto de mercado y la capacidad. En real suele ser peor."
+        },
+        "regime": {
+          "title": "El futuro es distinto",
+          "body": "Una regla que funcionó en un régimen no tiene por qué funcionar en el siguiente: la estructura del mercado cambia."
+        }
+      }
+    },
+    "cta": {
+      "title": "Ejecuta tu propia regla",
+      "body": "Elige un valor sobre el que tengas una idea, escribe las condiciones y tendrás una respuesta en minutos. Puedes compartir el resultado con un enlace de solo lectura.",
+      "primary": "Ejecutar una reproducción",
+      "secondary": "Leer el método"
+    }
   }
 }

@@ -34,7 +34,7 @@ const HREF: Record<FeatureKey | "ai", string> = {
   markets: "/markets",
   watchlist: "/watchlist",
   analysis: "/analysis",
-  lab: "/strategies",
+  lab: "/lab",
   paper: "/portfolio",
   learn: "/learn",
   tools: "/tools",

@@ -2196,5 +2196,101 @@
     "resizeBottom": "Redimensionner le panneau inférieur",
     "collapseBottom": "Réduire le panneau inférieur",
     "expandBottom": "Développer le panneau inférieur"
+  },
+  "lab": {
+    "seo": {
+      "title": "Labo de stratégies : rejouez une règle sur l'historique réel",
+      "description": "Écrivez vos conditions d'entrée et de sortie sous forme de règles, rejouez-les sur des bougies journalières réelles et obtenez le rendement, le drawdown, le taux de réussite — et la période où la règle cesse de fonctionner."
+    },
+    "hero": {
+      "eyebrow": "Labo de stratégies",
+      "title": "Rejouez-la avant de lui faire confiance",
+      "lede": "Sans code. Choisissez un titre et une période, écrivez les conditions d'entrée et de sortie, et obtenez en quelques minutes le rendement, le drawdown, le taux de réussite et chaque transaction — y compris la période où la règle se casse.",
+      "ctaPrimary": "Lancer un replay",
+      "ctaSecondary": "Voir ce qu'il ne dit pas",
+      "note": "La carte ci-contre n'est pas une illustration : c'est un résultat réel produit par le moteur du labo."
+    },
+    "card": {
+      "title": "Un replay réel",
+      "tag": "Reproductible",
+      "ruleLabel": "Règle",
+      "ruleValue": "Achat quand MA10 croise au-dessus de MA20, vente au croisement inverse",
+      "symbolLabel": "Titre et période",
+      "barsValue": "{bars} bougies journalières",
+      "return": "Rendement de la règle",
+      "buyHold": "Achat et conservation",
+      "maxDd": "Drawdown max",
+      "winRate": "Taux de réussite",
+      "trades": "Transactions",
+      "sharpe": "Sharpe",
+      "legendRule": "Capital de la règle",
+      "legendBuyHold": "Achat et conservation",
+      "footNote": "CSI 300 (000300.SH). Glissement de {slip} points de base, exécution à la clôture du jour de signal, capital initial 100 000."
+    },
+    "read": {
+      "eyebrow": "02 · Comment la lire",
+      "title": "Un taux de réussite de {winRate} % a quand même battu l'achat-conservation",
+      "body": "Seules {winRate} % environ des {trades} transactions ont été gagnantes, mais les gains étaient plus importants (ratio gain/perte de {ratio}) : la règle termine {edge} points devant l'achat-conservation, au prix d'un drawdown de {dd} %. Juger sur le taux de réussite seul la ferait écarter ; juger sur le rendement seul ferait ignorer le drawdown.",
+      "points": {
+        "benchmark": {
+          "kicker": "D'abord la référence",
+          "title": "Si elle ne bat pas l'achat-conservation, ce n'est pas une stratégie",
+          "body": "Le premier seuil à franchir est le rendement de l'inaction ; la surperformance ne vient qu'ensuite."
+        },
+        "drawdown": {
+          "kicker": "Ensuite le drawdown",
+          "title": "Le drawdown décide si vous pouvez tenir la position",
+          "body": "Le rendement est une note sur le papier ; le drawdown est ce que vous vivez réellement."
+        },
+        "winrate": {
+          "kicker": "Enfin réussite et fréquence",
+          "title": "Un faible taux de réussite n'est pas une perte",
+          "body": "Ce qui décide du résultat n'est pas le nombre de fois où vous avez raison, mais combien vous gagnez quand vous avez raison et perdez quand vous avez tort."
+        }
+      }
+    },
+    "window": {
+      "eyebrow": "03 · Changez la période",
+      "title": "Même règle, même titre, période plus courte : le gain devient une perte",
+      "body": "Passez la période à {from} → {to} ({bars} bougies) et la même règle MA10/20 rapporte {ret}, tandis que l'achat-conservation rapporte {bh}. Un replay ne veut rien dire sans sa période : un rendement sans période n'est pas un résultat.",
+      "colA": "2023-08→2026-10",
+      "colB": "2023-01→2025-06",
+      "rows": {
+        "return": "Rendement de la règle",
+        "buyHold": "Achat et conservation",
+        "maxDd": "Drawdown max",
+        "winRate": "Taux de réussite",
+        "trades": "Transactions"
+      },
+      "footNote": "Colonne de gauche : la période complète de la carte ci-dessus. Colonne de droite : la période raccourcie. Les deux incluent 5 points de base de glissement."
+    },
+    "limit": {
+      "eyebrow": "04 · Limites",
+      "title": "Un replay ne prédit pas : il élimine",
+      "items": {
+        "sample": {
+          "title": "Biais d'échantillon",
+          "body": "Les paramètres ont été réglés sur le même historique que vous testez : ils paraissent donc toujours bons. Changez la période et ils le sont moins."
+        },
+        "survivor": {
+          "title": "Biais de survie",
+          "body": "Les titres radiés ou longtemps suspendus manquent souvent à l'échantillon, ce qui gonfle mécaniquement les rendements passés."
+        },
+        "cost": {
+          "title": "Friction et capacité",
+          "body": "Le replay déduit un glissement fixe et ignore l'impact de marché et la capacité. En réel, c'est généralement pire."
+        },
+        "regime": {
+          "title": "Le futur est différent",
+          "body": "Une règle efficace dans un régime ne l'est pas forcément dans le suivant : la structure de marché change."
+        }
+      }
+    },
+    "cta": {
+      "title": "Faites tourner votre propre règle",
+      "body": "Choisissez un titre sur lequel vous avez une idée, écrivez les conditions, et obtenez une réponse en quelques minutes. Le résultat se partage par un lien en lecture seule.",
+      "primary": "Lancer un replay",
+      "secondary": "Lire la méthode"
+    }
   }
 }
