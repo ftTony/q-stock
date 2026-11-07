@@ -27,6 +27,17 @@ import "../globals.css";
 
 const siteVerification = googleSiteVerification();
 
+/**
+ * 涨跌色惯例：大中华与日韩行情软件习惯「涨红跌绿」，其余语言走国际惯例
+ * 「涨绿跌红」。globals.css 里 `html[data-change="us"]` 会翻转 --up/--down。
+ */
+const RED_UP_LOCALES: ReadonlySet<string> = new Set([
+  "zh-CN",
+  "zh-TW",
+  "ja",
+  "ko",
+]);
+
 export function generateStaticParams() {
   return ssgLocales().map((locale) => ({ locale }));
 }
@@ -121,7 +132,11 @@ export default async function LocaleLayout({
   const gaId = gaMeasurementId();
 
   return (
-    <html lang={locale} data-change="cn" suppressHydrationWarning>
+    <html
+      lang={locale}
+      data-change={RED_UP_LOCALES.has(locale) ? "cn" : "us"}
+      suppressHydrationWarning
+    >
       <head>
         {/* Apply stored theme before paint so light default is not overwritten by a dark flash. */}
         <script
