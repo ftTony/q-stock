@@ -38,11 +38,11 @@ const ITEMS: {
   label: string | null;
 }[] = [
   {
-    id: "SSEC",
-    symbol: "000001.SH",
-    assetType: "cn",
-    market: "CN",
-    nameKey: "indexSsec",
+    id: "IXIC",
+    symbol: "IXIC",
+    assetType: "stock",
+    market: "US",
+    nameKey: "indexIxic",
     label: null,
   },
   {
@@ -54,11 +54,11 @@ const ITEMS: {
     label: null,
   },
   {
-    id: "IXIC",
-    symbol: "IXIC",
-    assetType: "stock",
-    market: "US",
-    nameKey: "indexIxic",
+    id: "SSEC",
+    symbol: "000001.SH",
+    assetType: "cn",
+    market: "CN",
+    nameKey: "indexSsec",
     label: null,
   },
   {
