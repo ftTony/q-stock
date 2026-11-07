@@ -87,6 +87,8 @@ export function useMarketBoards(
   opts?: {
     enabled?: boolean;
     refetchInterval?: RefetchInterval<BoardsPayload>;
+    /** 服务端首屏快照，注水后首屏即带真实报价；30s 后仍由客户端自行刷新。 */
+    initialData?: BoardsPayload;
   },
 ) {
   return useQuery({
@@ -95,6 +97,7 @@ export function useMarketBoards(
     staleTime: 30_000,
     refetchInterval: opts?.refetchInterval,
     placeholderData: (prev) => prev,
+    initialData: opts?.initialData,
     queryFn: async (): Promise<BoardsPayload> => {
       if (assetType === "crypto") {
         const data = await fetchJson<{ quotes?: RankQuote[] }>(

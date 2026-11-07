@@ -2,7 +2,6 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
@@ -23,6 +22,7 @@ import {
   useMarketSentiment,
 } from "@/hooks/query/use-market";
 import { useMobileDeferredReady } from "@/hooks/use-mobile-deferred-ready";
+import type { MarketsFirstScreen } from "@/lib/market/markets-first-screen";
 import { useSymbolSearch } from "@/hooks/query/use-symbol-search";
 import { formatTime } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
@@ -69,18 +69,27 @@ function boardsHaveData(boards: Boards, assetType: Tab): boolean {
   );
 }
 
-export default function MarketsDashboard() {
+export default function MarketsDashboard({
+  initialBoards,
+  initialList,
+}: {
+  /**
+   * `/markets` 服务端首屏榜单快照（默认 stock 榜单）。
+   * 有它就先把真实报价渲进 HTML，客户端 30s 后再自行刷新。
+   */
+  initialBoards?: MarketsFirstScreen;
+  /** `?list=` 的取值，由服务端解析后传入；不在此处读 useSearchParams，否则整个面板会被 CSR bailout。 */
+  initialList?: string;
+} = {}) {
   const t = useTranslations("market");
   const tCommon = useTranslations("common");
   const { data: session } = useSession();
-  const searchParams = useSearchParams();
-  const listParam = searchParams.get("list");
   const initialTab: Tab =
-    listParam === "crypto"
+    initialList === "crypto"
       ? "crypto"
-      : listParam === "hk"
+      : initialList === "hk"
         ? "hk"
-        : listParam === "cn"
+        : initialList === "cn"
           ? "cn"
           : "stock";
 
@@ -98,6 +107,10 @@ export default function MarketsDashboard() {
   const heavyReady = useMobileDeferredReady(450);
 
   const boardsQuery = useMarketBoards(tab, {
+    initialData:
+      tab === "stock" && initialBoards?.asOf
+        ? { boards: initialBoards.boards }
+        : undefined,
     refetchInterval: (query) => {
       const data = query.state.data?.boards;
       if (!data) return 45_000;
