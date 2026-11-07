@@ -1,6 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { Reveal } from "@/components/marketing/reveal";
+import { MarketingCtaBand } from "@/components/marketing/marketing-cta-band";
 import {
   LAB_SAMPLE,
   LAB_SAMPLE_ALT,
@@ -10,6 +11,20 @@ import {
 const SECTION = "mx-auto w-full max-w-5xl px-4 sm:px-6";
 const CARD =
   "rounded-2xl border border-[var(--border)] bg-[var(--panel)]";
+
+/**
+ * 与首页同源的整屏版式：每段至少占一屏（减去 3.5rem 顶栏），内容垂直居中，
+ * 父级 <main> 是 `snap-y snap-mandatory` 滚动容器，滚一次换一屏。
+ *
+ * 不用 `snap-always`：移动端首屏等内容可能高于一屏，强制吸附会把超出部分
+ * 卡住看不到；`snap-start` 已能保证正常段落停在屏首。
+ */
+const SCREEN =
+  "relative flex min-h-[calc(100dvh-3.5rem)] snap-start flex-col justify-center pb-16 pt-12";
+
+/** 末屏：出口 + 页脚带贴底，页脚不再单独占一个吸附点（同首页故事屏）。 */
+const SCREEN_LAST =
+  "relative flex min-h-[calc(100dvh-3.5rem)] snap-start flex-col pt-12";
 
 function pct(v: number, digits = 2) {
   return `${v > 0 ? "+" : ""}${v.toFixed(digits)}%`;
@@ -191,9 +206,9 @@ export async function LabLanding() {
   const m = LAB_SAMPLE.metrics;
 
   return (
-    <div className="flex-1">
+    <>
       {/* 01 · 首屏：主张 + 真实回放结果卡 */}
-      <section className="pb-14 pt-10 sm:pt-14">
+      <section className={SCREEN}>
         <div className={SECTION}>
           <div className="grid items-start gap-9 lg:grid-cols-[1fr_0.95fr] lg:gap-12">
             <div className="min-w-0">
@@ -242,7 +257,7 @@ export async function LabLanding() {
       {/* 02 · 怎么读一份回放 */}
       <section
         id="read"
-        className="scroll-mt-14 border-y border-[var(--border)] py-14"
+        className={`${SCREEN} border-y border-[var(--border)]`}
         style={{ background: "color-mix(in srgb, var(--panel) 40%, transparent)" }}
       >
         <div className={SECTION}>
@@ -289,7 +304,7 @@ export async function LabLanding() {
       </section>
 
       {/* 03 · 换一个区间，结论就变 */}
-      <section id="window" className="scroll-mt-14 py-14">
+      <section id="window" className={SCREEN}>
         <div className={SECTION}>
           <div className="grid items-start gap-8 lg:grid-cols-[0.9fr_1.1fr] lg:gap-12">
             <div className="min-w-0">
@@ -373,7 +388,7 @@ export async function LabLanding() {
       {/* 04 · 边界 */}
       <section
         id="limits"
-        className="scroll-mt-14 border-y border-[var(--border)] py-14"
+        className={`${SCREEN} border-y border-[var(--border)]`}
         style={{ background: "color-mix(in srgb, var(--panel) 40%, transparent)" }}
       >
         <div className={SECTION}>
@@ -404,29 +419,34 @@ export async function LabLanding() {
         </div>
       </section>
 
-      {/* 05 · 出口 */}
-      <section className="py-16">
-        <div className={SECTION}>
-          <Reveal>
-            <div className="rounded-3xl border border-[var(--border)] bg-[var(--panel)] px-5 py-9 text-center sm:px-10">
-              <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
-                {t("cta.title")}
-              </h2>
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[var(--muted)]">
-                {t("cta.body")}
-              </p>
-              <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
-                <Link href="/strategies" className="qt-btn qt-btn-primary h-11 px-5 text-sm">
-                  {t("cta.primary")}
-                </Link>
-                <Link href="/learn" className="qt-btn qt-btn-ghost h-11 px-5 text-sm">
-                  {t("cta.secondary")}
-                </Link>
+      {/* 05 · 出口 + 页脚 */}
+      <section id="cta" className={SCREEN_LAST}>
+        <div className="flex flex-1 items-center">
+          <div className={`${SECTION} w-full`}>
+            <Reveal>
+              <div className="rounded-3xl border border-[var(--border)] bg-[var(--panel)] px-5 py-9 text-center sm:px-10">
+                <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+                  {t("cta.title")}
+                </h2>
+                <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[var(--muted)]">
+                  {t("cta.body")}
+                </p>
+                <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+                  <Link href="/strategies" className="qt-btn qt-btn-primary h-11 px-5 text-sm">
+                    {t("cta.primary")}
+                  </Link>
+                  <Link href="/learn" className="qt-btn qt-btn-ghost h-11 px-5 text-sm">
+                    {t("cta.secondary")}
+                  </Link>
+                </div>
               </div>
-            </div>
-          </Reveal>
+            </Reveal>
+          </div>
+        </div>
+        <div className="w-full shrink-0">
+          <MarketingCtaBand compact />
         </div>
       </section>
-    </div>
+    </>
   );
 }

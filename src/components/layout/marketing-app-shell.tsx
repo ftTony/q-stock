@@ -37,7 +37,11 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
   const [menuPainted, setMenuPainted] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [langOpen, setLangOpen] = useState(false);
-  const isLandingHome = pathname === "/";
+  /**
+   * Screens that scroll one full viewport at a time (snap): home landing + /lab.
+   * Each section uses `min-h-[calc(100dvh-3.5rem)] snap-start`.
+   */
+  const isSnapPage = pathname === "/" || pathname.startsWith("/lab");
   /** Full-viewport chrome for short pages only (pricing scrolls — too tall for one screen). */
   const isOneScreen =
     pathname.startsWith("/disclaimer") ||
@@ -45,6 +49,16 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/terms") ||
     pathname.startsWith("/about");
   const dark = mounted && (resolvedTheme || theme) === "dark";
+
+  /**
+   * Snap pages scroll inside <main>, so freeze the document itself — otherwise
+   * mobile Safari rubber-bands the whole page and the snap points fight it.
+   */
+  useEffect(() => {
+    if (!isSnapPage) return;
+    document.documentElement.classList.add("mkt-lock");
+    return () => document.documentElement.classList.remove("mkt-lock");
+  }, [isSnapPage]);
 
   function linkActive(href: string): boolean {
     if (href === "/") return pathname === "/";
@@ -81,7 +95,7 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
   return (
     <div
       className={
-        isLandingHome || isOneScreen
+        isSnapPage || isOneScreen
           ? "flex h-dvh flex-col overflow-hidden"
           : "flex min-h-dvh flex-col"
       }
@@ -306,7 +320,7 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
 
       <main
         className={
-          isLandingHome
+          isSnapPage
             ? "mkt-scroll min-h-0 flex-1 snap-y snap-mandatory overflow-y-auto overscroll-y-contain"
             : isOneScreen
               ? "flex min-h-0 flex-1 flex-col overflow-hidden"

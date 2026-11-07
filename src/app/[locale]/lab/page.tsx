@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { LabLanding } from "@/components/marketing/lab-landing";
-import { MarketingCtaBand } from "@/components/marketing/marketing-cta-band";
 import { ScopedMessages } from "@/components/providers/scoped-messages";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 
@@ -22,10 +21,8 @@ export default async function LabPage({ params }: Props) {
 
   return (
     <ScopedMessages namespaces={["marketing"]}>
-      <div className="flex min-h-0 flex-1 flex-col">
-        <LabLanding />
-        <MarketingCtaBand compact />
-      </div>
+      {/* 每段自占一屏，由营销壳的 snap 容器负责吸附；页脚带在末屏内部贴底。 */}
+      <LabLanding />
     </ScopedMessages>
   );
 }

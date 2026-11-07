@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useTransition, type ReactNode } from "react";
+import { useTransition, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { HeroAtmosphere } from "@/components/marketing/hero-atmosphere";
@@ -176,11 +176,6 @@ export function MarketingLanding({
   dualChannel: ReactNode;
   trustAndStory: ReactNode;
 }) {
-  useEffect(() => {
-    document.documentElement.classList.add("mkt-lock");
-    return () => document.documentElement.classList.remove("mkt-lock");
-  }, []);
-
   return (
     <div className="relative">
       <MarketingSectionDots />
