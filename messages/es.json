@@ -1348,8 +1348,8 @@
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "04 · Confianza",
-    "storyEyebrow": "05 · Origen",
+    "trustEyebrow": "03 · Confianza",
+    "storyEyebrow": "04 · Origen",
     "storyQuote": "Mirar con calma y revisar con honestidad dura más que perseguir el calor.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1384,35 +1384,7 @@
     "snapshotCta": "Abrir mercados",
     "snapshotEmpty": "Cotizaciones no disponibles",
     "snapshotEmptyBody": "Inténtalo más tarde o abre directamente la página de mercados.",
-    "evidenceEyebrow": "02 · Evidencias",
-    "evidenceTitle": "No «tengo un método», sino «puedes comprobarlo»",
-    "evidenceItems": {
-      "replay": {
-        "title": "Reglas reproducibles",
-        "body": "Parámetros, periodo y supuestos de ejecución, todo a la vista. Si no te convence, cambia un parámetro y vuelve a ejecutar."
-      },
-      "invalidate": {
-        "title": "Resultados con condiciones de invalidación",
-        "body": "No solo cuánto ganó, sino en qué régimen de mercado fallaría la regla."
-      },
-      "share": {
-        "title": "Comparte el razonamiento",
-        "body": "Genera un enlace de solo lectura al proceso en lugar de publicar una captura de beneficios."
-      }
-    },
-    "evidenceCard": {
-      "title": "Reproducción de regla · ejemplo",
-      "tag": "Ejemplo de maquetación",
-      "assetLabel": "Símbolo",
-      "assetValue": "00700 · HK",
-      "rangeLabel": "Periodo",
-      "rangeValue": "2023-01 → 2025-06",
-      "tfLabel": "Temporalidad",
-      "tfValue": "Diario",
-      "note": "Gráfico ilustrativo, no un resultado real de reproducción. Ejecuta tus propias reglas en el laboratorio.",
-      "cta": "Probar mi propia regla"
-    },
-    "dualEyebrow": "03 · Dos formas de usarlo",
+    "dualEyebrow": "02 · Dos formas de usarlo",
     "dualTitle": "Úsalo aquí o instálalo en tu propio servidor",
     "dualDirect": {
       "title": "Usar aquí",
@@ -1425,7 +1397,6 @@
       "cta": "Ver despliegue",
       "note": "# tras clonar el repositorio y completar el .env"
     },
-    "dotEvidence": "Evidencias",
     "dotDeploy": "Dos formas"
   },
   "disclaimer": {
@@ -2225,7 +2196,8 @@
       "sharpe": "Sharpe",
       "legendRule": "Capital de la regla",
       "legendBuyHold": "Comprar y mantener",
-      "footNote": "CSI 300 (000300.SH). Deslizamiento de {slip} puntos básicos, ejecución al cierre del día de la señal, capital inicial 100.000."
+      "footNote": "CSI 300 (000300.SH). Deslizamiento de {slip} puntos básicos, ejecución al cierre del día de la señal, capital inicial 100.000.",
+      "chartAria": "Curva comparativa del valor de la regla vs. comprar y mantener"
     },
     "read": {
       "eyebrow": "02 · Cómo leerla",
@@ -2291,6 +2263,13 @@
       "body": "Elige un valor sobre el que tengas una idea, escribe las condiciones y tendrás una respuesta en minutos. Puedes compartir el resultado con un enlace de solo lectura.",
       "primary": "Ejecutar una reproducción",
       "secondary": "Leer el método"
+    },
+    "dots": {
+      "nav": "Secciones",
+      "hero": "Tesis",
+      "read": "Lectura",
+      "window": "Ventana",
+      "limits": "Límites"
     }
   }
 }

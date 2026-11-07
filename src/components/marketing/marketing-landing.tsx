@@ -163,16 +163,14 @@ function HeroScreen({
 
 export function MarketingLanding({
   snapshot,
-  evidence,
   dualChannel,
   trustAndStory,
 }: {
   snapshot: { rows: SnapshotRowView[]; asOf: string | null };
   /**
-   * 证据 / 双通道 / 信任+缘起 三段由服务端渲染后经 props 传入，
+   * 双通道 / 信任+缘起 两段由服务端渲染后经 props 传入，
    * 区块本体不进客户端 JS 包（入场动画由内嵌的客户端 `Reveal` 负责）。
    */
-  evidence: ReactNode;
   dualChannel: ReactNode;
   trustAndStory: ReactNode;
 }) {
@@ -181,7 +179,6 @@ export function MarketingLanding({
       <MarketingSectionDots />
       <HeroScreen snapshot={snapshot} />
       <MarketingFeatureScreens />
-      {evidence}
       {dualChannel}
       {trustAndStory}
     </div>

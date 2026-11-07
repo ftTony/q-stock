@@ -1379,8 +1379,8 @@
       }
     },
     "featureOpen": "打開",
-    "trustEyebrow": "04 · 信任",
-    "storyEyebrow": "05 · 緣起",
+    "trustEyebrow": "03 · 信任",
+    "storyEyebrow": "04 · 緣起",
     "storyQuote": "冷靜看盤，認真複盤，比追逐熱點更長久。",
     "footerLearn": "投資知識",
     "dotNav": "頁面導航",
@@ -1402,35 +1402,7 @@
     "snapshotCta": "看完整行情",
     "snapshotEmpty": "行情暫不可用",
     "snapshotEmptyBody": "稍後再試，或直接進入行情頁查看。",
-    "evidenceEyebrow": "02 · 證據",
-    "evidenceTitle": "不是「我有一套方法」，是「你可以自己驗」",
-    "evidenceItems": {
-      "replay": {
-        "title": "規則可回放",
-        "body": "參數、區間、成交假設都擺出來，結論不服可以自己改參數再跑一遍。"
-      },
-      "invalidate": {
-        "title": "結果帶失效條件",
-        "body": "不只說賺了多少，也說哪種行情下這套規則會失靈。"
-      },
-      "share": {
-        "title": "過程可分享",
-        "body": "產生唯讀連結，發給朋友看推理過程，而不是發一張收益截圖。"
-      }
-    },
-    "evidenceCard": {
-      "title": "規則回放 · 範例",
-      "tag": "版式範例",
-      "assetLabel": "標的",
-      "assetValue": "00700 · 港股",
-      "rangeLabel": "區間",
-      "rangeValue": "2023-01 → 2025-06",
-      "tfLabel": "週期",
-      "tfValue": "日 K",
-      "note": "示意圖表，非真實回放結果。到規則實驗室可以跑你自己的。",
-      "cta": "去跑自己的規則"
-    },
-    "dualEyebrow": "03 · 兩種用法",
+    "dualEyebrow": "02 · 兩種用法",
     "dualTitle": "直接用，或者裝到你自己的伺服器",
     "dualDirect": {
       "title": "直接用",
@@ -1443,7 +1415,6 @@
       "cta": "看部署方式",
       "note": "# 自行 clone 倉庫、填好 .env 之後"
     },
-    "dotEvidence": "證據",
     "dotDeploy": "兩種用法"
   },
   "disclaimer": {
@@ -2287,7 +2258,8 @@
       "sharpe": "夏普",
       "legendRule": "規則淨值",
       "legendBuyHold": "買進持有",
-      "footNote": "標的滬深300（000300.SH）。滑價 {slip}bps，訊號日收盤成交，初始資金 100,000。"
+      "footNote": "標的滬深300（000300.SH）。滑價 {slip}bps，訊號日收盤成交，初始資金 100,000。",
+      "chartAria": "規則淨值與買入持有對比曲線"
     },
     "read": {
       "eyebrow": "02 · 怎麼讀",
@@ -2353,6 +2325,13 @@
       "body": "選一個你有想法的標的，把進出條件寫下來，幾分鐘就有結論。跑完能產生唯讀連結，直接給別人看結果。",
       "primary": "開始一次回放",
       "secondary": "看方法論文章"
+    },
+    "dots": {
+      "nav": "頁面導覽",
+      "hero": "主張",
+      "read": "怎麼讀",
+      "window": "換區間",
+      "limits": "邊界"
     }
   }
 }

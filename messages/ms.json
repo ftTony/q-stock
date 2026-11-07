@@ -1348,8 +1348,8 @@
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "04 · Kepercayaan",
-    "storyEyebrow": "05 · Asal usul",
+    "trustEyebrow": "03 · Kepercayaan",
+    "storyEyebrow": "04 · Asal usul",
     "storyQuote": "Pantau dengan tenang dan semak dengan jujur lebih tahan lama daripada kejar haba.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1384,35 +1384,7 @@
     "snapshotCta": "Buka pasaran",
     "snapshotEmpty": "Sebut harga tidak tersedia",
     "snapshotEmptyBody": "Cuba lagi nanti, atau buka halaman pasaran terus.",
-    "evidenceEyebrow": "02 · Bukti",
-    "evidenceTitle": "Bukan «saya ada kaedah» — «anda boleh menyemaknya»",
-    "evidenceItems": {
-      "replay": {
-        "title": "Peraturan yang boleh diulang siar",
-        "body": "Parameter, tempoh dan anggapan pelaksanaan dipaparkan terbuka. Tidak bersetuju? Ubah satu parameter dan jalankan semula."
-      },
-      "invalidate": {
-        "title": "Keputusan bersyarat kegagalan",
-        "body": "Bukan hanya berapa untung, tetapi juga keadaan pasaran yang mana peraturan itu gagal."
-      },
-      "share": {
-        "title": "Kongsi cara berfikir",
-        "body": "Jana pautan baca sahaja kepada proses penaaran, bukan sekadar tangkapan skrin keuntungan."
-      }
-    },
-    "evidenceCard": {
-      "title": "Ulang siar peraturan · contoh",
-      "tag": "Contoh susun atur",
-      "assetLabel": "Simbol",
-      "assetValue": "00700 · HK",
-      "rangeLabel": "Tempoh",
-      "rangeValue": "2023-01 → 2025-06",
-      "tfLabel": "Kekerapan",
-      "tfValue": "Harian",
-      "note": "Carta ilustrasi, bukan keputusan ulang siar sebenar. Jalankan peraturan anda sendiri di makmal strategi.",
-      "cta": "Jalankan peraturan sendiri"
-    },
-    "dualEyebrow": "03 · Dua cara menggunakannya",
+    "dualEyebrow": "02 · Dua cara menggunakannya",
     "dualTitle": "Guna di sini, atau pasang pada pelayan anda sendiri",
     "dualDirect": {
       "title": "Guna di sini",
@@ -1425,7 +1397,6 @@
       "cta": "Lihat cara deploy",
       "note": "# selepas klon repositori dan isi .env"
     },
-    "dotEvidence": "Bukti",
     "dotDeploy": "Dua cara"
   },
   "disclaimer": {
@@ -2225,7 +2196,8 @@
       "sharpe": "Sharpe",
       "legendRule": "Ekuiti peraturan",
       "legendBuyHold": "Beli dan pegang",
-      "footNote": "CSI 300 (000300.SH). Gelinciran {slip} bps, diisi pada harga tutup hari isyarat, modal permulaan 100,000."
+      "footNote": "CSI 300 (000300.SH). Gelinciran {slip} bps, diisi pada harga tutup hari isyarat, modal permulaan 100,000.",
+      "chartAria": "Carta perbandingan ekuiti peraturan vs. beli-dan-simpan"
     },
     "read": {
       "eyebrow": "02 · Cara membacanya",
@@ -2291,6 +2263,13 @@
       "body": "Pilih simbol yang anda ada pandangan, tulis syaratnya, dan dapatkan jawapan dalam beberapa minit. Kongsi hasilnya dengan pautan baca sahaja.",
       "primary": "Jalankan main semula",
       "secondary": "Baca metodologi"
+    },
+    "dots": {
+      "nav": "Bahagian",
+      "hero": "Klaim",
+      "read": "Cara baca",
+      "window": "Tempoh",
+      "limits": "Sempadan"
     }
   }
 }

@@ -1348,8 +1348,8 @@
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "04 · 신뢰",
-    "storyEyebrow": "05 · 연원",
+    "trustEyebrow": "03 · 신뢰",
+    "storyEyebrow": "04 · 연원",
     "storyQuote": "침착하게 보고, 진지하게 복기하는 것이 핫한 종목을 쫓는 것보다 오래간다.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1384,35 +1384,7 @@
     "snapshotCta": "시세 페이지 열기",
     "snapshotEmpty": "시세를 불러올 수 없습니다",
     "snapshotEmptyBody": "잠시 후 다시 시도하거나 시세 페이지에서 직접 확인하세요.",
-    "evidenceEyebrow": "02 · 근거",
-    "evidenceTitle": "\"나에겐 방법이 있다\"가 아니라 \"직접 검증할 수 있다\"",
-    "evidenceItems": {
-      "replay": {
-        "title": "검증 가능한 규칙",
-        "body": "파라미터, 기간, 체결 가정을 모두 공개합니다. 납득되지 않으면 파라미터를 바꿔 다시 실행하세요."
-      },
-      "invalidate": {
-        "title": "무효 조건이 붙은 결과",
-        "body": "얼마를 벌었는지뿐 아니라, 어떤 시장 국면에서 그 규칙이 무너지는지도 보여줍니다."
-      },
-      "share": {
-        "title": "추론 과정 공유",
-        "body": "수익 스크린샷 대신, 추론 과정을 볼 수 있는 읽기 전용 링크를 만들어 공유하세요."
-      }
-    },
-    "evidenceCard": {
-      "title": "규칙 리플레이 · 샘플",
-      "tag": "레이아웃 예시",
-      "assetLabel": "종목",
-      "assetValue": "00700 · 홍콩",
-      "rangeLabel": "기간",
-      "rangeValue": "2023-01 → 2025-06",
-      "tfLabel": "주기",
-      "tfValue": "일봉",
-      "note": "예시 차트이며 실제 리플레이 결과가 아닙니다. 전략 실험실에서 직접 실행해 보세요.",
-      "cta": "내 규칙 실행하기"
-    },
-    "dualEyebrow": "03 · 두 가지 사용 방식",
+    "dualEyebrow": "02 · 두 가지 사용 방식",
     "dualTitle": "여기서 쓰거나, 내 서버에 설치하세요",
     "dualDirect": {
       "title": "바로 사용",
@@ -1425,7 +1397,6 @@
       "cta": "배포 방법 보기",
       "note": "# 저장소를 클론하고 .env를 채운 뒤"
     },
-    "dotEvidence": "근거",
     "dotDeploy": "두 가지 방식"
   },
   "disclaimer": {
@@ -2225,7 +2196,8 @@
       "sharpe": "샤프",
       "legendRule": "규칙 자산",
       "legendBuyHold": "매수 후 보유",
-      "footNote": "종목은 CSI300(000300.SH). 슬리피지 {slip}bps, 신호일 종가 체결, 초기 자본 100,000."
+      "footNote": "종목은 CSI300(000300.SH). 슬리피지 {slip}bps, 신호일 종가 체결, 초기 자본 100,000.",
+      "chartAria": "전략 순자산과 바이앤홀드 비교 차트"
     },
     "read": {
       "eyebrow": "02 · 읽는 법",
@@ -2291,6 +2263,13 @@
       "body": "생각이 있는 종목을 고르고 조건을 적으면 몇 분 만에 결론이 나옵니다. 결과는 읽기 전용 링크로 공유할 수 있습니다.",
       "primary": "리플레이 실행",
       "secondary": "방법론 읽기"
+    },
+    "dots": {
+      "nav": "페이지 탐색",
+      "hero": "주장",
+      "read": "읽는 법",
+      "window": "기간 변경",
+      "limits": "한계"
     }
   }
 }

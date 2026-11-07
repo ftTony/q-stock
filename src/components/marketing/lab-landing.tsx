@@ -2,10 +2,11 @@ import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { Reveal } from "@/components/marketing/reveal";
 import { MarketingCtaBand } from "@/components/marketing/marketing-cta-band";
+import { SectionDots } from "@/components/marketing/marketing-section-dots";
+import { LabEquityChart } from "@/components/marketing/lab-equity-chart";
 import {
   LAB_SAMPLE,
   LAB_SAMPLE_ALT,
-  LAB_SAMPLE_EQUITY,
 } from "@/lib/marketing/lab-sample";
 
 const SECTION = "mx-auto w-full max-w-5xl px-4 sm:px-6";
@@ -33,64 +34,6 @@ function pct(v: number, digits = 2) {
 /** 涨跌语义色：跟站内 `--up` / `--down` 一致（中/日/韩红涨，其余绿涨）。 */
 function changeColor(v: number) {
   return v >= 0 ? "text-[var(--up)]" : "text-[var(--down)]";
-}
-
-/**
- * 净值曲线：用真实回放数据（48 点）画，不是示意图。
- * 两条线：规则净值（brand）+ 买入持有（muted 虚线）。
- */
-function EquityChart() {
-  const W = 520;
-  const H = 150;
-  const PAD = 6;
-  const values = LAB_SAMPLE_EQUITY.flatMap((p) => [p.e, p.b]);
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = max - min || 1;
-
-  const x = (i: number) =>
-    PAD + (i * (W - PAD * 2)) / (LAB_SAMPLE_EQUITY.length - 1);
-  const y = (v: number) =>
-    PAD + (1 - (v - min) / span) * (H - PAD * 2);
-
-  const line = (key: "e" | "b") =>
-    LAB_SAMPLE_EQUITY.map((p, i) => `${x(i).toFixed(1)},${y(p[key]).toFixed(1)}`).join(" ");
-
-  const baseY = y(LAB_SAMPLE.initialCash);
-
-  return (
-    <svg
-      className="h-[150px] w-full"
-      viewBox={`0 0 ${W} ${H}`}
-      preserveAspectRatio="none"
-      role="img"
-      aria-label="规则净值与买入持有对比曲线"
-    >
-      <line
-        x1={PAD}
-        x2={W - PAD}
-        y1={baseY}
-        y2={baseY}
-        stroke="var(--border)"
-        strokeWidth="1"
-        strokeDasharray="3 3"
-      />
-      <polyline
-        points={line("b")}
-        fill="none"
-        stroke="var(--muted)"
-        strokeOpacity="0.55"
-        strokeWidth="1.4"
-        strokeDasharray="4 3"
-      />
-      <polyline
-        points={line("e")}
-        fill="none"
-        stroke="var(--brand-text)"
-        strokeWidth="1.8"
-      />
-    </svg>
-  );
 }
 
 function MetricCell({
@@ -176,7 +119,11 @@ async function SampleReplayCard() {
       </div>
 
       <div className="mt-3 px-2">
-        <EquityChart />
+        <LabEquityChart
+          ruleLabel={t("card.legendRule")}
+          buyHoldLabel={t("card.legendBuyHold")}
+          ariaLabel={t("card.chartAria")}
+        />
       </div>
 
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 pb-2 text-[10.5px] text-[var(--muted)]">
@@ -200,15 +147,24 @@ async function SampleReplayCard() {
 const READ_POINTS = ["benchmark", "drawdown", "winrate"] as const;
 const LIMITS = ["sample", "survivor", "cost", "regime"] as const;
 
-/** `/lab` 落地页：四段，服务端渲染。 */
+/** `/lab` 落地页：四段（边界屏内含 CTA 出口），服务端渲染。 */
 export async function LabLanding() {
   const t = await getTranslations("lab");
   const m = LAB_SAMPLE.metrics;
 
+  const dots = [
+    { id: "hero", label: t("dots.hero") },
+    { id: "read", label: t("dots.read") },
+    { id: "window", label: t("dots.window") },
+    { id: "limits", label: t("dots.limits") },
+  ];
+
   return (
     <>
+      <SectionDots navLabel={t("dots.nav")} items={dots} />
+
       {/* 01 · 首屏：主张 + 真实回放结果卡 */}
-      <section className={SCREEN}>
+      <section id="hero" className={SCREEN}>
         <div className={SECTION}>
           <div className="grid items-start gap-9 lg:grid-cols-[1fr_0.95fr] lg:gap-12">
             <div className="min-w-0">
@@ -385,53 +341,48 @@ export async function LabLanding() {
         </div>
       </section>
 
-      {/* 04 · 边界 */}
+      {/* 04 · 边界 + 出口：CTA 卡跟在边界卡后面，末屏不再单独占一个吸附点 */}
       <section
         id="limits"
-        className={`${SCREEN} border-y border-[var(--border)]`}
+        className={`${SCREEN_LAST} border-t border-[var(--border)]`}
         style={{ background: "color-mix(in srgb, var(--panel) 40%, transparent)" }}
       >
-        <div className={SECTION}>
-          <Reveal>
-            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
-              {t("limit.eyebrow")}
-            </p>
-          </Reveal>
-          <Reveal delay={70}>
-            <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">
-              {t("limit.title")}
-            </h2>
-          </Reveal>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2">
-            {LIMITS.map((key, i) => (
-              <Reveal key={key} delay={120 + i * 60}>
-                <div className="h-full rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
-                  <strong className="block text-sm font-semibold tracking-tight">
-                    {t(`limit.items.${key}.title`)}
-                  </strong>
-                  <p className="mt-1.5 text-[12.5px] leading-relaxed text-[var(--muted)]">
-                    {t(`limit.items.${key}.body`)}
-                  </p>
-                </div>
-              </Reveal>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* 05 · 出口 + 页脚 */}
-      <section id="cta" className={SCREEN_LAST}>
-        <div className="flex flex-1 items-center">
-          <div className={`${SECTION} w-full`}>
+        <div className="flex flex-1 flex-col justify-center">
+          <div className={SECTION}>
             <Reveal>
-              <div className="rounded-3xl border border-[var(--border)] bg-[var(--panel)] px-5 py-9 text-center sm:px-10">
-                <h2 className="text-2xl font-semibold tracking-tight sm:text-3xl">
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
+                {t("limit.eyebrow")}
+              </p>
+            </Reveal>
+            <Reveal delay={70}>
+              <h2 className="mt-2 max-w-2xl text-2xl font-semibold tracking-tight sm:text-3xl">
+                {t("limit.title")}
+              </h2>
+            </Reveal>
+            <div className="mt-8 grid gap-3 sm:grid-cols-2">
+              {LIMITS.map((key, i) => (
+                <Reveal key={key} delay={120 + i * 60}>
+                  <div className="h-full rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
+                    <strong className="block text-sm font-semibold tracking-tight">
+                      {t(`limit.items.${key}.title`)}
+                    </strong>
+                    <p className="mt-1.5 text-[12.5px] leading-relaxed text-[var(--muted)]">
+                      {t(`limit.items.${key}.body`)}
+                    </p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+
+            <Reveal delay={380}>
+              <div className="mt-9 rounded-3xl border border-[var(--border)] bg-[var(--panel)] px-5 py-8 text-center sm:px-10">
+                <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
                   {t("cta.title")}
                 </h2>
                 <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[var(--muted)]">
                   {t("cta.body")}
                 </p>
-                <div className="mt-7 flex flex-wrap items-center justify-center gap-3">
+                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
                   <Link href="/strategies" className="qt-btn qt-btn-primary h-11 px-5 text-sm">
                     {t("cta.primary")}
                   </Link>

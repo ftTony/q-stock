@@ -1348,8 +1348,8 @@
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "04 · 信頼",
-    "storyEyebrow": "05 · 原点",
+    "trustEyebrow": "03 · 信頼",
+    "storyEyebrow": "04 · 原点",
     "storyQuote": "冷静に相場を見ること、きちんと振り返ること。どちらも、話題を追うより長く続く。",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1384,35 +1384,7 @@
     "snapshotCta": "マーケットを開く",
     "snapshotEmpty": "行情を取得できません",
     "snapshotEmptyBody": "後ほど再度お試しいただくか、行情ページから直接ご確認ください。",
-    "evidenceEyebrow": "02 · 証拠",
-    "evidenceTitle": "「自分には手法がある」ではなく「あなた自身が検証できる」を",
-    "evidenceItems": {
-      "replay": {
-        "title": "再検証できるルール",
-        "body": "パラメータ、期間、約定の前提をすべて公開。納得いかければパラメータを変えてもう一度実行できます。"
-      },
-      "invalidate": {
-        "title": "無効化条件つきの結果",
-        "body": "いくら稼げたかだけでなく、どんな相場でそのルールが破綻するかも示します。"
-      },
-      "share": {
-        "title": "思考プロセスを共有",
-        "body": "収益スクリーンショットではなく、推論プロセスを見られる読み取り専用リンクを生成します。"
-      }
-    },
-    "evidenceCard": {
-      "title": "ルールリプレイ · サンプル",
-      "tag": "レイアウト例",
-      "assetLabel": "銘柄",
-      "assetValue": "00700 · 香港",
-      "rangeLabel": "期間",
-      "rangeValue": "2023-01 → 2025-06",
-      "tfLabel": "足種",
-      "tfValue": "日足",
-      "note": "イメージ図であり、実際のリプレイ結果ではありません。ストラテジーラボであなた自身のルールを実行できます。",
-      "cta": "自分のルールを試す"
-    },
-    "dualEyebrow": "03 · 2 つの使い方",
+    "dualEyebrow": "02 · 2 つの使い方",
     "dualTitle": "そのまま使うか、自分のサーバーに入れるか",
     "dualDirect": {
       "title": "そのまま使う",
@@ -1425,7 +1397,6 @@
       "cta": "デプロイ方法を見る",
       "note": "# リポジトリを clone して .env を記入した後"
     },
-    "dotEvidence": "証拠",
     "dotDeploy": "2 つの使い方"
   },
   "disclaimer": {
@@ -2225,7 +2196,8 @@
       "sharpe": "シャープ",
       "legendRule": "ルールの資産",
       "legendBuyHold": "バイ＆ホールド",
-      "footNote": "銘柄は CSI300（000300.SH）。スリッページ {slip}bps、シグナル日の終値で約定、初期資金 100,000。"
+      "footNote": "銘柄は CSI300（000300.SH）。スリッページ {slip}bps、シグナル日の終値で約定、初期資金 100,000。",
+      "chartAria": "ルール純資産とバイ＆ホールドの比較チャート"
     },
     "read": {
       "eyebrow": "02 · 読み方",
@@ -2291,6 +2263,13 @@
       "body": "思いつきのある銘柄を選び、条件を書き出せば数分で結論が出ます。結果は読み取り専用リンクで共有できます。",
       "primary": "リプレイを実行",
       "secondary": "手法を読む"
+    },
+    "dots": {
+      "nav": "ページナビ",
+      "hero": "主張",
+      "read": "読み方",
+      "window": "期間変更",
+      "limits": "限界"
     }
   }
 }

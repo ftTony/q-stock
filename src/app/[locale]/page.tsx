@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { getMessages, getTranslations } from "next-intl/server";
 import { MarketingLanding } from "@/components/marketing/marketing-landing";
-import { MarketingEvidenceScreen } from "@/components/marketing/marketing-evidence";
 import { MarketingDualChannel } from "@/components/marketing/marketing-dual-channel";
 import {
   MarketingTrustScreen,
@@ -61,7 +60,6 @@ export default async function MarketingHomePage({ params }: Props) {
       <ScopedMessages namespaces={["marketing"]}>
         <MarketingLanding
           snapshot={{ rows, asOf: snapshot.asOf }}
-          evidence={<MarketingEvidenceScreen />}
           dualChannel={<MarketingDualChannel />}
           trustAndStory={
             <>

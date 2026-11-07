@@ -1,26 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 
 const SECTIONS = [
   { id: "hero", labelKey: "dotHero" as const },
   { id: "features", labelKey: "dotFeatures" as const },
-  { id: "evidence", labelKey: "dotEvidence" as const },
   { id: "deploy", labelKey: "dotDeploy" as const },
   { id: "trust", labelKey: "dotTrust" as const },
   { id: "story", labelKey: "dotStory" as const },
 ];
 
-export function MarketingSectionDots() {
-  const t = useTranslations("marketing");
-  const [active, setActive] = useState("hero");
+export type SectionDotItem = { id: string; label: string };
+
+/** 右侧整屏分页圆点：吸反馈当前屏，点击跳转。供首页（翻译键）与 /lab（props）复用。 */
+export function SectionDots({
+  items,
+  navLabel,
+}: {
+  items: SectionDotItem[];
+  navLabel: string;
+}) {
+  const [active, setActive] = useState(items[0]?.id ?? "");
 
   useEffect(() => {
     const root = document.querySelector("main.mkt-scroll");
     if (!root) return;
 
-    const els = SECTIONS.map((s) => document.getElementById(s.id)).filter(
+    const els = items.map((s) => document.getElementById(s.id)).filter(
       (el): el is HTMLElement => Boolean(el),
     );
     if (els.length === 0) return;
@@ -36,21 +43,21 @@ export function MarketingSectionDots() {
     );
     els.forEach((el) => io.observe(el));
     return () => io.disconnect();
-  }, []);
+  }, [items]);
 
   return (
     <nav
-      aria-label={t("dotNav")}
+      aria-label={navLabel}
       className="pointer-events-none fixed top-1/2 right-3 z-40 hidden -translate-y-1/2 flex-col gap-2.5 sm:right-5 md:pointer-events-auto md:flex"
     >
-      {SECTIONS.map((s) => {
+      {items.map((s) => {
         const on = active === s.id;
         return (
           <a
             key={s.id}
             href={`#${s.id}`}
-            title={t(s.labelKey)}
-            aria-label={t(s.labelKey)}
+            title={s.label}
+            aria-label={s.label}
             aria-current={on ? "true" : undefined}
             className={`block h-2 w-2 rounded-full transition ${
               on
@@ -62,4 +69,14 @@ export function MarketingSectionDots() {
       })}
     </nav>
   );
+}
+
+export function MarketingSectionDots() {
+  const t = useTranslations("marketing");
+  // 稳定引用：避免每次渲染都重建 IntersectionObserver。
+  const items = useMemo(
+    () => SECTIONS.map((s) => ({ id: s.id, label: t(s.labelKey) })),
+    [t],
+  );
+  return <SectionDots items={items} navLabel={t("dotNav")} />;
 }

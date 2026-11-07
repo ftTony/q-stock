@@ -1348,8 +1348,8 @@
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "04 · Vertrauen",
-    "storyEyebrow": "05 · Ursprung",
+    "trustEyebrow": "03 · Vertrauen",
+    "storyEyebrow": "04 · Ursprung",
     "storyQuote": "Ruhig zuschauen und ehrlich reviewen hält länger als dem Hype hinterherzulaufen.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1384,35 +1384,7 @@
     "snapshotCta": "Märkte öffnen",
     "snapshotEmpty": "Kurse nicht verfügbar",
     "snapshotEmptyBody": "Versuche es später erneut oder öffne direkt die Märkte-Seite.",
-    "evidenceEyebrow": "02 · Belege",
-    "evidenceTitle": "Nicht „Ich habe eine Methode“ — „Du kannst es prüfen“",
-    "evidenceItems": {
-      "replay": {
-        "title": "Nachspielbare Regeln",
-        "body": "Parameter, Zeitraum und Ausführungsannahmen liegen offen auf dem Tisch. Wer nicht einverstanden ist, ändert einen Parameter und spielt es erneut durch."
-      },
-      "invalidate": {
-        "title": "Ergebnisse mit Invalidierung",
-        "body": "Nicht nur, was sie eingebracht haben, sondern auch, welches Marktumfeld die Regel brechen würde."
-      },
-      "share": {
-        "title": "Begründung statt Screenshot",
-        "body": "Erzeuge einen Nur-Lese-Link zum Ablauf, statt einen Gewinn-Screenshot zu posten."
-      }
-    },
-    "evidenceCard": {
-      "title": "Regel-Replay · Beispiel",
-      "tag": "Layout-Beispiel",
-      "assetLabel": "Symbol",
-      "assetValue": "00700 · HK",
-      "rangeLabel": "Zeitraum",
-      "rangeValue": "2023-01 → 2025-06",
-      "tfLabel": "Intervall",
-      "tfValue": "Tageskerzen",
-      "note": "Illustratives Chart, kein echtes Replay-Ergebnis. Im Strategielabor kannst du eigene Regeln durchspielen.",
-      "cta": "Eigene Regel testen"
-    },
-    "dualEyebrow": "03 · Zwei Arten der Nutzung",
+    "dualEyebrow": "02 · Zwei Arten der Nutzung",
     "dualTitle": "Hier nutzen oder auf dem eigenen Server betreiben",
     "dualDirect": {
       "title": "Direkt nutzen",
@@ -1425,7 +1397,6 @@
       "cta": "Deployment ansehen",
       "note": "# nach dem Klonen des Repos und Ausfüllen der .env"
     },
-    "dotEvidence": "Belege",
     "dotDeploy": "Zwei Arten"
   },
   "disclaimer": {
@@ -2225,7 +2196,8 @@
       "sharpe": "Sharpe",
       "legendRule": "Kapital der Regel",
       "legendBuyHold": "Kaufen und halten",
-      "footNote": "CSI 300 (000300.SH). {slip} Basispunkte Slippage, Ausführung zum Schlusskurs des Signaltags, Startkapital 100.000."
+      "footNote": "CSI 300 (000300.SH). {slip} Basispunkte Slippage, Ausführung zum Schlusskurs des Signaltags, Startkapital 100.000.",
+      "chartAria": "Vergleichskurve: Regel-Nettovermögen vs. Buy-and-Hold"
     },
     "read": {
       "eyebrow": "02 · So liest man sie",
@@ -2291,6 +2263,13 @@
       "body": "Wählen Sie ein Symbol, zu dem Sie eine Meinung haben, notieren Sie die Bedingungen – nach Minuten steht das Ergebnis. Teilen lässt es sich per Nur-Lese-Link.",
       "primary": "Replay starten",
       "secondary": "Methode lesen"
+    },
+    "dots": {
+      "nav": "Abschnitte",
+      "hero": "These",
+      "read": "Lesen",
+      "window": "Zeitraum",
+      "limits": "Grenzen"
     }
   }
 }

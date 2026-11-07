@@ -1392,8 +1392,8 @@
       }
     },
     "featureOpen": "打开",
-    "trustEyebrow": "04 · 信任",
-    "storyEyebrow": "05 · 缘起",
+    "trustEyebrow": "03 · 信任",
+    "storyEyebrow": "04 · 缘起",
     "storyQuote": "冷静看盘，认真复盘，比追逐热点更长久。",
     "footerLearn": "投资知识",
     "dotNav": "页面导航",
@@ -1415,35 +1415,7 @@
     "snapshotCta": "看完整行情",
     "snapshotEmpty": "行情暂不可用",
     "snapshotEmptyBody": "稍后再试，或直接进入行情页查看。",
-    "evidenceEyebrow": "02 · 证据",
-    "evidenceTitle": "不是「我有一套方法」，是「你可以自己验」",
-    "evidenceItems": {
-      "replay": {
-        "title": "规则可回放",
-        "body": "参数、区间、成交假设都摆出来，结论不服可以自己改参数再跑一遍。"
-      },
-      "invalidate": {
-        "title": "结果带失效条件",
-        "body": "不只说赚了多少，也说哪种行情下这套规则会失灵。"
-      },
-      "share": {
-        "title": "过程可分享",
-        "body": "生成只读链接，发给朋友看推理过程，而不是发一张收益截图。"
-      }
-    },
-    "evidenceCard": {
-      "title": "规则回放 · 示例",
-      "tag": "版式示例",
-      "assetLabel": "标的",
-      "assetValue": "00700 · 港股",
-      "rangeLabel": "区间",
-      "rangeValue": "2023-01 → 2025-06",
-      "tfLabel": "周期",
-      "tfValue": "日 K",
-      "note": "示意图表，非真实回放结果。到规则实验室可以跑你自己的。",
-      "cta": "去跑自己的规则"
-    },
-    "dualEyebrow": "03 · 两种用法",
+    "dualEyebrow": "02 · 两种用法",
     "dualTitle": "直接用，或者装到你自己的服务器",
     "dualDirect": {
       "title": "直接用",
@@ -1456,7 +1428,6 @@
       "cta": "看部署方式",
       "note": "# 自行 clone 仓库、填好 .env 之后"
     },
-    "dotEvidence": "证据",
     "dotDeploy": "两种用法"
   },
   "disclaimer": {
@@ -2492,7 +2463,8 @@
       "sharpe": "夏普",
       "legendRule": "规则净值",
       "legendBuyHold": "买入持有",
-      "footNote": "标的沪深300（000300.SH）。滑点 {slip}bps，信号日收盘成交，初始资金 100,000。"
+      "footNote": "标的沪深300（000300.SH）。滑点 {slip}bps，信号日收盘成交，初始资金 100,000。",
+      "chartAria": "规则净值与买入持有对比曲线"
     },
     "read": {
       "eyebrow": "02 · 怎么读",
@@ -2558,6 +2530,13 @@
       "body": "选一个你有想法的标的，把进出条件写下来，几分钟就有结论。跑完能生成只读链接，发给别人直接看结果。",
       "primary": "开始一次回放",
       "secondary": "看方法论文章"
+    },
+    "dots": {
+      "nav": "页面导航",
+      "hero": "主张",
+      "read": "怎么读",
+      "window": "换区间",
+      "limits": "边界"
     }
   }
 }

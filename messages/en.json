@@ -1392,8 +1392,8 @@
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "04 · Trust",
-    "storyEyebrow": "05 · Origin",
+    "trustEyebrow": "03 · Trust",
+    "storyEyebrow": "04 · Origin",
     "storyQuote": "Calm watching and honest review last longer than chasing heat.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1415,35 +1415,7 @@
     "snapshotCta": "Open markets",
     "snapshotEmpty": "Quotes unavailable",
     "snapshotEmptyBody": "Try again later, or open the markets page directly.",
-    "evidenceEyebrow": "02 · Evidence",
-    "evidenceTitle": "Not “I have a method” — “you can check it”",
-    "evidenceItems": {
-      "replay": {
-        "title": "Rules you can replay",
-        "body": "Parameters, window and fill assumptions are all shown. Disagree, change a parameter, run it again."
-      },
-      "invalidate": {
-        "title": "Results carry invalidation",
-        "body": "Not just what it earned, but which regime would break the rule."
-      },
-      "share": {
-        "title": "Share the reasoning",
-        "body": "Generate a read-only link to the process instead of posting a profit screenshot."
-      }
-    },
-    "evidenceCard": {
-      "title": "Rule replay · sample",
-      "tag": "Layout sample",
-      "assetLabel": "Symbol",
-      "assetValue": "00700 · HK",
-      "rangeLabel": "Window",
-      "rangeValue": "2023-01 → 2025-06",
-      "tfLabel": "Timeframe",
-      "tfValue": "Daily",
-      "note": "Illustrative chart, not a real replay result. Run your own in the strategy lab.",
-      "cta": "Run your own rule"
-    },
-    "dualEyebrow": "03 · Two ways to use it",
+    "dualEyebrow": "02 · Two ways to use it",
     "dualTitle": "Use it here, or run it on your own server",
     "dualDirect": {
       "title": "Use it here",
@@ -1456,7 +1428,6 @@
       "cta": "How to deploy",
       "note": "# after cloning the repo and filling .env"
     },
-    "dotEvidence": "Evidence",
     "dotDeploy": "Two ways to use it"
   },
   "disclaimer": {
@@ -2492,7 +2463,8 @@
       "sharpe": "Sharpe",
       "legendRule": "Rule equity",
       "legendBuyHold": "Buy and hold",
-      "footNote": "CSI 300 (000300.SH). {slip} bps slippage, filled at the signal day's close, starting capital 100,000."
+      "footNote": "CSI 300 (000300.SH). {slip} bps slippage, filled at the signal day's close, starting capital 100,000.",
+      "chartAria": "Rule equity vs. buy-and-hold comparison chart"
     },
     "read": {
       "eyebrow": "02 · How to read it",
@@ -2558,6 +2530,13 @@
       "body": "Pick a symbol you have a view on, write the conditions down, and get an answer in minutes. You can share the result with a read-only link.",
       "primary": "Run a replay",
       "secondary": "Read the method"
+    },
+    "dots": {
+      "nav": "Sections",
+      "hero": "Claim",
+      "read": "How to read",
+      "window": "Time window",
+      "limits": "Limits"
     }
   }
 }
