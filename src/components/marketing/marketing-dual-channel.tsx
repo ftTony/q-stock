@@ -46,8 +46,8 @@ export async function MarketingDualChannel() {
           </h2>
         </Reveal>
 
-        <div className="mt-8 grid gap-3 sm:gap-4 lg:grid-cols-2">
-          <Reveal delay={140} className="h-full">
+        <div className="mt-8 grid min-w-0 gap-3 sm:gap-4 lg:grid-cols-2">
+          <Reveal delay={140} className="h-full min-w-0">
             <div
               className="flex h-full flex-col rounded-2xl border border-[var(--border)] p-5 sm:p-6"
               style={{
@@ -69,7 +69,7 @@ export async function MarketingDualChannel() {
             </div>
           </Reveal>
 
-          <Reveal delay={200} className="h-full">
+          <Reveal delay={200} className="h-full min-w-0">
             <div
               className="flex h-full flex-col rounded-2xl border border-[var(--border)] p-5 sm:p-6"
               style={{
@@ -82,7 +82,7 @@ export async function MarketingDualChannel() {
               <p className="mt-2 text-[13px] leading-relaxed text-[var(--muted)]">
                 {t("dualDeploy.body")}
               </p>
-              <pre className="mt-3.5 overflow-x-auto rounded-xl bg-[#16181d] px-3.5 py-3 font-mono text-[11px] leading-relaxed text-[#e6edf6]">
+              <pre className="mt-3.5 min-w-0 overflow-x-auto rounded-xl bg-[#16181d] px-3.5 py-3 font-mono text-[11px] leading-relaxed text-[#e6edf6]">
                 <code>
                   <span className="opacity-55">{t("dualDeploy.note")}</span>
                   {"\n"}docker compose -f docker-compose.prod.yml up -d

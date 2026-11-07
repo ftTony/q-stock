@@ -347,7 +347,7 @@ export async function LabLanding() {
         className={`${SCREEN_LAST} border-t border-[var(--border)]`}
         style={{ background: "color-mix(in srgb, var(--panel) 40%, transparent)" }}
       >
-        <div className="flex flex-1 flex-col justify-center">
+        <div className="flex flex-1 flex-col justify-center pb-10 sm:pb-0">
           <div className={SECTION}>
             <Reveal>
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[var(--muted)]">
@@ -375,7 +375,7 @@ export async function LabLanding() {
             </div>
 
             <Reveal delay={380}>
-              <div className="mt-9 rounded-3xl border border-[var(--border)] bg-[var(--panel)] px-5 py-8 text-center sm:px-10">
+              <div className="mt-12 rounded-3xl border border-[var(--border)] bg-[var(--panel)] px-5 py-8 text-center sm:mt-16 sm:px-10">
                 <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
                   {t("cta.title")}
                 </h2>
