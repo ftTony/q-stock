@@ -1260,7 +1260,7 @@
   "marketing": {
     "seoDescription": "Smart investing · Value discovery · AI-assisted decisions. US, HK, A-shares and crypto quotes, watchlists, alerts, and paper review.",
     "heroLine": "Smart investing · Value discovery · AI-assisted decisions",
-    "heroSupport": "Multi-market quotes, peer compare, and AI chart reads—to watch and review with a cooler head. For learning only; not investment advice.",
+    "heroSupport": "4市場の行情、同行比較、ルールのリプレイ、AI の思考プロセス解説。すべての結論には根拠と無効化条件を明示——発注は代行せず、リターンも保証しません。",
     "ctaEnter": "Open markets",
     "ctaPaper": "Try paper trading",
     "ctaStory": "Our approach",
@@ -1291,6 +1291,22 @@
       "alerts": {
         "title": "Price alerts",
         "body": "Set levels that matter—less refresh, less impulse."
+      },
+      "lab": {
+        "title": "ストラテジーラボ",
+        "body": "ルールを書き、日足でリプレイ。過去なら利益が出ていたかを確かめられます。"
+      },
+      "learn": {
+        "title": "投資ナレッジ",
+        "body": "指標から規律まで 37 本の解説、10 言語対応。ツールドキュメントとしても使えます。"
+      },
+      "tools": {
+        "title": "計算ツール",
+        "body": "ポジションサイズ、積立、複利、オプション損益——フロントエンドだけで計算、ログイン不要。"
+      },
+      "multi": {
+        "title": "マルチチャート",
+        "body": "2〜3 銘柄を同一画面に並べ、相対的な強弱を読み取ります。"
       }
     },
     "trustTitle": "Why trust it",
@@ -1326,14 +1342,14 @@
     "scrollNext": "Next section",
     "featureZones": {
       "capabilities": {
-        "eyebrow": "01 · Capabilities",
-        "title": "What you can do",
-        "subtitle": "AI ask-stock at the center; markets, watchlists, and compare around it—restrained and checkable."
+        "eyebrow": "01 · 機能",
+        "title": "できること",
+        "subtitle": "行情と比較は「見る」ため、ルールリプレイは「検証する」ため、シミュレーションと振り返りは「改める」ため。"
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "02 · Trust",
-    "storyEyebrow": "03 · Origin",
+    "trustEyebrow": "04 · 信頼",
+    "storyEyebrow": "05 · 原点",
     "storyQuote": "冷静に相場を見ること、きちんと振り返ること。どちらも、話題を追うより長く続く。",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1358,7 +1374,59 @@
     "footerPricing": "Pricing",
     "footerAdvancedQuotes": "Advanced quotes",
     "footerTerms": "利用規約",
-    "footerPrivacy": "プライバシーポリシー"
+    "footerPrivacy": "プライバシーポリシー",
+    "heroTitleLine1": "見る、検証する、振り返る——",
+    "heroTitleLine2": "一本の流れで完結。",
+    "ctaDeploy": "セルフホスト",
+    "snapshotTitle": "市場スナップショット",
+    "snapshotLive": "スナップショット",
+    "snapshotNote": "プラットフォームの行情ソースから取得（リアルタイム配信ではありません）",
+    "snapshotCta": "マーケットを開く",
+    "snapshotEmpty": "行情を取得できません",
+    "snapshotEmptyBody": "後ほど再度お試しいただくか、行情ページから直接ご確認ください。",
+    "evidenceEyebrow": "02 · 証拠",
+    "evidenceTitle": "「自分には手法がある」ではなく「あなた自身が検証できる」を",
+    "evidenceItems": {
+      "replay": {
+        "title": "再検証できるルール",
+        "body": "パラメータ、期間、約定の前提をすべて公開。納得いかければパラメータを変えてもう一度実行できます。"
+      },
+      "invalidate": {
+        "title": "無効化条件つきの結果",
+        "body": "いくら稼げたかだけでなく、どんな相場でそのルールが破綻するかも示します。"
+      },
+      "share": {
+        "title": "思考プロセスを共有",
+        "body": "収益スクリーンショットではなく、推論プロセスを見られる読み取り専用リンクを生成します。"
+      }
+    },
+    "evidenceCard": {
+      "title": "ルールリプレイ · サンプル",
+      "tag": "レイアウト例",
+      "assetLabel": "銘柄",
+      "assetValue": "00700 · 香港",
+      "rangeLabel": "期間",
+      "rangeValue": "2023-01 → 2025-06",
+      "tfLabel": "足種",
+      "tfValue": "日足",
+      "note": "イメージ図であり、実際のリプレイ結果ではありません。ストラテジーラボであなた自身のルールを実行できます。",
+      "cta": "自分のルールを試す"
+    },
+    "dualEyebrow": "03 · 2 つの使い方",
+    "dualTitle": "そのまま使うか、自分のサーバーに入れるか",
+    "dualDirect": {
+      "title": "そのまま使う",
+      "body": "登録するだけで 4 市場の行情を閲覧できます。Free は AI 実行が生涯 5 回（招待 1 人につき +5）、Pro は毎月 100 回。",
+      "cta": "無料で始める"
+    },
+    "dualDeploy": {
+      "title": "セルフホスト",
+      "body": "コードと Docker 構成はリポジトリにあります。行情キーはご自身のもの（BYOK）、データはあなたのデータベースにのみ保存されます。",
+      "cta": "デプロイ方法を見る",
+      "note": "# リポジトリを clone して .env を記入した後"
+    },
+    "dotEvidence": "証拠",
+    "dotDeploy": "2 つの使い方"
   },
   "disclaimer": {
     "title": "Disclaimer",

@@ -1260,7 +1260,7 @@
   "marketing": {
     "seoDescription": "Smart investing · Value discovery · AI-assisted decisions. US, HK, A-shares and crypto quotes, watchlists, alerts, and paper review.",
     "heroLine": "Smart investing · Value discovery · AI-assisted decisions",
-    "heroSupport": "Multi-market quotes, peer compare, and AI chart reads—to watch and review with a cooler head. For learning only; not investment advice.",
+    "heroSupport": "Quatre marchés, comparaison entre pairs, rejeu de règles et IA qui explique son raisonnement. Chaque conclusion indique ses bases et son point d'invalidation — pas d'ordres passés pour vous, pas de promesse de rendement.",
     "ctaEnter": "Open markets",
     "ctaPaper": "Try paper trading",
     "ctaStory": "Our approach",
@@ -1291,6 +1291,22 @@
       "alerts": {
         "title": "Price alerts",
         "body": "Set levels that matter—less refresh, less impulse."
+      },
+      "lab": {
+        "title": "Labo de stratégies",
+        "body": "Écrivez une règle, rejouez-la sur les bougies journalières, voyez si elle aurait fonctionné."
+      },
+      "learn": {
+        "title": "Apprendre",
+        "body": "37 guides, des indicateurs à la discipline, en 10 langues. À consulter comme une doc."
+      },
+      "tools": {
+        "title": "Calculateurs",
+        "body": "Taille de position, DCA, intérêts composés, P&L options — côté client, sans connexion."
+      },
+      "multi": {
+        "title": "Multi-graphiques",
+        "body": "Deux à trois symboles sur un même canevas pour lire la force relative."
       }
     },
     "trustTitle": "Why trust it",
@@ -1326,14 +1342,14 @@
     "scrollNext": "Next section",
     "featureZones": {
       "capabilities": {
-        "eyebrow": "01 · Capabilities",
-        "title": "What you can do",
-        "subtitle": "AI ask-stock at the center; markets, watchlists, and compare around it—restrained and checkable."
+        "eyebrow": "01 · Capacités",
+        "title": "Ce que vous pouvez faire",
+        "subtitle": "Cotations et comparaison pour observer, rejeux pour vérifier, paper trading et débriefing pour corriger."
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "02 · Trust",
-    "storyEyebrow": "03 · Origin",
+    "trustEyebrow": "04 · Confiance",
+    "storyEyebrow": "05 · Origine",
     "storyQuote": "Regarder avec calme et revoir avec honnêteté dure plus longtemps que de courir après la chaleur.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1358,7 +1374,59 @@
     "footerPricing": "Pricing",
     "footerAdvancedQuotes": "Advanced quotes",
     "footerTerms": "Conditions d'utilisation",
-    "footerPrivacy": "Politique de confidentialité"
+    "footerPrivacy": "Politique de confidentialité",
+    "heroTitleLine1": "Observer, rejouer, débriequer —",
+    "heroTitleLine2": "une seule chaîne, du début à la fin.",
+    "ctaDeploy": "Auto-héberger",
+    "snapshotTitle": "Aperçu des marchés",
+    "snapshotLive": "Instantané",
+    "snapshotNote": "Sources de cotations de la plateforme, pas un flux temps réel",
+    "snapshotCta": "Ouvrir les marchés",
+    "snapshotEmpty": "Cotations indisponibles",
+    "snapshotEmptyBody": "Réessayez plus tard ou ouvrez directement la page des marchés.",
+    "evidenceEyebrow": "02 · Preuves",
+    "evidenceTitle": "Pas « j'ai une méthode » — « vous pouvez vérifier »",
+    "evidenceItems": {
+      "replay": {
+        "title": "Des règles rejouables",
+        "body": "Paramètres, période et hypothèses d'exécution affichés ouvertement. Pas d'accord ? Changez un paramètre et relancez."
+      },
+      "invalidate": {
+        "title": "Des résultats avec invalidation",
+        "body": "Pas seulement ce que ça a rapporté, mais aussi quel régime de marché casserait la règle."
+      },
+      "share": {
+        "title": "Le raisonnement, pas la capture",
+        "body": "Générez un lien en lecture seule vers le processus au lieu de publier une capture de profits."
+      }
+    },
+    "evidenceCard": {
+      "title": "Rejeu de règle · exemple",
+      "tag": "Exemple de mise en page",
+      "assetLabel": "Symbole",
+      "assetValue": "00700 · HK",
+      "rangeLabel": "Période",
+      "rangeValue": "2023-01 → 2025-06",
+      "tfLabel": "Unité",
+      "tfValue": "Journalier",
+      "note": "Graphique illustratif, pas un résultat réel de rejeu. Lancez vos propres règles dans le labo.",
+      "cta": "Tester ma propre règle"
+    },
+    "dualEyebrow": "03 · Deux façons de l'utiliser",
+    "dualTitle": "Utilisez-le ici, ou installez-le sur votre serveur",
+    "dualDirect": {
+      "title": "Utiliser ici",
+      "body": "Inscrivez-vous et consultez quatre marchés. Offre gratuite : 5 exécutions IA à vie, +5 par invitation ; Pro : 100 par mois.",
+      "cta": "Commencer gratuitement"
+    },
+    "dualDeploy": {
+      "title": "Auto-héberger",
+      "body": "Le code et la configuration Docker sont dans le dépôt. Cotations avec vos propres clés (BYOK), données uniquement dans votre base.",
+      "cta": "Voir le déploiement",
+      "note": "# après avoir cloné le dépôt et rempli le .env"
+    },
+    "dotEvidence": "Preuves",
+    "dotDeploy": "Deux usages"
   },
   "disclaimer": {
     "title": "Disclaimer",

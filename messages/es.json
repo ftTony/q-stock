@@ -1260,7 +1260,7 @@
   "marketing": {
     "seoDescription": "Smart investing · Value discovery · AI-assisted decisions. US, HK, A-shares and crypto quotes, watchlists, alerts, and paper review.",
     "heroLine": "Smart investing · Value discovery · AI-assisted decisions",
-    "heroSupport": "Multi-market quotes, peer compare, and AI chart reads—to watch and review with a cooler head. For learning only; not investment advice.",
+    "heroSupport": "Cuatro mercados, comparación entre pares, reproducción de reglas e IA que explica su razonamiento. Cada conclusión indica sus bases y su punto de invalidación — no operamos por ti ni prometemos rentabilidad.",
     "ctaEnter": "Open markets",
     "ctaPaper": "Try paper trading",
     "ctaStory": "Our approach",
@@ -1291,6 +1291,22 @@
       "alerts": {
         "title": "Price alerts",
         "body": "Set levels that matter—less refresh, less impulse."
+      },
+      "lab": {
+        "title": "Laboratorio de estrategias",
+        "body": "Escribe una regla, reprodúcela sobre velas diarias y comprueba si habría funcionado."
+      },
+      "learn": {
+        "title": "Aprender",
+        "body": "37 guías, de indicadores a disciplina, en 10 idiomas. Para consultar como documentación."
+      },
+      "tools": {
+        "title": "Calculadoras",
+        "body": "Tamaño de posición, DCA, interés compuesto, P&L de opciones — en el navegador, sin iniciar sesión."
+      },
+      "multi": {
+        "title": "Multigráfico",
+        "body": "Dos o tres símbolos en un mismo lienzo para leer la fuerza relativa."
       }
     },
     "trustTitle": "Why trust it",
@@ -1326,14 +1342,14 @@
     "scrollNext": "Next section",
     "featureZones": {
       "capabilities": {
-        "eyebrow": "01 · Capabilities",
-        "title": "What you can do",
-        "subtitle": "AI ask-stock at the center; markets, watchlists, and compare around it—restrained and checkable."
+        "eyebrow": "01 · Capacidades",
+        "title": "Qué puedes hacer",
+        "subtitle": "Cotizaciones y comparación para observar, reproducciones para verificar, simulación y revisión para corregir."
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "02 · Trust",
-    "storyEyebrow": "03 · Origin",
+    "trustEyebrow": "04 · Confianza",
+    "storyEyebrow": "05 · Origen",
     "storyQuote": "Mirar con calma y revisar con honestidad dura más que perseguir el calor.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1358,7 +1374,59 @@
     "footerPricing": "Pricing",
     "footerAdvancedQuotes": "Advanced quotes",
     "footerTerms": "Términos del servicio",
-    "footerPrivacy": "Política de privacidad"
+    "footerPrivacy": "Política de privacidad",
+    "heroTitleLine1": "Observar, reproducir, revisar —",
+    "heroTitleLine2": "una sola cadena, de principio a fin.",
+    "ctaDeploy": "Autoalojar",
+    "snapshotTitle": "Resumen de mercado",
+    "snapshotLive": "Instantánea",
+    "snapshotNote": "Fuentes de cotización de la plataforma, sin transmisión en tiempo real",
+    "snapshotCta": "Abrir mercados",
+    "snapshotEmpty": "Cotizaciones no disponibles",
+    "snapshotEmptyBody": "Inténtalo más tarde o abre directamente la página de mercados.",
+    "evidenceEyebrow": "02 · Evidencias",
+    "evidenceTitle": "No «tengo un método», sino «puedes comprobarlo»",
+    "evidenceItems": {
+      "replay": {
+        "title": "Reglas reproducibles",
+        "body": "Parámetros, periodo y supuestos de ejecución, todo a la vista. Si no te convence, cambia un parámetro y vuelve a ejecutar."
+      },
+      "invalidate": {
+        "title": "Resultados con condiciones de invalidación",
+        "body": "No solo cuánto ganó, sino en qué régimen de mercado fallaría la regla."
+      },
+      "share": {
+        "title": "Comparte el razonamiento",
+        "body": "Genera un enlace de solo lectura al proceso en lugar de publicar una captura de beneficios."
+      }
+    },
+    "evidenceCard": {
+      "title": "Reproducción de regla · ejemplo",
+      "tag": "Ejemplo de maquetación",
+      "assetLabel": "Símbolo",
+      "assetValue": "00700 · HK",
+      "rangeLabel": "Periodo",
+      "rangeValue": "2023-01 → 2025-06",
+      "tfLabel": "Temporalidad",
+      "tfValue": "Diario",
+      "note": "Gráfico ilustrativo, no un resultado real de reproducción. Ejecuta tus propias reglas en el laboratorio.",
+      "cta": "Probar mi propia regla"
+    },
+    "dualEyebrow": "03 · Dos formas de usarlo",
+    "dualTitle": "Úsalo aquí o instálalo en tu propio servidor",
+    "dualDirect": {
+      "title": "Usar aquí",
+      "body": "Regístrate y consulta cuatro mercados. Gratis: 5 ejecuciones de IA de por vida, +5 por invitación; Pro: 100 al mes.",
+      "cta": "Empezar gratis"
+    },
+    "dualDeploy": {
+      "title": "Autoalojar",
+      "body": "El código y la configuración de Docker están en el repositorio. Cotizaciones con tus propias claves (BYOK); los datos quedan en tu base.",
+      "cta": "Ver despliegue",
+      "note": "# tras clonar el repositorio y completar el .env"
+    },
+    "dotEvidence": "Evidencias",
+    "dotDeploy": "Dos formas"
   },
   "disclaimer": {
     "title": "Disclaimer",

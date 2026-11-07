@@ -1260,7 +1260,7 @@
   "marketing": {
     "seoDescription": "Smart investing · Value discovery · AI-assisted decisions. US, HK, A-shares and crypto quotes, watchlists, alerts, and paper review.",
     "heroLine": "Smart investing · Value discovery · AI-assisted decisions",
-    "heroSupport": "Multi-market quotes, peer compare, and AI chart reads—to watch and review with a cooler head. For learning only; not investment advice.",
+    "heroSupport": "สี่ตลาด เปรียบเทียบหุ้นรุ่น รีเพลย์กฎ และ AI ที่อธิบายเหตุผล ทุกข้อสรุประบุที่มาและจุดใช้ไม่ได้ — ไม่สั่งซื้อแทนคุณ และไม่สัญญาผลตอบแทน",
     "ctaEnter": "Open markets",
     "ctaPaper": "Try paper trading",
     "ctaStory": "Our approach",
@@ -1291,6 +1291,22 @@
       "alerts": {
         "title": "Price alerts",
         "body": "Set levels that matter—less refresh, less impulse."
+      },
+      "lab": {
+        "title": "ห้องแล็บกลยุทธ์",
+        "body": "เขียนกฎ รีเพลย์ด้วยแท่งรายวัน ดูว่าถ้าย้อนไปอดีตจะกำไรไหม"
+      },
+      "learn": {
+        "title": "ความรู้การลงทุน",
+        "body": "37 บทความจากอินดิเคเตอร์ถึงวินัย 10 ภาษา ใช้เป็นเอกสารอ้างอิงได้"
+      },
+      "tools": {
+        "title": "เครื่องคำนวณ",
+        "body": "ขนาดพอซิชัน DCA ดอกเบี้ยทบต้น กำไรขาดทุนออปชัน — คำนวณฝั่งเบราว์เซอร์ ไม่ต้องล็อกอิน"
+      },
+      "multi": {
+        "title": "มัลติชาร์ต",
+        "body": "วาง 2–3 ตัวไว้จอเดียวกัน เทียบความแข็งแรงสัมพัทธ์"
       }
     },
     "trustTitle": "Why trust it",
@@ -1326,14 +1342,14 @@
     "scrollNext": "Next section",
     "featureZones": {
       "capabilities": {
-        "eyebrow": "01 · Capabilities",
-        "title": "What you can do",
-        "subtitle": "AI ask-stock at the center; markets, watchlists, and compare around it—restrained and checkable."
+        "eyebrow": "01 · ความสามารถ",
+        "title": "ทำอะไรได้บ้าง",
+        "subtitle": "ราคาและการเปรียบเทียบไว้ดู รีเพลย์ไว้ตรวจสอบ การจำลองและทบทวนไว้แก้"
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "02 · Trust",
-    "storyEyebrow": "03 · Origin",
+    "trustEyebrow": "04 · ความน่าเชื่อถือ",
+    "storyEyebrow": "05 · จุดเริ่มต้น",
     "storyQuote": "ดูตลาดอย่างใจเย็นและรีวิวอย่างจริงจัง ยืนยาวกว่าการไล่ตามกระแส.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1358,7 +1374,59 @@
     "footerPricing": "Pricing",
     "footerAdvancedQuotes": "Advanced quotes",
     "footerTerms": "ข้อกำหนดการให้บริการ",
-    "footerPrivacy": "นโยบายความเป็นส่วนตัว"
+    "footerPrivacy": "นโยบายความเป็นส่วนตัว",
+    "heroTitleLine1": "ดู ทดสอบย้อนหลัง ทบทวน —",
+    "heroTitleLine2": "ครบในสายเดียว",
+    "ctaDeploy": "โฮสต์เอง",
+    "snapshotTitle": "ภาพรวมตลาด",
+    "snapshotLive": "สแนปชอต",
+    "snapshotNote": "จากแหล่งราคาของแพลตฟอร์ม ไม่ใช่สตรีมเรียลไทม์",
+    "snapshotCta": "เปิดหน้าตลาด",
+    "snapshotEmpty": "ดึงราคาไม่ได้ในขณะนี้",
+    "snapshotEmptyBody": "ลองใหม่ภายหลัง หรือเข้าหน้าตลาดโดยตรง",
+    "evidenceEyebrow": "02 · หลักฐาน",
+    "evidenceTitle": "ไม่ใช่ \"ผมมีวิธีของตัวเอง\" แต่เป็น \"คุณตรวจสอบได้เอง\"",
+    "evidenceItems": {
+      "replay": {
+        "title": "กฎที่รีเพลย์ได้",
+        "body": "พารามิเตอร์ ช่วงเวลา และสมมติฐานการเทรดแสดงครบ ไม่เห็นด้วยก็เปลี่ยนพารามิเตอร์แล้วรันใหม่ได้"
+      },
+      "invalidate": {
+        "title": "ผลลัพธ์ระบุเงื่อนไขใช้ไม่ได้",
+        "body": "ไม่ใช่แค่ทำกำไรเท่าไร แต่บอกด้วยว่าตลาดแบบไหนทำให้กฎนี้พัง"
+      },
+      "share": {
+        "title": "แชร์กระบวนการคิด",
+        "body": "สร้างลิงก์อ่านอย่างเดียวให้ดูกระบวนการให้เหตุผล ไม่ใช่แค่ภาพผลกำไร"
+      }
+    },
+    "evidenceCard": {
+      "title": "รีเพลย์กฎ · ตัวอย่าง",
+      "tag": "ตัวอย่างเลย์เอาต์",
+      "assetLabel": "สัญลักษณ์",
+      "assetValue": "00700 · ฮ่องกง",
+      "rangeLabel": "ช่วงเวลา",
+      "rangeValue": "2023-01 → 2025-06",
+      "tfLabel": "ไทม์เฟรม",
+      "tfValue": "รายวัน",
+      "note": "กราฟสาธิต ไม่ใช่ผลรีเพลย์จริง ลองรันกฎของคุณเองได้ที่ห้องแล็บกลยุทธ์",
+      "cta": "รันกฎของตัวเอง"
+    },
+    "dualEyebrow": "03 · สองวิธีใช้งาน",
+    "dualTitle": "ใช้ที่นี่ หรือติดตั้งบนเซิร์ฟเวอร์ของคุณ",
+    "dualDirect": {
+      "title": "ใช้ที่นี่",
+      "body": "สมัครแล้วดูสี่ตลาดได้ ฟรี: ใช้ AI ตลอดชีพ 5 ครั้ง (+5 ต่อการเชิญเพื่อน 1 คน) Pro: 100 ครั้ง/เดือน",
+      "cta": "เริ่มใช้ฟรี"
+    },
+    "dualDeploy": {
+      "title": "โฮสต์เอง",
+      "body": "โค้ดและ Docker compose อยู่ในรีโป ใช้คีย์ราคาของคุณเอง (BYOK) ข้อมูลเก็บในดาต้าเบสของคุณเท่านั้น",
+      "cta": "ดูวิธีติดตั้ง",
+      "note": "# หลังโคลนรีโปและกรอก .env"
+    },
+    "dotEvidence": "หลักฐาน",
+    "dotDeploy": "สองวิธี"
   },
   "disclaimer": {
     "title": "Disclaimer",

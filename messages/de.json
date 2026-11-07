@@ -1260,7 +1260,7 @@
   "marketing": {
     "seoDescription": "Smart investing · Value discovery · AI-assisted decisions. US, HK, A-shares and crypto quotes, watchlists, alerts, and paper review.",
     "heroLine": "Smart investing · Value discovery · AI-assisted decisions",
-    "heroSupport": "Multi-market quotes, peer compare, and AI chart reads—to watch and review with a cooler head. For learning only; not investment advice.",
+    "heroSupport": "Vier Märkte, Peer-Vergleich, Regel-Replays und eine KI, die ihr Vorgehen erklärt. Jede Schlussfolgerung nennt Grundlage und Invalidierungspunkt — keine Orders in deinem Namen, keine Renditeversprechen.",
     "ctaEnter": "Open markets",
     "ctaPaper": "Try paper trading",
     "ctaStory": "Our approach",
@@ -1291,6 +1291,22 @@
       "alerts": {
         "title": "Price alerts",
         "body": "Set levels that matter—less refresh, less impulse."
+      },
+      "lab": {
+        "title": "Strategielabor",
+        "body": "Regel schreiben, auf Tageskerzen zurückspielen, sehen, ob sie funktioniert hätte."
+      },
+      "learn": {
+        "title": "Lernen",
+        "body": "37 Guides von Indikatoren bis Disziplin, in 10 Sprachen. Als Nachschlagewerk nutzbar."
+      },
+      "tools": {
+        "title": "Rechner",
+        "body": "Positionsgröße, DCA, Zinseszins, Options-P&L — clientseitig, ohne Login."
+      },
+      "multi": {
+        "title": "Multi-Chart",
+        "body": "Zwei bis drei Symbole auf einer Fläche, um relative Stärke abzulesen."
       }
     },
     "trustTitle": "Why trust it",
@@ -1326,14 +1342,14 @@
     "scrollNext": "Next section",
     "featureZones": {
       "capabilities": {
-        "eyebrow": "01 · Capabilities",
-        "title": "What you can do",
-        "subtitle": "AI ask-stock at the center; markets, watchlists, and compare around it—restrained and checkable."
+        "eyebrow": "01 · Fähigkeiten",
+        "title": "Was du tun kannst",
+        "subtitle": "Kurse und Vergleich zum Ansehen, Replays zum Prüfen, Papertrading und Auswertung zum Korrigieren."
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "02 · Trust",
-    "storyEyebrow": "03 · Origin",
+    "trustEyebrow": "04 · Vertrauen",
+    "storyEyebrow": "05 · Ursprung",
     "storyQuote": "Ruhig zuschauen und ehrlich reviewen hält länger als dem Hype hinterherzulaufen.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1358,7 +1374,59 @@
     "footerPricing": "Pricing",
     "footerAdvancedQuotes": "Advanced quotes",
     "footerTerms": "Nutzungsbedingungen",
-    "footerPrivacy": "Datenschutzerklärung"
+    "footerPrivacy": "Datenschutzerklärung",
+    "heroTitleLine1": "Beobachten, zurückspielen, auswerten —",
+    "heroTitleLine2": "eine Kette, von Anfang bis Ende.",
+    "ctaDeploy": "Selbst hosten",
+    "snapshotTitle": "Marktüberblick",
+    "snapshotLive": "Schnappschuss",
+    "snapshotNote": "Aus Kursquellen der Plattform, kein Echtzeit-Stream",
+    "snapshotCta": "Märkte öffnen",
+    "snapshotEmpty": "Kurse nicht verfügbar",
+    "snapshotEmptyBody": "Versuche es später erneut oder öffne direkt die Märkte-Seite.",
+    "evidenceEyebrow": "02 · Belege",
+    "evidenceTitle": "Nicht „Ich habe eine Methode“ — „Du kannst es prüfen“",
+    "evidenceItems": {
+      "replay": {
+        "title": "Nachspielbare Regeln",
+        "body": "Parameter, Zeitraum und Ausführungsannahmen liegen offen auf dem Tisch. Wer nicht einverstanden ist, ändert einen Parameter und spielt es erneut durch."
+      },
+      "invalidate": {
+        "title": "Ergebnisse mit Invalidierung",
+        "body": "Nicht nur, was sie eingebracht haben, sondern auch, welches Marktumfeld die Regel brechen würde."
+      },
+      "share": {
+        "title": "Begründung statt Screenshot",
+        "body": "Erzeuge einen Nur-Lese-Link zum Ablauf, statt einen Gewinn-Screenshot zu posten."
+      }
+    },
+    "evidenceCard": {
+      "title": "Regel-Replay · Beispiel",
+      "tag": "Layout-Beispiel",
+      "assetLabel": "Symbol",
+      "assetValue": "00700 · HK",
+      "rangeLabel": "Zeitraum",
+      "rangeValue": "2023-01 → 2025-06",
+      "tfLabel": "Intervall",
+      "tfValue": "Tageskerzen",
+      "note": "Illustratives Chart, kein echtes Replay-Ergebnis. Im Strategielabor kannst du eigene Regeln durchspielen.",
+      "cta": "Eigene Regel testen"
+    },
+    "dualEyebrow": "03 · Zwei Arten der Nutzung",
+    "dualTitle": "Hier nutzen oder auf dem eigenen Server betreiben",
+    "dualDirect": {
+      "title": "Direkt nutzen",
+      "body": "Registrieren und vier Märkte ansehen. Free: 5 KI-Ausführungen insgesamt, +5 pro Einladung; Pro: 100 pro Monat.",
+      "cta": "Kostenlos starten"
+    },
+    "dualDeploy": {
+      "title": "Selbst hosten",
+      "body": "Code und Docker-Compose liegen im Repo. Kurse mit eigenen Keys (BYOK), Daten bleiben in deiner Datenbank.",
+      "cta": "Deployment ansehen",
+      "note": "# nach dem Klonen des Repos und Ausfüllen der .env"
+    },
+    "dotEvidence": "Belege",
+    "dotDeploy": "Zwei Arten"
   },
   "disclaimer": {
     "title": "Disclaimer",

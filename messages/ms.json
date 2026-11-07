@@ -1260,7 +1260,7 @@
   "marketing": {
     "seoDescription": "Smart investing · Value discovery · AI-assisted decisions. US, HK, A-shares and crypto quotes, watchlists, alerts, and paper review.",
     "heroLine": "Smart investing · Value discovery · AI-assisted decisions",
-    "heroSupport": "Multi-market quotes, peer compare, and AI chart reads—to watch and review with a cooler head. For learning only; not investment advice.",
+    "heroSupport": "Empat pasaran, perbandingan sesama, ulang siar peraturan dan AI yang menerangkan penalarannya. Setiap kesimpulan menyatakan asas dan titik batalnya — tiada pesanan dibuat untuk anda, tiada janji pulangan.",
     "ctaEnter": "Open markets",
     "ctaPaper": "Try paper trading",
     "ctaStory": "Our approach",
@@ -1291,6 +1291,22 @@
       "alerts": {
         "title": "Price alerts",
         "body": "Set levels that matter—less refresh, less impulse."
+      },
+      "lab": {
+        "title": "Makmal strategi",
+        "body": "Tulis peraturan, ulang siar pada cartang harian, lihat sama ada ia menguntungkan dahulu."
+      },
+      "learn": {
+        "title": "Ilmu pelaburan",
+        "body": "37 panduan daripada penunjuk hingga disiplin, dalam 10 bahasa. Boleh dirujuk seperti dokumen."
+      },
+      "tools": {
+        "title": "Kalkulator",
+        "body": "Saiz posisi, DCA, faedah majmuk, untung-rugi opsyen — di pelayar sahaja, tanpa log masuk."
+      },
+      "multi": {
+        "title": "Pelbagai carta",
+        "body": "Dua hingga tiga simbol atas kanvas yang sama untuk membaca kekuatan relatif."
       }
     },
     "trustTitle": "Why trust it",
@@ -1326,14 +1342,14 @@
     "scrollNext": "Next section",
     "featureZones": {
       "capabilities": {
-        "eyebrow": "01 · Capabilities",
-        "title": "What you can do",
-        "subtitle": "AI ask-stock at the center; markets, watchlists, and compare around it—restrained and checkable."
+        "eyebrow": "01 · Keupayaan",
+        "title": "Apa yang boleh dibuat",
+        "subtitle": "Sebut harga dan perbandingan untuk melihat, ulang siar untuk menyemak, kertas dan semakan untuk membetulkan."
       }
     },
     "featureOpen": "Open",
-    "trustEyebrow": "02 · Trust",
-    "storyEyebrow": "03 · Origin",
+    "trustEyebrow": "04 · Kepercayaan",
+    "storyEyebrow": "05 · Asal usul",
     "storyQuote": "Pantau dengan tenang dan semak dengan jujur lebih tahan lama daripada kejar haba.",
     "footerLearn": "Learn",
     "dotNav": "Section navigation",
@@ -1358,7 +1374,59 @@
     "footerPricing": "Pricing",
     "footerAdvancedQuotes": "Advanced quotes",
     "footerTerms": "Terma Perkhidmatan",
-    "footerPrivacy": "Dasar Privasi"
+    "footerPrivacy": "Dasar Privasi",
+    "heroTitleLine1": "Pantau, ulang siar, semak —",
+    "heroTitleLine2": "satu rantaian, dari hujung ke hujung.",
+    "ctaDeploy": "Hos kendiri",
+    "snapshotTitle": "Gambaran pasaran",
+    "snapshotLive": "Petikan",
+    "snapshotNote": "Dari sumber sebut harga platform, bukan strim masa nyata",
+    "snapshotCta": "Buka pasaran",
+    "snapshotEmpty": "Sebut harga tidak tersedia",
+    "snapshotEmptyBody": "Cuba lagi nanti, atau buka halaman pasaran terus.",
+    "evidenceEyebrow": "02 · Bukti",
+    "evidenceTitle": "Bukan «saya ada kaedah» — «anda boleh menyemaknya»",
+    "evidenceItems": {
+      "replay": {
+        "title": "Peraturan yang boleh diulang siar",
+        "body": "Parameter, tempoh dan anggapan pelaksanaan dipaparkan terbuka. Tidak bersetuju? Ubah satu parameter dan jalankan semula."
+      },
+      "invalidate": {
+        "title": "Keputusan bersyarat kegagalan",
+        "body": "Bukan hanya berapa untung, tetapi juga keadaan pasaran yang mana peraturan itu gagal."
+      },
+      "share": {
+        "title": "Kongsi cara berfikir",
+        "body": "Jana pautan baca sahaja kepada proses penaaran, bukan sekadar tangkapan skrin keuntungan."
+      }
+    },
+    "evidenceCard": {
+      "title": "Ulang siar peraturan · contoh",
+      "tag": "Contoh susun atur",
+      "assetLabel": "Simbol",
+      "assetValue": "00700 · HK",
+      "rangeLabel": "Tempoh",
+      "rangeValue": "2023-01 → 2025-06",
+      "tfLabel": "Kekerapan",
+      "tfValue": "Harian",
+      "note": "Carta ilustrasi, bukan keputusan ulang siar sebenar. Jalankan peraturan anda sendiri di makmal strategi.",
+      "cta": "Jalankan peraturan sendiri"
+    },
+    "dualEyebrow": "03 · Dua cara menggunakannya",
+    "dualTitle": "Guna di sini, atau pasang pada pelayan anda sendiri",
+    "dualDirect": {
+      "title": "Guna di sini",
+      "body": "Daftar dan lihat empat pasaran. Percuma: 5 larian AI seumur hidup, +5 setiap jemputan; Pro: 100 sebulan.",
+      "cta": "Mula percuma"
+    },
+    "dualDeploy": {
+      "title": "Hos kendiri",
+      "body": "Kod dan susunan Docker ada dalam repositori. Kunci sebut harga guna kunci anda sendiri (BYOK), data kekal dalam pangkalan data anda.",
+      "cta": "Lihat cara deploy",
+      "note": "# selepas klon repositori dan isi .env"
+    },
+    "dotEvidence": "Bukti",
+    "dotDeploy": "Dua cara"
   },
   "disclaimer": {
     "title": "Disclaimer",
