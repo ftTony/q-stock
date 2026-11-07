@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
 import MarketsDashboard from "@/components/market/markets-dashboard";
@@ -33,13 +32,7 @@ export default async function MarketsPage({ searchParams }: Props) {
   ]);
   const list = typeof sp.list === "string" ? sp.list : undefined;
 
-  return (
-    <Suspense
-      fallback={
-        <div className="qt-panel p-8 text-sm text-[var(--muted)]">Loading…</div>
-      }
-    >
-      <MarketsDashboard initialBoards={firstScreen} initialList={list} />
-    </Suspense>
-  );
+  // 首屏数据在服务端就绪后直接渲染；导航过渡由路由级 `loading.tsx` 骨架承担，
+  // 这里不再挂 "Loading…" 兜底（面板已无 useSearchParams，不需要 Suspense 边界）。
+  return <MarketsDashboard initialBoards={firstScreen} initialList={list} />;
 }
