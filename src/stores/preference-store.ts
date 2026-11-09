@@ -6,12 +6,13 @@ import { useLayoutEffect } from "react";
 
 export type ChangeColorScheme = "cn" | "us";
 
-const STORAGE_KEY = "qstock.changeColorScheme";
+/** v2：旧 key 曾被「语言默认」误写入 cn，英文页会被盖成红涨。 */
+const STORAGE_KEY = "qstock.changeColorScheme.v2";
 
 type PreferenceState = {
   changeColorScheme: ChangeColorScheme;
   setChangeColorScheme: (s: ChangeColorScheme) => void;
-  hydrate: (s: ChangeColorScheme) => void;
+  hydrate: (s: ChangeColorScheme, opts?: { persist?: boolean }) => void;
 };
 
 function applyScheme(s: ChangeColorScheme) {
@@ -38,6 +39,13 @@ function persistScheme(s: ChangeColorScheme) {
   }
 }
 
+/** SSR 已按语言写好 `html[data-change]`；无显式偏好时沿用它。 */
+function localeSchemeFromDom(): ChangeColorScheme {
+  if (typeof document === "undefined") return "cn";
+  const v = document.documentElement.dataset.change;
+  return v === "us" || v === "cn" ? v : "cn";
+}
+
 export const usePreferenceStore = create<PreferenceState>((set) => ({
   changeColorScheme: "cn",
   setChangeColorScheme: (s) => {
@@ -45,9 +53,9 @@ export const usePreferenceStore = create<PreferenceState>((set) => ({
     persistScheme(s);
     set({ changeColorScheme: s });
   },
-  hydrate: (s) => {
+  hydrate: (s, opts) => {
     applyScheme(s);
-    persistScheme(s);
+    if (opts?.persist) persistScheme(s);
     set({ changeColorScheme: s });
   },
 }));
@@ -67,8 +75,17 @@ export function PreferenceProvider({
       : null;
 
   useLayoutEffect(() => {
-    const next = sessionScheme || readStoredScheme() || "cn";
-    hydrate(next);
+    // 账号设置 > 用户显式本地偏好 > 当前语言 SSR 默认（勿把语言默认持久化）
+    if (sessionScheme) {
+      hydrate(sessionScheme, { persist: true });
+      return;
+    }
+    const stored = readStoredScheme();
+    if (stored) {
+      hydrate(stored);
+      return;
+    }
+    hydrate(localeSchemeFromDom());
   }, [sessionScheme, hydrate]);
 
   return children;

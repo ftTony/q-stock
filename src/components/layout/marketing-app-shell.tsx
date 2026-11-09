@@ -10,7 +10,7 @@ import {
   localeCode,
   type AppLocale,
 } from "@/i18n/config";
-import { TopBarActions } from "@/components/layout/topbar-actions";
+import { MarketingTopbarActions } from "@/components/layout/marketing-topbar-actions";
 import { SiteLogo } from "@/components/brand/site-logo";
 import { MARKETING_SHELL_WIDTH } from "@/components/marketing/marketing-width";
 import { useMounted } from "@/hooks/use-mounted";
@@ -100,7 +100,11 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
           : "flex min-h-dvh flex-col"
       }
     >
-      <header className="sticky top-0 z-40 shrink-0 border-b border-[var(--border)] bg-[var(--background)]/85 backdrop-blur-xl">
+      {/*
+        底部分隔用 box-shadow 发丝线，不用 border-b：
+        Mac + backdrop-blur 下 border 常被合成成「加粗」的一条。
+      */}
+      <header className="sticky top-0 z-40 shrink-0 bg-[var(--background)]/90 shadow-[0_1px_0_0_var(--border)] backdrop-blur-md">
         <div
           className={`flex h-14 items-center gap-3 sm:gap-4 ${MARKETING_SHELL_WIDTH}`}
         >
@@ -132,25 +136,32 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`px-2.5 py-1.5 text-[13px] transition lg:px-3 ${
+                  className={`relative px-2.5 py-1.5 text-[13px] transition lg:px-3 ${
                     active
-                      ? "font-semibold text-[var(--foreground)]"
-                      : "font-medium text-[var(--muted)] hover:text-[var(--foreground)]"
+                      ? "font-medium text-[var(--foreground)]"
+                      : "font-normal text-[var(--muted)] hover:text-[var(--foreground)]"
                   }`}
                 >
                   {tNav(item.labelKey)}
+                  {/*
+                    Mac 上 PingFang 的 medium/semibold 几乎同宽，选中态用发丝底线
+                    代替「加粗」才稳定可辨。
+                  */}
+                  {active ? (
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-x-2.5 bottom-0.5 h-px bg-[var(--foreground)] lg:inset-x-3"
+                    />
+                  ) : null}
                 </Link>
               );
             })}
           </nav>
 
           <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 md:ml-0">
-            <TopBarActions
-              showMarketStatus={false}
-              showNotifications={false}
+            <MarketingTopbarActions
               showTheme={!menuOpen}
               showLanguage={!menuOpen}
-              loginMode="page"
             />
             <button
               type="button"
@@ -199,8 +210,8 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
                   onClick={() => setMenuOpen(false)}
                   className={`mkt-nav-item block border-b border-[var(--border)] px-5 py-4 text-[16px] ${
                     active
-                      ? "font-semibold text-[var(--brand-text)]"
-                      : "font-medium text-[var(--foreground)]"
+                      ? "font-medium text-[var(--brand-text)]"
+                      : "font-normal text-[var(--foreground)]"
                   }`}
                 >
                   {tNav(item.labelKey)}

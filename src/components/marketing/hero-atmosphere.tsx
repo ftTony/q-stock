@@ -2,7 +2,6 @@
 export function HeroAtmosphere({ inView }: { inView: boolean }) {
   return (
     <div
-      key={inView ? "hero-atmos-in" : "hero-atmos-out"}
       className={`pointer-events-none absolute inset-0 overflow-hidden ${
         inView ? "mkt-hero-atmos is-in" : "mkt-hero-atmos"
       }`}

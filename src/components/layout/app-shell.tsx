@@ -1,9 +1,38 @@
 "use client";
 
+import dynamic from "next/dynamic";
 import { usePathname } from "@/i18n/routing";
 import { ConsoleWelcome } from "@/components/brand/console-welcome";
-import { MainAppShell } from "@/components/layout/main-app-shell";
-import { MarketingAppShell } from "@/components/layout/marketing-app-shell";
+
+/**
+ * 营销 / 产品壳按路由动态加载，避免官网首屏把 MainAppShell
+ * （侧栏、行情条、设置弹窗等）打进同一客户端图。
+ *
+ * 若 Turbopack HMR 偶发 chunk 失败：硬刷新即可；生产构建无此问题。
+ */
+const MarketingAppShell = dynamic(
+  () =>
+    import("@/components/layout/marketing-app-shell").then((m) => ({
+      default: m.MarketingAppShell,
+    })),
+  { ssr: true },
+);
+
+const MainAppShell = dynamic(
+  () =>
+    import("@/components/layout/main-app-shell").then((m) => ({
+      default: m.MainAppShell,
+    })),
+  {
+    ssr: true,
+    loading: () => (
+      <div className="flex min-h-dvh flex-col bg-[var(--background)]">
+        <div className="h-14 shrink-0 border-b border-[var(--border)]" />
+        <div className="min-h-0 flex-1" />
+      </div>
+    ),
+  },
+);
 
 function isMarketingPath(pathname: string) {
   return (
@@ -50,11 +79,6 @@ function isAppPath(pathname: string) {
   );
 }
 
-/**
- * Route shell by path. MainAppShell is a static import — Turbopack `next/dynamic`
- * entry chunks for the shell have been flaky after HMR (Failed to load chunk).
- * Marketing/auth still do not *render* the product chrome.
- */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 

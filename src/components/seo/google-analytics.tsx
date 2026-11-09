@@ -41,15 +41,16 @@ export function GoogleAnalytics({ measurementId }: { measurementId: string }) {
     <>
       <Script
         src={`https://www.googletagmanager.com/gtag/js?id=${measurementId}`}
-        strategy="afterInteractive"
+        strategy="lazyOnload"
       />
-      <Script id="ga4-init" strategy="afterInteractive">
+      <Script id="ga4-init" strategy="lazyOnload">
         {`
           window.dataLayer = window.dataLayer || [];
           function gtag(){dataLayer.push(arguments);}
           window.gtag = gtag;
           gtag('js', new Date());
-          gtag('config', '${measurementId}', { send_page_view: false });
+          // lazyOnload：首屏后再发 page_view；SPA 跳转仍由 GaRouteListener 补发。
+          gtag('config', '${measurementId}', { send_page_view: true });
         `}
       </Script>
       <GaRouteListener measurementId={measurementId} />

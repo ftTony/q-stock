@@ -15,7 +15,13 @@ import type { AbstractIntlMessages } from "next-intl";
  * 漏配会在脚本里直接报错，而不是等运行时 `MISSING_MESSAGE`。
  */
 
-/** AppShell 及其客户端子树用到的命名空间（含设置弹窗）。 */
+/**
+ * AppShell 客户端子树用到的命名空间（含设置弹窗）。
+ *
+ * 说明：产品壳（MainAppShell）仍依赖 settings / alerts 等，而 `[locale]/layout`
+ * 对营销与 App 共用一份外壳字典，所以这里暂时不能按营销页再瘦一档。
+ * 若要继续压官网 HTML，需要 App 路由单独 ScopedMessages 补齐产品壳字典。
+ */
 export const SHELL_NAMESPACES = [
   "app",
   "nav",
