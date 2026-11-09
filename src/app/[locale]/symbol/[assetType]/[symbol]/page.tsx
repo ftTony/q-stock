@@ -37,6 +37,8 @@ export default async function SymbolPage({ params }: Props) {
   const { locale, assetType: rawType, symbol: rawSymbol } = await params;
   const assetType = parseAssetType(rawType);
   const symbol = decodeURIComponent(rawSymbol || "").toUpperCase();
+  // Parallel + per-fetch soft timeouts (see symbol-metadata). Candles miss →
+  // client `useSymbolCandles` fills; never blank the soft-nav shell for long.
   const [quote, initialBars] = await Promise.all([
     fetchSymbolQuote(symbol, assetType),
     fetchSymbolDailyCandles(symbol, assetType),

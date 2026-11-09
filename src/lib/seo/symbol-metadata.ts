@@ -73,16 +73,38 @@ function languageAlternates(
   return languages;
 }
 
+/** Soft ceiling so index/home → symbol nav never waits on a hung provider. */
+const SEO_QUOTE_TIMEOUT_MS = 3_000;
+const SEO_CANDLES_TIMEOUT_MS = 2_000;
+
+function withTimeout<T>(p: Promise<T>, ms: number): Promise<T | null> {
+  return new Promise((resolve) => {
+    const id = setTimeout(() => resolve(null), ms);
+    p.then(
+      (v) => {
+        clearTimeout(id);
+        resolve(v);
+      },
+      () => {
+        clearTimeout(id);
+        resolve(null);
+      },
+    );
+  });
+}
+
 /** Best-effort quote for SSR / metadata (request-deduped + 60s shared cache). */
 export const fetchSymbolQuote = cache(
   async (symbol: string, assetType: AssetType): Promise<Quote | null> => {
     const sym = symbol.toUpperCase();
     try {
-      return await cachedFetch(
-        `seo:quote:v1:${assetType}:${sym}`,
-        60_000,
-        () => getQuote(sym, assetType),
+      const quote = await withTimeout(
+        cachedFetch(`seo:quote:v1:${assetType}:${sym}`, 60_000, () =>
+          getQuote(sym, assetType),
+        ),
+        SEO_QUOTE_TIMEOUT_MS,
       );
+      return quote;
     } catch (err) {
       console.warn(
         `[seo] symbol quote failed ${assetType}/${sym}:`,
@@ -96,21 +118,26 @@ export const fetchSymbolQuote = cache(
 /**
  * Best-effort daily candles for SSR chart hydrate (short window, soft-fail).
  * Caps history to keep 1GB hosts from spending the request budget on deep bars.
+ * Hard-capped so a slow candle provider cannot blank the soft-nav shell.
  */
 export const fetchSymbolDailyCandles = cache(
   async (symbol: string, assetType: AssetType): Promise<OhlcvBar[] | null> => {
     const sym = symbol.toUpperCase();
     try {
-      return await cachedFetch(
-        `seo:candles:v1:${assetType}:${sym}:D`,
-        60_000,
-        async () => {
-          const to = Math.floor(Date.now() / 1000);
-          const from = to - Math.floor(0.5 * 365 * 24 * 3600);
-          const bars = await getDailyCandles(sym, assetType, from, to);
-          return bars.length ? bars : [];
-        },
+      const bars = await withTimeout(
+        cachedFetch(
+          `seo:candles:v1:${assetType}:${sym}:D`,
+          60_000,
+          async () => {
+            const to = Math.floor(Date.now() / 1000);
+            const from = to - Math.floor(0.5 * 365 * 24 * 3600);
+            const rows = await getDailyCandles(sym, assetType, from, to);
+            return rows.length ? rows : [];
+          },
+        ),
+        SEO_CANDLES_TIMEOUT_MS,
       );
+      return bars;
     } catch (err) {
       console.warn(
         `[seo] symbol candles failed ${assetType}/${sym}:`,

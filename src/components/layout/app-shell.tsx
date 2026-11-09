@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import { usePathname } from "@/i18n/routing";
 import { ConsoleWelcome } from "@/components/brand/console-welcome";
+import { InlineLoading } from "@/components/ui/panel-skeleton";
 
 /**
  * 营销 / 产品壳按路由动态加载，避免官网首屏把 MainAppShell
@@ -18,6 +19,9 @@ const MarketingAppShell = dynamic(
   { ssr: true },
 );
 
+const skel =
+  "animate-pulse rounded-sm border border-[var(--border)] bg-[var(--panel)]";
+
 const MainAppShell = dynamic(
   () =>
     import("@/components/layout/main-app-shell").then((m) => ({
@@ -25,10 +29,21 @@ const MainAppShell = dynamic(
     })),
   {
     ssr: true,
+    // Marketing → app chunk gap (pathname already flipped; old marketing UI gone).
     loading: () => (
-      <div className="flex min-h-dvh flex-col bg-[var(--background)]">
-        <div className="h-14 shrink-0 border-b border-[var(--border)]" />
-        <div className="min-h-0 flex-1" />
+      <div className="flex min-h-dvh flex-col bg-[var(--symbol-shell-bg,var(--background))]">
+        <div className="h-10 shrink-0 border-b border-[var(--border)]" />
+        <div className="flex min-h-0 flex-1 flex-col">
+          <div className="flex h-11 shrink-0 items-center gap-3 border-b border-[var(--border)] px-3">
+            <div className={`${skel} h-4 w-16`} />
+            <div className={`${skel} h-5 w-24`} />
+          </div>
+          <div className="relative flex min-h-0 flex-1 items-center justify-center bg-[var(--panel)]">
+            <div className="rounded-md border border-[var(--border)] bg-[var(--panel)] px-3 py-2 shadow-sm">
+              <InlineLoading />
+            </div>
+          </div>
+        </div>
       </div>
     ),
   },

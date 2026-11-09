@@ -61,30 +61,34 @@ export function MarketSnapshotCard({
           {rows.map((row) => {
             const up = (row.percentChange ?? 0) >= 0;
             return (
-              <li
-                key={row.id}
-                className="grid grid-cols-[1fr_auto_auto] items-center gap-3 border-b border-[var(--border)]/60 px-4 py-2.5 last:border-b-0"
-              >
-                <span className="min-w-0">
-                  <span className="block truncate text-[13px] font-medium">{row.name}</span>
-                  <span className="block text-[10px] tracking-wide text-[var(--muted)]">
-                    {row.market}
-                  </span>
-                </span>
-                <span className="text-right text-[13px] tabular-nums">
-                  {row.price == null ? "—" : formatPrice(row.price, 2)}
-                </span>
-                <span
-                  className={`w-[62px] text-right text-[12px] font-medium tabular-nums ${
-                    row.percentChange == null
-                      ? "text-[var(--muted)]"
-                      : up
-                        ? "text-[var(--up)]"
-                        : "text-[var(--down)]"
-                  }`}
+              <li key={row.id} className="border-b border-[var(--border)]/60 last:border-b-0">
+                <Link
+                  href={`/symbol/${row.assetType}/${encodeURIComponent(row.symbol)}`}
+                  className="grid grid-cols-[1fr_auto_auto] items-center gap-3 px-4 py-2.5 transition hover:bg-[color-mix(in_srgb,var(--foreground)_3.5%,transparent)]"
                 >
-                  {pct(row.percentChange)}
-                </span>
+                  <span className="min-w-0">
+                    <span className="block truncate text-[13px] font-medium">
+                      {row.name}
+                    </span>
+                    <span className="block text-[10px] tracking-wide text-[var(--muted)]">
+                      {row.market}
+                    </span>
+                  </span>
+                  <span className="text-right text-[13px] tabular-nums">
+                    {row.price == null ? "—" : formatPrice(row.price, 2)}
+                  </span>
+                  <span
+                    className={`w-[62px] text-right text-[12px] font-medium tabular-nums ${
+                      row.percentChange == null
+                        ? "text-[var(--muted)]"
+                        : up
+                          ? "text-[var(--up)]"
+                          : "text-[var(--down)]"
+                    }`}
+                  >
+                    {pct(row.percentChange)}
+                  </span>
+                </Link>
               </li>
             );
           })}

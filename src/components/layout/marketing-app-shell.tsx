@@ -60,6 +60,12 @@ export function MarketingAppShell({ children }: { children: React.ReactNode }) {
     return () => document.documentElement.classList.remove("mkt-lock");
   }, [isSnapPage]);
 
+  // Homepage / lab link into /symbol and /markets — warm the app shell chunk
+  // so index clicks don't sit on an empty parchment while the dynamic import loads.
+  useEffect(() => {
+    void import("@/components/layout/main-app-shell");
+  }, []);
+
   function linkActive(href: string): boolean {
     if (href === "/") return pathname === "/";
     return pathname === href || pathname.startsWith(`${href}/`);

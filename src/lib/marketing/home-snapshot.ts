@@ -13,6 +13,9 @@ import { normalizeSymbol, type AssetType } from "@/lib/types";
 
 export type HomeSnapshotRow = {
   id: string;
+  /** 个股页路由用：/symbol/{assetType}/{symbol} */
+  symbol: string;
+  assetType: AssetType;
   market: string;
   nameKey: string | null;
   label: string | null;
@@ -175,6 +178,8 @@ async function fetchSnapshot(): Promise<HomeSnapshot> {
     const ok = q != null && Number.isFinite(q.price) && q.price > 0;
     return {
       id: item.id,
+      symbol: item.symbol,
+      assetType: item.assetType,
       market: item.market,
       nameKey: item.nameKey,
       label: item.label,
@@ -190,9 +195,9 @@ async function fetchSnapshot(): Promise<HomeSnapshot> {
     : { asOf: null, rows: [] };
 }
 
-/** v3：并行快路径，避开旧版空结果缓存。 */
+/** v4：行内带 symbol/assetType，供首页点进个股。 */
 export const getHomeSnapshot = unstable_cache(
   fetchSnapshot,
-  ["marketing-home-snapshot-v3"],
+  ["marketing-home-snapshot-v4"],
   { revalidate: 60 },
 );
