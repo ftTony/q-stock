@@ -341,7 +341,7 @@ export async function LabLanding() {
         </div>
       </section>
 
-      {/* 04 · 边界 + 出口：CTA 卡跟在边界卡后面，末屏不再单独占一个吸附点 */}
+      {/* 04 · 边界 + 出口：边界清单与 CTA 同一构图，末屏不再单独占吸附点 */}
       <section
         id="limits"
         className={`${SCREEN_LAST} border-t border-[var(--border)]`}
@@ -359,34 +359,55 @@ export async function LabLanding() {
                 {t("limit.title")}
               </h2>
             </Reveal>
-            <div className="mt-8 grid gap-3 sm:grid-cols-2">
-              {LIMITS.map((key, i) => (
-                <Reveal key={key} delay={120 + i * 60}>
-                  <div className="h-full rounded-2xl border border-[var(--border)] bg-[var(--panel)] p-4">
-                    <strong className="block text-sm font-semibold tracking-tight">
+
+            <Reveal delay={120}>
+              <ol className={`mt-8 overflow-hidden divide-y divide-[var(--border)]/70 ${CARD}`}>
+                {LIMITS.map((key, i) => (
+                  <li
+                    key={key}
+                    className="grid gap-2.5 px-5 py-5 sm:grid-cols-[3rem_minmax(0,11rem)_1fr] sm:items-baseline sm:gap-5 sm:px-6"
+                  >
+                    <span className="text-[11px] font-semibold tabular-nums tracking-[0.12em] text-[var(--brand-text)]">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
+                    <strong className="text-[15px] font-semibold tracking-tight">
                       {t(`limit.items.${key}.title`)}
                     </strong>
-                    <p className="mt-1.5 text-[12.5px] leading-relaxed text-[var(--muted)]">
+                    <p className="text-sm leading-[1.7] text-[var(--muted)]">
                       {t(`limit.items.${key}.body`)}
                     </p>
-                  </div>
-                </Reveal>
-              ))}
-            </div>
+                  </li>
+                ))}
+              </ol>
+            </Reveal>
 
-            <Reveal delay={380}>
-              <div className="mt-12 rounded-3xl border border-[var(--border)] bg-[var(--panel)] px-5 py-8 text-center sm:mt-16 sm:px-10">
-                <h2 className="text-xl font-semibold tracking-tight sm:text-2xl">
-                  {t("cta.title")}
-                </h2>
-                <p className="mx-auto mt-3 max-w-xl text-sm leading-relaxed text-[var(--muted)]">
-                  {t("cta.body")}
-                </p>
-                <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-                  <Link href="/strategies" className="qt-btn qt-btn-primary h-11 px-5 text-sm">
+            <Reveal delay={360}>
+              <div
+                className="mt-5 flex flex-col gap-5 overflow-hidden rounded-2xl border border-[var(--brand)]/20 p-5 sm:mt-6 sm:flex-row sm:items-center sm:justify-between sm:gap-8 sm:p-6"
+                style={{
+                  background:
+                    "linear-gradient(135deg, color-mix(in srgb, var(--brand) 10%, var(--panel)), var(--panel))",
+                }}
+              >
+                <div className="min-w-0 max-w-xl">
+                  <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
+                    {t("cta.title")}
+                  </h2>
+                  <p className="mt-2 text-sm leading-[1.7] text-[var(--muted)]">
+                    {t("cta.body")}
+                  </p>
+                </div>
+                <div className="flex shrink-0 flex-wrap gap-2">
+                  <Link
+                    href="/strategies"
+                    className="qt-btn qt-btn-primary inline-flex h-11 items-center px-5 text-sm"
+                  >
                     {t("cta.primary")}
                   </Link>
-                  <Link href="/learn" className="qt-btn qt-btn-ghost h-11 px-5 text-sm">
+                  <Link
+                    href="/learn"
+                    className="qt-btn qt-btn-ghost inline-flex h-11 items-center px-5 text-sm"
+                  >
                     {t("cta.secondary")}
                   </Link>
                 </div>

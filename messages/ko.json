@@ -1258,7 +1258,7 @@
     "metricTotalAssets": "Total assets (est.)"
   },
   "marketing": {
-    "seoDescription": "Smart investing · Value discovery · AI-assisted decisions. US, HK, A-shares and crypto quotes, watchlists, alerts, and paper review.",
+    "seoDescription": "Watch four markets, replay rules on daily bars, paper-trade and review. AI explains process with invalidation—no tips, no order tickets. Learning only; not investment advice.",
     "heroLine": "Smart investing · Value discovery · AI-assisted decisions",
     "heroSupport": "4개 시장 시세, 동종 비교, 규칙 리플레이, AI 추론 해설. 모든 결론에는 근거와 무효 조건을 명시합니다 — 대신 주문하지 않고, 수익도 약속하지 않습니다.",
     "ctaEnter": "Open markets",
@@ -1344,7 +1344,33 @@
       "capabilities": {
         "eyebrow": "01 · 기능",
         "title": "할 수 있는 것",
-        "subtitle": "시세와 비교는 보는 역할, 규칙 리플레이는 검증하는 역할, 모의와 복기는 고치는 역할."
+        "subtitle": "시세와 비교는 보는 역할, 규칙 리플레이는 검증하는 역할, 모의와 복기는 고치는 역할.",
+        "aiEyebrow": "Across the loop",
+        "extensionsLabel": "Also",
+        "loop": {
+          "watch": {
+            "step": "01",
+            "label": "Watch",
+            "title": "Quotes & compare",
+            "body": "US, HK, A-shares, and major crypto in one place—peer or multi-chart when you need relative context.",
+            "cta": "Open markets"
+          },
+          "verify": {
+            "step": "02",
+            "label": "Verify",
+            "title": "Rule replay",
+            "body": "Write a checkable rule, replay it on daily bars, see whether it would have held up.",
+            "cta": "Open strategy lab"
+          },
+          "review": {
+            "step": "03",
+            "label": "Correct",
+            "title": "Paper & review",
+            "body": "Practice with paper positions and review notes—surface process and emotion, not chase narratives.",
+            "cta": "Try paper trading"
+          }
+        }
+      
       }
     },
     "featureOpen": "Open",
@@ -1359,8 +1385,8 @@
     "dotStory": "Origin",
     "footerTools": "Tools",
     "aiHighlight": {
-      "title": "Ask AI: chart · chat · scenarios",
-      "body": "Open AI on any symbol page with quotes, news, and filings context—clear basis and invalidation, never order tickets. Sign in to try; invites add more uses.",
+      "title": "Ask AI along the chain—not tips",
+      "body": "At any step: chart reads, Q&A, and scenarios with quotes, news, and filings context—clear basis and invalidation, never order tickets.",
       "points": {
         "chart": "Chart read: structure, levels, invalidation",
         "chat": "Q&A: follow-ups on the symbol",
@@ -1368,7 +1394,7 @@
       },
       "cta": "Sign in to try AI",
       "ctaSecondary": "Browse markets",
-      "bodyLoggedIn": "Open AI on any symbol page with quotes, news, and filings context—clear basis and invalidation, never order tickets. Invites add more uses.",
+      "bodyLoggedIn": "At any step: chart reads, Q&A, and scenarios with quotes, news, and filings context—clear basis and invalidation, never order tickets.",
       "ctaLoggedIn": "Try AI in markets"
     },
     "footerPricing": "요금제",

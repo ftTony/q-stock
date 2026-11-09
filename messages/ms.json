@@ -1258,7 +1258,7 @@
     "metricTotalAssets": "Total assets (est.)"
   },
   "marketing": {
-    "seoDescription": "Smart investing · Value discovery · AI-assisted decisions. US, HK, A-shares and crypto quotes, watchlists, alerts, and paper review.",
+    "seoDescription": "Watch four markets, replay rules on daily bars, paper-trade and review. AI explains process with invalidation—no tips, no order tickets. Learning only; not investment advice.",
     "heroLine": "Smart investing · Value discovery · AI-assisted decisions",
     "heroSupport": "Empat pasaran, perbandingan sesama, ulang siar peraturan dan AI yang menerangkan penalarannya. Setiap kesimpulan menyatakan asas dan titik batalnya — tiada pesanan dibuat untuk anda, tiada janji pulangan.",
     "ctaEnter": "Open markets",
@@ -1344,7 +1344,33 @@
       "capabilities": {
         "eyebrow": "01 · Keupayaan",
         "title": "Apa yang boleh dibuat",
-        "subtitle": "Sebut harga dan perbandingan untuk melihat, ulang siar untuk menyemak, kertas dan semakan untuk membetulkan."
+        "subtitle": "Sebut harga dan perbandingan untuk melihat, ulang siar untuk menyemak, kertas dan semakan untuk membetulkan.",
+        "aiEyebrow": "Across the loop",
+        "extensionsLabel": "Also",
+        "loop": {
+          "watch": {
+            "step": "01",
+            "label": "Watch",
+            "title": "Quotes & compare",
+            "body": "US, HK, A-shares, and major crypto in one place—peer or multi-chart when you need relative context.",
+            "cta": "Open markets"
+          },
+          "verify": {
+            "step": "02",
+            "label": "Verify",
+            "title": "Rule replay",
+            "body": "Write a checkable rule, replay it on daily bars, see whether it would have held up.",
+            "cta": "Open strategy lab"
+          },
+          "review": {
+            "step": "03",
+            "label": "Correct",
+            "title": "Paper & review",
+            "body": "Practice with paper positions and review notes—surface process and emotion, not chase narratives.",
+            "cta": "Try paper trading"
+          }
+        }
+      
       }
     },
     "featureOpen": "Open",
@@ -1359,8 +1385,8 @@
     "dotStory": "Origin",
     "footerTools": "Tools",
     "aiHighlight": {
-      "title": "Ask AI: chart · chat · scenarios",
-      "body": "Open AI on any symbol page with quotes, news, and filings context—clear basis and invalidation, never order tickets. Sign in to try; invites add more uses.",
+      "title": "Ask AI along the chain—not tips",
+      "body": "At any step: chart reads, Q&A, and scenarios with quotes, news, and filings context—clear basis and invalidation, never order tickets.",
       "points": {
         "chart": "Chart read: structure, levels, invalidation",
         "chat": "Q&A: follow-ups on the symbol",
@@ -1368,7 +1394,7 @@
       },
       "cta": "Sign in to try AI",
       "ctaSecondary": "Browse markets",
-      "bodyLoggedIn": "Open AI on any symbol page with quotes, news, and filings context—clear basis and invalidation, never order tickets. Invites add more uses.",
+      "bodyLoggedIn": "At any step: chart reads, Q&A, and scenarios with quotes, news, and filings context—clear basis and invalidation, never order tickets.",
       "ctaLoggedIn": "Try AI in markets"
     },
     "footerPricing": "Harga",
