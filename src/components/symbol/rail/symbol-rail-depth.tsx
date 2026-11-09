@@ -40,11 +40,17 @@ function TickPrice({ trade }: { trade: TradeTick }) {
   );
 }
 
-function TickTriple({ trade }: { trade: TradeTick }) {
+function TickTriple({
+  trade,
+  assetType,
+}: {
+  trade: TradeTick;
+  assetType: AssetType;
+}) {
   return (
     <>
       <span className="truncate text-[var(--aw-ink-muted-48,var(--muted))]">
-        {formatTime(trade.time * 1000)}
+        {formatTime(trade.time * 1000, { assetType })}
       </span>
       <TickPrice trade={trade} />
       <span className="text-right text-[var(--aw-ink-muted-48,var(--muted))]">
@@ -60,6 +66,7 @@ function TicksList({
   empty,
   cols,
   limit,
+  assetType,
 }: {
   trades: TradeTick[];
   title: string;
@@ -67,6 +74,7 @@ function TicksList({
   cols: { time: string; price: string; volume: string };
   /** Cap rows when embedded in a long rail page (no nested scroll). */
   limit?: number;
+  assetType: AssetType;
 }) {
   const rows = limit != null ? trades.slice(0, limit) : trades;
   const mid = Math.ceil(rows.length / 2);
@@ -101,10 +109,10 @@ function TicksList({
               key={`${left.time}-${i}`}
               className={`${grid} h-6 text-[11px] tabular-nums leading-none tracking-[-0.1px]`}
             >
-              <TickTriple trade={left} />
+              <TickTriple trade={left} assetType={assetType} />
               <span aria-hidden />
               {right ? (
-                <TickTriple trade={right} />
+                <TickTriple trade={right} assetType={assetType} />
               ) : (
                 <>
                   <span />
@@ -275,6 +283,7 @@ export function SymbolRailDepth({
               empty={t("ticksEmpty")}
               cols={tickCols}
               limit={24}
+              assetType={assetType}
             />
             <BookList
               book={book}
@@ -313,6 +322,7 @@ export function SymbolRailDepth({
       title={t("ticksTitle")}
       empty={t("ticksEmpty")}
       cols={tickCols}
+      assetType={assetType}
     />
   );
 }

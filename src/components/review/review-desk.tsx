@@ -8,6 +8,7 @@ import { AiQuotaBadge } from "@/components/ai/ai-quota-badge";
 import { AiQuotaExhaustedHint } from "@/components/ai/ai-quota-exhausted";
 import { useAiAccess } from "@/components/ai/use-ai-access";
 import { ReviewAiBody } from "@/components/review/review-ai-body";
+import { ReviewCandidateRules } from "@/components/review/review-candidate-rules";
 import {
   ReviewFillsList,
   type FillFilter,
@@ -171,6 +172,8 @@ export function ReviewDesk() {
             filter={filter}
             loading={processQuery.isLoading}
           />
+
+          <ReviewCandidateRules fills={process?.fills ?? []} />
 
           <p className="text-[11px] leading-snug text-[var(--muted)]">
             {t("footnote")}

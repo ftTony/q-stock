@@ -89,8 +89,10 @@ export function languageMapForPath(
   for (const locale of langs) {
     languages[locale] = absUrl(origin, locale, path);
   }
-  // Prefer zh-CN as x-default on CN-facing sitemaps when present.
-  const xDefault: AppLocale = langs.includes("zh-CN") ? "zh-CN" : defaultLocale;
+  // Match defaultLocale=en and unprefixed URLs (localePrefix: as-needed).
+  const xDefault: AppLocale = langs.includes(defaultLocale)
+    ? defaultLocale
+    : langs[0]!;
   languages["x-default"] = absUrl(origin, xDefault, path);
   return languages;
 }

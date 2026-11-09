@@ -471,7 +471,21 @@
       "markPriceLbl": "Mark",
       "daysUnit": "j"
     },
-    "derivativesConnLimit": "Connexions de cotation Longbridge saturées. Redémarrez npm run dev / worker, attendez 1–5 min, puis rouvrez Dérivés."
+    "derivativesConnLimit": "Connexions de cotation Longbridge saturées. Redémarrez npm run dev / worker, attendez 1–5 min, puis rouvrez Dérivés.",
+    "newsEmpty": "No news yet",
+    "pressEmpty": "No press releases yet",
+    "fundsNetIn": "Net inflow",
+    "fundsNetOut": "Net outflow",
+    "fundsUnitWan": "Unit: 10k",
+    "fundsUnitYi": "Unit: 100M",
+    "fundsUnitM": "Unit: M",
+    "fundsUnitB": "Unit: B",
+    "sharesOut": "Shares",
+    "pbRatio": "P/B",
+    "peStatic": "P/E (static)",
+    "statsExpand": "More quote fields",
+    "statsCollapse": "Fewer quote fields",
+    "railLastLabel": "Last"
   },
   "company": {
     "na": "Aucun profil d'entreprise pour cet actif",
@@ -935,7 +949,8 @@
     "strategyEmptyHint": "No strategies — tap to bind in Plan",
     "strategySuggest": "Tag a rule so review can compare against it",
     "bindPlanRule": "Bind in Plan",
-    "changePlanRule": "Change rule"
+    "changePlanRule": "Change rule",
+    "emptyPositionsCta": "Browse markets and place a paper order"
   },
   "ai": {
     "loading": "Génération de l'analyse à partir des actualités et résultats…",
@@ -1106,7 +1121,11 @@
     "sideSell": "Sell",
     "typeLimit": "Limit",
     "typeStop": "Stop",
-    "applyAndGo": "Prefill and go to order"
+    "applyAndGo": "Prefill and go to order",
+    "calmTitle": "Calm reminder",
+    "draftSide": "Side",
+    "draftQty": "Qty",
+    "draftPrice": "Price"
   },
   "review": {
     "title": "Review notes",
@@ -1156,7 +1175,11 @@
     "notesEmpty": "No notes yet",
     "loginTitle": "Sign in to start a review",
     "loginBody": "Reviews use your paper trades, positions, and emotion flags to look at process, not just P&L. Sign in to use AI — new accounts get 5 uses; invite a friend who registers and you get 5 more.",
-    "loginHint": "For learning only; not investment advice."
+    "loginHint": "For learning only; not investment advice.",
+    "candidateRulesTitle": "Candidate rule drafts",
+    "candidateRulesHint": "Summarized from tagged fills in this period. Confirm in the lab — nothing is auto-saved.",
+    "candidateRulesMeta": "{fills} fills · {symbols} symbols",
+    "candidateRulesOpen": "Open strategy"
   },
   "seo": {
     "titleDefault": "Qianli Gu Q-Stock",
@@ -1370,7 +1393,6 @@
             "cta": "Try paper trading"
           }
         }
-      
       }
     },
     "featureOpen": "Open",
@@ -1506,6 +1528,22 @@
       "riskReward": {
         "title": "Risque / récompense",
         "body": "Entrée, stop et cible → ratio, taux de réussite d’équilibre et espérance."
+      },
+      "retirement": {
+        "title": "Retirement",
+        "body": "What your savings become, and the monthly income they can carry."
+      },
+      "pension": {
+        "title": "Pension",
+        "body": "Split basic pension from the personal account and test retirement age."
+      },
+      "deposit": {
+        "title": "Deposit",
+        "body": "Simple interest, early-withdrawal loss, and real purchasing power."
+      },
+      "dividendTax": {
+        "title": "Dividend tax",
+        "body": "Same dividend, different take-home across A-shares, Stock Connect and US."
       }
     },
     "position": {
@@ -1563,7 +1601,9 @@
       "errors": {
         "invalid": "Check contribution, periods (1-600), and annual % (-50 to 50).",
         "rate": "Annual rate is too low to compute."
-      }
+      },
+      "rateBridge": "{effective}% here is an effective annual yield. As a nominal rate compounded at the same frequency it is about {nominal}% — enter that in the compound tool and you get the same figure, with only a rounding difference.",
+      "compareCompound": "Compare compound tool"
     },
     "compound": {
       "title": "Compound calculator",
@@ -1590,7 +1630,8 @@
       "colValue": "Value",
       "errors": {
         "invalid": "Check principal, years (<=50), and annual % (-50 to 50)."
-      }
+      },
+      "rateBridge": "A nominal {nominal}% compounded at this frequency works out to {effective}% effective per year — identical when compounding annually, wider as frequency rises."
     },
     "options": {
       "title": "Options payoff",
@@ -1686,6 +1727,192 @@
         "stop_side": "Côté stop incorrect pour ce sens.",
         "target_side": "Côté cible incorrect pour ce sens.",
         "zero_risk": "Entrée et stop ne peuvent pas être égaux."
+      }
+    },
+    "pension": {
+      "title": "Pension calculator",
+      "subtitle": "Split the basic pension from the personal account and check the replacement rate — not just one headline number.",
+      "groupProfile": "Your situation",
+      "groupRecord": "Contribution record",
+      "groupAssumption": "Long-run assumptions",
+      "age": "Current age",
+      "sex": "Insured category",
+      "sexMale": "Male employee",
+      "sexFemaleCadre": "Female (former 55)",
+      "sexFemaleWorker": "Female (former 50)",
+      "retirementAge": "Retirement age",
+      "retireAuto": "Statutory {age}",
+      "statutoryHint": "Statutory age is approximated from birth year (phased delay since 2025). The social insurance office's ruling prevails.",
+      "monthlyBase": "Monthly contribution base",
+      "index": "Average contribution index",
+      "contributedYears": "Years contributed",
+      "accountBalance": "Account balance",
+      "recordHint": "Both figures sit on your social-insurance statement or e-social-security card — far better than any estimate.",
+      "socialWage": "Local average monthly wage",
+      "socialGrowth": "Average wage growth %",
+      "wageGrowth": "Your salary growth %",
+      "accountRate": "Account interest %",
+      "lifeExpectancy": "Life expectancy",
+      "indexation": "Annual pension adjustment %",
+      "note": "Excludes transitional pension and deemed contribution years. Built to explain structure, not to certify an amount.",
+      "compareCompound": "Model the self-funded part",
+      "resultMonthly": "Monthly pension at {age}",
+      "resultMonthlyShort": "Monthly pension",
+      "resultReplacement": "Replacement rate",
+      "resultBase": "Basic pension",
+      "resultAccount": "Personal account pension",
+      "resultAccountBalance": "Account at retirement",
+      "resultYears": "Total contribution years",
+      "resultPayoutMonths": "Payout months",
+      "resultPaybackAge": "Account exhausted at",
+      "unitYears": "yrs",
+      "unitMonths": "mo",
+      "unitAge": "yrs old",
+      "chartTitle": "How much does retirement age move the monthly figure",
+      "chartHint": "With the same record, each extra year of work cuts the payout divisor, adds a contribution year, and compounds the account once more — three forces pushing the same way.",
+      "warnCap": "Contribution base exceeds 3x the average wage; the excess is not counted, so the real figure will be lower.",
+      "warnMinYears": "Fewer than 15 years contributed. The minimum rises toward 20 years from 2030, so you would need to extend or top up to draw monthly.",
+      "tableToggle": "Show age-by-age table",
+      "lifetimeNote": "From {age} to {end} is {months} months, roughly {total} in total with annual indexation. Nominal, not discounted.",
+      "contributionNote": "Over the same period you contribute about {personal}, your employer about {employer} (the employer part goes to the pooled fund, not your account).",
+      "effectiveAgeNote": "This run assumes retirement at {age}. With statutory selected, that value follows your age and category.",
+      "errors": {
+        "invalid": "Check age, retirement age (above current age, up to 70), base and assumptions."
+      }
+    },
+    "deposit": {
+      "title": "Deposit interest calculator",
+      "subtitle": "Run it the way a bank does: simple interest, early withdrawal at the demand rate, and what inflation leaves behind.",
+      "principal": "Principal",
+      "term": "Term",
+      "term3": "3 months",
+      "term6": "6 months",
+      "term12": "1 year",
+      "term24": "2 years",
+      "term36": "3 years",
+      "term60": "5 years",
+      "rate": "Annual rate %",
+      "holdYears": "Planned holding years",
+      "inflation": "Inflation %",
+      "earlyMonth": "Withdraw at month",
+      "demandRate": "Demand rate %",
+      "earlyHint": "0 means hold to maturity. Early withdrawal of a fixed deposit no longer gets tiered rates — the whole balance earns the demand rate.",
+      "note": "Rates follow major-bank published rates; adjust to the rate on the day you deposit. Interest tax has been waived since 2008, so it is excluded.",
+      "compareCompound": "For a long-run compounding assumption, use the compound tool",
+      "resultInterest": "Interest at maturity",
+      "resultValue": "Value at maturity",
+      "resultNominal": "Nominal annual",
+      "resultReal": "Real annual",
+      "resultRealValue": "Purchasing power",
+      "resultRealGain": "Real gain/loss",
+      "earlyTitle": "Early withdrawal at month {month}",
+      "earlyInterest": "Interest received",
+      "earlyLoss": "Interest forfeited",
+      "earlyLossRatio": "That single move costs you {ratio} of the interest — not taken by the bank, but never yours under the rule.",
+      "chartTitle": "Balance path (interest barely lifts the principal line)",
+      "tableToggle": "Show year table",
+      "unitYear": "Year",
+      "holdNote": "After {rolls} full terms the balance reaches {value}, with {interest} of cumulative interest.",
+      "demandNote": "Left in a demand account, the same money would earn {interest} over the same period.",
+      "errors": {
+        "invalid": "Check principal, term, rate and holding years."
+      }
+    },
+    "dividendTax": {
+      "title": "Dividend tax calculator",
+      "subtitle": "One dividend, after tax — by your tax residence and the market you hold.",
+      "gross": "Gross cash dividend",
+      "market": "Market",
+      "marketAShare": "A-shares (mainland broker)",
+      "marketHkH": "Hong Kong · H share",
+      "marketHkRedChip": "Hong Kong · red chip",
+      "marketUs": "US",
+      "holdingDays": "Holding days",
+      "holdingHint": "A-shares are tiered by holding period: 20% up to 30 days, 10% from 31 days to 1 year, exempt beyond 1 year.",
+      "w8ben": "W-8BEN on file?",
+      "w8benYes": "Filed (treaty rate 10%)",
+      "w8benNo": "Not filed (default 30%)",
+      "note": "Cash dividends only; capital gains are out of scope. Stock Connect has no one-year exemption, so holding period does not change the rate. The 28% red-chip figure is 10% corporate withholding plus 20% individual tax, and whether it applies depends on the company structure.",
+      "resultNet": "Net received",
+      "resultTax": "Total tax",
+      "resultRate": "Effective rate",
+      "breakdownTitle": "Who takes what",
+      "breakdownCorporate": "Corporate withholding",
+      "breakdownPersonal": "Individual income tax",
+      "tierLong": "Held over a year — dividend is exempt.",
+      "tierMid": "Held 1 month to 1 year — 50% counted as taxable income.",
+      "tierShort": "Held under 1 month — fully counted as taxable income.",
+      "compareTitle": "Take-home on the same dividend",
+      "scenario": {
+        "aShareLong": "A-share · held 2 years",
+        "aShareMid": "A-share · held 6 months",
+        "aShareShort": "A-share · held 20 days",
+        "hkH": "Stock Connect · H share",
+        "hkRedChip": "Stock Connect · red chip",
+        "usTreaty": "US · treaty rate",
+        "usNoTreaty": "US · 30% default",
+        "aShareConnect": "A-share · Stock Connect",
+        "hkHoverseas": "HK · H share (no withholding)",
+        "hkRedChipOverseas": "HK · red chip (10% at source)"
+      },
+      "errors": {
+        "invalid": "Check the dividend amount and holding days."
+      },
+      "marketAShareConnect": "A-shares (Stock Connect)",
+      "residence": "Your tax residence",
+      "residenceMainland": "Mainland China (individual)",
+      "residenceOverseas": "Outside mainland China",
+      "residenceHint": "The rules differ: holding-period tiers apply only to mainland individuals; northbound Stock Connect is a flat 10%.",
+      "treatyRate": "US withholding rate",
+      "usRate30": "30% — no treaty claim",
+      "usRate15": "15% — treaty (DE, FR, UK, CA…)",
+      "usRate10": "10% — treaty (CN, JP…)",
+      "treatyHint": "File W-8BEN with your broker to claim the treaty rate; 30% applies otherwise.",
+      "noteOverseas": "Cash dividends only. Northbound Stock Connect: the issuer withholds 10% whatever your holding period, and capital gains are currently exempt. Hong Kong levies no dividend withholding tax; the 10% on red chips is mainland corporate withholding taken before the payout reaches you. US: 30% statutory, cut to 10–15% by treaty.",
+      "breakdownWithholding": "Withholding tax",
+      "breakdownNone": "No further tax at your level.",
+      "tierConnect": "Northbound Stock Connect — flat 10%, no holding-period tiers."
+    },
+    "retirement": {
+      "title": "Retirement calculator",
+      "subtitle": "What your savings grow into, and how much of it you can spend each month without running dry.",
+      "groupTimeline": "Your timeline",
+      "currentAge": "Current age",
+      "retirementAge": "Retirement age",
+      "lifeExpectancy": "Plan to age",
+      "groupSaving": "What you save",
+      "currentSavings": "Invested today",
+      "monthlyContribution": "Monthly contribution",
+      "groupAssumption": "Long-run assumptions",
+      "annualReturn": "Expected return %",
+      "inflation": "Inflation %",
+      "desiredIncome": "Desired monthly income",
+      "desiredHint": "In today's money, before tax. Every figure below is compared on that basis.",
+      "resultSustainable": "Sustainable monthly spending",
+      "perMonth": "/mo",
+      "resultWindow": "from {retire} to {life}, in today's purchasing power",
+      "resultCorpus": "Portfolio at {age}",
+      "resultCorpusHint": "in today's money",
+      "resultCorpusNominal": "Same balance in future money",
+      "resultCorpusNominalHint": "before inflation",
+      "resultContributed": "Paid in",
+      "resultGrowth": "From returns",
+      "gapTitle": "Short by {amount}",
+      "gapBody": "Saving {amount} more per month, in today's money, would close the gap.",
+      "surplusTitle": "{amount} of headroom",
+      "surplusBodyOnTrack": "The money lasts to {age} at the spending you chose.",
+      "surplusBodyDepletes": "It would actually run out around {age} — the headroom is real but thin.",
+      "compareTitle": "Two cross-checks",
+      "compareFourPercent": "The 4% rule would allow {amount} a month from the same portfolio.",
+      "compareRealReturn": "Real return after inflation: {rate}% a year.",
+      "chartReal": "Today's money",
+      "chartNominal": "Future money",
+      "chartRetire": "Retire at {age}",
+      "chartAgeUnit": "y",
+      "note": "Assumes a constant real return, no tax, no fees and no state pension — a planning frame, not a forecast.",
+      "compareCompound": "Accumulation maths lives in the compound tool.",
+      "errors": {
+        "invalid": "Check the ages, amounts and rates (return −20% to 30%)."
       }
     }
   },
@@ -1835,7 +2062,51 @@
     "guideReviewBody": "Compare fills with your rule.",
     "guidePrev": "Back",
     "guideNext": "Next",
-    "guideDone": "Done"
+    "guideDone": "Done",
+    "plan": "Plan",
+    "review": "Review",
+    "more": "More",
+    "planTitle": "Trade plan",
+    "planSubtitle": "Bind rules before you order, then replay them on this symbol to see drawdown and return together.",
+    "planBind": "Bind rule",
+    "planUnbound": "No rule bound",
+    "planEmpty": "Pick a template first, or bind an existing strategy.",
+    "planUseTemplate": "Use",
+    "planOpenLab": "Open rule lab",
+    "planEdit": "Edit in lab",
+    "planReplay": "Replay on this symbol",
+    "planRunReplay": "Run replay",
+    "planReplayFootnote": "Educational replay on daily closes; fees and slippage are simplified assumptions and do not indicate future results.",
+    "planFullReport": "Full report",
+    "planGoOrder": "Go to order",
+    "planLogin": "Sign in to bind rules and run replays.",
+    "planLoginLink": "Sign in",
+    "orderRuleTag": "Rule tag",
+    "orderChangeRule": "Change",
+    "orderSuggestRule": "Bind a rule in Plan first so it shows up in your review",
+    "reviewTitle": "Execution review",
+    "reviewSubtitle": "Recent paper fills on this symbol, checked against your rule tags.",
+    "reviewLoading": "Loading…",
+    "reviewEmpty": "No paper fills on this symbol yet.",
+    "reviewGoPlan": "Make a plan first",
+    "reviewFilterAll": "All",
+    "reviewFilterTagged": "Tagged",
+    "reviewFilterFlags": "Flagged",
+    "reviewBuy": "Buy",
+    "reviewSell": "Sell",
+    "reviewTagged": "Tagged",
+    "reviewNoTag": "No rule tag",
+    "reviewNoInvalidation": "No invalidation price",
+    "reviewOversizing": "Oversized position",
+    "reviewNoPlan": "No plan",
+    "reviewFomo": "Chasing the entry",
+    "reviewPanic": "Panic exit",
+    "reviewRevenge": "Revenge trade",
+    "reviewFootnote": "Flags come from your own checklist and missing fields, not an emotion diagnosis. Fix the rule in the lab.",
+    "reviewRevise": "Revise rule",
+    "reviewOpenDesk": "Process review",
+    "ruleBadgeBound": "Rule: {name}",
+    "ruleBadgeUnbound": "No rule bound"
   },
   "symbolEmotion": {
     "title": "Emotion check",
@@ -2070,7 +2341,11 @@
     "calmar": "Calmar",
     "riskRatioHint": "Sharpe rf=0, daily equity annualized; Calmar=CAGR/max DD",
     "labToolsSubShort": "Compare / params / basket",
-    "recentReplays": "Recent replays"
+    "recentReplays": "Recent replays",
+    "paperDraftCta": "Generate paper draft",
+    "paperDraftHint": "Prefill a limit paper order from the latest replay fill. Nothing is submitted automatically.",
+    "paperDraftOpen": "Open symbol ticket",
+    "paperDraftNote": "Drafts are for process practice. Check rules, size, and invalidation before submit."
   },
   "symbolShare": {
     "title": "Share",
@@ -2113,7 +2388,13 @@
     "circuitOff": "Not tripped",
     "statusOk": "Risk OK",
     "statusWarn": "Circuit active",
-    "disclaimer": "Applies to in-app paper trading only. Not investment advice."
+    "disclaimer": "Applies to in-app paper trading only. Not investment advice.",
+    "todayRiskTitle": "Today's risk",
+    "todayRiskLoading": "Loading risk…",
+    "todayRiskHint": "Vs day-start equity; daily-loss circuit at {cap}%. Soft warn or pause new buys per settings.",
+    "todayRiskSoftTrip": "Near/at daily-loss line ({cap}%). Soft mode — still submittable; re-check your plan.",
+    "todayRiskHardTrip": "Daily-loss line hit ({cap}%). New buys paused; reduces and cancels remain available.",
+    "todayRiskSettings": "Adjust risk settings"
   },
   "pathGuide": {
     "title": "Meet the workspace",

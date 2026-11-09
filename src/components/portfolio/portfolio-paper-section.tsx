@@ -4,8 +4,10 @@ import dynamic from "next/dynamic";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { fmtMoney } from "@/components/portfolio/format";
+import { PortfolioTodayRiskCard } from "@/components/portfolio/portfolio-today-risk-card";
 import type { PaperOrder, PaperPosition } from "@/components/portfolio/types";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
+import { useSession } from "next-auth/react";
 
 const PortfolioPositionsCharts = dynamic(
   () =>
@@ -38,6 +40,7 @@ type Props = {
     chartPnl: string;
     chartAllocation: string;
     emptyPositions: string;
+    emptyPositionsCta?: string;
     symbol: string;
     qty: string;
     avgCost: string;
@@ -67,6 +70,8 @@ export function PortfolioPaperSection({
   labels,
 }: Props) {
   const settingsModal = useSettingsModalOptional();
+  const { data: session } = useSession();
+  const signedIn = Boolean(session?.user);
   const actionBtn =
     "qt-btn qt-btn-ghost inline-flex h-8 items-center justify-center px-3 text-[12px] font-medium leading-none";
 
@@ -109,6 +114,7 @@ export function PortfolioPaperSection({
       {tradeMsg && (
         <p className="text-xs text-[var(--muted)]">{tradeMsg}</p>
       )}
+      <PortfolioTodayRiskCard signedIn={signedIn} />
       <div className="grid grid-cols-2 divide-y divide-[var(--border)] border-y border-[var(--border)] sm:grid-cols-3 sm:divide-x sm:divide-y-0">
         <div className="min-w-0 px-3 py-3">
           <div className="text-[11px] text-[var(--muted)]">{labels.cash}</div>
@@ -145,7 +151,17 @@ export function PortfolioPaperSection({
           {labels.positions}
         </h3>
         {positions.length === 0 ? (
-          <p className="text-sm text-[var(--muted)]">{labels.emptyPositions}</p>
+          <div className="space-y-2">
+            <p className="text-sm text-[var(--muted)]">{labels.emptyPositions}</p>
+            {labels.emptyPositionsCta ? (
+              <Link
+                href="/markets"
+                className="inline-flex text-[12px] text-[var(--brand-text)] underline-offset-2 hover:underline"
+              >
+                {labels.emptyPositionsCta}
+              </Link>
+            ) : null}
+          </div>
         ) : (
           <div className="overflow-x-auto qt-scroll">
             <table className="min-w-[640px] w-full text-sm">

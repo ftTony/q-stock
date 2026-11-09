@@ -938,6 +938,7 @@
     "pendingOrders": "Open orders",
     "recentFills": "Recent fills",
     "emptyPositions": "No positions",
+    "emptyPositionsCta": "Browse markets and place a paper order",
     "emptyOrders": "No open orders",
     "emptyFills": "No fills yet",
     "side": "Side",
@@ -1187,7 +1188,11 @@
     "notesEmpty": "No notes yet",
     "loginTitle": "Sign in to start a review",
     "loginBody": "Reviews use your paper trades, positions, and emotion flags to look at process, not just P&L. Sign in to use AI — new accounts get 5 uses; invite a friend who registers and you get 5 more.",
-    "loginHint": "For learning only; not investment advice."
+    "loginHint": "For learning only; not investment advice.",
+    "candidateRulesTitle": "Candidate rule drafts",
+    "candidateRulesHint": "Summarized from tagged fills in this period. Confirm in the lab — nothing is auto-saved.",
+    "candidateRulesMeta": "{fills} fills · {symbols} symbols",
+    "candidateRulesOpen": "Open strategy"
   },
   "seo": {
     "titleDefault": "Qianli Gu Q-Stock",
@@ -2336,7 +2341,11 @@
     "calmar": "Calmar",
     "riskRatioHint": "Sharpe rf=0, daily equity annualized; Calmar=CAGR/max DD",
     "labToolsSubShort": "Compare / params / basket",
-    "recentReplays": "Recent replays"
+    "recentReplays": "Recent replays",
+    "paperDraftCta": "Generate paper draft",
+    "paperDraftHint": "Prefill a limit paper order from the latest replay fill. Nothing is submitted automatically.",
+    "paperDraftOpen": "Open symbol ticket",
+    "paperDraftNote": "Drafts are for process practice. Check rules, size, and invalidation before submit."
   },
   "symbolShare": {
     "title": "Share",
@@ -2379,7 +2388,13 @@
     "circuitOff": "Not tripped",
     "statusOk": "Risk OK",
     "statusWarn": "Circuit active",
-    "disclaimer": "Applies to in-app paper trading only. Not investment advice."
+    "disclaimer": "Applies to in-app paper trading only. Not investment advice.",
+    "todayRiskTitle": "Today's risk",
+    "todayRiskLoading": "Loading risk…",
+    "todayRiskHint": "Vs day-start equity; daily-loss circuit at {cap}%. Soft warn or pause new buys per settings.",
+    "todayRiskSoftTrip": "Near/at daily-loss line ({cap}%). Soft mode — still submittable; re-check your plan.",
+    "todayRiskHardTrip": "Daily-loss line hit ({cap}%). New buys paused; reduces and cancels remain available.",
+    "todayRiskSettings": "Adjust risk settings"
   },
   "pathGuide": {
     "title": "Meet the workspace",

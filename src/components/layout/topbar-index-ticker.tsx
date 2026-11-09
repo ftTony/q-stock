@@ -127,8 +127,8 @@ export function TopbarIndexTicker() {
 
   const interval = useMemo(() => {
     if (pollFast || !wsPush || wsDegraded) {
-      // H5: avoid 3-market × 3s storms while prices warm up.
-      return isDesktop ? 3_000 : 8_000;
+      // Warm-up: never 3 markets × 3s — desktop 8s, H5 12s (small-server).
+      return isDesktop ? 8_000 : 12_000;
     }
     const base = quotePollIntervalMs({
       enabled: wsEnabled,
@@ -136,24 +136,25 @@ export function TopbarIndexTicker() {
       degraded: wsDegraded,
       push: wsPush,
     });
-    if (!isDesktop && typeof base === "number") {
-      return Math.max(base, 20_000);
+    if (typeof base === "number") {
+      // Desktop floor 15s once warm; H5 20s.
+      return Math.max(base, isDesktop ? 15_000 : 20_000);
     }
     return base;
   }, [pollFast, wsPush, wsDegraded, wsEnabled, wsConnected, isDesktop]);
 
-  // Desktop: keep all three warm for instant rotate. H5: only active page.
+  // One market HTTP poll at a time (visible page); neighbors via WS indices push.
   const stockQ = useMarketIndices("stock", {
-    enabled: isDesktop || page === 0,
-    refetchInterval: interval,
+    enabled: page === 0,
+    refetchInterval: page === 0 ? interval : false,
   });
   const hkQ = useMarketIndices("hk", {
-    enabled: isDesktop || page === 1,
-    refetchInterval: interval,
+    enabled: page === 1,
+    refetchInterval: page === 1 ? interval : false,
   });
   const cnQ = useMarketIndices("cn", {
-    enabled: isDesktop || page === 2,
-    refetchInterval: interval,
+    enabled: page === 2,
+    refetchInterval: page === 2 ? interval : false,
   });
 
   const bundles = useMemo(() => {

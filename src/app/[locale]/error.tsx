@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useTranslations } from "next-intl";
 import { ErrorView } from "@/components/marketing/error-view";
+import { reportError } from "@/lib/observability/report-error";
 
 /**
  * `[locale]` 段的错误边界。
@@ -26,7 +27,7 @@ export default function LocaleError({
   const tApp = useTranslations("app");
 
   useEffect(() => {
-    console.error("[locale-error]", error.digest ?? "", error);
+    reportError(error, { source: "locale-error", digest: error.digest });
   }, [error]);
 
   return (

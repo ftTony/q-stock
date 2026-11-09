@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import {
   IconWatchlistCollapse,
@@ -121,7 +122,14 @@ export function SymbolWatchlistPanel({
           {error}
         </p>
       ) : rows.length === 0 ? (
-        <EmptyStateBlock art="watchlist" label={tMarket("watchlistEmpty")} />
+        <EmptyStateBlock art="watchlist" label={tMarket("watchlistEmpty")}>
+          <Link
+            href="/markets"
+            className="aw-text-link text-[12px]"
+          >
+            {tMarket("viewAll")}
+          </Link>
+        </EmptyStateBlock>
       ) : (
         <SymbolWatchlistVirtualList
           rows={rows}

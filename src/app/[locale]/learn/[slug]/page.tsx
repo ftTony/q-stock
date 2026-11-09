@@ -71,6 +71,7 @@ export default async function LearnArticlePage({ params }: Props) {
     author: article.author,
     publishedAt: article.publishedAt,
     updatedAt: article.updatedAt,
+    faq,
   });
 
   const cards = listLearnArticleCards().filter((a) =>

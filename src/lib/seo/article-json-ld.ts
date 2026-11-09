@@ -22,10 +22,9 @@ function absolute(locale: AppLocale, path: string): string {
 /**
  * Article + BreadcrumbList for /learn/[slug].
  *
- * FAQPage / HowTo are deliberately not emitted for rich-result purposes:
- * Google retired FAQ rich results on 2026-05-07 and HowTo earlier, so the
- * markup earns nothing in the SERP. Both remain valid schema.org types for
- * machine parsing, but the on-page Q&A copy is what actually gets quoted.
+ * FAQPage is emitted when `faq` is present for machine parsing / assistants.
+ * Google retired FAQ rich results for most sites (2026-05), so this is not for
+ * SERP stars — on-page Q&A copy remains the primary quote surface.
  */
 export function learnArticleJsonLd(opts: {
   locale: string;
@@ -36,6 +35,7 @@ export function learnArticleJsonLd(opts: {
   author?: string;
   publishedAt?: string;
   updatedAt?: string;
+  faq?: ReadonlyArray<{ q: string; a: string }>;
 }) {
   const loc = resolveLocale(opts.locale);
   const origin = siteOrigin();
@@ -72,34 +72,52 @@ export function learnArticleJsonLd(opts: {
     isAccessibleForFree: true,
   };
 
+  const graph: Record<string, unknown>[] = [
+    article,
+    {
+      "@type": "BreadcrumbList",
+      "@id": `${url}#breadcrumb`,
+      itemListElement: [
+        {
+          "@type": "ListItem",
+          position: 1,
+          name: isZh ? "首页" : "Home",
+          item: absolute(loc, "/"),
+        },
+        {
+          "@type": "ListItem",
+          position: 2,
+          name: isZh ? "投资知识" : "Learn",
+          item: absolute(loc, "/learn"),
+        },
+        {
+          "@type": "ListItem",
+          position: 3,
+          name: opts.title,
+          item: url,
+        },
+      ],
+    },
+  ];
+
+  const faqItems = (opts.faq ?? []).filter((item) => item.q?.trim() && item.a?.trim());
+  if (faqItems.length > 0) {
+    graph.push({
+      "@type": "FAQPage",
+      "@id": `${url}#faq`,
+      mainEntity: faqItems.map((item) => ({
+        "@type": "Question",
+        name: item.q,
+        acceptedAnswer: {
+          "@type": "Answer",
+          text: item.a,
+        },
+      })),
+    });
+  }
+
   return {
     "@context": "https://schema.org",
-    "@graph": [
-      article,
-      {
-        "@type": "BreadcrumbList",
-        "@id": `${url}#breadcrumb`,
-        itemListElement: [
-          {
-            "@type": "ListItem",
-            position: 1,
-            name: isZh ? "首页" : "Home",
-            item: absolute(loc, "/"),
-          },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: isZh ? "投资知识" : "Learn",
-            item: absolute(loc, "/learn"),
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: opts.title,
-            item: url,
-          },
-        ],
-      },
-    ],
+    "@graph": graph,
   };
 }

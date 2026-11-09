@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { reportError } from "@/lib/observability/report-error";
 
 /**
  * 最后一层兜底：`[locale]/layout.tsx` 自身抛错时，段级 error.tsx 不会生效，
@@ -17,7 +18,7 @@ export default function GlobalError({
   reset: () => void;
 }) {
   useEffect(() => {
-    console.error("[global-error]", error.digest ?? "", error);
+    reportError(error, { source: "global-error", digest: error.digest });
   }, [error]);
 
   return (

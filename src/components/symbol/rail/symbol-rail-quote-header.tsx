@@ -76,9 +76,12 @@ export function SymbolRailQuoteHeader({
     setTimeLabel(
       showingPreviousClose
         ? formatUsEasternDateTime(regularTimestamp! * 1000)
-        : formatTime(updatedAt ?? (quote?.timestamp ?? 0) * 1000),
+        : formatTime(updatedAt ?? (quote?.timestamp ?? 0) * 1000, {
+            assetType,
+          }),
     );
   }, [
+    assetType,
     updatedAt,
     quote?.timestamp,
     quote?.regularSession?.timestamp,

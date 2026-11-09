@@ -2,20 +2,28 @@
 
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
+import { Link } from "@/i18n/routing";
 import { SideDrawer } from "@/components/ui/side-drawer";
 import {
   StrategyReplayPanel,
   type ReplayResultView,
 } from "@/components/strategy/strategy-replay-panel";
 import { StrategyReplayActions } from "@/components/strategy/strategy-replay-actions";
+import {
+  draftFromReplayTrades,
+  writePaperDraft,
+} from "@/lib/trading/paper-draft-storage";
+import type { AssetType } from "@/lib/types";
 
 export type ReplayDrawerItem = {
   id: string;
   status: string;
   symbol: string;
+  assetType?: string;
   error: string | null;
   result: ReplayResultView | null;
   shareToken?: string | null;
+  strategyId?: string | null;
 };
 
 function fmtPct(n?: number | null) {
@@ -33,24 +41,45 @@ export function StrategyReplayResultDrawer({
 }) {
   const t = useTranslations("strategies");
   const [open, setOpen] = useState(false);
+  const [draftReady, setDraftReady] = useState(false);
 
   useEffect(() => {
     if (replay?.id) setOpen(true);
+    setDraftReady(false);
   }, [replay?.id]);
 
   if (!replay) return null;
+  const item = replay;
 
-  const ret = replay.result?.totalReturnPct;
-  const done = replay.status === "done";
-  const failed = replay.status === "failed";
+  const ret = item.result?.totalReturnPct;
+  const done = item.status === "done";
+  const failed = item.status === "failed";
+  const assetType = (item.assetType ?? "stock") as AssetType;
+  const canDraft =
+    done &&
+    Boolean(item.result?.trades?.length) &&
+    Boolean(draftFromReplayTrades(item.result!.trades!));
   const statusKey =
-    replay.status === "done"
+    item.status === "done"
       ? "statusDone"
-      : replay.status === "failed"
+      : item.status === "failed"
         ? "statusFailed"
-        : replay.status === "running"
+        : item.status === "running"
           ? "statusRunning"
           : "statusPending";
+
+  function handlePaperDraft() {
+    const base = draftFromReplayTrades(item.result?.trades ?? []);
+    if (!base) return;
+    writePaperDraft({
+      symbol: item.symbol,
+      assetType,
+      ...base,
+      strategyId: item.strategyId ?? null,
+      source: "replay",
+    });
+    setDraftReady(true);
+  }
 
   return (
     <>
@@ -104,6 +133,33 @@ export function StrategyReplayResultDrawer({
             error={replay.error}
             result={replay.result}
           />
+          {canDraft ? (
+            <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-3">
+              <p className="text-[12px] leading-relaxed text-[var(--muted)]">
+                {t("paperDraftHint")}
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                <button
+                  type="button"
+                  className="qt-btn qt-btn-primary h-8 px-3 text-[12px]"
+                  onClick={handlePaperDraft}
+                >
+                  {t("paperDraftCta")}
+                </button>
+                {draftReady ? (
+                  <Link
+                    href={`/symbol/${assetType}/${encodeURIComponent(replay.symbol)}`}
+                    className="qt-btn qt-btn-ghost h-8 px-3 text-[12px] text-[var(--brand-text)]"
+                  >
+                    {t("paperDraftOpen")}
+                  </Link>
+                ) : null}
+              </div>
+              <p className="mt-2 text-[11px] text-[var(--muted)]">
+                {t("paperDraftNote")}
+              </p>
+            </div>
+          ) : null}
           {onShareChange ? (
             <StrategyReplayActions
               replayId={replay.id}

@@ -242,6 +242,11 @@ async function placeOrderInner(input: PlaceOrderInput) {
       throw err;
     }
     // quote failure: leave pending for worker
+    const { reportError } = await import("@/lib/observability/report-error");
+    reportError(err, {
+      source: "placeOrder.fillPending",
+      extra: { orderId: order.id, symbol, assetType: input.assetType },
+    });
   }
 
   return order;

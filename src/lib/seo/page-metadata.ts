@@ -20,7 +20,10 @@ function languageAlternates(
     const p = localizedPath(locale, path);
     languages[locale] = p === "/" ? `${origin}/` : `${origin}${p}`;
   }
-  const xDefault: AppLocale = langs.includes("zh-CN") ? "zh-CN" : defaultLocale;
+  // Match defaultLocale=en and unprefixed URLs (localePrefix: as-needed).
+  const xDefault: AppLocale = langs.includes(defaultLocale)
+    ? defaultLocale
+    : langs[0]!;
   languages["x-default"] =
     path === "/"
       ? `${origin}/`

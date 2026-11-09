@@ -17,6 +17,7 @@ import {
   useTradingPositions,
 } from "@/hooks/query/use-trading";
 import { formatNumber } from "@/lib/format-number";
+import { consumePaperDraft } from "@/lib/trading/paper-draft-storage";
 import { summarizeOrderRisk } from "@/lib/trading/risk-math";
 import type { EmotionTagId } from "@/components/symbol/plan/symbol-emotion-check";
 import { TradeAiLinks } from "@/components/trading/trade-ai-links";
@@ -171,6 +172,28 @@ export function TradePanel({
   const [submitResult, setSubmitResult] = useState<"filled" | "pending" | null>(
     null,
   );
+  /** Draft from strategy replay / tools via sessionStorage when prop unset. */
+  const [storedDraft, setStoredDraft] = useState<TradeAiDraft | null>(null);
+  const effectiveDraft = aiDraft ?? storedDraft;
+
+  useEffect(() => {
+    const draft = consumePaperDraft(symbol, assetType);
+    if (!draft) return;
+    setStoredDraft({
+      side: draft.side,
+      type: draft.type,
+      price: draft.price,
+      qtyHint: draft.qtyHint,
+      invalidationNote: draft.invalidationNote,
+      nonce: draft.nonce,
+    });
+    if (draft.strategyId) {
+      if (onStrategyIdChange) onStrategyIdChange(draft.strategyId);
+      else setStrategyIdInner(draft.strategyId);
+    }
+    // Only on symbol/asset change — intentional.
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- mount/symbol bridge
+  }, [symbol, assetType]);
 
   useEffect(() => {
     onCashBalance?.(account?.cashBalance ?? null);
@@ -196,22 +219,22 @@ export function TradePanel({
   }, [searchParams]);
 
   useEffect(() => {
-    if (!aiDraft) return;
-    setSide(aiDraft.side);
-    setOrderType(aiDraft.type);
-    if (aiDraft.type === "limit") {
-      setLimitPrice(String(Number(aiDraft.price.toFixed(4))));
+    if (!effectiveDraft) return;
+    setSide(effectiveDraft.side);
+    setOrderType(effectiveDraft.type);
+    if (effectiveDraft.type === "limit") {
+      setLimitPrice(String(Number(effectiveDraft.price.toFixed(4))));
     } else {
-      setStopPrice(String(Number(aiDraft.price.toFixed(4))));
+      setStopPrice(String(Number(effectiveDraft.price.toFixed(4))));
     }
-    if (aiDraft.qtyHint != null && aiDraft.qtyHint > 0) {
-      setQty(String(aiDraft.qtyHint));
+    if (effectiveDraft.qtyHint != null && effectiveDraft.qtyHint > 0) {
+      setQty(String(effectiveDraft.qtyHint));
     }
-    if (aiDraft.invalidationNote) {
-      const m = aiDraft.invalidationNote.match(/(\d+(\.\d+)?)/);
+    if (effectiveDraft.invalidationNote) {
+      const m = effectiveDraft.invalidationNote.match(/(\d+(\.\d+)?)/);
       if (m) setInvalidationPrice(m[1]!);
     }
-  }, [aiDraft]);
+  }, [effectiveDraft]);
 
   const qtyNum = Number(qty) || 0;
   const estimatePrice = useMemo(() => {
@@ -341,13 +364,16 @@ export function TradePanel({
     />
   ) : null;
 
-  const draftBanner = aiDraft ? (
+  const draftBanner = effectiveDraft ? (
     <div className="flex items-center justify-between gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-2 text-[12px] text-[var(--brand-text)]">
       <span>{t("aiDraftBanner")}</span>
       <button
         type="button"
         className="underline"
-        onClick={() => onDismissAiDraft?.()}
+        onClick={() => {
+          setStoredDraft(null);
+          onDismissAiDraft?.();
+        }}
       >
         {t("aiDraftUndo")}
       </button>

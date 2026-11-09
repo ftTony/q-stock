@@ -226,6 +226,7 @@ export default function PortfolioPage() {
           chartPnl: tTrade("chartPnl"),
           chartAllocation: tTrade("chartAllocation"),
           emptyPositions: tTrade("emptyPositions"),
+          emptyPositionsCta: tTrade("emptyPositionsCta"),
           symbol: tMarket("symbol"),
           qty: tTrade("qty"),
           avgCost: tTrade("avgCost"),

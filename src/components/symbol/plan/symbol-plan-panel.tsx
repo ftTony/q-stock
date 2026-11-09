@@ -348,22 +348,24 @@ export function SymbolPlanPanel({
 
             {result ? (
               <div className="space-y-1.5 border-t border-[var(--aw-hairline,var(--border))] pt-2">
-                <div className="flex justify-between gap-2 text-[13px]">
-                  <span className="aw-caption">{tSt("maxDd")}</span>
-                  <span className="tabular-nums font-medium">
-                    {fmtPct(result.maxDrawdownPct)}
-                  </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="min-w-0">
+                    <div className="aw-caption">{tSt("return")}</div>
+                    <div className="mt-0.5 text-[14px] font-semibold tabular-nums">
+                      {fmtPct(result.totalReturnPct)}
+                    </div>
+                  </div>
+                  <div className="min-w-0">
+                    <div className="aw-caption">{tSt("maxDd")}</div>
+                    <div className="mt-0.5 text-[14px] font-semibold tabular-nums text-[var(--down)]">
+                      {fmtPct(result.maxDrawdownPct)}
+                    </div>
+                  </div>
                 </div>
                 <div className="flex justify-between gap-2 text-[13px]">
                   <span className="aw-caption">{tSt("trades")}</span>
                   <span className="tabular-nums">
                     {result.tradeCount ?? "—"}
-                  </span>
-                </div>
-                <div className="flex justify-between gap-2 text-[13px]">
-                  <span className="aw-caption">{tSt("return")}</span>
-                  <span className="tabular-nums">
-                    {fmtPct(result.totalReturnPct)}
                   </span>
                 </div>
                 <div className="flex justify-between gap-2 text-[13px]">

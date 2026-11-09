@@ -938,6 +938,7 @@
     "pendingOrders": "挂单",
     "recentFills": "最近成交",
     "emptyPositions": "暂无持仓",
+    "emptyPositionsCta": "去行情找标的，开一笔模拟单",
     "emptyOrders": "暂无挂单",
     "emptyFills": "暂无成交",
     "side": "方向",
@@ -1170,6 +1171,10 @@
     "flagOversizing": "仓位过大标记",
     "flagNoPlan": "无计划标记",
     "untaggedHint": "本时段成交均未挂策略标签；挂上标签便于对照规则复盘。",
+    "candidateRulesTitle": "候选规则草稿",
+    "candidateRulesHint": "根据本时段带标签成交归纳；需你确认后才写入策略，系统不会自动改规则。",
+    "candidateRulesMeta": "{fills} 笔 · {symbols} 只标的",
+    "candidateRulesOpen": "打开策略",
     "footnote": "标记来自你的自检与缺失字段，不是情绪诊断。可到规则实验室修正规则。",
     "ctaStrategies": "修正规则",
     "ctaPortfolio": "去模拟盘",
@@ -2336,7 +2341,11 @@
     "calmar": "卡玛",
     "riskRatioHint": "夏普 rf=0、按日权益年化；卡玛=CAGR/最大回撤",
     "labToolsSubShort": "对比 / 参数 / 多标的",
-    "recentReplays": "最近回放"
+    "recentReplays": "最近回放",
+    "paperDraftCta": "生成模拟单草稿",
+    "paperDraftHint": "用回放里最近一笔成交预填限价模拟单；不会自动提交。",
+    "paperDraftOpen": "打开个股下单",
+    "paperDraftNote": "草稿仅作过程练习。请核对规则、仓位与失效条件后再提交。"
   },
   "symbolShare": {
     "title": "分享",
@@ -2379,7 +2388,13 @@
     "circuitOff": "未熔断",
     "statusOk": "风控正常",
     "statusWarn": "熔断生效",
-    "disclaimer": "仅作用于站内模拟盘，不构成投资建议，与真实券商风控无关。"
+    "disclaimer": "仅作用于站内模拟盘，不构成投资建议，与真实券商风控无关。",
+    "todayRiskTitle": "今日风险",
+    "todayRiskLoading": "加载风控…",
+    "todayRiskHint": "相对日初权益；单日亏损熔断线 {cap}%。触及后按设置软提示或暂停新开仓。",
+    "todayRiskSoftTrip": "已接近/触及单日亏损线（{cap}%）。当前为软提示，仍可下单，请核对原计划。",
+    "todayRiskHardTrip": "已触及单日亏损线（{cap}%）。新开仓已暂停；减仓与撤单仍可用。",
+    "todayRiskSettings": "调整风控设置"
   },
   "pathGuide": {
     "title": "认识主界面",

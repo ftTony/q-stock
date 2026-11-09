@@ -78,8 +78,9 @@ export function buildChartStyles(
   // legend titles land as near-black on a dark rect (unreadable on mobile).
   const tipBg = "rgba(12, 18, 28, 0.94)";
   const tipBorder = "rgba(148, 163, 184, 0.35)";
-  const tipLabel = "#94a3b8";
-  const tipValue = "#f1f5f9";
+  // Prefer theme tokens (already resolved in `c`) over hardcoded slate.
+  const tipLabel = c.muted;
+  const tipValue = c.fg;
   const narrow =
     typeof window !== "undefined" &&
     window.matchMedia("(max-width: 767px)").matches;

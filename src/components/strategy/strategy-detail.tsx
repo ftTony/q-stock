@@ -487,7 +487,10 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
           {active ? (
             <div className="mt-3 border-t border-[var(--border)] pt-3">
               <StrategyReplayResultDrawer
-                replay={active}
+                replay={{
+                  ...active,
+                  strategyId,
+                }}
                 onShareChange={
                   session?.user
                     ? (token) => patchShareToken(active.id, token)

@@ -88,12 +88,18 @@ function BackLink({ label }: { label: string }) {
   );
 }
 
-function UpdatedAtLabel({ updatedAt }: { updatedAt: Date }) {
+function UpdatedAtLabel({
+  updatedAt,
+  assetType,
+}: {
+  updatedAt: Date;
+  assetType: AssetType;
+}) {
   /** Avoid SSR/client clock skew hydration mismatch (e.g. 09:55:42 vs :43). */
   const [label, setLabel] = useState<string | null>(null);
   useEffect(() => {
-    setLabel(formatTime(updatedAt));
-  }, [updatedAt]);
+    setLabel(formatTime(updatedAt, { assetType }));
+  }, [updatedAt, assetType]);
   if (!label) return null;
   return (
     <span className="text-[10px] text-[var(--muted)]" suppressHydrationWarning>
@@ -130,9 +136,11 @@ function SymbolIdentity({
 function SymbolQuoteMeta({
   quote,
   updatedAt,
+  assetType,
 }: {
   quote: Quote | null;
   updatedAt: Date | null;
+  assetType: AssetType;
 }) {
   if (!quote) {
     return <span className="text-xs text-[var(--muted)]">—</span>;
@@ -145,7 +153,9 @@ function SymbolQuoteMeta({
       <span className="text-xs">
         <ChangePct value={quote.percentChange} />
       </span>
-      {updatedAt ? <UpdatedAtLabel updatedAt={updatedAt} /> : null}
+      {updatedAt ? (
+        <UpdatedAtLabel updatedAt={updatedAt} assetType={assetType} />
+      ) : null}
     </div>
   );
 }
@@ -226,7 +236,11 @@ export function SymbolHeader({
         liveName={quote?.name}
       />
       <div className="ml-auto flex items-center gap-2">
-        <SymbolQuoteMeta quote={quote} updatedAt={updatedAt} />
+        <SymbolQuoteMeta
+          quote={quote}
+          updatedAt={updatedAt}
+          assetType={assetType}
+        />
         <WatchButton {...watchProps} />
       </div>
     </div>

@@ -4,9 +4,15 @@
 |---|---|
 | 产品 | 钱力股 / Q-Stock |
 | 范围 | **模拟交易**账户与个股下单动线；工具与 AI 冷静层衔接 |
-| 状态 | **规划稿**（未开工实现） |
+| 状态 | **P0 / P1 已落地**；P2（OCO / 分批建仓 / 组合风险卡）进行中 |
 | 优先级 | P0 下单前仓位预填 + 软提示 → P1 账户规则 → P2 规则单增强 |
 | 相关 | [仓位风险工具](./tool-position-sizing.md) · [策略与回测](./strategy-and-backtest.md) · [个股交易台 UI](./symbol-trading-ui.md)（含 **§4.5.1 交易抽屉 IA P0**） · [富途模拟规划](./symbol-advanced-and-futu-paper.md) · [行情 AI](../行情AI功能.md) · [路线图](../product-roadmap.md) |
+
+### 已落地（对照代码）
+
+- **P0**：`OrderRiskSummary` + 情绪自检（`trade-calm-fields`）；仓位工具 `?qty=` 预填；AI 草稿横幅未自动提交。
+- **P1**：`PaperRiskSettings`（设置页）+ 服务端 `assertPaperRisk` / `checkOrderRisk`（`placeOrder` 前硬/软门控）。
+- **P2 未完成**：OCO 止盈止损配对、分批限价草稿、组合页「今日风险」统计卡。
 
 ---
 
