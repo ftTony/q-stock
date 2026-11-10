@@ -4,6 +4,22 @@ import { LEARN_ARTICLES_SEO_CROSS_MARKET } from "@/lib/learn/articles-seo-cross-
 import { LEARN_ARTICLES_SEO_DERIVATIVES } from "@/lib/learn/articles-seo-derivatives";
 import { LEARN_ARTICLES_SEO_FUNDAMENTALS } from "@/lib/learn/articles-seo-fundamentals";
 import { LEARN_ARTICLES_SEO_METHODS } from "@/lib/learn/articles-seo-methods";
+import { LEARN_ARTICLES_SEO_OPTIONS_BASICS } from "@/lib/learn/articles-seo-options-basics";
+import { LEARN_ARTICLES_SEO_OPTIONS_BREAKEVEN } from "@/lib/learn/articles-seo-options-breakeven";
+import { LEARN_ARTICLES_SEO_OPTIONS_CALENDAR } from "@/lib/learn/articles-seo-options-calendar";
+import { LEARN_ARTICLES_SEO_OPTIONS_CHAIN } from "@/lib/learn/articles-seo-options-chain";
+import { LEARN_ARTICLES_SEO_OPTIONS_DIRECTIONAL } from "@/lib/learn/articles-seo-options-directional";
+import { LEARN_ARTICLES_SEO_OPTIONS_EARNINGS } from "@/lib/learn/articles-seo-options-earnings";
+import { LEARN_ARTICLES_SEO_OPTIONS_GREEKS } from "@/lib/learn/articles-seo-options-greeks";
+import { LEARN_ARTICLES_SEO_OPTIONS_IV_RANK } from "@/lib/learn/articles-seo-options-iv-rank";
+import { LEARN_ARTICLES_SEO_OPTIONS_MONEYNESS } from "@/lib/learn/articles-seo-options-moneyness";
+import { LEARN_ARTICLES_SEO_OPTIONS_VOLATILITY } from "@/lib/learn/articles-seo-options-volatility";
+import { LEARN_ARTICLES_SEO_MINDSET_BIASES } from "@/lib/learn/articles-seo-mindset-biases";
+import { LEARN_ARTICLES_SEO_MINDSET_COMPOUND } from "@/lib/learn/articles-seo-mindset-compound";
+import { LEARN_ARTICLES_SEO_MINDSET_CRASH } from "@/lib/learn/articles-seo-mindset-crash";
+import { LEARN_ARTICLES_SEO_STOCKS_EXITS } from "@/lib/learn/articles-seo-stocks-exits";
+import { LEARN_ARTICLES_SEO_STOCKS_LEVELS } from "@/lib/learn/articles-seo-stocks-levels";
+import { LEARN_ARTICLES_SEO_STOCKS_WORKBENCH } from "@/lib/learn/articles-seo-stocks-workbench";
 import { LEARN_ARTICLES_SEO_PLANNING } from "@/lib/learn/articles-seo-planning";
 import { LEARN_ARTICLES_SEO_STRATEGY } from "@/lib/learn/articles-seo-strategy";
 import { LEARN_ARTICLES_SEO_TAX } from "@/lib/learn/articles-seo-tax";
@@ -36,6 +52,22 @@ export const LEARN_ARTICLES_SEED: LearnArticle[] = [
   ...LEARN_ARTICLES_SEO_STRATEGY,
   ...LEARN_ARTICLES_SEO_FUNDAMENTALS,
   ...LEARN_ARTICLES_SEO_DERIVATIVES,
+  ...LEARN_ARTICLES_SEO_OPTIONS_BASICS,
+  ...LEARN_ARTICLES_SEO_OPTIONS_MONEYNESS,
+  ...LEARN_ARTICLES_SEO_OPTIONS_GREEKS,
+  ...LEARN_ARTICLES_SEO_OPTIONS_IV_RANK,
+  ...LEARN_ARTICLES_SEO_OPTIONS_CHAIN,
+  ...LEARN_ARTICLES_SEO_OPTIONS_DIRECTIONAL,
+  ...LEARN_ARTICLES_SEO_OPTIONS_VOLATILITY,
+  ...LEARN_ARTICLES_SEO_OPTIONS_CALENDAR,
+  ...LEARN_ARTICLES_SEO_OPTIONS_BREAKEVEN,
+  ...LEARN_ARTICLES_SEO_OPTIONS_EARNINGS,
+  ...LEARN_ARTICLES_SEO_STOCKS_WORKBENCH,
+  ...LEARN_ARTICLES_SEO_STOCKS_LEVELS,
+  ...LEARN_ARTICLES_SEO_STOCKS_EXITS,
+  ...LEARN_ARTICLES_SEO_MINDSET_BIASES,
+  ...LEARN_ARTICLES_SEO_MINDSET_CRASH,
+  ...LEARN_ARTICLES_SEO_MINDSET_COMPOUND,
   ...LEARN_ARTICLES_SEO_PLANNING,
   ...LEARN_ARTICLES_SEO_TAX,
 ];

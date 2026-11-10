@@ -2,11 +2,15 @@
 
 import {
   useCallback,
-  useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
 } from "react";
+import {
+  SYMBOL_LAYOUT_KEY,
+  type SymbolLayoutPrefs,
+} from "@/components/symbol/hooks/use-symbol-layout-prefs";
 
 const STORAGE_KEY = "qstock.symbolWatchlistWidth.v1";
 const OPEN_KEY = "qstock.symbolWatchlistOpen.v1";
@@ -18,7 +22,8 @@ function clamp(n: number): number {
   return Math.min(WATCH_MAX, Math.max(WATCH_MIN, Math.round(n)));
 }
 
-function readWidth(): number {
+/** Persist width — shared with route fallback so soft-nav skeleton matches. */
+export function readWatchlistWidth(): number {
   if (typeof window === "undefined") return WATCH_DEFAULT;
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -29,13 +34,24 @@ function readWidth(): number {
   }
 }
 
-function readOpen(): boolean {
+/**
+ * Whether the left watchlist should occupy layout width.
+ * Prefers layout prefs v2; falls back to legacy open key.
+ * First visit: closed (skip watchlist quote poll on critical path).
+ */
+export function readWatchlistOpen(): boolean {
   if (typeof window === "undefined") return false;
   try {
-    const raw = localStorage.getItem(OPEN_KEY);
-    // First visit: closed — skip watchlist quote poll on critical path.
-    if (raw === null) return false;
-    return raw !== "0";
+    const raw = localStorage.getItem(SYMBOL_LAYOUT_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<SymbolLayoutPrefs>;
+      if (typeof parsed.modules?.watchlist === "boolean") {
+        return parsed.modules.watchlist;
+      }
+    }
+    const legacy = localStorage.getItem(OPEN_KEY);
+    if (legacy === null) return false;
+    return legacy !== "0";
   } catch {
     return false;
   }
@@ -49,9 +65,10 @@ export function useWatchlistResize() {
   const widthRef = useRef(width);
   widthRef.current = width;
 
-  useEffect(() => {
-    setWidth(readWidth());
-    setOpenState(readOpen());
+  // useLayoutEffect: apply stored open/width before paint — avoids CLS after loading.tsx.
+  useLayoutEffect(() => {
+    setWidth(readWatchlistWidth());
+    setOpenState(readWatchlistOpen());
   }, []);
 
   const setOpen = useCallback((next: boolean | ((v: boolean) => boolean)) => {

@@ -11,30 +11,35 @@ export const LEARN_ARTICLES_SEO_DERIVATIVES: LearnArticle[] = [
     ctaHref: "/tools/options",
     author: AUTHOR,
     publishedAt: PUBLISHED,
-    updatedAt: PUBLISHED,
+    updatedAt: "2026-11-10",
     title: {
       en: "Option expiry: 0DTE, weeklies, and the IV crush that eats correct calls",
       "zh-CN": "期权到期日：0DTE、周期权与 IV Crush 的定价陷阱",
     },
     summary: {
-      en: "Being right about direction is not enough. Time value decays on a curve, implied volatility collapses after events, and weekly expiries compress both effects into days. Here is the mechanics, then the payoff chart.",
-      "zh-CN": "看对方向并不够。时间价值按曲线衰减，事件之后隐含波动率会塌陷，而周期权把这两个效应压进几天里。先讲机制，再看盈亏图。",
+      en: "Being right about direction is not enough. Time value decays on a curve, implied volatility collapses after events, and weekly expiries compress both effects into days. Here is the mechanics, then a worked example with numbers.",
+      "zh-CN":
+        "看对方向并不够。时间价值按曲线衰减，事件之后隐含波动率会塌陷，而周期权把这两个效应压进几天里。先讲机制，再用一组假设数字算一遍。",
     },
     paragraphs: {
       en: [
-        "An option can lose money while the underlying moves your way. That is not a malfunction.",
-        "It is the price of time and volatility being repriced at the same moment.",
+        "Option price = intrinsic value + time value. Direction is half of one variable; time and implied volatility can both cut your account while you were right.",
+        "One worked example below. All numbers are hypothetical.",
       ],
       "zh-CN": [
-        "标的朝你看的方向走了，期权却还是亏钱。这不是故障。",
-        "这是时间与波动率在同一时刻被重新定价的结果。",
+        "期权价格 = 内在价值 + 时间价值。方向只是半个变量——时间和隐含波动率可以在你「看对了」的同时把账户划一道口子。",
+        "下面用一组假设数字走一遍。全部数字为示意。",
       ],
     },
     sections: {
       en: [
         {
           type: "p",
-          text: "Short answer: you pay for intrinsic value plus time value. Time value decays faster as expiry approaches, and implied volatility usually falls after a scheduled event. If the move is smaller than what was priced in, both effects work against a long option — even when the direction was right.",
+          text: "Most people learn option pricing as a formula and then trade it as a lottery ticket. The formula has a quieter message: you are renting time and paying for uncertainty, and both bills accelerate near expiry.",
+        },
+        {
+          type: "p",
+          text: "This piece covers the mechanics first, then runs one hypothetical earnings trade through an IV crush so you can see exactly where the money goes.",
         },
         { type: "h2", text: "Expiry mechanics worth knowing" },
         {
@@ -47,60 +52,76 @@ export const LEARN_ARTICLES_SEO_DERIVATIVES: LearnArticle[] = [
             ["0DTE", "Same day", "Varies by product", "Gamma and slippage dominate everything"],
           ],
           caption:
-            "Contract specifications differ by product and by exchange. Check the multiplier, settlement style and last trading day before sizing anything.",
+            "Contract specifications differ by product and exchange. Check multiplier, settlement style and last trading day before sizing anything.",
         },
-        { type: "h2", text: "Time value does not decay in a straight line" },
         {
           type: "p",
-          text: "Theta measures value lost per day, and it is not constant: it accelerates into expiry because the remaining time is square-rooted in most pricing models. The last 30 days cost far more per day than the first 30. This is why a long-dated option feels patient and a two-week option feels like a countdown.",
+          text: "Time value does not decay in a straight line. Remaining time enters most models under a square root, so the burn rate accelerates into expiry: a two-week option is a countdown, a two-year LEAPS is a lease. Both are rent; the difference is speed. This is also why \u201cwait and see\u201d is a luxury short-dated positions cannot afford.",
         },
-        { type: "h2", text: "IV crush: the event is priced before it happens" },
+        { type: "h2", text: "An IV crush, with numbers" },
         {
           type: "p",
-          text: "Ahead of earnings, implied volatility rises because the market must price a wide range of outcomes. Once the number is out, that uncertainty is resolved, so implied volatility falls — often sharply. A long call can be correct on direction and still lose, because the volatility premium it paid evaporates faster than the intrinsic value grows. The mirror image is true for sellers: they collect the crush, and they carry the tail risk.",
+          text: "Setup: stock at 200, earnings tonight after the close. You buy one 200 strike call expiring in a week. IV is 55%, so the premium is roughly 6.10 per share — 610 dollars a contract. Break-even at expiry sits at 206.10, about +3%. The implied weekly move at 55% IV is roughly ±7.6%, so your break-even is inside the implied band. Reasonable so far.",
+        },
+        {
+          type: "p",
+          text: "Next morning the print is good and the stock opens at 204. Direction: right, +2%. But the event resolving collapses IV from 55% to 32% with six days left. Re-price the call and it is worth about 5.7. You were right, and the account is down roughly 40 dollars on the contract.",
+        },
+        {
+          type: "table",
+          head: ["State", "Stock", "Days left", "IV", "200 call value"],
+          rows: [
+            ["At entry", "200", "7", "55%", "≈ 6.10"],
+            ["After earnings", "204", "6", "32%", "≈ 5.70"],
+            ["Same stock, milder crush", "204", "6", "40%", "≈ 6.40"],
+          ],
+          caption:
+            "Hypothetical numbers, European BS approximation, rates and dividends ignored. Live fills also carry the bid-ask spread.",
+        },
+        {
+          type: "p",
+          text: "Read the table sideways: identical +2% move, only the IV column changes, and the trade flips from a loss to a small gain. That is the crush. Part of what you paid was the uncertainty itself, and once the event lands, that part of the premium is simply cancelled. Nobody refunds it.",
+        },
+        {
+          type: "p",
+          text: "Sellers are the mirror image and they collect the collapse happily. But a naked short call has theoretically uncapped losses — one overshoot gap can wipe out months of premium in a night. The crush is the seller's wage; the tail is the seller's bill. Keep both on file.",
+        },
+        { type: "h2", text: "Common ways this goes wrong" },
+        {
+          type: "ul",
+          items: [
+            "Buying short-dated options into an event, holding through it, losing despite being right — and reacting by blaming the market or switching symbols, never by checking what IV did.",
+            "Estimating everything at the mid price: backtests, break-evens, even expected fills. On quiet strikes the spread can eat several days of theta, and the mid is not a fill.",
+            "Holding deep ITM American calls across a dividend and forgetting early exercise exists — the dividend quietly goes to someone else.",
+          ],
+        },
+        {
+          type: "p",
+          text: "All three share a root: treating the option as a shadow of the stock. It is a separate contract whose fine print is time and volatility.",
         },
         { type: "h2", text: "What 0DTE actually changes" },
         {
-          type: "ul",
-          items: [
-            "Gamma becomes extreme: delta swings hard for small moves, so the position's risk changes minute by minute.",
-            "Spreads widen and slippage grows, because everyone is trading the same expiration at once.",
-            "There is no time to be right later — the contract resolves today, so a thesis needs an intraday catalyst.",
-            "Loss limits must be set before entry; averaging down a same-day option is not a strategy, it is a countdown.",
-          ],
+          type: "p",
+          text: "A same-day expiry removes the option of \u201cbeing right later\u201d — the thesis needs an intraday catalyst, today. Gamma is extreme, so small moves rewrite your delta and the position's risk changes minute by minute. Spreads widen because everyone crowds the same expiration. Averaging down a 0DTE is not a strategy; it is adding money to a countdown. Decide the exit before entry, not during the slide.",
         },
-        { type: "h2", text: "Draw the payoff before you trade" },
+        { type: "h2", text: "Where to check this in Q-Stock" },
         {
           type: "p",
-          text: "Enter strike, premium and quantity into the payoff tool and look at the two numbers that matter: maximum loss, and the break-even price at expiry. If the break-even requires a move larger than the implied move, you are not buying a view — you are buying a more extreme view than the market's.",
-        },
-        { type: "h2", text: "Three mistakes that look like bad luck" },
-        {
-          type: "ul",
-          items: [
-            "Buying short-dated options before an event, then holding through it: correct direction, crushed volatility.",
-            "Selling options for income without a defined worst case: the premium is small and the tail is not.",
-            "Ignoring early assignment on American-style contracts, especially around dividends and deep in-the-money positions.",
-          ],
-        },
-        { type: "h2", text: "Liquidity: same delta, different cost" },
-        {
-          type: "p",
-          text: "There is no single order book for options. Far-dated, deep out-of-the-money or thinly traded strikes can carry a bid-ask spread several times wider, as a share of premium, than the front-month contract. Two contracts with the same 0.4 delta are not the same instrument if one costs 1% to cross and the other 8%.",
+          text: "Open a symbol page, then the options drawer: pick strikes off the chain, drop a strategy template in, and read Theta and Vega straight off the contract quote. To ask \u201chow much does IV have to fall before I lose?\u201d, run it through /tools/options — American binomial tree or European BS approximation, both let you edit IV manually and watch the premium collapse. Put the earnings date into /alerts, and after the trade write one line in /review: volatility paid versus move delivered.",
         },
         {
-          type: "p",
-          text: "Backtesting at the mid price systematically overstates returns: the test fills at mid, the real fill happens at the other side of the spread. For short-horizon strategies that assumption alone can turn positive expectancy negative.",
-        },
-        {
-          type: "p",
-          text: "Three checks tell you whether it is liquid: volume and open interest, spread width, and strike spacing. When all three are poor, the answer is not a cheaper premium — it is a different contract.",
+          type: "note",
+          text: "The drawer's ±σ scenarios assume expiry exercise; model Greeks depend on IV and rate assumptions. They are checking tools, not promises — and none of this is investment advice.",
         },
       ],
       "zh-CN": [
         {
           type: "p",
-          text: "先给结论：期权价格 = 内在价值 + 时间价值。时间价值越临近到期衰减越快，而隐含波动率在事件落地后通常会回落。如果实际波动小于市场定价的幅度，这两个效应对买方同时不利——哪怕方向看对了。",
+          text: "多数人把期权定价学成公式，然后当彩票去交易。公式其实有句更安静的话：你在租时间、买不确定性，而且两张账单都越临近到期涨得越快。",
+        },
+        {
+          type: "p",
+          text: "这篇先讲机制，再用一笔假设的财报交易把 IV Crush 从头算到尾，让你看清钱到底去了哪。",
         },
         { type: "h2", text: "到期机制先弄清楚" },
         {
@@ -115,52 +136,64 @@ export const LEARN_ARTICLES_SEO_DERIVATIVES: LearnArticle[] = [
           caption:
             "合约规格因产品与交易所而异。下单前确认合约乘数、结算方式与最后交易日。",
         },
-        { type: "h2", text: "时间价值不是直线衰减" },
         {
           type: "p",
-          text: "Theta 衡量每天损失多少价值，而它不是常数：多数定价模型里剩余时间是开平方的，所以越临近到期衰减越快。最后 30 天每天的成本，远高于最初 30 天。这就是为什么远期期权感觉从容，两周期权感觉像倒计时。",
+          text: "时间价值不是直线衰减。多数定价模型里剩余时间要开平方，所以越临近到期烧得越快：两周的期权是倒计时，两年的 LEAPS 是租约——都在付租金，区别是速度。这也是为什么「再等等」对短天期仓位是奢侈品。",
         },
-        { type: "h2", text: "IV Crush：事件在被定价之后才发生" },
+        { type: "h2", text: "IV Crush，带数字走一遍" },
         {
           type: "p",
-          text: "财报前隐含波动率会抬升，因为市场必须为一个很宽的结果区间定价。数字一出，不确定性解除，隐含波动率随之回落，而且往往很快。看涨期权可能方向完全正确却仍然亏钱，因为它付的波动率溢价蒸发得比内在价值增长得更快。卖方是镜像：他们收下这次塌陷，同时承担尾部风险。",
+          text: "假设股价 200，财报今晚盘后。你买一张一周后到期的 200 Call，IV 55%，权利金约 6.10 每股——一张合约 610 美元。到期盈亏平衡在 206.10，约 +3%。55% 的 IV 对应的隐含周波动约 ±7.6%，平衡点落在隐含区间里面，看起来不离谱。",
+        },
+        {
+          type: "p",
+          text: "第二天早上，财报不错，股价开在 204。方向对了，+2%。但事件落地把不确定性一次性解除，IV 从 55% 掉到 32%，剩 6 天。重估这只 Call 大约值 5.7：你对了，账户却少了 40 美元上下。",
+        },
+        {
+          type: "table",
+          head: ["状态", "股价", "剩余天数", "IV", "200 Call 估值"],
+          rows: [
+            ["买入时", "200", "7", "55%", "≈ 6.10"],
+            ["财报后", "204", "6", "32%", "≈ 5.70"],
+            ["对照：同涨幅、塌得轻", "204", "6", "40%", "≈ 6.40"],
+          ],
+          caption:
+            "假设数字，欧式 BS 近似估算，忽略利率与股息；实际成交还要过买卖价差。",
+        },
+        {
+          type: "p",
+          text: "把表横着读：同样的 +2%，只有 IV 那一栏在变，交易就从亏损翻成小赚。这就是 Crush——你付的权利金里有相当一部分买的是「不确定性」本身，事件落地，这部分溢价直接作废，没有人退款。",
+        },
+        {
+          type: "p",
+          text: "卖方是镜像，收塌陷收得很开心。但裸卖看涨的亏损理论上不封顶，一次超预期的跳空能把几个月的权利金一夜抹掉。塌陷是卖方的工资，尾部是卖方的账单，两张都要留底。",
+        },
+        { type: "h2", text: "常见踩坑" },
+        {
+          type: "ul",
+          items: [
+            "事件前买短期期权并持有过事件，方向对了还亏钱——第一反应骂市场，第二反应换标的，很少有人第三反应去查 IV 发生了什么。",
+            "什么都按中间价估：回测、盈亏、甚至预期成交。冷门行权价的价差能吃掉好几天的 Theta，中间价不是成交价。",
+            "深度实值的美式 Call 撞上分红，忘了提前行权这回事，股息悄悄归了别人。",
+          ],
+        },
+        {
+          type: "p",
+          text: "三条共用一个根：把期权当成股票的影子。它是另一张合同，条款里写满了时间和波动率。",
         },
         { type: "h2", text: "0DTE 到底改变了什么" },
         {
-          type: "ul",
-          items: [
-            "Gamma 变得极端：标的小幅波动就会让 Delta 剧烈变化，持仓风险每分钟都在变。",
-            "价差变宽、滑点变大，因为所有人都在同一到期日上交易。",
-            "没有「以后再对」的时间——合约当天了结，所以你的判断必须有一个日内催化剂。",
-            "止损必须在下单前定好；对当日到期期权「补仓摊平」不是策略，是倒计时。",
-          ],
+          type: "p",
+          text: "当日到期取消了「以后再对」这个选项——论点必须自带日内催化剂，而且就是今天。Gamma 极端：小幅波动就重写 Delta，持仓风险每分钟都在变；价差变宽，因为所有人挤同一个到期日。对 0DTE 补仓摊平不是策略，是给倒计时续秒。离场要在进场前决定，不是在下滑途中决定。",
         },
-        { type: "h2", text: "先画盈亏图" },
+        { type: "h2", text: "在钱力股里核对" },
         {
           type: "p",
-          text: "把行权价、权利金、数量填进盈亏工具，只看两个数：最大亏损，以及到期盈亏平衡价。如果平衡价要求的波动大于市场隐含的波动幅度，你买的不是一个观点，而是一个比市场更极端的观点。",
-        },
-        { type: "h2", text: "三个看起来像运气不好的错误" },
-        {
-          type: "ul",
-          items: [
-            "事件前买短期限期权并持有过事件：方向对了，波动率塌了。",
-            "为了收权利金卖期权却没有明确的最坏情形：权利金很小，尾部不封顶。",
-            "忽略美式合约的提前行权，尤其是分红前后和深度实值的持仓。",
-          ],
-        },
-        { type: "h2", text: "流动性：同 Delta 的两个合约，成本不一样" },
-        {
-          type: "p",
-          text: "期权没有统一盘口。远月、深度虚值、冷门行权价的合约，买卖价差占权利金的比例可能是近月主力合约的好几倍。同样是 Delta 0.4，一个价差 1%，另一个 8%——进场就先亏掉后者。",
+          text: "个股页打开期权抽屉：链上点行权价带腿，策略模板一键生成结构，合约报价直接给 Theta 和 Vega。想问「IV 掉到多少我会亏」，去 /tools/options 期权计算器单独跑——美式二叉树和欧式 BS 近似都行，手动改 IV，看着权利金塌下去。财报日期挂进 /alerts 提醒；成交完去 /review 留一行：付了多少波动率，实际走了多少。",
         },
         {
-          type: "p",
-          text: "用中间价做回测会系统性高估收益：回测按中间价成交，真实成交发生在价差的另一端。对高频或短线策略，这个假设足以把正期望变成负期望。",
-        },
-        {
-          type: "p",
-          text: "判断流动性只需看三件事：成交量和持仓量、买卖价差宽度、行权价间隔。三个都差的时候，最好的做法不是找更便宜的权利金，而是换一个合约。",
+          type: "note",
+          text: "抽屉的 ±σ 情景按到期行权假设估算；模型希腊字母依赖 IV 与利率假设。它们是核对工具，不是承诺。本文仅供学习，不构成投资建议。",
         },
       ],
     },
@@ -168,56 +201,62 @@ export const LEARN_ARTICLES_SEO_DERIVATIVES: LearnArticle[] = [
       en: [
         {
           q: "Can I lose money on a call when the stock rises?",
-          a: "Yes. If implied volatility falls enough after an event, the volatility premium can shrink by more than the intrinsic value gains.",
-        },
-        {
-          q: "Are weekly options riskier than monthlies?",
-          a: "They decay faster and carry more gamma per unit of time, so the same position size produces larger swings. Risk per contract is lower; risk per day is higher.",
+          a: "Yes. In the example above, +2% combined with IV dropping from 55% to 32% turned a $610 contract into roughly $570. When the volatility premium shrinks faster than intrinsic value grows, that is exactly what happens.",
         },
         {
           q: "What is the maximum loss when buying an option?",
-          a: "The premium paid. Selling options without a hedge has a very different, and potentially much larger, risk profile.",
+          a: "The premium paid — that is the whole cap. Selling is a different risk table: a naked short option can lose far more than the premium it collected, in theory without limit.",
         },
         {
-          q: "Does early assignment matter for small positions?",
-          a: "It can. Deep in-the-money American calls around a dividend date are the classic case, and it costs you the dividend or a forced cash outlay.",
+          q: "Weeklies or monthlies?",
+          a: "Weeklies are cheaper per contract but bleed faster per day; monthlies are the reverse. Pick by how many days your thesis actually needs, not by which looks cheaper.",
+        },
+        {
+          q: "Are 0DTE options a good place to learn?",
+          a: "No. Gamma and slippage dominate, and being one minute late on an exit is itself a new risk decision. Learn the loop on weeklies and monthlies first.",
         },
       ],
       "zh-CN": [
         {
           q: "股票涨了，看涨期权还会亏吗？",
-          a: "会。如果事件后隐含波动率跌得足够多，波动率溢价的缩水可以超过内在价值的增长。",
-        },
-        {
-          q: "周期权比月期权风险更大吗？",
-          a: "衰减更快、单位时间内的 Gamma 更高，同样仓位波动更大。单张风险更低，每日风险更高。",
+          a: "会。文中的例子里，+2% 配上 IV 从 55% 掉到 32%，一张 610 美元买入的合约只剩 570 左右。波动率溢价缩水快过内在价值增长时，就是这样。",
         },
         {
           q: "买期权的最大亏损是多少？",
-          a: "已付的权利金。卖出未对冲的期权是完全不同的风险结构，潜在亏损可以大得多。",
+          a: "已付权利金，上限就到这里。卖出是另一张风险表：裸卖期权的亏损可以远超收到的权利金，理论上不封顶。",
         },
         {
-          q: "小仓位也需要关心提前行权吗？",
-          a: "需要。分红前后深度实值的美式看涨是典型案例，代价是丢掉股息或被要求提前出资。",
+          q: "周期权和月期权怎么选？",
+          a: "周期权单张便宜、每天损耗快；月期权反过来。按论点真正需要几天来选，不是按哪张便宜来选。",
+        },
+        {
+          q: "0DTE 适合新手练手吗？",
+          a: "不适合。Gamma 和滑点主导一切，晚一分钟离场本身就是一次新的风险决策。先用周期权和月期权把流程练熟。",
         },
       ],
     },
     links: {
       en: [
-        { label: "Options payoff tool", href: "/tools/options" },
-        { label: "Risk, reward and expectancy", href: "/learn/risk-reward-expectancy" },
-        { label: "24-hour markets vs closing bells", href: "/learn/crypto-vs-equity-volatility" },
+        { label: "Options basics", href: "/learn/options-basics-roles-pricing" },
+        { label: "IV, HV and rank", href: "/learn/options-iv-hv-rank" },
+        { label: "Break-even and ±σ scenarios", href: "/learn/options-breakeven-scenarios" },
+        { label: "Directional templates", href: "/learn/options-strategies-directional" },
+        { label: "Options calculator", href: "/tools/options" },
+        { label: "Watchlist and alerts", href: "/watchlist" },
       ],
       "zh-CN": [
-        { label: "期权盈亏计算器", href: "/tools/options" },
-        { label: "风险回报比与期望值", href: "/learn/risk-reward-expectancy" },
-        { label: "24 小时交易 vs 收盘制", href: "/learn/crypto-vs-equity-volatility" },
+        { label: "期权入门：作用与定价", href: "/learn/options-basics-roles-pricing" },
+        { label: "IV、HV 与百分位", href: "/learn/options-iv-hv-rank" },
+        { label: "盈亏平衡与 ±σ 情景", href: "/learn/options-breakeven-scenarios" },
+        { label: "单腿 · 担保 · 垂直 · 领口", href: "/learn/options-strategies-directional" },
+        { label: "期权计算器", href: "/tools/options" },
+        { label: "自选与提醒", href: "/watchlist" },
       ],
     },
     sourceNote: {
-      en: "Contract rules vary by product and exchange; confirm specifications with the exchange before trading. No strategy here is a recommendation.",
+      en: "Educational only. Worked numbers are hypothetical and use a simplified pricing model. Contract rules vary by product and exchange; confirm specifications before trading. No strategy here is a recommendation.",
       "zh-CN":
-        "合约规则因产品与交易所而异，交易前请以交易所规格为准。本文不构成任何策略建议。",
+        "仅供学习。文中算例为假设数字，采用简化定价模型。合约规则因产品与交易所而异，交易前请以交易所规格为准。不构成任何策略建议。",
     },
   },
   {

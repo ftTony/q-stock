@@ -254,7 +254,7 @@ export const LEARN_ARTICLES_SEO_STRATEGY: LearnArticle[] = [
     ctaHref: "/tools/risk-reward",
     author: AUTHOR,
     publishedAt: PUBLISHED,
-    updatedAt: PUBLISHED,
+    updatedAt: "2026-11-10",
     title: {
       en: "A 1:2 risk-reward ratio is not a strategy — here is the win rate it requires",
       "zh-CN": "风险回报比 1:2 就能赚钱？先算清楚它要求的胜率",
@@ -265,24 +265,24 @@ export const LEARN_ARTICLES_SEO_STRATEGY: LearnArticle[] = [
     },
     paragraphs: {
       en: [
-        "The ratio is the easy part. Whether it makes money depends on how often you are right and what each attempt costs.",
-        "One formula settles most of the argument.",
+        "The ratio is the easy part. Whether it makes money depends on how often you are right and what each attempt costs. Expectancy settles most of the argument.",
+        "One formula, one worked example, and the slogan stops being a slogan.",
       ],
       "zh-CN": [
-        "比值是最容易的部分。它能不能赚钱，取决于你对的频率，以及每次尝试的成本。",
-        "一个公式就能终结大部分争论。",
+        "比值是最容易算的部分。它能不能赚钱，取决于你对的频率，和每次尝试的成本。期望值一个公式就能终结大部分争论。",
+        "一个公式加一个算例，口号就不再是口号。",
       ],
     },
     sections: {
       en: [
         {
           type: "p",
-          text: "Short answer: expectancy = win rate × reward − loss rate × risk − cost. At a 1:2 ratio, the break-even win rate is 33.3%. At 1:1 it is 50%. The ratio does not tell you whether a setup works; the pair of ratio and win rate does.",
+          text: "Expectancy = win rate × reward − loss rate × risk − cost. At 1:2, break-even is a 33.3% win rate before fees; at 1:1 it is 50%. A ratio alone never tells you whether a setup works—the pair of ratio and win rate does.",
         },
         { type: "h2", text: "The formula behind the slogan" },
         {
           type: "p",
-          text: "Let R be the reward per unit of risk. Expectancy per trade is p × R − (1 − p). Setting it to zero gives the break-even win rate p* = 1 ÷ (1 + R). That is the whole of the 「1:2 needs 33%」 claim — it is arithmetic, not a market insight.",
+          text: "Let R be the reward per unit of risk. Expectancy per trade is p × R − (1 − p). Setting it to zero gives the break-even win rate p* = 1 ÷ (1 + R). That is the entire content of the “1:2 needs 33%” claim—arithmetic, not market insight.",
         },
         { type: "h2", text: "Break-even win rates by ratio" },
         {
@@ -292,46 +292,47 @@ export const LEARN_ARTICLES_SEO_STRATEGY: LearnArticle[] = [
             ["0.5 : 1", "66.7%", "Needs a high-hit-rate setup"],
             ["1 : 1", "50%", "A coin flip before costs"],
             ["1.5 : 1", "40%", "Moderate edge required"],
-            ["2 : 1", "33.3%", "The classic 「1:2」 claim"],
+            ["2 : 1", "33.3%", "The classic “1:2” claim"],
             ["3 : 1", "25%", "Fewer, larger winners"],
             ["4 : 1", "20%", "Requires tolerance for long losing streaks"],
           ],
           caption:
-            "Before costs. Every trade also pays commission, spread and slippage, which shifts every number in the right-hand column upward.",
+            "Before costs. Every trade also pays commission, spread and slippage, which shifts every number in the middle column upward.",
         },
         { type: "h2", text: "Costs move the goalposts" },
         {
           type: "p",
-          text: "If each attempt costs c, expressed as a fraction of the amount you risk, the break-even rate becomes p* = (1 + c) ÷ (1 + R). Risk 1,000 per trade, pay 50 in spread and commission, and at a 2:1 ratio the bar moves from 33.3% to 35%. Cost per attempt matters more than cost per share — this is why high-frequency approaches need a bigger edge, not a smaller one.",
+          text: "If each attempt costs c, expressed as a fraction of the amount you risk, the bar becomes p* = (1 + c) ÷ (1 + R). Risk 1,000 per trade, pay 50 in commission and slippage, and at 2:1 the bar climbs from 33.3% to 35%. Cost per attempt matters more than cost per share—high-frequency approaches need a bigger edge, not a smaller one.",
+        },
+        { type: "h2", text: "A full expectancy example (hypothetical)" },
+        {
+          type: "table",
+          head: ["Outcome", "Probability", "P&L per trade (risk = 1,000)"],
+          rows: [
+            ["Target hit, +2R", "40%", "+2,000"],
+            ["Stop hit, −1R", "60%", "−1,000"],
+          ],
+          caption:
+            "Expectancy = 0.4 × 2,000 − 0.6 × 1,000 = +200 per trade before costs. Hypothetical numbers, not recommended parameters.",
+        },
+        {
+          type: "p",
+          text: "Add cost: 50 per attempt makes the average +150. Still positive—but expectancy is a long-run average, not a per-trade promise. Quit executing after three losses, or double up to get it back, and a positive machine still ruins the account. The win-rate input also has to come from a log, not memory: the review page keeps every paper fill, so pull the number from there instead of from your impression.",
         },
         { type: "h2", text: "Win rate is an outcome, not a setting" },
         {
           type: "p",
-          text: "You cannot choose to win 40% of the time. What you can choose is where the stop goes, and that determines the risk side of the ratio. Setting a tight stop to manufacture a 3:1 ratio raises the chance of being stopped out — the ratio and the win rate are not independent dials. Anyone quoting a ratio without the matching hit rate is quoting half a system.",
+          text: "You cannot choose to win 40% of the time. What you can choose is where the stop goes, and that determines the risk side of the ratio. Tightening the stop to manufacture a 3:1 ratio raises the chance of being stopped out—the ratio and the win rate are not independent dials. Anyone quoting a ratio without the matching hit rate is quoting half a system.",
         },
         { type: "h2", text: "Sizing: where the ratio becomes money" },
         {
           type: "p",
-          text: "Account 100,000, risk 1% per trade = 1,000. Entry 50, stop 46, so risk per share is 4. Position size = 1,000 ÷ 4 = 250 shares, or 12,500 in market value — 12.5% of the account. Note the position is not 1% of the account; the risk is. Confusing the two is how a 「small」 position becomes a large loss.",
-        },
-        { type: "h2", text: "Three habits that turn positive expectancy negative" },
-        {
-          type: "ul",
-          items: [
-            "Moving the stop further away when price approaches it — the planned risk becomes an open-ended one.",
-            "Taking profit early on winners while letting losers run, which compresses R below 1 without changing the win rate.",
-            "Increasing size after a loss to 「get it back」, which multiplies the cost of the losing streak instead of surviving it.",
-          ],
-        },
-        { type: "h2", text: "Compute it before you trade" },
-        {
-          type: "p",
-          text: "Enter entry, stop, target and account size into the risk-reward tool. If the implied win rate needed is higher than your honest historical hit rate, the setup is not a trade — it is a hope.",
+          text: "Account 100,000, risk per trade 1% = 1,000. Entry 50, stop 46, so risk per share is 4. Size = 1,000 ÷ 4 = 250 shares, or 12,500 in market value—12.5% of the account. Note what is 1% of the account: the risk, not the position. Confusing the two is how a “small” position becomes a large loss. Run the arithmetic through /tools/position rather than in your head.",
         },
         { type: "h2", text: "Losing streaks are the baseline, not the exception" },
         {
           type: "p",
-          text: "Take a 40% win rate over 100 trades. A run of six consecutive losses has probability 0.6⁶ ≈ 4.7% at any given start, and 100 trades offer nearly a hundred starting points — so seeing one is unremarkable.",
+          text: "Take a 40% win rate over 100 trades. A run of six consecutive losses has probability 0.6⁶ ≈ 4.7% at any given start, and 100 trades offer nearly a hundred starting points—so seeing one is unremarkable.",
         },
         {
           type: "p",
@@ -341,16 +342,29 @@ export const LEARN_ARTICLES_SEO_STRATEGY: LearnArticle[] = [
           type: "p",
           text: "That number sets your size. Risking 1% per trade, nine losses cost about 9%. Risking 10%, they cost about 61%, and you now need a 2.5x gain to recover. Same edge, different size, opposite outcome: still trading versus forced out.",
         },
+        { type: "h2", text: "Common traps" },
+        {
+          type: "ul",
+          items: [
+            "Moving the stop further away as price approaches it: the planned risk becomes an open-ended one.",
+            "Banking winners early while losers run: this compresses R below 1 without changing the win rate.",
+            "Upsizing after a loss to get it back: that multiplies the cost of the streak instead of surviving it.",
+          ],
+        },
+        {
+          type: "note",
+          text: "Before entry: entry, stop, target and account into /tools/risk-reward, then the resulting size through /tools/position. Three minutes, and you know whether the trade survives arithmetic before it has to survive you.",
+        },
       ],
       "zh-CN": [
         {
           type: "p",
-          text: "先给结论：期望值 = 胜率 × 盈利 − 败率 × 亏损 − 成本。1:2 的盈亏比，打平需要的胜率是 33.3%；1:1 需要 50%。比值本身不说明一个形态能不能做，比值和胜率这一对才说明。",
+          text: "期望值 = 胜率 × 盈利 − 败率 × 亏损 − 成本。1:2 的盈亏比，扣费前打平需要 33.3% 的胜率；1:1 需要 50%。比值本身不说明一个形态能不能做，比值和胜率这一对才说明。",
         },
         { type: "h2", text: "口号背后的公式" },
         {
           type: "p",
-          text: "设 R 为每单位风险对应的盈利。单笔期望 = p × R −（1 − p）。令其为零，得临界胜率 p* = 1 ÷（1 + R）。「1:2 需要 33%」的全部内容就是这个式子——它是算术，不是市场洞见。",
+          text: "设 R 为每单位风险对应的盈利。单笔期望 = p × R −（1 − p）。令其为零，临界胜率 p* = 1 ÷（1 + R）。「1:2 需要 33%」的全部内容就是这个式子——它是算术，不是市场洞见。",
         },
         { type: "h2", text: "不同盈亏比对应的临界胜率" },
         {
@@ -365,12 +379,26 @@ export const LEARN_ARTICLES_SEO_STRATEGY: LearnArticle[] = [
             ["4 : 1", "20%", "要能忍受长连亏"],
           ],
           caption:
-            "以上均为扣费前。每笔还要付佣金、点差和滑点，会把右列每个数字都往上推。",
+            "以上均为扣费前。每笔还要付佣金、点差和滑点，会把中间列每个数字都往上推。",
         },
-        { type: "h2", text: "成本会把门槛挪走" },
+        { type: "h2", text: "成本把门槛挪走" },
         {
           type: "p",
           text: "若每次尝试的成本为 c（以风险金额为分母），临界胜率变成 p* =（1 + c）÷（1 + R）。每笔风险 1000、成本 50，在 2:1 下门槛从 33.3% 升到 35%。「每次尝试的成本」比「每股的成本」重要得多——这正是高频做法需要更大优势而不是更小优势的原因。",
+        },
+        { type: "h2", text: "期望值算例（假设）" },
+        {
+          type: "table",
+          head: ["结果", "概率", "每笔损益（风险 1000 计）"],
+          rows: [
+            ["止盈 +2R", "40%", "+2000"],
+            ["止损 −1R", "60%", "−1000"],
+          ],
+          caption: "期望值 = 0.4 × 2000 − 0.6 × 1000 = 每笔 +200（扣费前）。假设数字，不是推荐参数。",
+        },
+        {
+          type: "p",
+          text: "把成本放进来：每次尝试付 50，均值变成 +150。还是正的——但期望值是长期平均，不是每一笔的承诺。连亏三笔就不执行了，或者亏完加倍想捞回来，这台正期望机器照样把账户做没。胜率那一栏也得来自日志而不是记忆：复盘页把每笔模拟成交都记着，去那里取数，别用印象填公式。",
         },
         { type: "h2", text: "胜率是结果，不是设置项" },
         {
@@ -380,23 +408,9 @@ export const LEARN_ARTICLES_SEO_STRATEGY: LearnArticle[] = [
         { type: "h2", text: "仓位：比值变成钱的地方" },
         {
           type: "p",
-          text: "账户 10 万，单笔风险 1% = 1000。入场 50、止损 46，每股风险 4。仓位 = 1000 ÷ 4 = 250 股，市值 12500，占账户 12.5%。注意：占账户 1% 的是风险，不是仓位。把这两件事混为一谈，就是「小仓位」变成大亏的路径。",
+          text: "账户 10 万，单笔风险 1% = 1000。入场 50、止损 46，每股风险 4。仓位 = 1000 ÷ 4 = 250 股，市值 12500，占账户 12.5%。注意占账户 1% 的是风险，不是仓位。把这两件事混为一谈，就是「小仓位」变成大亏的路径。这笔算术丢给 /tools/position，别口算。",
         },
-        { type: "h2", text: "三个把正期望做成负期望的习惯" },
-        {
-          type: "ul",
-          items: [
-            "价格靠近止损时把止损往下挪——计划内的风险变成了无底线风险。",
-            "盈利单提前跑、亏损单一直扛，在胜率不变的情况下把 R 压到 1 以下。",
-            "亏了以后加仓「赚回来」，把连亏的成本放大，而不是熬过去。",
-          ],
-        },
-        { type: "h2", text: "下单前先算" },
-        {
-          type: "p",
-          text: "把入场、止损、目标、账户规模填进风险回报工具。如果算出来的所需胜率高于你真实的历史胜率，这个形态不是交易机会，是愿望。",
-        },
-        { type: "h2", text: "连亏是常态：40% 胜率意味着什么" },
+        { type: "h2", text: "连亏是常态，不是意外" },
         {
           type: "p",
           text: "以 40% 胜率、100 笔交易为例。连亏不是意外，而是分布的必然部分：单纯计算「从某处开始连续 6 笔全亏」的概率约 0.6⁶ ≈ 4.7%，而 100 笔里有近百个起始位置，所以出现一次并不稀奇。",
@@ -407,7 +421,20 @@ export const LEARN_ARTICLES_SEO_STRATEGY: LearnArticle[] = [
         },
         {
           type: "p",
-          text: "这个数字决定了仓位：单笔风险 1%，9 连亏约回撤 9%；单笔风险 10%，9 连亏约回撤 61%，需要翻 2.5 倍才回本。同样的胜率与盈亏比，仓位不同，结局是「继续执行」和「被迫离场」的区别。",
+          text: "这个数字决定仓位：单笔风险 1%，9 连亏约回撤 9%；单笔风险 10%，9 连亏约回撤 61%，需要翻 2.5 倍才回本。同样的胜率与盈亏比，仓位不同，结局是「继续执行」和「被迫离场」的区别。",
+        },
+        { type: "h2", text: "常见踩坑" },
+        {
+          type: "ul",
+          items: [
+            "价格靠近止损时把止损往下挪：计划内的风险变成了无底线风险。",
+            "盈利单提前跑、亏损单一直扛：胜率不变，R 却被压到 1 以下。",
+            "亏了以后加仓想赚回来：把连亏的成本放大，而不是熬过去。",
+          ],
+        },
+        {
+          type: "note",
+          text: "进场前：入场、止损、目标、账户规模填进 /tools/risk-reward，算出的仓位再用 /tools/position 复核。三分钟，让你在考验自己之前，先确认这笔交易在算术上站得住。",
         },
       ],
     },
@@ -451,20 +478,26 @@ export const LEARN_ARTICLES_SEO_STRATEGY: LearnArticle[] = [
     },
     links: {
       en: [
-        { label: "Risk-reward tool", href: "/tools/risk-reward" },
+        { label: "Risk-reward calculator", href: "/tools/risk-reward" },
+        { label: "Position sizing calculator", href: "/tools/position" },
+        { label: "When to sell: three doors", href: "/learn/stocks-exit-rules" },
         { label: "Position cost conventions", href: "/learn/position-cost-methods" },
-        { label: "Options expiry and IV crush", href: "/learn/options-expiry-iv-crush" },
+        { label: "Paper and review", href: "/learn/paper-review" },
+        { label: "Review page", href: "/review" },
       ],
       "zh-CN": [
-        { label: "风险回报比计算器", href: "/tools/risk-reward" },
+        { label: "风险回报计算器", href: "/tools/risk-reward" },
+        { label: "仓位计算器", href: "/tools/position" },
+        { label: "何时卖出：三扇门", href: "/learn/stocks-exit-rules" },
         { label: "持仓成本的三种口径", href: "/learn/position-cost-methods" },
-        { label: "期权到期日与 IV Crush", href: "/learn/options-expiry-iv-crush" },
+        { label: "模拟与复盘", href: "/learn/paper-review" },
+        { label: "复盘页", href: "/review" },
       ],
     },
     sourceNote: {
-      en: "Formulas are exact; the cost example uses a hypothetical 5% of risk per attempt. Nothing here is a recommendation to trade.",
+      en: "Formulas are exact; the worked examples use hypothetical probabilities and costs. Nothing here is a recommendation to trade.",
       "zh-CN":
-        "公式是精确的；成本示例假设每次尝试花掉风险金额的 5%。本文不构成任何交易建议。",
+        "公式是精确的；算例中的概率与成本均为假设。本文不构成任何交易建议。",
     },
   },
 ];

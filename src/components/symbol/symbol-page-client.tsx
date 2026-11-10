@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { SymbolPageChartSlot } from "@/components/symbol/chart/symbol-page-chart-slot";
 import { SymbolPageOverlays } from "@/components/symbol/page/symbol-page-overlays";
@@ -63,7 +63,7 @@ export function SymbolPageClient({
     document.getElementById("symbol-lcp-quote-seed")?.setAttribute("hidden", "");
   }, []);
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     if (!layout.ready || !isDesktop) return;
     watch.setOpen(layout.prefs.modules.watchlist);
     rail.setOpen(layout.prefs.modules.rail);

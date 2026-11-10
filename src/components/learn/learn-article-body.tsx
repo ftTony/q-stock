@@ -1,6 +1,27 @@
 import { LearnIndicatorIllustration } from "@/components/learn/learn-indicator-illustration";
+import {
+  isOptionPayoffIllustrationSlug,
+  LearnOptionPayoffIllustration,
+} from "@/components/learn/learn-option-payoff-illustration";
 import { LearnStrategyWalkthrough } from "@/components/learn/learn-strategy-walkthrough";
 import type { LearnBlock } from "@/lib/learn/types";
+
+function LeadIllustration({
+  slug,
+  locale,
+}: {
+  slug?: string;
+  locale: string;
+}) {
+  if (!slug) return null;
+  if (slug.startsWith("strategy-")) {
+    return <LearnStrategyWalkthrough locale={locale} />;
+  }
+  if (isOptionPayoffIllustrationSlug(slug)) {
+    return <LearnOptionPayoffIllustration slug={slug} locale={locale} />;
+  }
+  return <LearnIndicatorIllustration slug={slug} locale={locale} />;
+}
 
 type Block =
   | { type: "lead"; text: string }
@@ -117,13 +138,8 @@ function RichBlocks({
               >
                 {block.text}
               </p>
-              {isLead && illustrationSlug?.startsWith("strategy-") ? (
-                <LearnStrategyWalkthrough locale={locale} />
-              ) : isLead && illustrationSlug ? (
-                <LearnIndicatorIllustration
-                  slug={illustrationSlug}
-                  locale={locale}
-                />
+              {isLead ? (
+                <LeadIllustration slug={illustrationSlug} locale={locale} />
               ) : null}
             </div>
           );
@@ -255,14 +271,7 @@ export function LearnArticleBody({
               <p className="border-l-[3px] border-[var(--brand-text)] pl-4 text-base font-medium leading-8 text-[var(--foreground)] sm:text-[17px] sm:leading-8">
                 {block.text}
               </p>
-              {illustrationSlug?.startsWith("strategy-") ? (
-                <LearnStrategyWalkthrough locale={locale} />
-              ) : illustrationSlug ? (
-                <LearnIndicatorIllustration
-                  slug={illustrationSlug}
-                  locale={locale}
-                />
-              ) : null}
+              <LeadIllustration slug={illustrationSlug} locale={locale} />
             </div>
           );
         }

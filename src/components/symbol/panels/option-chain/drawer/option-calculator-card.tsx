@@ -1,6 +1,12 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
 import { QtDatePicker } from "@/components/ui/qt-date-picker";
 import { calcOption } from "../option-calculator";
 import type { CalcModel } from "../option-calculator";
@@ -97,13 +103,30 @@ export function OptionCalculatorCard({
       ]
     : [];
 
-  const pctField = (
+  const quick = (label: string, onClick: () => void) => (
+    <button
+      type="button"
+      onClick={onClick}
+      className="shrink-0 text-[11px] text-[var(--brand-text)] hover:underline"
+    >
+      {label}
+    </button>
+  );
+
+  const fieldHead = (label: string, action?: ReactNode) => (
+    <div className="mb-1 flex items-center justify-between gap-1">
+      <span className="truncate text-[11px] text-[var(--muted)]">{label}</span>
+      {action}
+    </div>
+  );
+
+  const pctInput = (
     value: string,
     onChange: (v: string) => void,
     step: string,
     aria: string,
   ) => (
-    <div className="relative flex-1">
+    <div className="relative">
       <input
         type="number"
         step={step}
@@ -118,90 +141,73 @@ export function OptionCalculatorCard({
     </div>
   );
 
-  const quick = (label: string, onClick: () => void) => (
-    <button
-      type="button"
-      onClick={onClick}
-      className="shrink-0 text-[11px] text-[var(--brand)] transition hover:underline"
-    >
-      {label}
-    </button>
-  );
-
   return (
     <div className="flex flex-col gap-2.5">
-          {/* theory results */}
-          <div className="grid grid-cols-2 gap-x-4">
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="text-[11px] text-[var(--muted)]">
-                {t("theoPrice")}
-              </span>
-              <span className="text-[14px] font-semibold tabular-nums">
-                {fmtNum(res?.theo ?? null, 3)}
-              </span>
+      <div className="grid grid-cols-2 gap-x-4">
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-[11px] text-[var(--muted)]">{t("theoPrice")}</span>
+          <span className="text-[14px] font-semibold tabular-nums">
+            {fmtNum(res?.theo ?? null, 3)}
+          </span>
+        </div>
+        <div className="flex items-baseline justify-between gap-2">
+          <span className="text-[11px] text-[var(--muted)]">
+            {t("distCurrent")}
+          </span>
+          <span
+            className={`text-[14px] font-semibold tabular-nums ${
+              (res?.dist ?? 0) >= 0 ? "text-[var(--up)]" : "text-[var(--down)]"
+            }`}
+          >
+            {fmtNum(res?.dist ?? null, 3)}
+          </span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-5 gap-1 text-center">
+        {greeks.map((g) => (
+          <div key={g.k}>
+            <div className="text-[10px] tracking-wide text-[var(--muted)]">
+              {g.k}
             </div>
-            <div className="flex items-baseline justify-between gap-2">
-              <span className="text-[11px] text-[var(--muted)]">
-                {t("distCurrent")}
-              </span>
-              <span
-                className={`text-[14px] font-semibold tabular-nums ${
-                  (res?.dist ?? 0) >= 0 ? "text-[var(--up)]" : "text-[var(--down)]"
+            <div className="truncate text-[12px] font-medium tabular-nums">
+              {fmtNum(g.v)}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-2 gap-x-3 gap-y-2">
+        <div className="col-span-2">
+          {fieldHead(t("model"))}
+          <div className="flex overflow-hidden border border-[var(--aw-hairline,var(--border))] bg-[var(--input)]">
+            {(["american", "european"] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setModel(m)}
+                className={`flex-1 py-1 text-[12px] transition-colors ${
+                  model === m
+                    ? "bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]"
+                    : "bg-[var(--input)] text-[var(--muted)]"
                 }`}
               >
-                {fmtNum(res?.dist ?? null, 3)}
-              </span>
-            </div>
-          </div>
-          {/* greeks */}
-          <div className="grid grid-cols-5 gap-1 text-center">
-            {greeks.map((g) => (
-              <div key={g.k}>
-                <div className="text-[10px] tracking-wide text-[var(--muted)]">
-                  {g.k}
-                </div>
-                <div className="truncate text-[12px] font-medium tabular-nums">
-                  {fmtNum(g.v)}
-                </div>
-              </div>
+                {t(m)}
+              </button>
             ))}
           </div>
-          {/* model toggle — sharp corners for App shell */}
-          <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-[11px] text-[var(--muted)]">
-              {t("model")}
-            </span>
-            <div className="flex flex-1 overflow-hidden border border-[var(--aw-hairline,var(--border))] bg-[var(--input)]">
-              {(["american", "european"] as const).map((m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setModel(m)}
-                  className={`flex-1 py-1 text-[12px] transition-colors ${
-                    model === m
-                      ? "bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]"
-                      : "bg-[var(--input)] text-[var(--muted)]"
-                  }`}
-                >
-                  {t(m)}
-                </button>
-              ))}
-            </div>
-          </div>
-          {/* valuation date + slider */}
-          <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-[11px] text-[var(--muted)]">
-              {t("valDate")}
-            </span>
-            <QtDatePicker
-              value={valDate}
-              min={todayYmd}
-              max={maxDate}
-              onChange={setValDate}
-              ariaLabel={t("valDate")}
-              className="flex-1"
-            />
-          </div>
+        </div>
+
+        <div className="col-span-2">
+          {fieldHead(t("valDate"))}
+          <QtDatePicker
+            value={valDate}
+            min={todayYmd}
+            max={maxDate}
+            onChange={setValDate}
+            ariaLabel={t("valDate")}
+            className="w-full"
+          />
           <input
             type="range"
             min={0}
@@ -214,43 +220,48 @@ export function OptionCalculatorCard({
                 `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`,
               );
             }}
-            className="w-full accent-[var(--brand)]"
+            className="mt-1.5 w-full accent-[var(--brand)]"
             aria-label={t("valDate")}
           />
-          {/* spot */}
-          <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-[11px] text-[var(--muted)]">
-              {t("spotPrice")}
-            </span>
-            <input
-              type="number"
-              step="0.001"
-              value={spotInput}
-              onChange={(e) => setSpotInput(e.target.value)}
-              className={`${FIELD_CLS} flex-1 tabular-nums`}
-            />
-            {quick(t("latestPrice"), () =>
+        </div>
+
+        <div>
+          {fieldHead(
+            t("spotPrice"),
+            quick(t("latestPrice"), () =>
               setSpotInput(spot > 0 ? String(spot) : ""),
-            )}
-          </div>
-          {/* IV */}
-          <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-[11px] text-[var(--muted)]">
-              {t("ivLabel")}
-            </span>
-            {pctField(iv, setIv, "0.01", t("ivLabel"))}
-            {quick(t("latestValue"), () =>
-              setIv(latestIv != null ? String(Number(latestIv.toFixed(2))) : ""),
-            )}
-          </div>
-          {/* risk-free rate */}
-          <div className="flex items-center gap-2">
-            <span className="w-16 shrink-0 text-[11px] text-[var(--muted)]">
-              {t("rateLabel")}
-            </span>
-            {pctField(rate, setRate, "0.0001", t("rateLabel"))}
-            {quick(t("defaultVal"), () => setRate(String(DEFAULT_RATE_PCT)))}
-          </div>
+            ),
+          )}
+          <input
+            type="number"
+            step="0.001"
+            value={spotInput}
+            onChange={(e) => setSpotInput(e.target.value)}
+            className={`${FIELD_CLS} w-full tabular-nums`}
+            aria-label={t("spotPrice")}
+          />
+        </div>
+
+        <div>
+          {fieldHead(
+            t("ivLabel"),
+            quick(t("latestValue"), () =>
+              setIv(
+                latestIv != null ? String(Number(latestIv.toFixed(2))) : "",
+              ),
+            ),
+          )}
+          {pctInput(iv, setIv, "0.01", t("ivLabel"))}
+        </div>
+
+        <div className="col-span-2 sm:col-span-1">
+          {fieldHead(
+            t("rateLabel"),
+            quick(t("defaultVal"), () => setRate(String(DEFAULT_RATE_PCT))),
+          )}
+          {pctInput(rate, setRate, "0.0001", t("rateLabel"))}
+        </div>
+      </div>
     </div>
   );
 }

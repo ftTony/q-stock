@@ -1,5 +1,10 @@
 import { getTranslations } from "next-intl/server";
 import { LearnArticleBody } from "@/components/learn/learn-article-body";
+import {
+  LearnSeriesPager,
+  LearnSeriesToc,
+} from "@/components/learn/learn-series-toc";
+import type { LearnSeriesTocItem } from "@/components/learn/learn-series-toc";
 import { LearnShare } from "@/components/learn/learn-share";
 import { Link } from "@/i18n/routing";
 import type { LearnBlock, LearnFaqItem, LearnLink } from "@/lib/learn/types";
@@ -8,6 +13,12 @@ export type LearnRelatedArticle = {
   slug: string;
   title: string;
   categoryLabel: string;
+};
+
+export type LearnSeriesNav = {
+  seriesTitle: string;
+  currentSlug: string;
+  items: LearnSeriesTocItem[];
 };
 
 type Props = {
@@ -26,6 +37,7 @@ type Props = {
   locale: string;
   ctaHref?: string;
   related: LearnRelatedArticle[];
+  series?: LearnSeriesNav | null;
 };
 
 export async function LearnArticleView({
@@ -44,6 +56,7 @@ export async function LearnArticleView({
   locale,
   ctaHref,
   related,
+  series,
 }: Props) {
   const t = await getTranslations("learn");
   const ui = locale.startsWith("zh")
@@ -64,10 +77,37 @@ export async function LearnArticleView({
   const dateline = [author ? `${ui.by} ${author}` : null, updatedAt ?? publishedAt]
     .filter(Boolean)
     .join(" · ");
+  const hasSeries = Boolean(series && series.items.length > 0);
+  const gridCls = hasSeries
+    ? "grid gap-6 lg:grid-cols-[220px_minmax(0,1fr)_280px] lg:items-start lg:gap-6 xl:gap-8"
+    : "grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start lg:gap-8 xl:gap-10";
 
   return (
     <div className="w-full animate-[qtFade_0.45s_ease]">
-      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-start lg:gap-8 xl:gap-10">
+      {hasSeries && series ? (
+        <div className="mb-6 lg:hidden">
+          <LearnSeriesToc
+            compact
+            catalogTitle={t("seriesCatalog")}
+            seriesTitle={series.seriesTitle}
+            currentSlug={series.currentSlug}
+            items={series.items}
+          />
+        </div>
+      ) : null}
+
+      <div className={gridCls}>
+        {hasSeries && series ? (
+          <aside className="hidden lg:sticky lg:top-[4.5rem] lg:block lg:self-start">
+            <LearnSeriesToc
+              catalogTitle={t("seriesCatalog")}
+              seriesTitle={series.seriesTitle}
+              currentSlug={series.currentSlug}
+              items={series.items}
+            />
+          </aside>
+        ) : null}
+
         {/* Main editorial column */}
         <article
           className="min-w-0 overflow-hidden rounded-2xl border border-[var(--border)]"
@@ -189,6 +229,14 @@ export async function LearnArticleView({
               </p>
             ) : null}
 
+            {hasSeries && series ? (
+              <SeriesPagerBlock
+                series={series}
+                prevLabel={t("seriesPrev")}
+                nextLabel={t("seriesNext")}
+              />
+            ) : null}
+
             <LearnShare title={title} locale={locale} variant="bar" />
           </div>
 
@@ -290,6 +338,30 @@ export async function LearnArticleView({
         </section>
       ) : null}
     </div>
+  );
+}
+
+function SeriesPagerBlock({
+  series,
+  prevLabel,
+  nextLabel,
+}: {
+  series: LearnSeriesNav;
+  prevLabel: string;
+  nextLabel: string;
+}) {
+  const idx = series.items.findIndex((i) => i.slug === series.currentSlug);
+  return (
+    <LearnSeriesPager
+      prevLabel={prevLabel}
+      nextLabel={nextLabel}
+      prev={idx > 0 ? (series.items[idx - 1] ?? null) : null}
+      next={
+        idx >= 0 && idx < series.items.length - 1
+          ? (series.items[idx + 1] ?? null)
+          : null
+      }
+    />
   );
 }
 

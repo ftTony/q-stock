@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type PointerEvent as ReactPointerEvent,
@@ -56,7 +57,8 @@ export function useRailResize() {
   const widthRef = useRef(width);
   widthRef.current = width;
 
-  useEffect(() => {
+  // Before paint so desktop rail matches storage (fallback skeleton already reserves it).
+  useLayoutEffect(() => {
     setWidth(readWidth());
     setOpenState(readOpen());
   }, []);

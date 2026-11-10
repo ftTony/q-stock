@@ -11,6 +11,10 @@ import {
   listLearnSlugs,
 } from "@/lib/learn/articles";
 import { isLearnArticleAvailable } from "@/lib/learn/locale-gating";
+import {
+  getLearnSeriesForSlug,
+  learnSeriesText,
+} from "@/lib/learn/series";
 import { learnArticleJsonLd } from "@/lib/seo/article-json-ld";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 
@@ -77,8 +81,33 @@ export default async function LearnArticlePage({ params }: Props) {
   const cards = listLearnArticleCards().filter((a) =>
     isLearnArticleAvailable(a.slug, locale),
   );
+  const seriesDef = getLearnSeriesForSlug(slug);
+  const seriesSlugSet = new Set(seriesDef?.slugs ?? []);
+  const seriesNav = seriesDef
+    ? {
+        seriesTitle: learnSeriesText(locale, seriesDef.title),
+        currentSlug: slug,
+        items: seriesDef.slugs
+          .filter((s) => isLearnArticleAvailable(s, locale))
+          .map((s, i) => {
+            const card = cards.find((c) => c.slug === s);
+            const toc = seriesDef.tocTitle?.[s];
+            return {
+              slug: s,
+              index: i + 1,
+              label: toc
+                ? learnSeriesText(locale, toc)
+                : card
+                  ? learnText(locale, card.title)
+                  : s,
+            };
+          }),
+      }
+    : null;
+
   const related = cards
     .filter((a) => a.slug !== slug)
+    .filter((a) => !seriesSlugSet.has(a.slug))
     .filter((a) => a.category === article.category)
     .slice(0, 4)
     .map((a) => ({
@@ -92,6 +121,7 @@ export default async function LearnArticlePage({ params }: Props) {
       ? related
       : cards
           .filter((a) => a.slug !== slug)
+          .filter((a) => !seriesSlugSet.has(a.slug))
           .slice(0, 4)
           .map((a) => ({
             slug: a.slug,
@@ -107,7 +137,9 @@ export default async function LearnArticlePage({ params }: Props) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <div className="flex min-h-0 flex-1 flex-col">
-        <div className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+        <div
+          className={`mx-auto w-full flex-1 px-4 py-8 sm:px-6 ${seriesNav ? "max-w-7xl" : "max-w-5xl"}`}
+        >
           <LearnArticleView
             title={title}
             summary={summary}
@@ -124,6 +156,7 @@ export default async function LearnArticlePage({ params }: Props) {
             locale={locale}
             ctaHref={article.ctaHref}
             related={relatedFallback}
+            series={seriesNav}
           />
         </div>
         <MarketingCtaBand />

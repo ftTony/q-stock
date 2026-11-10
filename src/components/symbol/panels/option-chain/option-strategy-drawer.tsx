@@ -14,6 +14,7 @@ import type { StrikeRow } from "./option-chain-utils";
 import { calcOption } from "./option-calculator";
 import {
   availableStrikes,
+  buildExpiryScenarios,
   buildLegs,
   DUAL_EXPIRY_STRATEGIES,
   evaluateStrategy,
@@ -24,10 +25,13 @@ import {
 } from "./option-strategy-utils";
 import type { PricedLeg, StrategyId, StrategyLeg } from "./option-strategy-utils";
 import { ContractQuote } from "./drawer/contract-quote";
+import { ExpiryScenarioCard } from "./drawer/expiry-scenario-card";
 import { LegBook } from "./drawer/leg-book";
 import { OptionCalculatorCard } from "./drawer/option-calculator-card";
 import { PayoffChart } from "./drawer/payoff-chart";
+import { ProbabilityAnalysisCard } from "./drawer/probability-analysis-card";
 import { StrategyLegsTable } from "./drawer/strategy-legs-table";
+import { StrategyMetricsStrip } from "./drawer/strategy-metrics-strip";
 import {
   CHIP_CLS,
   CHIP_OFF,
@@ -35,7 +39,6 @@ import {
   DEFAULT_RATE_PCT,
   QT_TRIGGER,
   SECTION_CLS,
-  fmtMoney,
 } from "./drawer/drawer-ui";
 
 export type StrategySeed = { kind: "call" | "put"; strike: number } | null;
@@ -174,45 +177,6 @@ export function OptionStrategyDrawerBody({
     [pricedLegs],
   );
 
-  const metrics = [
-    {
-      label: t("netPremium"),
-      value:
-        eval_.netPremium === 0
-          ? "$0"
-          : `${eval_.netPremium > 0 ? "+" : "-"}$${formatNumber(
-              Math.abs(eval_.netPremium),
-              { maximumFractionDigits: 0 },
-            )}`,
-      tone:
-        eval_.netPremium > 0
-          ? "text-[var(--up)]"
-          : eval_.netPremium < 0
-            ? "text-[var(--down)]"
-            : "",
-    },
-    {
-      label: t("maxProfit"),
-      value: fmtMoney(eval_.maxProfit),
-      tone: "text-[var(--up)]",
-    },
-    {
-      label: t("maxLoss"),
-      value: eval_.maxLoss == null ? "-∞" : fmtMoney(eval_.maxLoss),
-      tone: "text-[var(--down)]",
-    },
-    {
-      label: t("breakevens"),
-      value:
-        eval_.breakevens.length > 0
-          ? eval_.breakevens
-              .map((b) => formatNumber(b, { maximumFractionDigits: 2 }))
-              .join(" / ")
-          : "—",
-      tone: "",
-    },
-  ];
-
   useEffect(() => {
     if (!open) return;
     if (seed) {
@@ -234,6 +198,18 @@ export function OptionStrategyDrawerBody({
   const quotePremium = quoteStrike
     ? premiumFromChain(rows, quoteKind, quoteStrike)
     : null;
+  const scenarioIv = quoteRow?.iv ?? null;
+  const scenarios = useMemo(
+    () =>
+      buildExpiryScenarios({
+        spot,
+        ivPct: scenarioIv != null && scenarioIv > 0 ? scenarioIv : 30,
+        daysToExpiry: daysToExpiry(expiry),
+        ratePct: DEFAULT_RATE_PCT,
+        legs: pricedLegs,
+      }),
+    [spot, scenarioIv, expiry, pricedLegs],
+  );
   const quoteGreeks = useMemo(
     () =>
       quoteStrike
@@ -267,10 +243,10 @@ export function OptionStrategyDrawerBody({
 
   return (
       <div className="flex flex-col gap-0 px-4 py-3 text-[12px]">
-        {/* 1. Quote strip */}
+        {/* 1. Quote — selectors + hero; detail collapses */}
         {quoteStrike ? (
-          <div className="flex flex-col gap-2 pb-3">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="pb-1">
+            <div className="mb-2.5 flex flex-wrap items-center gap-1.5">
               {qt(
                 quoteKind,
                 (v) => setQuoteKind(v as "call" | "put"),
@@ -300,13 +276,18 @@ export function OptionStrategyDrawerBody({
               expiry={expiry}
               symbol={symbol}
               t={t}
+              book={
+                quoteRow ? <LegBook row={quoteRow} t={t} /> : null
+              }
             />
-            {quoteRow ? <LegBook row={quoteRow} t={t} /> : null}
           </div>
         ) : null}
 
         {/* 2. Strategy structure */}
         <div className={SECTION_CLS}>
+          <div className="mb-2 text-[12px] font-medium text-[var(--foreground)]">
+            {t("payoffTool")}
+          </div>
           <div className="flex flex-wrap gap-1">
             {STRATEGY_IDS.map((id) => {
               const on = id === strategy;
@@ -319,7 +300,7 @@ export function OptionStrategyDrawerBody({
                 >
                   <span
                     aria-hidden
-                    className="inline-flex w-[1em] shrink-0 items-center justify-center text-[14px] font-semibold leading-none"
+                    className="inline-flex w-[1em] shrink-0 items-center justify-center text-[13px] font-semibold leading-none"
                   >
                     {strategyGlyph(id)}
                   </span>
@@ -383,26 +364,16 @@ export function OptionStrategyDrawerBody({
             />
           </div>
 
-          <div className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
-            {metrics.map((m) => (
-              <div key={m.label}>
-                <div className="text-[11px] text-[var(--muted)]">{m.label}</div>
-                <div
-                  className={`mt-0.5 truncate text-[13px] font-semibold tabular-nums ${m.tone}`}
-                  title={m.value}
-                >
-                  {m.value}
-                </div>
-              </div>
-            ))}
-          </div>
+          <StrategyMetricsStrip eval_={eval_} t={t} />
         </div>
 
-        {/* 3. Payoff chart (primary visual) */}
+        {/* 3. Payoff chart */}
         <div className={SECTION_CLS}>
-          <div className="mb-1.5 flex items-center justify-between text-[11px] text-[var(--muted)]">
-            <span>{t("atExpiry")}</span>
-            <span className="tabular-nums">
+          <div className="mb-2 flex items-baseline justify-between gap-2">
+            <span className="text-[12px] font-medium text-[var(--foreground)]">
+              {t("atExpiry")}
+            </span>
+            <span className="text-[11px] tabular-nums text-[var(--muted)]">
               {t("perContract")} · {t("spotLabel")}{" "}
               {formatNumber(spot, { maximumFractionDigits: 2 })}
             </span>
@@ -422,7 +393,32 @@ export function OptionStrategyDrawerBody({
           </p>
         </div>
 
-        {/* 4. Calculator — always visible */}
+        {/* 4. Risk summary + expiry ±σ scenarios */}
+        <div className={SECTION_CLS}>
+          <ExpiryScenarioCard
+            symbol={symbol}
+            assetType={assetType}
+            maxLoss={eval_.maxLoss}
+            maxProfit={eval_.maxProfit}
+            breakevens={eval_.breakevens}
+            netPremium={eval_.netPremium}
+            scenarios={scenarios}
+            ivPct={scenarioIv}
+          />
+        </div>
+
+        {/* 5. Probability cone (IV → expected path band) */}
+        <div className={SECTION_CLS}>
+          <ProbabilityAnalysisCard
+            spot={spot}
+            ivPct={quoteRow?.iv ?? null}
+            daysToExpiry={daysToExpiry(expiry)}
+            ratePct={DEFAULT_RATE_PCT}
+            strikeMarks={strikeMarks}
+          />
+        </div>
+
+        {/* 6. Calculator — always visible */}
         <div className={SECTION_CLS}>
           <div className="mb-2 text-[12px] font-medium text-[var(--foreground)]">
             {t("calcTitle")}

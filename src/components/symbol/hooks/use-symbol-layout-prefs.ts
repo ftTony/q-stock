@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 
 export type LayoutMode = "side" | "stack";
 
@@ -108,7 +108,8 @@ export function useSymbolLayoutPrefs() {
   const [prefs, setPrefs] = useState<SymbolLayoutPrefs>(DEFAULT_SYMBOL_LAYOUT);
   const [ready, setReady] = useState(false);
 
-  useEffect(() => {
+  // Before paint so watchlist/rail modules match storage on first visible frame.
+  useLayoutEffect(() => {
     setPrefs(readPrefs());
     setReady(true);
   }, []);

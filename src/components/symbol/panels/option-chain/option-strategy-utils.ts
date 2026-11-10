@@ -179,6 +179,69 @@ function legPayoff(leg: PricedLeg, price: number): number {
   return sign * (intrinsic - (leg.premium ?? 0)) * qty;
 }
 
+/** Combined strategy P&L at a single underlying price (expiry assumption). */
+export function strategyPayoffAt(
+  legs: PricedLeg[],
+  price: number,
+  stockEntry: number,
+): number | null {
+  const priced = legs.filter(
+    (l) => l.kind === "stock" || (l.premium != null && l.strike != null),
+  );
+  if (!priced.length) return null;
+  return priced.reduce((s, leg) => {
+    if (leg.kind === "stock") {
+      const sign = leg.action === "long" ? 1 : -1;
+      return s + sign * (price - stockEntry) * leg.qty * CONTRACT;
+    }
+    return s + legPayoff(leg, price);
+  }, 0);
+}
+
+export type ExpiryScenarioRow = {
+  key: string;
+  /** Underlying price at expiry assumption. */
+  price: number;
+  pnl: number | null;
+};
+
+/**
+ * Spot ±1σ / ±2σ expiry levels (log-normal) plus spot — for the scenario table.
+ */
+export function buildExpiryScenarios(input: {
+  spot: number;
+  ivPct: number;
+  daysToExpiry: number;
+  ratePct?: number;
+  legs: PricedLeg[];
+}): ExpiryScenarioRow[] {
+  const { spot, legs } = input;
+  if (!(spot > 0)) return [];
+  const sigma = input.ivPct > 2 ? input.ivPct / 100 : input.ivPct;
+  const T = Math.max(input.daysToExpiry, 0) / 365;
+  const r = (input.ratePct ?? 0) / 100;
+  const levels: { key: string; z: number }[] = [
+    { key: "m2", z: -2 },
+    { key: "m1", z: -1 },
+    { key: "spot", z: 0 },
+    { key: "p1", z: 1 },
+    { key: "p2", z: 2 },
+  ];
+  return levels.map(({ key, z }) => {
+    let price = spot;
+    if (sigma > 0 && T > 0 && z !== 0) {
+      price =
+        spot *
+        Math.exp((r - (sigma * sigma) / 2) * T + z * sigma * Math.sqrt(T));
+    }
+    return {
+      key,
+      price,
+      pnl: strategyPayoffAt(legs, price, spot),
+    };
+  });
+}
+
 /** A leg enriched with its entry premium (per share). */
 export type PricedLeg = StrategyLeg & { premium: number | null };
 

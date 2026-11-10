@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 import { LearnArticleList } from "@/components/learn/learn-article-list";
+import { LearnSeriesSpotlight } from "@/components/learn/learn-series-toc";
 import { MarketingCtaBand } from "@/components/marketing/marketing-cta-band";
 import { ScopedMessages } from "@/components/providers/scoped-messages";
 import { Link } from "@/i18n/routing";
@@ -10,6 +11,7 @@ import {
   listLearnArticleCards,
 } from "@/lib/learn/articles";
 import { isLearnArticleAvailable } from "@/lib/learn/locale-gating";
+import { LEARN_SERIES, learnSeriesText } from "@/lib/learn/series";
 import { buildPageMetadata } from "@/lib/seo/page-metadata";
 
 type Props = { params: Promise<{ locale: string }> };
@@ -48,6 +50,30 @@ export default async function LearnIndexPage({ params }: Props) {
     categories: categoryLabels,
   };
 
+  const seriesBlocks = LEARN_SERIES.map((series) => {
+    const items = series.slugs
+      .filter((s) => isLearnArticleAvailable(s, locale))
+      .map((s, i) => {
+        const card = articles.find((a) => a.slug === s);
+        const toc = series.tocTitle?.[s];
+        return {
+          slug: s,
+          index: i + 1,
+          label: toc
+            ? learnSeriesText(locale, toc)
+            : (card?.title ?? s),
+        };
+      });
+    if (!items.length) return null;
+    return {
+      id: series.id,
+      seriesTitle: learnSeriesText(locale, series.title),
+      hint: learnSeriesText(locale, series.blurb),
+      items,
+      startHref: `/learn/${items[0]!.slug}`,
+    };
+  }).filter(Boolean);
+
   return (
     <ScopedMessages namespaces={["marketing"]}>
       <div className="flex min-h-0 flex-1 flex-col">
@@ -67,6 +93,20 @@ export default async function LearnIndexPage({ params }: Props) {
               </Link>
             </p>
           </div>
+
+          {seriesBlocks.map((block) =>
+            block ? (
+              <LearnSeriesSpotlight
+                key={block.id}
+                catalogTitle={t("seriesCatalog")}
+                seriesTitle={block.seriesTitle}
+                hint={block.hint}
+                startLabel={t("seriesStart")}
+                startHref={block.startHref}
+                items={block.items}
+              />
+            ) : null,
+          )}
 
           <LearnArticleList articles={articles} labels={labels} />
         </div>

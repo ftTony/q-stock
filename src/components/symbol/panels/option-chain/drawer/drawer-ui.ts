@@ -9,7 +9,7 @@ import { formatNumber } from "@/lib/format-number";
 export const FIELD_CLS = "qt-input h-8 px-2 text-[12px] tabular-nums";
 export const QT_TRIGGER = "h-7 rounded-none px-2 text-[12px]";
 export const SECTION_CLS =
-  "border-t border-[var(--aw-hairline,var(--border))] pt-3";
+  "border-t border-[var(--aw-hairline,var(--border))] pt-3 mt-1";
 
 /** Sharp strategy chip (App 直角 — never rounded-full). */
 export const CHIP_CLS =
