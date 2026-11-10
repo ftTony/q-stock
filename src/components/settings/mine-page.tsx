@@ -91,6 +91,7 @@ export function MinePage({ setupKeys = false, section = null }: Props) {
       market: t("navMarket"),
       notifications: t("navNotifications"),
       account: t("navAccount"),
+      feedback: t("navFeedback"),
       about: t("navAbout"),
     }),
     [t],
@@ -140,6 +141,7 @@ export function MinePage({ setupKeys = false, section = null }: Props) {
   ];
 
   const supportItems: MenuItem[] = [
+    { kind: "section", section: "feedback", label: sectionLabels.feedback },
     { kind: "section", section: "about", label: sectionLabels.about },
     { kind: "link", href: "/pricing", label: tNav("pricing") },
     { kind: "link", href: "/disclaimer", label: t("disclaimerPageLink") },

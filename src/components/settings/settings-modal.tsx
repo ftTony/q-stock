@@ -22,6 +22,7 @@ const SECTIONS: SettingsSection[] = [
   "market",
   "notifications",
   "account",
+  "feedback",
   "about",
 ];
 
@@ -67,6 +68,15 @@ function NavIcon({ id }: { id: SettingsSection }) {
       <svg {...common}>
         <path d="M6 9a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
         <path d="M10 19a2 2 0 0 0 4 0" />
+      </svg>
+    );
+  }
+  if (id === "feedback") {
+    return (
+      <svg {...common}>
+        <path d="M9 18h6" />
+        <path d="M10 21h4" />
+        <path d="M12 3a6 6 0 0 0-4 10c.6.6 1 1.4 1 2.2V16h6v-.8c0-.8.4-1.6 1-2.2A6 6 0 0 0 12 3z" />
       </svg>
     );
   }
@@ -130,6 +140,7 @@ export function SettingsModal({
     market: t("navMarket"),
     notifications: t("navNotifications"),
     account: t("navAccount"),
+    feedback: t("navFeedback"),
     about: t("navAbout"),
   };
 

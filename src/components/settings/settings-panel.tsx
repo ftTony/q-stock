@@ -14,6 +14,7 @@ import { InvitePanel } from "@/components/settings/invite-panel";
 import { PaperRiskSettingsForm } from "@/components/settings/paper-risk-settings-form";
 import { SettingsAboutPanel } from "@/components/settings/settings-about-panel";
 import { SettingsAccountNameForm } from "@/components/settings/settings-account-name-form";
+import { SettingsFeedbackPanel } from "@/components/settings/settings-feedback-panel";
 import { SettingsGeneralForm } from "@/components/settings/settings-general-form";
 import { NotificationsSettingsPanel } from "@/components/settings/notifications-settings-panel";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
@@ -25,9 +26,10 @@ export type SettingsSection =
   | "market"
   | "notifications"
   | "account"
+  | "feedback"
   | "about";
 
-const GUEST_SECTIONS: SettingsSection[] = ["general", "about"];
+const GUEST_SECTIONS: SettingsSection[] = ["general", "feedback", "about"];
 
 function LoginCta({
   className,
@@ -86,6 +88,10 @@ export function SettingsPanel({
 
   if (section === "about") {
     return <SettingsAboutPanel />;
+  }
+
+  if (section === "feedback") {
+    return <SettingsFeedbackPanel />;
   }
 
   if (section === "trading") {

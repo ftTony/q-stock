@@ -130,6 +130,7 @@ model User {
   redeemRedemptions   RedeemRedemption[]
   conversionEvents    ConversionEvent[]
   entitlementGrants   EntitlementGrant[]
+  featureSuggestions  FeatureSuggestion[]
 }
 
 /** AI 问股 conversation for a symbol (durable history). */
@@ -653,4 +654,28 @@ model ConversionEvent {
 
   @@index([event, createdAt])
   @@index([userId, createdAt])
+}
+
+/** Product feedback from settings → 功能建议. */
+enum FeatureSuggestionStatus {
+  open
+  reviewed
+}
+
+model FeatureSuggestion {
+  id        String                   @id @default(cuid())
+  userId    String?
+  /** Snapshot for guest or when user email changes. */
+  email     String?
+  body      String
+  /** Optional compressed image data URL (client-capped; keep small for 1GB hosts). */
+  imageData String?
+  status    FeatureSuggestionStatus  @default(open)
+  createdAt DateTime                 @default(now())
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([userId, createdAt])
+  @@index([createdAt])
+  @@index([status, createdAt])
 }

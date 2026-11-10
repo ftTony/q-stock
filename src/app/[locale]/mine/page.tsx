@@ -12,6 +12,7 @@ const SECTIONS = new Set<SettingsSection>([
   "market",
   "notifications",
   "account",
+  "feedback",
   "about",
 ]);
 
