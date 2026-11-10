@@ -74,13 +74,13 @@ export function buildChartStyles(
 ) {
   const c = readThemeColors();
   const flushEdge = Boolean(opts?.flushEdge);
-  // Always use a dark glass tip + light text — theme CSS vars can make
-  // legend titles land as near-black on a dark rect (unreadable on mobile).
+  // Always use a dark glass tip + light text. Do NOT bind tipLabel/tipValue to
+  // theme `--foreground` / `--muted`: in light mode those are near-black and
+  // vanish on this rect (looks like empty OHLC values).
   const tipBg = "rgba(12, 18, 28, 0.94)";
   const tipBorder = "rgba(148, 163, 184, 0.35)";
-  // Prefer theme tokens (already resolved in `c`) over hardcoded slate.
-  const tipLabel = c.muted;
-  const tipValue = c.fg;
+  const tipLabel = "#94a3b8";
+  const tipValue = "#f1f5f9";
   const narrow =
     typeof window !== "undefined" &&
     window.matchMedia("(max-width: 767px)").matches;
