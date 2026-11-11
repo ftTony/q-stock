@@ -251,6 +251,7 @@
     "expiry": "満期日",
     "expiryUnavailable": "チェーンデータなし",
     "underlyingSpot": "原資産価格",
+    "optUnderlyingIv": "原資産IV",
     "openOptionsTool": "オプションツール",
     "calls": "コール",
     "puts": "プット",

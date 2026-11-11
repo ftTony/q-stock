@@ -289,6 +289,7 @@
     "expiry": "到期日",
     "expiryUnavailable": "暫無選擇權鏈",
     "underlyingSpot": "標的現價",
+    "optUnderlyingIv": "標的整體隱含波動率",
     "openOptionsTool": "選擇權工具",
     "calls": "看漲 Calls",
     "puts": "看跌 Puts",

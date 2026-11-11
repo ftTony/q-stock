@@ -5,10 +5,28 @@ export function fmtPx(n: number | null | undefined) {
   return formatNumber(n, { maximumFractionDigits: 3 });
 }
 
+/** Normalize provider IV (decimal or percent) to percent units. */
+export function ivToPct(iv: number): number {
+  return iv > 2 ? iv : iv * 100;
+}
+
 export function fmtIv(iv: number | null | undefined) {
   if (iv == null || !(iv > 0)) return null;
-  const pct = iv > 2 ? iv : iv * 100;
-  return formatNumber(pct, { maximumFractionDigits: 1 });
+  return formatNumber(ivToPct(iv), { maximumFractionDigits: 1 });
+}
+
+/**
+ * Chain header contract counts — zh uses 万 (e.g. 99.55万) to match desk UIs.
+ */
+export function fmtContractCount(n: number, locale?: string) {
+  if (!(n > 0)) return formatNumber(0, { maximumFractionDigits: 0 });
+  if (locale?.startsWith("zh") && n >= 10_000) {
+    return `${formatNumber(n / 10_000, {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })}万`;
+  }
+  return formatNumber(n, { maximumFractionDigits: 0 });
 }
 
 export function fmtGreek(n: number | null) {

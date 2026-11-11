@@ -251,6 +251,7 @@
     "expiry": "Vencimiento",
     "expiryUnavailable": "Sin datos de cadena",
     "underlyingSpot": "Subyacente",
+    "optUnderlyingIv": "IV del subyacente",
     "openOptionsTool": "Herramienta de opciones",
     "calls": "Calls",
     "puts": "Puts",

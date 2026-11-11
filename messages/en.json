@@ -279,6 +279,7 @@
     "expiry": "Expiry",
     "expiryUnavailable": "No chain data",
     "underlyingSpot": "Underlying",
+    "optUnderlyingIv": "Underlying implied volatility",
     "openOptionsTool": "Options tool",
     "calls": "Calls",
     "puts": "Puts",

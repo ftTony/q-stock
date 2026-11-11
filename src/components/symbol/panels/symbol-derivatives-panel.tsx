@@ -98,6 +98,7 @@ function OptionsDerivativesBody({
   const chain = chainQuery.data;
   const calls = (chain?.calls ?? []) as OptionRow[];
   const puts = (chain?.puts ?? []) as OptionRow[];
+  const stats = chain?.stats ?? meta?.stats ?? null;
   const chainError = chain?.unavailable
     ? chain.code === "LB_CONN_LIMIT"
       ? t("derivativesConnLimit")
@@ -148,6 +149,7 @@ function OptionsDerivativesBody({
       calls={calls}
       puts={puts}
       spot={lastPrice}
+      stats={stats}
       symbol={symbol}
       assetType={assetType}
       loading={chainQuery.isLoading && !chainQuery.data}

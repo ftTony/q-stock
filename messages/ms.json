@@ -251,6 +251,7 @@
     "expiry": "Tamat tempoh",
     "expiryUnavailable": "Tiada data rantaian",
     "underlyingSpot": "Harga asas",
+    "optUnderlyingIv": "IV asas",
     "openOptionsTool": "Alat opsyen",
     "calls": "Call",
     "puts": "Put",

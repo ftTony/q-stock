@@ -251,6 +251,7 @@
     "expiry": "만기일",
     "expiryUnavailable": "체인 데이터 없음",
     "underlyingSpot": "기초자산 가격",
+    "optUnderlyingIv": "기초자산 IV",
     "openOptionsTool": "옵션 도구",
     "calls": "콜",
     "puts": "풋",

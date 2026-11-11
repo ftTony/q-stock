@@ -289,6 +289,7 @@
     "expiry": "到期日",
     "expiryUnavailable": "暂无期权链",
     "underlyingSpot": "标的现价",
+    "optUnderlyingIv": "标的整体隐含波动率",
     "openOptionsTool": "期权工具",
     "calls": "看涨 Calls",
     "puts": "看跌 Puts",

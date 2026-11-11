@@ -26,6 +26,7 @@ import { feedStatusFromWs } from "@/components/symbol/quote/symbol-feed-status";
 import type { SideIconId } from "@/components/symbol/rail/symbol-side-icon-rail";
 import { TopToast } from "@/components/ui/top-toast";
 import { LG_MIN, useMinWidth } from "@/hooks/use-min-width";
+import { markPrice } from "@/lib/market/extended-hours";
 import { isMarketIndexSymbol } from "@/lib/market/indices";
 import type { SymbolSeoCopy } from "@/lib/seo/symbol-metadata";
 import type { AssetType, OhlcvBar, Quote } from "@/lib/types";
@@ -315,7 +316,7 @@ export function SymbolPageClient({
           symbol={symbol}
           assetType={assetType}
           isIndex={isIndex}
-          lastPrice={s.quote?.price ?? null}
+          lastPrice={markPrice(s.quote)}
           percentChange={s.quote?.percentChange ?? null}
           quoteName={s.quote?.name ?? null}
           bid={s.quote?.bid ?? null}

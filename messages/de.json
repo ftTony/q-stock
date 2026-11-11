@@ -251,6 +251,7 @@
     "expiry": "Verfall",
     "expiryUnavailable": "Keine Ketten-Daten",
     "underlyingSpot": "Basispreis",
+    "optUnderlyingIv": "IV des Basiswerts",
     "openOptionsTool": "Options-Tool",
     "calls": "Calls",
     "puts": "Puts",

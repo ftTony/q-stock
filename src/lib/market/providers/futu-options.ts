@@ -193,3 +193,80 @@ export async function fetchFutuOptionChain(
     };
   });
 }
+
+export type OptionExpiryStat = {
+  iv: number | null;
+  expectedMove: number | null;
+  callVolume: number | null;
+  putVolume: number | null;
+};
+
+/** Futu desk header: underlying IV/HV + per-expiry IV / EM / volumes. */
+export type OptionChainStats = {
+  underlyingIv: number | null;
+  underlyingHv: number | null;
+  byExpiry: Record<string, OptionExpiryStat>;
+};
+
+type StatisticItem = {
+  strike_date?: string;
+  iv?: number;
+  expected_move?: number;
+  call_volume?: string | number;
+  put_volume?: string | number;
+};
+
+function numOrNull(v: unknown): number | null {
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) && n > 0 ? n : null;
+}
+
+/**
+ * Desk IV / EM / volumes — same payload as Futu option-chain header
+ * (`underlying_iv` ≈ 64.85%, expiry `iv` ≈ 88.78%, `expected_move` ≈ 4.768).
+ */
+export async function fetchFutuOptionChainStatistic(
+  symbol: string,
+  assetType: AssetType,
+): Promise<OptionChainStats> {
+  assertOptionMarket(assetType);
+  const code = toFutuSymbol(normalizeSymbol(symbol, assetType), assetType);
+  const key = `futu:opt-stats:v1:${code}`;
+
+  return cachedFetch(key, 60_000, async () => {
+    const { data } = await futuRequest<{
+      underlying_iv?: number;
+      underlying_hv?: number;
+      items?: StatisticItem[];
+    }>("GET", `/api/v1.0/quote/${encodeURIComponent(code)}/option-chain-statistic`);
+
+    const byExpiry: Record<string, OptionExpiryStat> = {};
+    for (const item of data.items ?? []) {
+      const ymd = String(item.strike_date ?? "").trim();
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(ymd)) continue;
+      // Prefer the row that carries volume when Futu duplicates a strike_date.
+      const prev = byExpiry[ymd];
+      const callVolume = numOrNull(item.call_volume);
+      const putVolume = numOrNull(item.put_volume);
+      const next: OptionExpiryStat = {
+        iv: numOrNull(item.iv),
+        expectedMove: numOrNull(item.expected_move),
+        callVolume,
+        putVolume,
+      };
+      if (
+        !prev ||
+        ((callVolume ?? 0) + (putVolume ?? 0) >
+          (prev.callVolume ?? 0) + (prev.putVolume ?? 0))
+      ) {
+        byExpiry[ymd] = next;
+      }
+    }
+
+    return {
+      underlyingIv: numOrNull(data.underlying_iv),
+      underlyingHv: numOrNull(data.underlying_hv),
+      byExpiry,
+    };
+  });
+}

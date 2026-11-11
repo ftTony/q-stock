@@ -24,6 +24,7 @@ import type { useRailResize } from "@/components/symbol/hooks/use-rail-resize";
 import type { useWatchlistResize } from "@/components/symbol/hooks/use-watchlist-resize";
 import type { FeedStatusKind } from "@/components/symbol/quote/symbol-feed-status";
 import type { SymbolTab } from "@/components/symbol/tabs/symbol-tabs-types";
+import { markPrice } from "@/lib/market/extended-hours";
 import type { AssetType } from "@/lib/types";
 
 type SymbolPageState = ReturnType<typeof useSymbolPage>;
@@ -108,7 +109,7 @@ export function SymbolWorkbenchBody({
       assetType={assetType}
       isIndex={isIndex}
       quote={s.quote}
-      lastPrice={s.quote?.price ?? null}
+      lastPrice={markPrice(s.quote)}
       percentChange={s.quote?.percentChange ?? null}
       quoteName={s.quote?.name ?? null}
       bid={s.quote?.bid ?? null}
@@ -378,7 +379,7 @@ function SymbolWorkbenchMainGrid({
               symbol={symbol}
               assetType={assetType}
               isIndex={isIndex}
-              lastPrice={s.quote?.price ?? null}
+              lastPrice={markPrice(s.quote)}
             />
           </div>
 

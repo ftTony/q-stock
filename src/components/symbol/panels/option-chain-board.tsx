@@ -3,16 +3,22 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import { createPortal } from "react-dom";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ListPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { SideDrawer } from "@/components/ui/side-drawer";
 import { formatNumber } from "@/lib/format-number";
+import type { OptionChainStats } from "@/lib/market/providers/futu-options";
 import type { OptionRow } from "@/lib/market/providers/longbridge-research";
 import type { AssetType } from "@/lib/types";
 import { OptionChainPanes } from "./option-chain/option-chain-panes";
 import type { StrategySeed } from "./option-chain/option-strategy-drawer";
 import { OptionStrategyDrawerLoading } from "./option-chain/option-strategy-drawer-loading";
 import { OptionChainSettings } from "./option-chain/option-chain-settings";
+import {
+  ExpandGlyph,
+  Segmented,
+} from "./option-chain/option-chain-controls";
+import { fmtContractCount } from "./option-chain/option-chain-format";
 import {
   DEFAULT_OPTION_CHAIN_PREFS,
   limitRowsAroundSpot,
@@ -22,44 +28,16 @@ import {
   type OptionChainPrefs,
 } from "./option-chain/option-chain-prefs";
 import {
+  atmIv,
   bsGreeks,
   daysToExpiry,
   expiryChipLabel,
   mergeStrikes,
+  sumVolume,
   type Greeks,
   type MoneyFilter,
   type SideFilter,
 } from "./option-chain/option-chain-utils";
-
-function ExpandGlyph({ expanded }: { expanded: boolean }) {
-  return expanded ? (
-    <svg
-      className="h-3.5 w-3.5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M8 3v3a2 2 0 0 1-2 2H3m18 0h-3a2 2 0 0 1-2-2V3m0 18v-3a2 2 0 0 1 2-2h3M3 16h3a2 2 0 0 1 2 2v3" />
-    </svg>
-  ) : (
-    <svg
-      className="h-3.5 w-3.5"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden
-    >
-      <path d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3" />
-    </svg>
-  );
-}
 
 /**
  * Heavy body (pricer / payoff / date picker) loads on first open.
@@ -76,50 +54,6 @@ const OptionStrategyDrawerBody = dynamic(
   },
 );
 
-function avgIv(rows: OptionRow[]): number | null {
-  const vals = rows
-    .map((r) => r.iv)
-    .filter((v): v is number => v != null && v > 0)
-    .map((v) => (v > 2 ? v : v * 100));
-  if (!vals.length) return null;
-  return vals.reduce((a, b) => a + b, 0) / vals.length;
-}
-
-function Segmented<T extends string>({
-  value,
-  onChange,
-  options,
-}: {
-  value: T;
-  onChange: (v: T) => void;
-  options: { id: T; label: string }[];
-}) {
-  return (
-    <div
-      role="group"
-      className="inline-flex h-7 shrink-0 overflow-hidden rounded-[var(--radius-control,4px)] border border-[var(--aw-hairline,var(--border))]"
-    >
-      {options.map((o) => {
-        const on = o.id === value;
-        return (
-          <button
-            key={o.id}
-            type="button"
-            onClick={() => onChange(o.id)}
-            className={`px-2.5 text-[12px] tracking-[-0.08px] transition-colors ${
-              on
-                ? "bg-[var(--aw-primary,var(--brand))] font-medium text-white"
-                : "bg-[var(--panel)] text-[var(--muted)] hover:text-[var(--foreground)]"
-            }`}
-          >
-            {o.label}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 export function OptionChainBoard({
   expiries,
   expiry,
@@ -127,6 +61,7 @@ export function OptionChainBoard({
   calls,
   puts,
   spot,
+  stats = null,
   symbol,
   assetType,
   loading,
@@ -138,12 +73,15 @@ export function OptionChainBoard({
   calls: OptionRow[];
   puts: OptionRow[];
   spot: number | null;
+  /** Futu desk stats: underlying IV + per-expiry IV / EM / volumes. */
+  stats?: OptionChainStats | null;
   symbol?: string;
   assetType?: AssetType;
   loading?: boolean;
   empty?: string | null;
 }) {
   const t = useTranslations("symbol");
+  const locale = useLocale();
   const [side, setSide] = useState<SideFilter>("all");
   const [money, setMoney] = useState<MoneyFilter>("all");
   const [toolOpen, setToolOpen] = useState(false);
@@ -256,9 +194,13 @@ export function OptionChainBoard({
     return { call, put };
   }, [rows, spotN, dte]);
 
-  const callOi = calls.reduce((s, r) => s + (r.oi || 0), 0);
-  const putOi = puts.reduce((s, r) => s + (r.oi || 0), 0);
-  const chainIv = avgIv([...calls, ...puts]);
+  const expiryStat = stats?.byExpiry[expiry];
+  // Prefer Futu desk stats (matches Niuniu header); fall back to local sums / ATM.
+  const callVol = expiryStat?.callVolume ?? sumVolume(calls);
+  const putVol = expiryStat?.putVolume ?? sumVolume(puts);
+  const chainIv = expiryStat?.iv ?? atmIv(calls, puts, spotN);
+  const underlyingIv = stats?.underlyingIv ?? null;
+  const expectedMove = expiryStat?.expectedMove ?? null;
   const showCall = side !== "put";
   const showPut = side !== "call";
 
@@ -294,9 +236,16 @@ export function OptionChainBoard({
             { id: "otm", label: t("optFilterOtm") },
           ]}
         />
-        {chainIv != null ? (
+        {underlyingIv != null ? (
+          <span
+            className="text-[12px] tabular-nums text-[var(--muted)]"
+            title={t("optUnderlyingIv")}
+          >
+            IV {formatNumber(underlyingIv, { maximumFractionDigits: 2 })}%
+          </span>
+        ) : chainIv != null ? (
           <span className="text-[12px] tabular-nums text-[var(--muted)]">
-            IV {formatNumber(chainIv, { maximumFractionDigits: 1 })}
+            IV {formatNumber(chainIv, { maximumFractionDigits: 1 })}%
           </span>
         ) : null}
         <OptionChainSettings prefs={prefs} onChange={onPrefsChange} />
@@ -375,13 +324,19 @@ export function OptionChainBoard({
       <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--aw-hairline,var(--border))] px-3 py-1.5 text-[12px] tabular-nums tracking-[-0.08px] text-[var(--muted)] sm:px-4">
         <span>
           {t("optFilterCall")}{" "}
-          {formatNumber(callOi, { maximumFractionDigits: 0 })}
+          {fmtContractCount(callVol, locale)}
           {t("optContractsUnit")}
         </span>
         <span className="text-center">
           {chainIv != null
             ? `IV ${formatNumber(chainIv, { maximumFractionDigits: 2 })}%`
             : "IV —"}
+          {expectedMove != null
+            ? ` · EM ±${formatNumber(expectedMove, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 3,
+              })}`
+            : null}
           {spotN != null
             ? ` · ${t("underlyingSpot")} ${formatNumber(spotN, {
                 minimumFractionDigits: 2,
@@ -390,7 +345,7 @@ export function OptionChainBoard({
             : null}
         </span>
         <span>
-          {t("optFilterPut")} {formatNumber(putOi, { maximumFractionDigits: 0 })}
+          {t("optFilterPut")} {fmtContractCount(putVol, locale)}
           {t("optContractsUnit")}
         </span>
       </div>

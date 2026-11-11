@@ -2,7 +2,9 @@ import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import {
   fetchFutuOptionChain,
+  fetchFutuOptionChainStatistic,
   fetchFutuOptionExpiries,
+  type OptionChainStats,
 } from "@/lib/market/providers/futu-options";
 import {
   fetchLbOptionChain,
@@ -21,6 +23,18 @@ function classifyError(msg: string): string | undefined {
   if (/Futu credentials not configured/i.test(msg)) return "FUTU_NO_CREDS";
   if (/Futu .*unsupported|market not in/i.test(msg)) return "FUTU_UNSUPPORTED";
   return undefined;
+}
+
+/** Soft-attach Futu desk IV/EM even when the chain itself came from Longbridge. */
+async function tryFutuStats(
+  symbol: string,
+  assetType: "stock" | "hk",
+): Promise<OptionChainStats | null> {
+  try {
+    return await fetchFutuOptionChainStatistic(symbol, assetType);
+  } catch {
+    return null;
+  }
 }
 
 export async function GET(req: Request) {
@@ -44,16 +58,30 @@ export async function GET(req: Request) {
 
       if (!expiry) {
         try {
-          const expiries = await fetchLbOptionExpiries(symbol, assetType);
-          return NextResponse.json({ expiries, source: "longbridge" });
+          const [expiries, stats] = await Promise.all([
+            fetchLbOptionExpiries(symbol, assetType),
+            tryFutuStats(symbol, assetType),
+          ]);
+          return NextResponse.json({
+            expiries,
+            source: "longbridge",
+            ...(stats ? { stats } : {}),
+          });
         } catch (err) {
           errors.push(
             `longbridge: ${err instanceof Error ? err.message : String(err)}`,
           );
         }
         try {
-          const expiries = await fetchFutuOptionExpiries(symbol, assetType);
-          return NextResponse.json({ expiries, source: "futu" });
+          const [expiries, stats] = await Promise.all([
+            fetchFutuOptionExpiries(symbol, assetType),
+            tryFutuStats(symbol, assetType),
+          ]);
+          return NextResponse.json({
+            expiries,
+            source: "futu",
+            ...(stats ? { stats } : {}),
+          });
         } catch (err) {
           errors.push(
             `futu: ${err instanceof Error ? err.message : String(err)}`,
@@ -61,26 +89,30 @@ export async function GET(req: Request) {
         }
       } else {
         try {
-          const chain = await fetchLbOptionChain(
-            symbol,
-            assetType,
-            expiry,
-            spotN,
-          );
-          return NextResponse.json({ ...chain, source: "longbridge" });
+          const [chain, stats] = await Promise.all([
+            fetchLbOptionChain(symbol, assetType, expiry, spotN),
+            tryFutuStats(symbol, assetType),
+          ]);
+          return NextResponse.json({
+            ...chain,
+            source: "longbridge",
+            ...(stats ? { stats } : {}),
+          });
         } catch (err) {
           errors.push(
             `longbridge: ${err instanceof Error ? err.message : String(err)}`,
           );
         }
         try {
-          const chain = await fetchFutuOptionChain(
-            symbol,
-            assetType,
-            expiry,
-            spotN,
-          );
-          return NextResponse.json({ ...chain, source: "futu" });
+          const [chain, stats] = await Promise.all([
+            fetchFutuOptionChain(symbol, assetType, expiry, spotN),
+            tryFutuStats(symbol, assetType),
+          ]);
+          return NextResponse.json({
+            ...chain,
+            source: "futu",
+            ...(stats ? { stats } : {}),
+          });
         } catch (err) {
           errors.push(
             `futu: ${err instanceof Error ? err.message : String(err)}`,

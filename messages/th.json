@@ -251,6 +251,7 @@
     "expiry": "วันหมดอายุ",
     "expiryUnavailable": "ไม่มีข้อมูลโซ่",
     "underlyingSpot": "ราคาหลักทรัพย์อ้างอิง",
+    "optUnderlyingIv": "IV ของหลักทรัพย์อ้างอิง",
     "openOptionsTool": "เครื่องมือสิทธิ์",
     "calls": "Call",
     "puts": "Put",

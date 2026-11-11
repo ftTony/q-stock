@@ -3,6 +3,7 @@ import {
   isBeforeUsRegularClose,
   usTradeDate,
 } from "@/lib/market/session";
+import { ivToPct } from "./option-chain-format";
 
 export type SideFilter = "all" | "call" | "put";
 export type MoneyFilter = "all" | "itm" | "otm";
@@ -137,6 +138,38 @@ export function mergeStrikes(
     map.set(p.strike, { strike: p.strike, call: prev?.call, put: p });
   }
   return [...map.values()].sort((a, b) => a.strike - b.strike);
+}
+
+/**
+ * Desk-style chain IV: average call+put IV at the strike nearest spot.
+ * Full-chain mean is dominated by deep-OTM junk (hundreds of %).
+ */
+export function atmIv(
+  calls: OptionRow[],
+  puts: OptionRow[],
+  spot: number | null,
+): number | null {
+  if (!(spot != null && spot > 0)) return null;
+  let bestStrike: number | null = null;
+  let bestDist = Number.POSITIVE_INFINITY;
+  for (const row of [...calls, ...puts]) {
+    const d = Math.abs(row.strike - spot);
+    if (d < bestDist) {
+      bestDist = d;
+      bestStrike = row.strike;
+    }
+  }
+  if (bestStrike == null) return null;
+  const vals = [calls, puts]
+    .map((side) => side.find((r) => r.strike === bestStrike)?.iv)
+    .filter((v): v is number => v != null && v > 0)
+    .map(ivToPct);
+  if (!vals.length) return null;
+  return vals.reduce((a, b) => a + b, 0) / vals.length;
+}
+
+export function sumVolume(rows: OptionRow[]): number {
+  return rows.reduce((s, r) => s + (r.volume || 0), 0);
 }
 
 function ymdUtcMs(ymd: string): number | null {

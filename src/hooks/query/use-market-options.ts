@@ -2,6 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/query/fetch-json";
+import type { OptionChainStats } from "@/lib/market/providers/futu-options";
 import type { AssetType } from "@/lib/types";
 
 type OptionsMeta = {
@@ -9,6 +10,7 @@ type OptionsMeta = {
   code?: string;
   detail?: string;
   expiries?: string[];
+  stats?: OptionChainStats;
 };
 
 type OptionsChain = OptionsMeta & {

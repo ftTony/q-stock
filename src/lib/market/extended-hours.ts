@@ -46,6 +46,17 @@ export function primaryQuoteDisplay(
   };
 }
 
+/** Same mark the quote bar shows — options / paper risk must not lag on regular-only `quote.price`. */
+export function markPrice(
+  quote: Quote | null | undefined,
+  phase: UsMarketPhase = getUsMarketPhase(),
+): number | null {
+  if (!quote) return null;
+  const primary = primaryQuoteDisplay(quote, phase);
+  const p = primary?.price ?? quote.price;
+  return p > 0 ? p : null;
+}
+
 /** Rail header: keep showing the regular-session quote during extended hours. */
 export function regularQuoteDisplay(
   quote: Quote,

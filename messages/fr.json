@@ -251,6 +251,7 @@
     "expiry": "Échéance",
     "expiryUnavailable": "Pas de données de chaîne",
     "underlyingSpot": "Sous-jacent",
+    "optUnderlyingIv": "IV du sous-jacent",
     "openOptionsTool": "Outil options",
     "calls": "Calls",
     "puts": "Puts",
