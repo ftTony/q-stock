@@ -382,7 +382,9 @@ function SymbolWorkbenchMainGrid({
             />
           </div>
 
-          {isDesktop && rail.open ? (
+          {/* Stack mode uses the bottom panel — keep the side rail off so drawers
+              (说明 / news / …) are not flanked by a leftover metrics strip. */}
+          {isDesktop && !isStack && rail.open ? (
             <SymbolDesktopRail
               symbol={symbol}
               assetType={assetType}

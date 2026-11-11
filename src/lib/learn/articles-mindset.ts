@@ -6,6 +6,8 @@ import { LEARN_ARTICLE_ECONOMICS_RETAIL } from "@/lib/learn/articles-mindset-eco
 import { LEARN_ARTICLE_FINANCIAL_FREEDOM } from "@/lib/learn/articles-mindset-freedom";
 import { LEARN_ARTICLE_LIFE_STAGE_PLAN } from "@/lib/learn/articles-mindset-life-stages";
 import { LEARN_ARTICLE_WEALTH_BUILDING } from "@/lib/learn/articles-mindset-wealth-building";
+import { LEARN_ARTICLE_WEALTH_STAGES } from "@/lib/learn/articles-mindset-wealth-stages";
+import { LEARN_ARTICLE_MONEY_TRAPS } from "@/lib/learn/articles-mindset-money-traps";
 
 /** Mindset articles — depth aligned with long-form craft essays. */
 export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
@@ -16,4 +18,6 @@ export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
   LEARN_ARTICLE_ECONOMICS_RETAIL,
   LEARN_ARTICLE_CALM_WATCHING,
   LEARN_ARTICLE_CHECKLIST_THREE,
+  LEARN_ARTICLE_WEALTH_STAGES,
+  LEARN_ARTICLE_MONEY_TRAPS,
 ];

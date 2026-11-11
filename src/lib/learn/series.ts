@@ -28,23 +28,21 @@ export const LEARN_SERIES: readonly LearnSeriesDef[] = [
       "zh-CN": "心态课程：冷静框架 → 偏差 → 足够",
     },
     blurb: {
-      en: "Twelve lessons: watching discipline, biases, crash first-aid, compounding behavior—plus freedom and life-stage essays already in the library.",
+      en: "Ten lessons: calm watching, the three-question checklist, biases, crash first-aid, compounding behavior—then the two-stage math, the trap list, and Munger's frames.",
       "zh-CN":
-        "12 课：冷静看盘、行为偏差、暴跌急救、复利行为，串上站内已有的自由与人生阶段短文——不跟机构持仓八卦。",
+        "10 课：冷静看盘、三问清单、行为偏差、暴跌急救、复利行为，接两个阶段的算术与避坑清单，收在《穷查理宝典》——不跟机构持仓八卦。",
     },
     slugs: [
       "calm-watching",
       "checklist-three",
       "dao-greed-fear-desire",
       "mindset-behavior-biases",
-      "book-thinking-fast-slow",
       "mindset-crash-first-aid",
       "mindset-compounding-hard",
       "financial-freedom-defined",
-      "wealth-building-process",
-      "life-stage-money-plan",
-      "economics-for-retail",
-      "book-psychology-of-money",
+      "wealth-stages-100k-10m",
+      "money-traps-small-capital",
+      "book-poor-charlie-almanack",
     ],
     tocTitle: {
       "calm-watching": {
@@ -63,10 +61,6 @@ export const LEARN_SERIES: readonly LearnSeriesDef[] = [
         en: "Five behavior biases",
         "zh-CN": "五种行为偏差",
       },
-      "book-thinking-fast-slow": {
-        en: "Fast & slow thinking",
-        "zh-CN": "《思考，快与慢》",
-      },
       "mindset-crash-first-aid": {
         en: "Crash first-aid hour",
         "zh-CN": "暴跌第一个小时",
@@ -79,21 +73,17 @@ export const LEARN_SERIES: readonly LearnSeriesDef[] = [
         en: "What freedom means",
         "zh-CN": "财富自由怎么定义",
       },
-      "wealth-building-process": {
-        en: "Wealth as process",
-        "zh-CN": "财富累积是过程",
+      "wealth-stages-100k-10m": {
+        en: "100k→1M vs 1M→10M",
+        "zh-CN": "10 万与 1000 万：两个阶段",
       },
-      "life-stage-money-plan": {
-        en: "Life-stage money plan",
-        "zh-CN": "人生阶段与钱",
+      "money-traps-small-capital": {
+        en: "Traps to dodge first",
+        "zh-CN": "本金少，先避开这些坑",
       },
-      "economics-for-retail": {
-        en: "Economics for retail",
-        "zh-CN": "散户用得上的经济常识",
-      },
-      "book-psychology-of-money": {
-        en: "Psychology of Money",
-        "zh-CN": "《金钱心理学》",
+      "book-poor-charlie-almanack": {
+        en: "Poor Charlie's Almanack",
+        "zh-CN": "《穷查理宝典》",
       },
     },
   },

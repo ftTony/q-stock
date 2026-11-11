@@ -6,38 +6,184 @@ export const LEARN_ARTICLES_TOOLS: LearnArticle[] = [
     slug: "peer-compare",
     category: "tools",
     ctaHref: "/analysis",
+    author: "钱力股研究组",
+    publishedAt: "2026-11-10",
+    updatedAt: "2026-11-10",
     title: {
-      "zh-CN": "同业对比怎么用",
-      "zh-TW": "同業對比怎麼用",
-      en: "How to use peer compare",
+      en: "Peer compare: valuation is a clue, not a switch",
+      "zh-CN": "同业对比怎么用：估值是线索，不是开关",
     },
     summary: {
-      "zh-CN": "同一赛道挑 2–4 只并排看；估值是线索，不是买卖开关。",
-      "zh-TW": "同一賽道挑 2–4 隻並排看；估值是線索，不是買賣開關。",
-      en: "Line up 2–4 peers in one industry—valuation as clue, not a buy switch.",
+      en: "Line up 2–4 names in the same lane and let the gaps ask questions: priced gap, accounting gap, or stage gap. The ruler is cold on purpose.",
+      "zh-CN":
+        "同一条赛道挑 2–4 只并排摆，让差异自己提问题：定价差、口径差，还是阶段差。这把尺子故意做得冷静。",
     },
     paragraphs: {
-      "zh-CN": [
-        "看到一只股票估值「看起来很低」或「看起来很贵」，很多人会立刻下结论。更稳妥的做法是先问：跟谁比？跨行业硬比市盈率，就像拿飞机票价比地铁票——数字都在，语境全错。",
-        "同业对比的价值，在于把标的放回同一语境：相似业务、相近阶段，再并排看市值、PE/PB、利润率、负债等，判断差异是「市场定价」还是「口径/阶段不同」。它帮你提出更好的问题，而不是直接给你买卖答案。",
-        "一、先锁赛道：从榜单或行业入口进入，而不是随手搜几只热门硬凑一组。",
-        "二、数量要少：2–4 只足够；再多就变成表格噪音，看不出重点。",
-        "三、看相对位置：谁更贵、谁更便宜、利润率与杠杆差在哪——先描述差异，再解释差异。",
-        "四、回到个股验证：对比结束后，打开 K 线、新闻与财报摘要，看估值差是否已被定价，或只是数据缺失、一次性项目造成的错觉。",
-        "数据谦逊很重要：部分绝对金额（营收、总资产等）在免费源上可能是估算值，页面会标明口径。把它当核对线索，不是精确财报替代品。财报季或重大重组后，更要警惕「静态倍数」失真。",
-        "常见误区：把「同组最低 PE」自动翻译成「该买」。低倍数可能对应更差的增长、更高风险或会计差异。另一个误区是拿周期股峰值利润算出来的低 PE 当常态。",
-        "在钱力股分析页做完对比，用三句话记笔记：同组是谁、差异在哪、还缺什么信息。对比是冷静投的尺子，不是荐股开关。",
-      ],
-      "zh-TW": [
-        "估值「看起來很低／很貴」之前，先問：跟誰比？跨行業硬比，語境全錯。",
-        "一、先鎖賽道；二、只挑 2–4 隻；三、先描述差異再解釋；四、回到 K 線與新聞驗證。",
-        "免費資料可能有估算口徑，當線索而非精確財報。低 PE 不等于該買。對比是尺子，不是薦股開關。",
-      ],
       en: [
-        "A “cheap” or “expensive” multiple means little until you ask: versus whom? Cross-sector PE compares often mix contexts.",
-        "1) Lock one industry. 2) Pick 2–4 names—more becomes noise. 3) Describe relative gaps before explaining them. 4) Return to chart, news, and filings to see if the gap is priced or a data hole.",
-        "Free feeds may estimate some absolutes; treat labels as clues, not filings. Lowest PE in the group is not a buy ticket—growth, risk, and accounting can differ. Compare is a ruler, not a recommendation switch.",
+        "A “cheap” multiple means nothing until you answer: versus whom? Cross-sector PE compares mix contexts like pricing a flight ticket against a subway fare—the numbers are real, the conversation is not.",
       ],
+      "zh-CN": [
+        "估值「看起来很低」或「看起来很贵」，在回答「跟谁比」之前都是半句话。跨行业硬比市盈率，像拿机票价格和地铁票价聊天——数字都是真的，语境全是错的。",
+      ],
+    },
+    sections: {
+      en: [
+        {
+          type: "p",
+          text: "In Q-Stock's analysis page, put 2–4 same-industry names side by side: market cap, PE/PB, margins, leverage. The page is a ruler, and rulers are deliberately cold—they measure gaps, they do not press buy buttons.",
+        },
+        { type: "h2", text: "Set up the comparison before reading it" },
+        {
+          type: "ul",
+          items: [
+            "Lock one lane first: enter from an industry list, not from whatever names are trending.",
+            "Keep it to 2–4 names: past four, the table turns into noise and every difference looks like a signal.",
+            "Match stages: a pre-profit grower next to a cash-cow utility produces confident nonsense.",
+            "Note the data label: some absolute figures on free feeds are estimates—treat them as clues, not filings.",
+          ],
+        },
+        { type: "h2", text: "Read gaps as questions, three kinds" },
+        {
+          type: "table",
+          head: ["Type of gap", "Example (all hypothetical)", "Question it asks"],
+          rows: [
+            ["Priced gap", "Peer A at 15× PE, peer B at 25×, similar growth", "What does the market see in B—brand, moat, or momentum?"],
+            ["Accounting gap", "Similar business, B's margin 6 points higher", "Different revenue recognition, one-off gains, or genuinely better economics?"],
+            ["Stage gap", "B invests heavily, A harvests", "Are we comparing two companies or two chapters of the same playbook?"],
+          ],
+          caption:
+            "If you cannot say which kind of gap you are looking at, the comparison is not finished yet.",
+        },
+        {
+          type: "p",
+          text: "A worked example (hypothetical): three retailers at 12×, 18×, and 30× PE. The 12× name carries two-thirds leverage and shrinking same-store sales; the 18× name is the boring median; the 30× name just doubled store count with thin margins. Cheap, fair, and expensive are all defensible here—what the table actually told you is which questions to open in the filings.",
+        },
+        { type: "h2", text: "The classic traps" },
+        {
+          type: "ul",
+          items: [
+            "Translating lowest PE into a buy order: low multiples can price worse growth, higher risk, or accounting quirks.",
+            "Peak-cycle math: a cyclical at 8× on peak earnings is not cheap, it is timed.",
+            "Static multiples in earnings season: after a restructuring or a big write-off, last year's denominator lies.",
+            "Comparing across borders without currency, tax, and share-structure adjustments.",
+          ],
+        },
+        {
+          type: "p",
+          text: "When the gap survives your questions—same lane, same stage, same accounting—then the compare page has done its job: it handed you a priced anomaly to verify on the chart and in the filings, not a trade. From there, the workbench loop takes over: read the structure, write the invalidation, size it through /tools/position.",
+        },
+        {
+          type: "note",
+          text: "End every comparison with three lines in review: who was in the group, what gaps showed up, what information is still missing. The missing line is where the real research starts.",
+        },
+      ],
+      "zh-CN": [
+        {
+          type: "p",
+          text: "在钱力股的分析页，把同行业的 2–4 只并排摆开：市值、PE/PB、利润率、杠杆。这个页面是一把尺子——尺子的特点是故意冷静：它只负责量出差异，不负责替你按下买入。",
+        },
+        { type: "h2", text: "先搭好对比，再读对比" },
+        {
+          type: "ul",
+          items: [
+            "先锁赛道：从行业入口进，不是从热门榜单随手凑。",
+            "控制在 2–4 只：超过四只，表格开始变噪音，任何差异看起来都像信号。",
+            "阶段要对齐：一家没盈利的成长股旁边放一头现金奶牛，只会产出自信的胡说。",
+            "留意数据口径：免费源上部分绝对金额是估算值，当线索用，别当财报。",
+          ],
+        },
+        { type: "h2", text: "差异分三类，每一类是一个问题" },
+        {
+          type: "table",
+          head: ["差异类型", "例子（全部为假设）", "它问你的问题"],
+          rows: [
+            ["定价差", "同增速的两家，一家 15 倍一家 25 倍", "市场在 25 倍那家里看到了什么——品牌、壁垒，还是单纯的动量？"],
+            ["口径差", "业务相仿，利润率差 6 个点", "是收入确认方式不同、一次性损益，还是生意本质更好？"],
+            ["阶段差", "一家在重投入，一家在收获期", "你比的是两家公司，还是同一剧本的两章？"],
+          ],
+          caption: "说不出眼前的差异属于哪一类，说明对比还没做完。",
+        },
+        {
+          type: "p",
+          text: "算个例子（假设）：三家零售商，PE 分别 12、18、30 倍。12 倍那家杠杆三分之二、同店增长在缩；18 倍是最无聊的中位数；30 倍那家刚把门店数翻倍、利润还薄。便宜、合理、贵在这里都说得通——这张表真正告诉你的，是该去财报里打开哪几个问题。",
+        },
+        { type: "h2", text: "经典踩坑" },
+        {
+          type: "ul",
+          items: [
+            "把「同组最低 PE」自动翻译成「该买」：低倍数可能在为更差的增长、更高的风险或会计花招定价。",
+            "拿周期股峰值利润算 PE：8 倍的周期股不是便宜，是计时器。",
+            "财报季用静态倍数：刚做完重组或大额减值的公司，去年的分母在说谎。",
+            "跨市场硬比：汇率、税制、股权结构没调整之前，差异没有意义。",
+          ],
+        },
+        {
+          type: "p",
+          text: "当差异扛过了你的三类提问——同赛道、同阶段、同口径——对比页的任务才算完成：它交给你的是一个待核实的定价异常，不是一笔交易。接下来交接给工作台闭环：看结构、写失效、用 /tools/position 定仓位。",
+        },
+        {
+          type: "note",
+          text: "每次对比收尾，在复盘页写三行：同组有谁、出现了什么差异、还缺什么信息。第三行才是真研究的起点。",
+        },
+      ],
+    },
+    faq: {
+      en: [
+        {
+          q: "How many peers should I compare?",
+          a: "2–4. Two gives a direction, four gives a spread; past that you are reading noise and every difference starts looking like a thesis.",
+        },
+        {
+          q: "The lowest PE name in the group—buy it?",
+          a: "Only after you can explain why the market prices it lower: growth, leverage, accounting, or stage. If you cannot, the multiple is a question, not an answer.",
+        },
+        {
+          q: "The figures look off versus the annual report?",
+          a: "Some absolute values on free feeds are estimated and labeled as such. Use multiples for relative reading, and open the filings for anything you plan to act on.",
+        },
+        {
+          q: "Can I compare across countries?",
+          a: "Only after adjusting for currency, tax regimes, accounting standards, and share structure. Skip it until those adjustments are second nature.",
+        },
+      ],
+      "zh-CN": [
+        {
+          q: "同业对比挑几家合适？",
+          a: "2–4 家。两家给方向，四家给分布；再多就开始读噪音了，什么差异都像论点。",
+        },
+        {
+          q: "同组 PE 最低的那家，能直接买吗？",
+          a: "先回答市场为什么给它低价：增长差、杠杆高、会计口径、还是阶段问题。答不上来，这个低倍数就是问题本身，不是答案。",
+        },
+        {
+          q: "页面上的数字和年报对不上？",
+          a: "免费源的绝对金额可能是估算值，页面会标注口径。相对倍数用于对比阅读，真正要动手前回财报核对。",
+        },
+        {
+          q: "能跨国家对比吗？",
+          a: "要先把汇率、税制、会计准则、股权结构都调整齐，否则差异没有意义。不熟就先跳过。",
+        },
+      ],
+    },
+    links: {
+      en: [
+        { label: "The three financial statements", href: "/learn/financials-three-statements" },
+        { label: "Picking order: fundamentals → location", href: "/learn/stock-picking-steps" },
+        { label: "The workbench loop", href: "/learn/stocks-workbench-loop" },
+        { label: "Position sizing calculator", href: "/tools/position" },
+        { label: "Analysis page", href: "/analysis" },
+      ],
+      "zh-CN": [
+        { label: "三张报表怎么串", href: "/learn/financials-three-statements" },
+        { label: "选股顺序：基本面→位置", href: "/learn/stock-picking-steps" },
+        { label: "看盘闭环怎么走", href: "/learn/stocks-workbench-loop" },
+        { label: "仓位计算器", href: "/tools/position" },
+        { label: "分析页", href: "/analysis" },
+      ],
+    },
+    sourceNote: {
+      en: "Educational. Free-feed figures may be estimates; examples are hypothetical. Not investment advice.",
+      "zh-CN": "仅供学习。免费源数据可能为估算口径，示例均为假设。不构成投资建议。",
     },
   },
   {

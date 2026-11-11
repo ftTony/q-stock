@@ -308,6 +308,7 @@ export function SymbolPageClient({
         />
         <SymbolPageOverlays
           isDesktop={isDesktop}
+          isStack={isStack}
           dockReady={p.dockReady}
           dock={isStack ? null : p.dock}
           onCloseDock={p.closeDock}

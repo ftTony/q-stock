@@ -1,8 +1,16 @@
 import { LearnIndicatorIllustration } from "@/components/learn/learn-indicator-illustration";
 import {
+  isOptionsTopicIllustrationSlug,
+  LearnOptionsTopicIllustration,
+} from "@/components/learn/learn-options-topic-illustration";
+import {
   isOptionPayoffIllustrationSlug,
   LearnOptionPayoffIllustration,
 } from "@/components/learn/learn-option-payoff-illustration";
+import {
+  isTopicIllustrationSlug,
+  LearnTopicIllustration,
+} from "@/components/learn/learn-topic-illustration";
 import { LearnStrategyWalkthrough } from "@/components/learn/learn-strategy-walkthrough";
 import type { LearnBlock } from "@/lib/learn/types";
 
@@ -19,6 +27,12 @@ function LeadIllustration({
   }
   if (isOptionPayoffIllustrationSlug(slug)) {
     return <LearnOptionPayoffIllustration slug={slug} locale={locale} />;
+  }
+  if (isTopicIllustrationSlug(slug)) {
+    return <LearnTopicIllustration slug={slug} locale={locale} />;
+  }
+  if (isOptionsTopicIllustrationSlug(slug)) {
+    return <LearnOptionsTopicIllustration slug={slug} locale={locale} />;
   }
   return <LearnIndicatorIllustration slug={slug} locale={locale} />;
 }

@@ -2,9 +2,11 @@ import type { LearnArticle } from "@/lib/learn/types";
 import { LEARN_ARTICLE_POOR_ECONOMICS } from "@/lib/learn/articles-reading-poor-economics";
 import { LEARN_ARTICLE_FAST_SLOW } from "@/lib/learn/articles-reading-fast-slow";
 import { LEARN_ARTICLE_INTELLIGENT_INVESTOR } from "@/lib/learn/articles-reading-intelligent-investor";
+import { LEARN_ARTICLE_POOR_CHARLIE } from "@/lib/learn/articles-reading-poor-charlie";
 
 /** Book list, learning paths, and featured book guides. */
 export const LEARN_ARTICLES_READING: LearnArticle[] = [
+  LEARN_ARTICLE_POOR_CHARLIE,
   {
     slug: "reading-list",
     category: "reading",

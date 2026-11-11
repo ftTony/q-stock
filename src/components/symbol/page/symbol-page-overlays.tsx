@@ -21,6 +21,8 @@ import type { FormEvent } from "react";
 
 type Props = {
   isDesktop: boolean;
+  /** Desktop stack layout has no side icon rail — drawers flush to the edge. */
+  isStack?: boolean;
   dockReady: boolean;
   dock: Exclude<SideIconId, "ai"> | null;
   onCloseDock: () => void;
@@ -77,7 +79,9 @@ type Props = {
 /** Dock / plan drawer / AI — kept out of page-client for file-size. */
 export function SymbolPageOverlays(p: Props) {
   const t = useTranslations("symbol");
-  const edge = p.isDesktop ? 44 : 0;
+  // Side layout reserves the 44px icon rail; stack has no rail — edge must be 0
+  // or drawers leave a gap that shows whatever sits under (was the plan rail).
+  const edge = p.isDesktop && !p.isStack ? 44 : 0;
   // Desktop: drawer top = chart grid (below quote bar), same row as icon rail.
   // H5: topOffset 0 — full-screen sheet unchanged.
   const gridTop = useElementTop(p.isDesktop ? ".aw-workbench-grid" : null);

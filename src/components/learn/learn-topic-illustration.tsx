@@ -9,7 +9,9 @@ type TopicDiagram =
   | "indicator-trend-momentum"
   | "risk-reward-expectancy"
   | "stocks-exit-rules"
-  | "paper-review";
+  | "paper-review"
+  | "money-traps-small-capital"
+  | "book-poor-charlie-almanack";
 
 const DIAGRAMS = new Set<string>([
   "multi-market-101",
@@ -23,6 +25,8 @@ const DIAGRAMS = new Set<string>([
   "risk-reward-expectancy",
   "stocks-exit-rules",
   "paper-review",
+  "money-traps-small-capital",
+  "book-poor-charlie-almanack",
 ]);
 
 const LABELS: Record<
@@ -96,6 +100,18 @@ const LABELS: Record<
         "计划 → 执行 → 记录 → 复盘 → 修正计划，环上每一环都喂给下一环；缺了记录，复盘就容易变成回忆。",
       note: "概念示意，节奏以个人习惯为准",
     },
+    "money-traps-small-capital": {
+      title: "两条本金路径：避坑的复利 vs 踩坑的归零",
+      caption:
+        "上面一条线是小额定投的缓慢复利；下面一条线被四个坑逐级打断——分期实际利率、一次 all-in、付费荐股、保本高息盘子，最后归零。",
+      note: "示意曲线，非真实行情；回本年限按年化 8% 估算",
+    },
+    "book-poor-charlie-almanack": {
+      title: "反过来想：正问没有答案，反问全是行动",
+      caption:
+        "左边「怎么赚 20%」没有可执行答案；右边「怎么亏 30%」能列出具体清单——避开清单上的事，剩下的路自动更接近正收益。",
+      note: "概念示意；避坑算术见站内避坑篇",
+    },
   },
   en: {
     "multi-market-101": {
@@ -163,6 +179,18 @@ const LABELS: Record<
       caption:
         "Plan, trade, record, review, adjust — each step feeds the next. Without records, review drifts into storytelling.",
       note: "Conceptual; adapt the cadence to your own routine",
+    },
+    "money-traps-small-capital": {
+      title: "Two paths for small capital: compounding vs reset-to-zero",
+      caption:
+        "The upper line is slow DCA compounding. The lower line gets broken at four traps — real installment rates, one all-in bet, paid signal groups, guaranteed-high-yield pools — and ends at zero.",
+      note: "Illustrative curves; recovery years estimated at 8% annually",
+    },
+    "book-poor-charlie-almanack": {
+      title: "Invert: the forward question has no answer, the reverse is all action",
+      caption:
+        "Left: 'how do I make 20%' — no executable answer. Right: 'how do I lose 30%' — a concrete list. Delete the list, and what remains drifts toward positive returns.",
+      note: "Conceptual; the arithmetic lives in the traps article",
     },
   },
 };
@@ -697,6 +725,97 @@ function PaperReviewDiagram({ zh }: { zh: boolean }) {
   );
 }
 
+function MoneyTrapsDiagram({ zh }: { zh: boolean }) {
+  const traps = zh
+    ? ["分期实际利率", "一次 all-in", "付费荐股", "保本高息盘子"]
+    : ["Installments 13%", "One all-in", "Paid signals", "Guaranteed pool"];
+  const trapX = [150, 285, 380, 470];
+  const goodTitle = zh ? "小额定投" : "DCA discipline";
+  const goodSub = zh ? "慢，但在复利" : "slow, but compounding";
+  const zero = zh ? "归零" : "Reset";
+  const startLabel = zh ? "起点本金" : "Starting capital";
+  return (
+    <>
+      <path d="M60 30V190H640" className="axis-line" />
+      <path d="M60 176H640" className="zero-line" />
+      <text x="66" y="170" className="diagram-tiny">{startLabel}</text>
+      <path
+        d="M60 176C160 168 260 142 380 116C460 99 560 76 630 62"
+        className="ma-fast"
+      />
+      <circle cx="630" cy="62" r="3.5" fill="var(--brand)" />
+      <text x="466" y="66" className="diagram-strong-sm">{goodTitle}</text>
+      <text x="466" y="82" className="diagram-tiny">{goodSub}</text>
+      <path
+        d="M60 177H150C165 178 180 180 200 182C235 185 262 185 285 186L310 188C330 189 345 190 360 190C420 190 470 190 520 190"
+        stroke="var(--down)"
+        strokeWidth="2.4"
+        strokeLinecap="round"
+        fill="none"
+      />
+      {trapX.map((x, i) => (
+        <g key={x}>
+          <circle
+            cx={x}
+            cy={176 + i * 4.5}
+            r="4.5"
+            fill="var(--down)"
+            fillOpacity="0.9"
+          />
+          <path d={`M${x} ${182 + i * 4.5}V200`} className="leader-line" />
+          <text
+            x={x}
+            y="212"
+            textAnchor="middle"
+            className="diagram-tiny"
+          >
+            {traps[i]}
+          </text>
+        </g>
+      ))}
+      <text x="560" y="184" fill="var(--down)" className="diagram-strong-sm">
+        {zero}
+      </text>
+    </>
+  );
+}
+
+function InversionDiagram({ zh }: { zh: boolean }) {
+  const fwdTitle = zh ? "怎么赚 20%？" : "How to make 20%?";
+  const fwdSub = zh ? "没有本周可执行的答案" : "no executable answer";
+  const revTitle = zh ? "怎么亏 30%？" : "How to lose 30%?";
+  const revItems = zh
+    ? ["借 13% 的钱买资产", "在一个故事上 all-in", "追涨、跨出能力圈", "听大师预测调仓"]
+    : ["Borrow at 13% to invest", "All-in one story", "Chase, leave your circle", "Trade on guru forecasts"];
+  const bottom = zh ? "避开蠢事，剩下交给复利" : "Refuse the dumb stuff; compounding works";
+  return (
+    <>
+      <rect x="40" y="46" width="200" height="128" rx="12" fill="var(--surface-2, var(--panel))" className="card-border" />
+      <text x="140" y="84" textAnchor="middle" className="diagram-strong">{fwdTitle}</text>
+      <text x="140" y="108" textAnchor="middle" className="diagram-tiny">{fwdSub}</text>
+      <text x="140" y="140" textAnchor="middle" className="diagram-tiny">{zh ? "只能等，或靠运气" : "wait, or rely on luck"}</text>
+
+      <rect x="440" y="46" width="200" height="128" rx="12" fill="var(--brand)" fillOpacity="0.1" className="card-border" />
+      <text x="540" y="74" textAnchor="middle" className="diagram-strong">{revTitle}</text>
+      {revItems.map((t, i) => (
+        <text key={t} x="540" y={98 + i * 18} textAnchor="middle" className="diagram-tiny">
+          {t}
+        </text>
+      ))}
+
+      <path d="M150 178C170 196 220 200 268 200" className="flow-line" fill="none" />
+      <path d="M266 194L280 200L266 206Z" fill="var(--muted)" />
+      <path d="M530 178C510 196 460 200 412 200" className="flow-line" fill="none" />
+      <path d="M414 194L400 200L414 206Z" fill="var(--muted)" />
+
+      <rect x="240" y="176" width="200" height="48" rx="12" fill="var(--brand)" fillOpacity="0.9" />
+      <text x="340" y="205" textAnchor="middle" fill="var(--brand-text)" className="diagram-strong-sm">
+        {bottom}
+      </text>
+    </>
+  );
+}
+
 function Diagram({ id, zh }: { id: TopicDiagram; zh: boolean }) {
   switch (id) {
     case "multi-market-101":
@@ -721,6 +840,10 @@ function Diagram({ id, zh }: { id: TopicDiagram; zh: boolean }) {
       return <ExitRulesDiagram zh={zh} />;
     case "paper-review":
       return <PaperReviewDiagram zh={zh} />;
+    case "money-traps-small-capital":
+      return <MoneyTrapsDiagram zh={zh} />;
+    case "book-poor-charlie-almanack":
+      return <InversionDiagram zh={zh} />;
   }
 }
 
