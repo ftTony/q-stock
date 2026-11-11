@@ -11,6 +11,7 @@ import {
   listLearnSlugs,
 } from "@/lib/learn/articles";
 import { isLearnArticleAvailable } from "@/lib/learn/locale-gating";
+import { pickRelatedLearnArticles } from "@/lib/learn/related-articles";
 import {
   getLearnSeriesForSlug,
   learnSeriesText,
@@ -82,7 +83,6 @@ export default async function LearnArticlePage({ params }: Props) {
     isLearnArticleAvailable(a.slug, locale),
   );
   const seriesDef = getLearnSeriesForSlug(slug);
-  const seriesSlugSet = new Set(seriesDef?.slugs ?? []);
   const seriesNav = seriesDef
     ? {
         seriesTitle: learnSeriesText(locale, seriesDef.title),
@@ -105,29 +105,13 @@ export default async function LearnArticlePage({ params }: Props) {
       }
     : null;
 
-  const related = cards
-    .filter((a) => a.slug !== slug)
-    .filter((a) => !seriesSlugSet.has(a.slug))
-    .filter((a) => a.category === article.category)
-    .slice(0, 4)
-    .map((a) => ({
-      slug: a.slug,
-      title: learnText(locale, a.title),
-      categoryLabel: t(`categories.${a.category}`),
-    }));
-
-  const relatedFallback =
-    related.length > 0
-      ? related
-      : cards
-          .filter((a) => a.slug !== slug)
-          .filter((a) => !seriesSlugSet.has(a.slug))
-          .slice(0, 4)
-          .map((a) => ({
-            slug: a.slug,
-            title: learnText(locale, a.title),
-            categoryLabel: t(`categories.${a.category}`),
-          }));
+  const related = pickRelatedLearnArticles({
+    slug,
+    locale,
+    cards,
+    categoryLabel: (category) => t(`categories.${category}`),
+    limit: 4,
+  });
 
   return (
     <ScopedMessages namespaces={["marketing"]}>
@@ -155,7 +139,7 @@ export default async function LearnArticlePage({ params }: Props) {
             illustrationSlug={slug}
             locale={locale}
             ctaHref={article.ctaHref}
-            related={relatedFallback}
+            related={related}
             series={seriesNav}
           />
         </div>

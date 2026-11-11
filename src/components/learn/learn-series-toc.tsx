@@ -1,4 +1,5 @@
 import { Link } from "@/i18n/routing";
+import { bareSeriesLabel } from "@/components/learn/learn-series-home";
 
 export type LearnSeriesTocItem = {
   slug: string;
@@ -6,9 +7,9 @@ export type LearnSeriesTocItem = {
   index: number;
 };
 
-/** Drop leading "01 " if a tocTitle still embeds an index (avoid "01 01 …"). */
-function bareLabel(label: string): string {
-  return label.replace(/^\d{1,2}\s+/, "").trim();
+/** @deprecated Prefer bareSeriesLabel(label, index). */
+function bareLabel(label: string, index?: number): string {
+  return bareSeriesLabel(label, index);
 }
 
 type Props = {
@@ -89,7 +90,7 @@ export function LearnSeriesToc({
                   <span className="mr-1.5 tabular-nums text-[11px] text-[var(--muted)]">
                     {String(item.index).padStart(2, "0")}
                   </span>
-                  {bareLabel(item.label)}
+                  {bareLabel(item.label, item.index)}
                 </span>
               </Link>
             </li>
@@ -125,7 +126,8 @@ export function LearnSeriesPager({
         >
           <p className="text-[11px] text-[var(--muted)]">{prevLabel}</p>
           <p className="mt-1 text-sm font-medium leading-snug text-[var(--foreground)]">
-            {String(prev.index).padStart(2, "0")} · {bareLabel(prev.label)}
+            {String(prev.index).padStart(2, "0")} ·{" "}
+            {bareLabel(prev.label, prev.index)}
           </p>
         </Link>
       ) : (
@@ -138,7 +140,8 @@ export function LearnSeriesPager({
         >
           <p className="text-[11px] text-[var(--muted)]">{nextLabel}</p>
           <p className="mt-1 text-sm font-medium leading-snug text-[var(--brand-text)]">
-            {String(next.index).padStart(2, "0")} · {bareLabel(next.label)}
+            {String(next.index).padStart(2, "0")} ·{" "}
+            {bareLabel(next.label, next.index)}
           </p>
         </Link>
       ) : null}
@@ -146,67 +149,7 @@ export function LearnSeriesPager({
   );
 }
 
-/** Index spotlight: one series card that starts at lesson 01. */
-export function LearnSeriesSpotlight({
-  catalogTitle,
-  seriesTitle,
-  hint,
-  startLabel,
-  startHref,
-  items,
-}: {
-  catalogTitle: string;
-  seriesTitle: string;
-  hint: string;
-  startLabel: string;
-  startHref: string;
-  items: LearnSeriesTocItem[];
-}) {
-  return (
-    <section className="overflow-hidden rounded-2xl border border-[var(--border)] bg-[var(--panel)]">
-      <div
-        className="flex flex-wrap items-end justify-between gap-3 border-b border-[var(--border)] px-5 py-4"
-        style={{
-          background:
-            "linear-gradient(120deg, color-mix(in srgb, var(--brand) 8%, var(--panel)), var(--panel))",
-        }}
-      >
-        <div className="min-w-0">
-          <p className="text-[11px] font-semibold tracking-wide text-[var(--brand-text)]">
-            {catalogTitle}
-          </p>
-          <h2 className="mt-1 text-base font-semibold tracking-tight sm:text-lg">
-            {seriesTitle}
-          </h2>
-          <p className="mt-1 text-xs leading-relaxed text-[var(--muted)] sm:text-[13px]">
-            {hint}
-          </p>
-        </div>
-        <Link
-          href={startHref}
-          className="qt-btn qt-btn-primary h-9 shrink-0 px-3 text-sm"
-        >
-          {startLabel}
-        </Link>
-      </div>
-      <ol className="divide-y divide-[var(--border)] sm:grid sm:grid-cols-2 sm:divide-y-0 lg:grid-cols-3">
-        {items.map((item) => (
-          <li key={item.slug} className="sm:border-b sm:border-[var(--border)]">
-            <Link
-              href={`/learn/${item.slug}`}
-              className="flex gap-2.5 px-5 py-3 text-[13px] leading-snug text-[var(--foreground)]/85 transition-colors hover:bg-[var(--surface-2)] hover:text-[var(--brand-text)]"
-            >
-              <DocIcon />
-              <span className="min-w-0">
-                <span className="mr-1.5 tabular-nums text-[11px] text-[var(--muted)]">
-                  {String(item.index).padStart(2, "0")}
-                </span>
-                {bareLabel(item.label)}
-              </span>
-            </Link>
-          </li>
-        ))}
-      </ol>
-    </section>
-  );
-}
+export {
+  LearnSeriesSpotlight,
+  LearnSeriesCompact,
+} from "@/components/learn/learn-series-home";

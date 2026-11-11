@@ -23,11 +23,16 @@ import { LEARN_ARTICLES_SEO_STOCKS_WORKBENCH } from "@/lib/learn/articles-seo-st
 import { LEARN_ARTICLES_SEO_PLANNING } from "@/lib/learn/articles-seo-planning";
 import { LEARN_ARTICLES_SEO_STRATEGY } from "@/lib/learn/articles-seo-strategy";
 import { LEARN_ARTICLES_SEO_TAX } from "@/lib/learn/articles-seo-tax";
+import { LEARN_ARTICLES_SEO_GLOSSARY_A } from "@/lib/learn/articles-seo-glossary-a";
+import { LEARN_ARTICLES_SEO_GLOSSARY_B } from "@/lib/learn/articles-seo-glossary-b";
+import { LEARN_ARTICLES_SEO_TOOL_GUIDES } from "@/lib/learn/articles-seo-tool-guides";
+import { LEARN_ARTICLES_SEO_LOOP } from "@/lib/learn/articles-seo-loop";
 import { LEARN_ARTICLES_READING } from "@/lib/learn/articles-reading";
 import {
   readLearnArticleFile,
   readLearnIndex,
 } from "@/lib/learn/snapshot";
+import { applyLearnSeoOverrides } from "@/lib/learn/article-seo-overrides";
 import {
   LEARN_CATEGORIES,
   type LearnArticle,
@@ -70,25 +75,47 @@ export const LEARN_ARTICLES_SEED: LearnArticle[] = [
   ...LEARN_ARTICLES_SEO_MINDSET_COMPOUND,
   ...LEARN_ARTICLES_SEO_PLANNING,
   ...LEARN_ARTICLES_SEO_TAX,
+  ...LEARN_ARTICLES_SEO_GLOSSARY_A,
+  ...LEARN_ARTICLES_SEO_GLOSSARY_B,
+  ...LEARN_ARTICLES_SEO_TOOL_GUIDES,
+  ...LEARN_ARTICLES_SEO_LOOP,
 ];
 
 /** @deprecated Prefer listLearnArticleCards / getLearnArticle. */
 export const LEARN_ARTICLES = LEARN_ARTICLES_SEED;
 
 function seedAsCards(): LearnArticleListItem[] {
-  return LEARN_ARTICLES_SEED.map((a) => ({
-    slug: a.slug,
-    category: a.category,
-    ctaHref: a.ctaHref,
-    title: a.title,
-    summary: a.summary,
-  }));
+  return LEARN_ARTICLES_SEED.map((a) => {
+    const patched = applyLearnSeoOverrides(a);
+    return {
+      slug: patched.slug,
+      category: patched.category,
+      ctaHref: patched.ctaHref,
+      title: patched.title,
+      summary: patched.summary,
+    };
+  });
 }
 
 /** Lightweight list for /learn cards and related links (no full body). */
 export function listLearnArticleCards(): LearnArticleListItem[] {
   const index = readLearnIndex();
-  if (index?.length) return index;
+  if (index?.length) {
+    return index.map((item) => {
+      const patched = applyLearnSeoOverrides({
+        ...item,
+        // Cards lack links; override still upgrades title/summary.
+        links: undefined,
+      } as LearnArticle);
+      return {
+        slug: patched.slug,
+        category: patched.category,
+        ctaHref: patched.ctaHref,
+        title: patched.title,
+        summary: patched.summary,
+      };
+    });
+  }
   return seedAsCards();
 }
 
@@ -99,20 +126,25 @@ export function listLearnSlugs(): string[] {
 /** Full articles — prefer disk; falls back to seed. Avoid on hot list paths. */
 export function listLearnArticles(): LearnArticle[] {
   const cards = listLearnArticleCards();
-  if (!readLearnIndex()?.length) return LEARN_ARTICLES_SEED;
+  if (!readLearnIndex()?.length) {
+    return LEARN_ARTICLES_SEED.map((a) => applyLearnSeoOverrides(a));
+  }
 
   const out: LearnArticle[] = [];
   for (const item of cards) {
     const full = readLearnArticleFile(item.slug);
-    if (full) out.push(full);
+    if (full) out.push(applyLearnSeoOverrides(full));
   }
-  return out.length ? out : LEARN_ARTICLES_SEED;
+  return out.length
+    ? out
+    : LEARN_ARTICLES_SEED.map((a) => applyLearnSeoOverrides(a));
 }
 
 export function getLearnArticle(slug: string): LearnArticle | null {
   const fromDisk = readLearnArticleFile(slug);
-  if (fromDisk) return fromDisk;
-  return LEARN_ARTICLES_SEED.find((a) => a.slug === slug) ?? null;
+  if (fromDisk) return applyLearnSeoOverrides(fromDisk);
+  const seed = LEARN_ARTICLES_SEED.find((a) => a.slug === slug);
+  return seed ? applyLearnSeoOverrides(seed) : null;
 }
 
 /**

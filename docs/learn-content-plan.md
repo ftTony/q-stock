@@ -5,6 +5,15 @@
 > 文稿：Postgres `LearnArticle` + 磁盘快照 `data/learn`（种子仍在 `src/lib/learn/articles-*.ts`；日更用 `npm run learn:import`）  
 > 上线步骤见 [可落地路线图 · 切片 A](./product-roadmap.md)；理财工具见 [PRD 索引](./prd/README.md)
 
+### 2026-11-11 · 收录向批次（已落地）
+
+- 文章总量：**91**（原 ~67 + 词条 12 + 工具导读 6 + 闭环 6）；`npm run learn:seed` 已灌快照。
+- 内链：缺 links / 过短 summary 用 [`article-seo-overrides-*.ts`](../src/lib/learn/article-seo-overrides-data.ts) 补齐；related 排序 = series 邻篇 → 手写 links → category。
+- 个股 SSR：Learn 枢纽链 + 静态 peer 池（不打 API）；个股 description 改为学习闭环句式。
+- 课程：在心态 / 股票 / 期权外新增 **financials · cross-market-hk · reading-path**（[`series.ts`](../src/lib/learn/series.ts)）。
+- T/D：新文 summary 目标 70–120 汉字；**不维护** meta keywords。
+- 下一批（未做）：扩 `SITEMAP_RANK_LIMIT` / A 股成分白名单。
+
 ---
 
 ## 1. 专栏定位
@@ -81,7 +90,7 @@
 |---|---|---|---|---|---|
 | `paper-review` | 模拟交易与复盘笔记 | 流程 > 虚荣收益；每周复盘三问 | 模拟 / 复盘 | P0 | drafted |
 | `kline-basics` | K 线怎么读：影线、实体与别过度解读 | OHLC、常见误读；指标不预测未来 | 个股 K 线页 | P0 | drafted |
-| `indicators-lite` | MA / MACD / RSI：辅助而非圣杯 | 各一句话用途 + 失效时看什么 | 个股指标 | P0 | planned |
+| `indicators-lite` | MA / MACD / RSI：辅助而非圣杯 | 各一句话用途 + 失效时看什么 | 个股指标 | P0 | drafted |
 | `candle-hammer-hanging-man` | 锤头线与上吊线：同一副外形，不同的上下文 | 形态位置、后续验证、失败样本；非单根抄底信号 | `/markets` | P1 | drafted |
 | `candle-engulfing` | 吞没形态：被覆盖的是实体，不是未来 | 实体关系、市场差异、背景和失效条件 | `/markets` | P1 | drafted |
 | `candle-piercing-dark-cloud` | 刺透线与乌云盖顶：看收盘位置，不猜转折 | 实体中点、跳空口径、后视镜偏差 | `/markets` | P1 | drafted |
@@ -93,9 +102,9 @@
 | `indicator-bollinger-bands` | 布林带：波动区间，不是自动支撑压力 | 轨道、收口、趋势沿轨与失效条件 | `/markets` | P1 | drafted |
 | `indicator-atr` | ATR：衡量波动幅度，不判断涨跌方向 | 真实波幅、ATR% 与仓位风险的边界 | `/tools/position` | P1 | drafted |
 | `multi-market-101` | 一个终端里的美股、港股、A 股与加密 | 时段、代码习惯、合规「先问能不能」 | `/markets` | P0 | drafted |
-| `risk-before-size` | 风险预算：先定亏得起，再谈仓位 | 与仓位工具同一套语言 | `/tools/position` | P1 | planned |
-| `orders-and-slippage` | 限价、市价与滑点（学习向） | 模拟盘里如何体会；真盘以券商为准 | 模拟下单 | P1 | planned |
-| `earnings-season` | 财报季看什么、不看什么 | 日历/摘要是线索；警惕预期差情绪 | 个股 earnings Tab | P1 | planned |
+| `risk-before-size` | 风险预算：先定亏得起，再谈仓位 | 与仓位工具同一套语言 | `/tools/position` | P1 | drafted |
+| `orders-and-slippage` | 限价、市价与滑点（学习向） | 模拟盘里如何体会；真盘以券商为准 | 模拟下单 | P1 | drafted |
+| `earnings-season` | 财报季看什么、不看什么 | 日历/摘要是线索；警惕预期差情绪 | 个股 earnings Tab | P1 | drafted |
 | `leverage-warning` | 杠杆与爆仓直觉（含加密） | 放大收益也放大归零；本站不做真杠杆下单 | 免责声明 | P2 | planned |
 
 ### 5.2 工具 tools
@@ -105,11 +114,13 @@
 | `peer-compare` | 同业对比怎么用 | 同赛道 2–4 只；估算值口径 | `/analysis` | P0 | drafted |
 | `watchlist-alerts` | 自选与价格提醒：少而准 | 提醒写失效位，不是许愿位 | `/watchlist` · `/alerts` | P0 | drafted |
 | `ai-chart-read` | AI 读图与对话：怎么提问更有用 | 要结构/价位/失效；交叉验证 | 个股 AI Tab | P0 | drafted |
-| `scenario-map` | 情景地图：涨、跌、震荡各准备什么 | 与纸面条件单草案衔接 | 情景 / 模拟 | P1 | planned |
-| `position-tool-guide` | 仓位计算器怎么用 | 对应 [仓位 PRD](./prd/tool-position-sizing.md) | `/tools/position` | P1 | planned |
-| `dca-tool-guide` | 定投计算器：假设不是承诺 | 对应 [定投 PRD](./prd/tool-dca.md) | `/tools/dca` | P1 | planned |
-| `compound-tool-guide` | 复利计算器：时间与频率 | 对应 [复利 PRD](./prd/tool-compound.md) | `/tools/compound` | P1 | planned |
-| `options-tool-guide` | 期权估算：先看打和与最大亏损 | 对应 [期权 PRD](./prd/tool-options.md)；教学非下单 | `/tools/options` | P1 | planned |
+| `scenario-map` | 情景地图：涨、跌、震荡各准备什么 | 与纸面条件单草案衔接 | 情景 / 模拟 | P1 | drafted |
+| `position-tool-guide` | 仓位计算器怎么用 | 对应 [仓位 PRD](./prd/tool-position-sizing.md) | `/tools/position` | P1 | drafted |
+| `dca-tool-guide` | 定投计算器：假设不是承诺 | 对应 [定投 PRD](./prd/tool-dca.md) | `/tools/dca` | P1 | drafted |
+| `compound-tool-guide` | 复利计算器：时间与频率 | 对应 [复利 PRD](./prd/tool-compound.md) | `/tools/compound` | P1 | drafted |
+| `options-tool-guide` | 期权估算：先看打和与最大亏损 | 对应 [期权 PRD](./prd/tool-options.md)；教学非下单 | `/tools/options` | P1 | drafted |
+| `risk-reward-tool-guide` | 风险回报工具：先算期望 | 胜率/盈亏比假设证伪 | `/tools/risk-reward` | P1 | drafted |
+| `retirement-tool-guide` | 退休估算：压力测试覆盖 | 足够线 + 保守报酬 | `/tools/retirement` | P1 | drafted |
 | `byok-keys` | 为什么支持自带行情 / AI Key | 隐私与配额；平台 Key 优先逻辑一句话 | `/settings` | P2 | planned |
 
 ### 5.3 心态 mindset
@@ -118,23 +129,30 @@
 |---|---|---|---|---|---|
 | `calm-watching` | 冷静看盘：先看结构，再谈感觉 | 结构 → 价位 → 失效 | AI / 提醒 | P0 | drafted |
 | `checklist-three` | 下单前三问清单 | 结构？风险预算？失效写了没？ | 模拟 / 仓位工具 | P0 | drafted |
-| `fomo-and-news` | 热点与 FOMO：新闻怎么用 | 新闻是上下文，不是扳机 | 个股新闻 Tab | P1 | planned |
-| `review-emotions` | 复盘里的情绪标签 | 冲动、报复单、计划外；改流程不改「报复市场」 | `/review` | P1 | planned |
+| `fomo-and-news` | 热点与 FOMO：新闻怎么用 | 新闻是上下文，不是扳机 | 个股新闻 Tab | P1 | drafted |
+| `review-emotions` | 复盘里的情绪标签 | 冲动、报复单、计划外；改流程不改「报复市场」 | `/review` | P1 | drafted |
 | `less-is-more` | 少交易、多等待 | 与模拟「少而认真」呼应 | 复盘 | P2 | planned |
 | `invalidation-habit` | 把失效条件写成习惯 | 提醒 + 笔记模板 | 提醒 | P2 | planned |
 | `wealth-building-process` | 财富积累的过程：从收入能力到长期资本 | 收入能力、现金流结余、缓冲、债务、风险与长期投资；不承诺收益 | `/tools/compound` | P1 | drafted |
 
-### 5.4 词条 / SEO 短页（P2 池，可后置格式）
+### 5.4 词条 / SEO 短页（已 drafted，见 `articles-seo-glossary-*.ts`）
 
-不必长文，可 300–500 字 + 链到长文或工具：
+短文 + FAQ + 深链；category 暂归 `basics`：
 
-| slug | 词条 |
-|---|---|
-| `term-pe-pb` | PE / PB |
-| `term-dca` | 定投 |
-| `term-iv` | 隐含波动率（配合期权工具） |
-| `term-stop-loss` | 止损 |
-| `term-paper-trading` | 模拟交易 |
+| slug | 词条 | 状态 |
+|---|---|---|
+| `term-pe-pb` | PE / PB | drafted |
+| `term-roe-roa` | ROE / ROA | drafted |
+| `term-stop-loss` | 止损 | drafted |
+| `term-position-sizing` | 仓位 | drafted |
+| `term-dca` | 定投 | drafted |
+| `term-compound` | 复利 | drafted |
+| `term-iv` | 隐含波动率 | drafted |
+| `term-delta-theta` | Delta / Theta | drafted |
+| `term-support-resistance` | 支撑阻力 | drafted |
+| `term-paper-trading` | 模拟交易 | drafted |
+| `term-t1-vs-t0` | T+1 / T+0 | drafted |
+| `term-adr-vs-common` | ADR 与普通股 | drafted |
 
 ### 5.5 书单与学习路线 reading
 

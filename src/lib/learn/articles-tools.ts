@@ -196,9 +196,9 @@ export const LEARN_ARTICLES_TOOLS: LearnArticle[] = [
       en: "Watchlist and alerts: fewer, sharper",
     },
     summary: {
-      "zh-CN": "提醒写失效位与计划位，而不是许愿位；少而准才管得住注意力。",
-      "zh-TW": "提醒寫失效位與計畫位，而不是許願位；少而準才管得住注意力。",
-      en: "Alert on invalidation and plan levels—not wish prices.",
+      "zh-CN": "自选与提醒要少而准：只绑计划里的失效位与观察位，不绑许愿整数。把通知当纪律外挂，配合清单与模拟，而不是追涨闹钟。仅供学习，非投资建议。",
+      "zh-TW": "自選與提醒要少而準：只綁計畫裡的失效位與觀察位，不綁許願整數。把通知當紀律外掛，不是追漲鬧鐘。僅供學習，非投資建議。",
+      en: "Keep the watchlist short and bind alerts to written invalidation and plan levels—not round-number wishes. Treat pings as a discipline aid beside your checklist and paper trades, not a buy alarm. Learning only—not advice.",
     },
     paragraphs: {
       "zh-CN": [
@@ -223,6 +223,22 @@ export const LEARN_ARTICLES_TOOLS: LearnArticle[] = [
         "Do not treat a ping as a buy ticket. In Q-Stock, heart a symbol and set ≥ / ≤. Pings are discipline—helping you remember invalidation—not a decision substitute.",
       ],
     },
+    links: {
+      en: [
+        { label: "Calm watching", href: "/learn/calm-watching" },
+        { label: "Three questions", href: "/learn/checklist-three" },
+        { label: "Workbench loop", href: "/learn/stocks-workbench-loop" },
+        { label: "Markets", href: "/markets" },
+        { label: "AAPL workbench", href: "/symbol/stock/AAPL" },
+      ],
+      "zh-CN": [
+        { label: "冷静看盘", href: "/learn/calm-watching" },
+        { label: "下单前三问", href: "/learn/checklist-three" },
+        { label: "看盘闭环", href: "/learn/stocks-workbench-loop" },
+        { label: "行情首页", href: "/markets" },
+        { label: "打开 AAPL 工作台", href: "/symbol/stock/AAPL" },
+      ],
+    },
   },
   {
     slug: "ai-chart-read",
@@ -234,9 +250,9 @@ export const LEARN_ARTICLES_TOOLS: LearnArticle[] = [
       en: "AI chart read & chat: better questions",
     },
     summary: {
-      "zh-CN": "要结构、价位与失效；交叉验证，不当订单，更不替代你的清单。",
-      "zh-TW": "要結構、價位與失效；交叉驗證，不當訂單，更不替代你的清單。",
-      en: "Ask for structure, levels, invalidation—then verify. Not an order ticket.",
+      "zh-CN": "问 AI 要结构、关键价位与失效条件，再回图表与财报交叉验证。它是学习助读，不是订单与投顾；配额再多也替代不了你的三问清单。",
+      "zh-TW": "問 AI 要結構、關鍵價位與失效條件，再回圖表與財報交叉驗證。它是學習助讀，不是訂單與投顧。",
+      en: "Ask AI for structure, levels, and invalidation—then verify on the chart and filings. It is a study aid, not an order ticket or advisor, and never a substitute for your three-question checklist.",
     },
     paragraphs: {
       "zh-CN": [
@@ -259,6 +275,22 @@ export const LEARN_ARTICLES_TOOLS: LearnArticle[] = [
         "“Will it go up?” invites vague or risky answers. Better: what structure fits, where are levels, and what invalidates the read—then verify on quote, news, and filings.",
         "1) Ask for structure with reasons. 2) Treat levels as candidates you mark yourself. 3) Demand an invalidation sentence. 4) Shrink to three lines before any paper trade.",
         "Avoid “sure thing” and target-price prompts. Models can be stale or wrong; Q-Stock AI is a study aid, not an advisor or order ticket. Keep the same calm language as your checklist.",
+      ],
+    },
+    links: {
+      en: [
+        { label: "Calm watching", href: "/learn/calm-watching" },
+        { label: "Workbench loop", href: "/learn/stocks-workbench-loop" },
+        { label: "Three questions", href: "/learn/checklist-three" },
+        { label: "Markets", href: "/markets" },
+        { label: "AAPL workbench", href: "/symbol/stock/AAPL" },
+      ],
+      "zh-CN": [
+        { label: "冷静看盘", href: "/learn/calm-watching" },
+        { label: "看盘闭环", href: "/learn/stocks-workbench-loop" },
+        { label: "下单前三问", href: "/learn/checklist-three" },
+        { label: "行情首页", href: "/markets" },
+        { label: "打开 AAPL 工作台", href: "/symbol/stock/AAPL" },
       ],
     },
   },

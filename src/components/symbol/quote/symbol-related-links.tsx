@@ -1,7 +1,7 @@
 import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/routing";
 import { displayName } from "@/lib/market-names";
-import { seedSymbolsForMarket, type SitemapMarket } from "@/lib/seo/sitemap-symbols";
+import { peerSymbolsAround } from "@/lib/seo/symbol-peer-pool";
 import type { AssetType } from "@/lib/types";
 
 type Props = {
@@ -12,9 +12,7 @@ type Props = {
 /** Server-rendered internal links so crawlers can hop between symbols. */
 export async function SymbolRelatedLinks({ symbol, assetType }: Props) {
   const t = await getTranslations("seo");
-  const peers = seedSymbolsForMarket(assetType as SitemapMarket)
-    .filter((s) => s !== symbol.toUpperCase())
-    .slice(0, 8);
+  const peers = peerSymbolsAround(assetType, symbol, 8);
   if (!peers.length) return null;
 
   return (

@@ -234,12 +234,158 @@ export const LEARN_SERIES: readonly LearnSeriesDef[] = [
       },
     },
   },
+  {
+    id: "financials",
+    title: {
+      en: "Financials course: three statements → peers",
+      "zh-CN": "财报课程：三张表 → 同业",
+    },
+    blurb: {
+      en: "Seven lessons: stitch the statements, spot cash-flow red flags, then peer compare—before sizing.",
+      "zh-CN": "7 课：串起三张表、识别现金流红旗，再同业对比——然后才谈仓位。",
+    },
+    slugs: [
+      "financials-three-statements",
+      "financials-income-statement",
+      "financials-balance-sheet",
+      "financials-cash-flow",
+      "cash-flow-red-flags",
+      "fundamentals-checklist",
+      "peer-compare",
+    ],
+    tocTitle: {
+      "financials-three-statements": {
+        en: "Three statements",
+        "zh-CN": "三张报表怎么串",
+      },
+      "financials-income-statement": {
+        en: "Income statement",
+        "zh-CN": "利润表",
+      },
+      "financials-balance-sheet": {
+        en: "Balance sheet",
+        "zh-CN": "资产负债表",
+      },
+      "financials-cash-flow": {
+        en: "Cash flow",
+        "zh-CN": "现金流量表",
+      },
+      "cash-flow-red-flags": {
+        en: "Cash-flow red flags",
+        "zh-CN": "现金流红旗",
+      },
+      "fundamentals-checklist": {
+        en: "Fundamentals checklist",
+        "zh-CN": "基本面清单",
+      },
+      "peer-compare": {
+        en: "Peer compare",
+        "zh-CN": "同业对比",
+      },
+    },
+  },
+  {
+    id: "cross-market-hk",
+    title: {
+      en: "Cross-market & HK: rules, access, premium",
+      "zh-CN": "跨境与港股：规则、通道、溢价",
+    },
+    blurb: {
+      en: "Six lessons on multi-market habits, HK pitfalls, access costs, ADR premium, and dividends.",
+      "zh-CN": "6 课：多市场习惯、港股坑、通道成本、ADR 溢价与分红。",
+    },
+    slugs: [
+      "multi-market-101",
+      "hk-trading-rules-pitfalls",
+      "hk-access-channels-cost",
+      "cross-market-premium-guide",
+      "hk-us-dividend-withholding",
+      "adjusted-price-and-dividends",
+    ],
+    tocTitle: {
+      "multi-market-101": {
+        en: "Markets in one shell",
+        "zh-CN": "多市场差异",
+      },
+      "hk-trading-rules-pitfalls": {
+        en: "HK rules pitfalls",
+        "zh-CN": "港股规则坑",
+      },
+      "hk-access-channels-cost": {
+        en: "Access channels & cost",
+        "zh-CN": "通道与成本",
+      },
+      "cross-market-premium-guide": {
+        en: "Cross-market premium",
+        "zh-CN": "跨境溢价",
+      },
+      "hk-us-dividend-withholding": {
+        en: "Dividend withholding",
+        "zh-CN": "股息预扣",
+      },
+      "adjusted-price-and-dividends": {
+        en: "Adjusted price & dividends",
+        "zh-CN": "复权与分红",
+      },
+    },
+  },
+  {
+    id: "reading-path",
+    title: {
+      en: "Reading path: list → books → drills",
+      "zh-CN": "阅读路线：书单 → 导读 → 站内练习",
+    },
+    blurb: {
+      en: "Seven stops: paths and list, then core book guides tied to on-site tools.",
+      "zh-CN": "7 站：路线与书单，再接核心导读并绑站内工具。",
+    },
+    slugs: [
+      "learning-path",
+      "reading-list",
+      "book-psychology-of-money",
+      "book-thinking-fast-slow",
+      "book-random-walk",
+      "book-intelligent-investor",
+      "book-poor-charlie-almanack",
+    ],
+    tocTitle: {
+      "learning-path": {
+        en: "Three learning paths",
+        "zh-CN": "三条学习路线",
+      },
+      "reading-list": {
+        en: "Reading list",
+        "zh-CN": "冷静投书单",
+      },
+      "book-psychology-of-money": {
+        en: "Psychology of Money",
+        "zh-CN": "《金钱心理学》",
+      },
+      "book-thinking-fast-slow": {
+        en: "Thinking, Fast and Slow",
+        "zh-CN": "《思考，快与慢》",
+      },
+      "book-random-walk": {
+        en: "Random Walk",
+        "zh-CN": "《漫步华尔街》",
+      },
+      "book-intelligent-investor": {
+        en: "Intelligent Investor",
+        "zh-CN": "《聪明的投资者》",
+      },
+      "book-poor-charlie-almanack": {
+        en: "Poor Charlie’s Almanack",
+        "zh-CN": "《穷查理宝典》",
+      },
+    },
+  },
 ];
 
+/** First series that claims a slug wins (stocks/options/mindset keep hubs). */
 const SLUG_TO_SERIES = new Map<string, LearnSeriesDef>();
 for (const series of LEARN_SERIES) {
   for (const slug of series.slugs) {
-    SLUG_TO_SERIES.set(slug, series);
+    if (!SLUG_TO_SERIES.has(slug)) SLUG_TO_SERIES.set(slug, series);
   }
 }
 

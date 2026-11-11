@@ -1,5 +1,6 @@
 import type { SymbolSeoCopy } from "@/lib/seo/symbol-metadata";
 import type { AssetType } from "@/lib/types";
+import { SymbolLearnLinks } from "@/components/symbol/quote/symbol-learn-links";
 import { SymbolRelatedLinks } from "@/components/symbol/quote/symbol-related-links";
 import { SymbolSeoAboutBody } from "@/components/symbol/quote/symbol-seo-about-body";
 
@@ -25,6 +26,7 @@ export function SymbolSeoCrawl({ symbol, assetType, copy }: Props) {
         {copy.changeLabel ? ` ${copy.changeLabel}` : ""}
       </h1>
       <SymbolSeoAboutBody copy={copy} />
+      <SymbolLearnLinks symbol={symbol} assetType={assetType} />
       <SymbolRelatedLinks symbol={symbol} assetType={assetType} />
     </aside>
   );

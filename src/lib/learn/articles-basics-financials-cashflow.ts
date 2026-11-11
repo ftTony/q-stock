@@ -1,38 +1,173 @@
 import type { LearnArticle } from "@/lib/learn/types";
 
-/** Cash flow statement — when earnings and cash refuse to match. */
+const AUTHOR = "钱力股研究组";
+const PUBLISHED = "2026-11-10";
+const UPDATED = "2026-11-11";
+
+/** Cash flow — classification games first; product-honest about empty FCF. */
 export const LEARN_ARTICLE_FINANCIALS_CASHFLOW: LearnArticle = {
   slug: "financials-cash-flow",
   category: "basics",
   ctaHref: "/review",
+  author: AUTHOR,
+  publishedAt: PUBLISHED,
+  updatedAt: UPDATED,
   title: {
-    "zh-CN": "现金流量表：利润很美，钱进没进口袋？",
-    "zh-TW": "現金流量表：利潤很美，錢進沒進口袋？",
-    en: "Cash flow: pretty earnings, empty pockets?",
+    "zh-CN": "现金流量表：经营现金对不上时，先别算「自由现金流圣杯」",
+    "zh-TW": "現金流量表：經營現金對不上時，先別算「自由現金流聖杯」",
+    en: "Cash flow: when OCF diverges, skip the free-cash holy grail",
   },
   summary: {
-    "zh-CN": "现金流量表分经营、投资、筹资。利润与经营现金长期背离，往往比单季 EPS 更值得警惕。",
-    "zh-TW": "現金流分經營、投資、籌資。利潤與經營現金長期背離，比單季 EPS 更值得警惕。",
-    en: "Operating, investing, financing. Persistent gaps between earnings and operating cash deserve more fear than one EPS print.",
+    "zh-CN":
+      "站内现金流页对不少标的是薄表或空表，也不会给你一键 FCF。真正有用的习惯是：净利润与经营现金是否同向，投资与筹资哪一段在说话。仅供学习。",
+    "zh-TW":
+      "站內現金流頁常是薄表或空表，也沒有一鍵 FCF。先看淨利與經營現金是否同向，投資與籌資哪一段在說話。僅供學習。",
+    en: "Our cash-flow tab is often thin or empty, and there is no one-click FCF. The useful habit: do NI and OCF move together, and which of investing/financing is loud? Learning only.",
   },
   paragraphs: {
-    "zh-CN": [
-      "如果利润表是成绩单，现金流量表更像银行流水。成绩可以靠会计估计打扮；流水相对难吹牛——当然，分类游戏与延迟确认照样存在，所以它不是真理机器，而是「少被利润催眠」的第三面镜子。我自己后悔过的几笔，共同点几乎都是：当时利润表无懈可击，后来才发现经营现金早就在掉链子。",
-      "三块结构先记清楚。经营活动现金流：主业日常进钱还是烧钱，和净利润对比最有戏。投资活动：买设备、并购、买理财——扩张期常为负，要问扩的是产能还是商誉。筹资活动：借钱、还款、增发、分红、回购——正的筹资不一定坏，但要问钱是拿来打仗还是拿来续命。三者加总，解释现金余额为何从期初走到期末。",
-      "散户最该练的一刀，是「净利润 vs 经营现金流」。同向向上：至少主业回款故事暂时自洽。利润强、经营现金弱：去资产负债表找应收、存货、应付款。利润弱、经营现金强：可能在消化库存或收款改善，也不要自动判死刑。连续多个报告期背离，比单季噪声更值得写进你的观察笔记——这不是预测暴跌，是拒绝假装没看见。",
-      "自由现金流一类概念（经营现金减维持/扩张开支的口径各家不同）适合作为追问，不适合当成精确按钮。钱力股财报区更强调日历、EPS/营收预期差与利润相关指标；完整现金流量表科目仍以官方披露为准。你在站内能做的，是把「我怀疑利润含金量」写成清单，再用同业对比问同行是否一样在烧现金扩张，而不是在摘要里找一个「FCF 圣杯数字」。",
-      "和交易流程的衔接要克制。发现背离，不等于明天开空或清仓——价格可以长期不理会你的正确。更稳的动作：自选备注写清「盯经营现金」；财报日前用提醒管住失效位；仓位按亏得起算；必要时模拟一遍「若下季仍背离我怎么办」。复盘笔记很适合记这类慢变量：哪一次你忽略了流水、只信了成绩单。钱力股的复盘与模拟，练的是这个，不是猜下一小时涨跌。",
-      "AI 问股时，可以明确要求：「对比近几季净利润与经营现金流，列出可能解释。」然后你必须回到官方报表核对分类与口径——模型偶尔会串期、串非 GAAP。它省的是检索时间，不是你的责任。",
-      "练习：打开总论与利润表、资产负债表两篇之后，对本季只写三句——经营现金与净利润是否同向；投资与筹资哪一块最醒目；若背离持续一个季度，我的仓位与失效条件是什么。写完，三张表的闭环才算合上。本站行情与摘要仅供学习参考，不构成投资建议。",
-    ],
-    "zh-TW": [
-      "現金流量表像銀行流水：經營、投資、籌資。最該練的是淨利 vs 經營現金是否同向；長期背離要回應收存貨對質。",
-      "錢力股摘要偏日曆與預期差，完整現金流以官方為準。懷疑含金量就寫進自選備註，用提醒、倉位與模擬管住自己。",
-      "AI 可協助對比，仍須人工核對口徑。內容僅供學習，不構成投資建議。",
-    ],
     en: [
-      "Cash flow is closer to a bank tape than a report card: operating, investing, financing. Drill net income versus operating cash; persistent gaps send you back to receivables and inventory. Investing and financing explain expansion versus survival raises.",
-      "Q-Stock emphasizes calendar and estimate gaps; full cash-flow line items still live in filings. Note “watch operating cash” on the watchlist, size by loss budget, paper the “what if the gap continues” case, and review when you trusted earnings alone. AI can draft a comparison—you verify periods and definitions. Learning only—not advice.",
+      "People ask me for “the FCF number” the way they ask for a weather app. Definitions disagree before the arithmetic starts—maintenance versus growth capex, leases, working capital. If operating cash already diverges from net income, polishing an FCF formula is theatre.",
     ],
+    "zh-CN": [
+      "有人找我要「那个自由现金流数字」，口气像在要天气预报。口径还没对齐：维持开支还是扩张开支、租赁怎么算、营运资本进不进。若经营现金已经和净利润拧着，打磨 FCF 公式只是表演。",
+    ],
+  },
+  sections: {
+    en: [
+      {
+        type: "p",
+        text: "Open AAPL → Financials → Cash flow (classroom only). On a well-covered US name you may see multi-period rows; on many others the nav item is still clickable and the body is empty—same pattern as the balance tab. That is vendor coverage, not a hidden “pro” switch. When empty, pull the cash-flow statement from the filing and keep reading this essay for the questions, not for our cells.",
+      },
+      { type: "h2", text: "Classification games you will not see in a summary" },
+      {
+        type: "p",
+        text: "US GAAP and IFRS do not always park interest and dividends in the same bucket. Factoring or note discounting can make operating cash look healthier for a stretch. Indirect-method presentations bury the story in “changes in working capital”—you need the balance sheet to see whether receivables and inventory absorbed the profit. Direct method (rare in retail apps) is harder to skim past; we do not promise it.",
+      },
+      {
+        type: "ul",
+        items: [
+          "One quarter of NI up / OCF soft: often seasonality or a working-capital swing—write it down, do not trade it.",
+          "Three periods of the same gap: open the red-flag essay and the notes; pattern beats a single ratio.",
+          "OCF strong while NI weak: can be inventory drawdown or collections catching up—also not an automatic buy.",
+        ],
+      },
+      { type: "h2", text: "Investing and financing without morality plays" },
+      {
+        type: "p",
+        text: "Negative investing cash during a capacity build is normal. Ask whether MD&A can name the future revenue, or whether the spend mostly becomes goodwill. Positive financing cash can be growth capital or life support—context decides. Dividends and buybacks that outrun durable operating cash force a plain question: returning capital, or dressing EPS with leverage?",
+      },
+      {
+        type: "table",
+        head: ["You notice", "Ask next", "Sibling read"],
+        rows: [
+          ["EPS beat, OCF soft", "Did receivables/inventory absorb it?", "Income + balance"],
+          ["OCF soft, ST debt rising", "Is financing plugging operations?", "Balance + red flags"],
+          ["Huge capex, thin OCF", "Expansion or hole-filling?", "Red flags"],
+        ],
+      },
+      { type: "h2", text: "What we show vs what people wish we showed" },
+      {
+        type: "p",
+        text: "The financials area leans on calendar and estimate gaps; full cash-flow trees are uneven. There is no branded “FCF” button by design—definitions would imply precision we do not have. Peer compare can ask who burns cash to expand versus who converts profit; it will not crown an FCF winner. If the UI shows degraded data, freeze the narrative until the feed recovers or you read the filing.",
+      },
+      {
+        type: "p",
+        text: "Workflow that survives a gap: watchlist note “watch OCF”; alert on your invalidation, not a wish price; size by loss budget; in Review, log the time you trusted the P&L and skipped the bank tape. Ask AI to draft “NI vs OCF last few periods”—then verify periods and classifications yourself. Finding a gap still does not mean short tomorrow; prices can ignore you for a long time.",
+      },
+      {
+        type: "note",
+        text: "Cash-flow classification still leaves room for games. Educational; not investment advice.",
+      },
+    ],
+    "zh-CN": [
+      {
+        type: "p",
+        text: "打开 AAPL → 财务 → 现金流量表（课堂用）。覆盖好的美股可能有多期行；很多标的左侧仍能点、正文却是空的——和资产负债表同一类覆盖问题。空表时去官方现金流量表，这篇只给你该问的问题，不保证站内有格子可抄。",
+      },
+      { type: "h2", text: "摘要里看不见的分类游戏" },
+      {
+        type: "p",
+        text: "美股 GAAP 与 IFRS 对利息、股利进出哪一段，并不总一致。保理、票据贴现可以把经营现金打扮一阵。间接法把故事埋在「营运资本变动」里——要回到资产负债看应收、存货有没有吸走利润。直接法更难一目十行滑过，但零售终端很少给，我们也不承诺。",
+      },
+      {
+        type: "ul",
+        items: [
+          "一季净利润升、经营现金软：常是季节性或营运资本摆动——记下来，别据此交易。",
+          "连续三期同一背离：去红旗文和附注；模式比单个比值重要。",
+          "经营现金强、净利润弱：可能是去库存或回款赶上——也不是自动买入。",
+        ],
+      },
+      { type: "h2", text: "投资与筹资：先别上道德审判" },
+      {
+        type: "p",
+        text: "扩产期投资现金为负很正常。问 MD&A 说不说得出未来收入，还是开支主要变成商誉。筹资现金为正，可能是成长资本，也可能是续命——看上下文。分红与回购若长期超过可维持的经营现金，问一句就够：是在还股东，还是用杠杆化妆 EPS？",
+      },
+      {
+        type: "table",
+        head: ["你注意到", "下一步问", "姊妹文"],
+        rows: [
+          ["EPS 超预期、经营现金软", "应收/存货是否吸走了？", "利润表 + 资产负债"],
+          ["经营现金软、短债升", "筹资是否在堵窟窿？", "资产负债 + 红旗"],
+          ["资本开支很大、经营现金薄", "扩张还是补洞？", "红旗"],
+        ],
+      },
+      { type: "h2", text: "我们有什么，和大家希望有什么" },
+      {
+        type: "p",
+        text: "财报区更偏日历与预期差；完整现金流量表树覆盖不均。没有品牌化的「FCF」按钮——那会假装精确。同业对比可以问谁在烧现金扩张、谁在把利润变成钱，不会给 FCF 颁奖。若界面提示数据降级，先冻结叙事，等源恢复或你自己读披露。",
+      },
+      {
+        type: "p",
+        text: "扛得住背离的流程：自选备注「盯经营现金」；提醒绑失效位而非许愿价；仓位按亏得起；复盘记下那次只信利润表、跳过流水。问 AI「近几季净利 vs 经营现金」——然后你核对期间与分类。发现背离仍不等于明天开空；价格可以长期不理会你。",
+      },
+      {
+        type: "note",
+        text: "现金流量表仍有分类空间。仅供学习，不构成投资建议。",
+      },
+    ],
+  },
+  faq: {
+    en: [
+      {
+        q: "Why is there no FCF on the page?",
+        a: "Definitions disagree across vendors. We refuse a false-precision button; ask the question in the filing instead.",
+      },
+      {
+        q: "Empty cash-flow tab—broken?",
+        a: "Usually coverage. Same honesty as the balance sheet: filing first when cells are blank.",
+      },
+    ],
+    "zh-CN": [
+      {
+        q: "为什么页面没有自由现金流？",
+        a: "各家口径不一致。我们拒绝假精确按钮；去披露里问这个问题。",
+      },
+      {
+        q: "现金流 Tab 是空的，坏了？",
+        a: "多数是覆盖。和资产负债表一样：格子空就先官方披露。",
+      },
+    ],
+  },
+  links: {
+    en: [
+      { label: "Three statements", href: "/learn/financials-three-statements" },
+      { label: "Income statement", href: "/learn/financials-income-statement" },
+      { label: "Balance sheet", href: "/learn/financials-balance-sheet" },
+      { label: "Cash-flow red flags", href: "/learn/cash-flow-red-flags" },
+      { label: "Review", href: "/review" },
+      { label: "Open AAPL", href: "/symbol/stock/AAPL" },
+    ],
+    "zh-CN": [
+      { label: "三张报表怎么串", href: "/learn/financials-three-statements" },
+      { label: "利润表", href: "/learn/financials-income-statement" },
+      { label: "资产负债表", href: "/learn/financials-balance-sheet" },
+      { label: "现金流红旗", href: "/learn/cash-flow-red-flags" },
+      { label: "复盘", href: "/review" },
+      { label: "打开 AAPL", href: "/symbol/stock/AAPL" },
+    ],
+  },
+  sourceNote: {
+    en: "Cash-flow rows depend on vendor coverage; no site-wide FCF metric. Educational only.",
+    "zh-CN": "现金流行依赖数据源覆盖；站内无统一 FCF 指标。仅供学习。",
   },
 };

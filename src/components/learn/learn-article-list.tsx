@@ -55,7 +55,7 @@ export function LearnArticleList({
               key={key}
               type="button"
               onClick={() => setFilter(key)}
-              className={`rounded-full px-3 py-1 text-xs font-medium transition-colors ${
+              className={`rounded-[var(--radius-control)] px-3 py-1 text-xs font-medium transition-colors ${
                 active
                   ? "bg-[var(--brand)] text-white"
                   : "border border-[var(--border)] text-[var(--muted)] hover:text-[var(--foreground)]"
