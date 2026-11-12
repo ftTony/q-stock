@@ -4,6 +4,7 @@ import { futuProvider } from "@/lib/market/providers/futu";
 import { fuyaoProvider } from "@/lib/market/providers/fuyao";
 import { longbridgeProvider } from "@/lib/market/providers/longbridge";
 import { okxProvider } from "@/lib/market/providers/okx";
+import { tigerProvider } from "@/lib/market/providers/tiger";
 import {
   getMarketCreds,
   runWithMarketCreds,
@@ -12,6 +13,7 @@ import type { BrokerCredsSource } from "@/lib/market/creds-types";
 import {
   envFutuCreds,
   envLongbridgeCreds,
+  envTigerCreds,
 } from "@/lib/market/resolve-market-creds";
 import type {
   CryptoVendorId,
@@ -25,6 +27,7 @@ import type { AssetType } from "@/lib/types";
 const REGISTRY: Record<MarketProviderId, MarketDataProvider> = {
   longbridge: longbridgeProvider,
   futu: futuProvider,
+  tiger: tigerProvider,
   finnhub: finnhubProvider,
   binance: binanceProvider,
   okx: okxProvider,
@@ -34,12 +37,13 @@ const REGISTRY: Record<MarketProviderId, MarketDataProvider> = {
 const DEFAULT_ORDER: MarketProviderId[] = [
   "longbridge",
   "futu",
+  "tiger",
   "finnhub",
   "binance",
   "okx",
 ];
 
-/** Content / IPO: broker order then Finnhub. */
+/** Content / IPO: broker order then Finnhub (tiger quotes only for now). */
 export const CONTENT_PROVIDER_ORDER = [
   "longbridge",
   "futu",
@@ -48,8 +52,10 @@ export const CONTENT_PROVIDER_ORDER = [
 
 export type ContentProviderId = (typeof CONTENT_PROVIDER_ORDER)[number];
 
+export type EquityBrokerId = "longbridge" | "futu" | "tiger";
+
 export type EquityAttempt = {
-  id: "longbridge" | "futu" | "finnhub";
+  id: EquityBrokerId | "finnhub";
   /** Finnhub is always platform; brokers pin user vs env. */
   source: BrokerCredsSource;
 };
@@ -84,36 +90,41 @@ function isEquityAsset(assetType: AssetType): boolean {
 }
 
 /**
- * Equity failover hops (user asked product rule):
- * - No user keys: platform LB → platform Futu → Finnhub
- * - User Futu only: user Futu → platform LB → platform Futu → Finnhub
- * - User LB only: user LB → platform LB → platform Futu → Finnhub
- * - Both: preferred vendor's user key, then the other user key, then platform chain
+ * Equity failover hops:
+ * - User brokers first (preferred equityVendor, then other configured user brokers)
+ * - Platform LB → platform Futu → (platform tiger only if TIGER_ACCESS_TOKEN) → Finnhub
+ * - CONTENT_PROVIDER_ORDER does not include tiger (news/IPO stay LB/Futu/Finnhub)
  */
 export function listEquityAttempts(): EquityAttempt[] {
   const store = getMarketCreds();
   const hasUserLb = Boolean(store.longbridge);
   const hasUserFutu = Boolean(store.futu);
+  const hasUserTiger = Boolean(store.tiger);
   const preferred = preferredEquityVendor();
 
-  const raw: EquityAttempt[] = [];
+  const userBrokers: EquityBrokerId[] = [];
+  const pushUser = (id: EquityBrokerId, present: boolean) => {
+    if (present && !userBrokers.includes(id)) userBrokers.push(id);
+  };
+  // Preferred first among configured user brokers.
+  if (preferred === "tiger") pushUser("tiger", hasUserTiger);
+  else if (preferred === "futu") pushUser("futu", hasUserFutu);
+  else pushUser("longbridge", hasUserLb);
+  pushUser("longbridge", hasUserLb);
+  pushUser("futu", hasUserFutu);
+  pushUser("tiger", hasUserTiger);
 
-  if (hasUserLb && hasUserFutu) {
-    if (preferred === "futu") {
-      raw.push({ id: "futu", source: "user" });
-      raw.push({ id: "longbridge", source: "user" });
-    } else {
-      raw.push({ id: "longbridge", source: "user" });
-      raw.push({ id: "futu", source: "user" });
-    }
-  } else if (hasUserFutu) {
-    raw.push({ id: "futu", source: "user" });
-  } else if (hasUserLb) {
-    raw.push({ id: "longbridge", source: "user" });
-  }
+  const raw: EquityAttempt[] = userBrokers.map((id) => ({
+    id,
+    source: "user" as const,
+  }));
 
   raw.push({ id: "longbridge", source: "platform" });
   raw.push({ id: "futu", source: "platform" });
+  // Platform tiger only when optional env token is set (no platform tiger key trio).
+  if (envTigerCreds()) {
+    raw.push({ id: "tiger", source: "platform" });
+  }
   raw.push({ id: "finnhub", source: "platform" });
 
   return raw.filter((a) => {
@@ -126,7 +137,10 @@ export function listEquityAttempts(): EquityAttempt[] {
         ? hasUserLb
         : Boolean(envLongbridgeCreds());
     }
-    return a.source === "user" ? hasUserFutu : Boolean(envFutuCreds());
+    if (a.id === "futu") {
+      return a.source === "user" ? hasUserFutu : Boolean(envFutuCreds());
+    }
+    return a.source === "user" ? hasUserTiger : Boolean(envTigerCreds());
   });
 }
 
@@ -141,14 +155,17 @@ export async function runWithEquityAttempt<T>(
   );
 }
 
-/** Content providers: same equity attempt order, unique ids. */
+/** Content providers: equity attempt order, unique ids (tiger omitted). */
 export function listContentProviders(): ContentProviderId[] {
+  const contentIds = new Set<string>(CONTENT_PROVIDER_ORDER);
   const seen = new Set<ContentProviderId>();
   const out: ContentProviderId[] = [];
   for (const a of listEquityAttempts()) {
-    if (seen.has(a.id)) continue;
-    seen.add(a.id);
-    out.push(a.id);
+    if (!contentIds.has(a.id)) continue;
+    const id = a.id as ContentProviderId;
+    if (seen.has(id)) continue;
+    seen.add(id);
+    out.push(id);
   }
   return out;
 }

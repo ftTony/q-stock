@@ -1,17 +1,22 @@
 "use client";
 
 import { useEffect } from "react";
+import { useQueryClient } from "@tanstack/react-query";
 import { Controller, useForm } from "react-hook-form";
 import { useTranslations } from "next-intl";
 import { QtSelect } from "@/components/ui/qt-select";
 import type { CryptoVendorId, EquityVendorId } from "@/lib/market/types";
-import { notifyMarketVendorsChanged } from "@/lib/market/creds-status-client";
+import {
+  notifyMarketVendorsChanged,
+  type MarketCredsStatus,
+} from "@/lib/market/creds-status-client";
 import { SettingsHint } from "@/components/settings/settings-hint";
 import { useFlashMessage } from "@/components/settings/use-flash-message";
 import {
   useMarketCredentials,
   useSaveMarketCredentials,
 } from "@/hooks/query/use-credentials";
+import { queryKeys } from "@/lib/query/keys";
 
 type VendorValues = {
   equityVendor: EquityVendorId;
@@ -19,11 +24,13 @@ type VendorValues = {
 };
 
 /**
- * Choose preferred equity broker (Longbridge / Futu) and crypto exchange
- * (Binance / OKX). Persists via /api/user/market-credentials.
+ * Preferred equity broker (LB / Futu / Tiger) and crypto exchange.
+ * Optimistically updates shared creds query so the OAuth panel below
+ * switches with the dropdown (same product surface).
  */
 export function MarketVendorPrefs() {
   const t = useTranslations("settings");
+  const qc = useQueryClient();
   const { data: remote } = useMarketCredentials();
   const saveMut = useSaveMarketCredentials();
   const { message, flash, clearFlash } = useFlashMessage(2500);
@@ -43,19 +50,40 @@ export function MarketVendorPrefs() {
     });
   }, [remote, reset]);
 
+  function patchVendorCache(
+    next: Partial<{ equityVendor: EquityVendorId; cryptoVendor: CryptoVendorId }>,
+  ) {
+    qc.setQueryData<MarketCredsStatus>(queryKeys.credentials.market, (prev) => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        ...(next.equityVendor ? { equityVendor: next.equityVendor } : {}),
+        ...(next.cryptoVendor ? { cryptoVendor: next.cryptoVendor } : {}),
+      };
+    });
+  }
+
   async function saveVendors(
     next: Partial<{ equityVendor: EquityVendorId; cryptoVendor: CryptoVendorId }>,
   ) {
     clearFlash();
+    const prevEquity = remote?.equityVendor ?? "longbridge";
+    const prevCrypto = remote?.cryptoVendor ?? "binance";
+    // Switch the broker OAuth form immediately with the preference.
+    patchVendorCache(next);
     try {
       const data = await saveMut.mutateAsync(next);
-      if (data.equityVendor || data.cryptoVendor) {
-        setValue("equityVendor", data.equityVendor ?? "longbridge");
-        setValue("cryptoVendor", data.cryptoVendor ?? "binance");
-      }
+      setValue("equityVendor", data.equityVendor ?? prevEquity);
+      setValue("cryptoVendor", data.cryptoVendor ?? prevCrypto);
       notifyMarketVendorsChanged(data);
       flash("ok", t("vendorSaved"));
     } catch {
+      patchVendorCache({
+        equityVendor: prevEquity,
+        cryptoVendor: prevCrypto,
+      });
+      setValue("equityVendor", prevEquity);
+      setValue("cryptoVendor", prevCrypto);
       flash("error", t("credsSaveError"));
     }
   }
@@ -87,6 +115,7 @@ export function MarketVendorPrefs() {
                 options={[
                   { value: "longbridge", label: t("credsLongbridge") },
                   { value: "futu", label: t("credsFutu") },
+                  { value: "tiger", label: t("credsTiger") },
                 ]}
               />
             )}

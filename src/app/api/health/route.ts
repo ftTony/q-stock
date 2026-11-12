@@ -5,6 +5,7 @@ import { prisma } from "@/lib/db";
 import { getActiveProviders, getProviderPriority } from "@/lib/market";
 import { hasLongbridgeCreds } from "@/lib/market/providers/longbridge-client";
 import { isFutuConfigured } from "@/lib/market/providers/futu-http";
+import { isTigerConfigured } from "@/lib/market/providers/tiger-http";
 import { hasFuyaoCreds } from "@/lib/market/providers/fuyao-client";
 import { withUserMarket } from "@/lib/market/with-user-market";
 
@@ -26,6 +27,7 @@ export async function GET() {
         fuyao: hasFuyaoCreds(),
         longbridge: hasLongbridgeCreds(),
         futu: isFutuConfigured(),
+        tiger: isTigerConfigured(),
         adanos: Boolean(process.env.ADANOS_API_KEY),
         deepseek: Boolean(process.env.DEEPSEEK_API_KEY),
         binance: true,

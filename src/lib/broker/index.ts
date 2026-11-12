@@ -1,5 +1,6 @@
 import { hasLongbridgeCreds } from "@/lib/market/providers/longbridge-client";
 import { isFutuConfigured } from "@/lib/market/providers/futu-http";
+import { isTigerConfigured } from "@/lib/market/providers/tiger-http";
 
 /**
  * Broker trading gateway (Phase 2).
@@ -7,7 +8,7 @@ import { isFutuConfigured } from "@/lib/market/providers/futu-http";
  * via Longbridge TradeContext / Futu OpenAPI trade endpoints.
  */
 
-export type BrokerId = "longbridge" | "futu";
+export type BrokerId = "longbridge" | "futu" | "tiger";
 
 export type BrokerOrderRequest = {
   symbol: string;
@@ -52,6 +53,11 @@ export function listBrokerGateways(): {
     {
       id: "futu",
       configured: isFutuConfigured(),
+      ready: false,
+    },
+    {
+      id: "tiger",
+      configured: isTigerConfigured(),
       ready: false,
     },
   ];

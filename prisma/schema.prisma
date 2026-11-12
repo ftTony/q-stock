@@ -63,6 +63,7 @@ enum OrderStatus {
 enum EquityMarketVendor {
   longbridge
   futu
+  tiger
 }
 
 enum CryptoMarketVendor {
@@ -196,6 +197,7 @@ model PasswordResetToken {
 enum MarketCredentialProvider {
   longbridge
   futu
+  tiger
   binance
   okx
   fuyao

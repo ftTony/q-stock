@@ -8,10 +8,12 @@ import type {
   LongbridgeCreds,
   MarketCredsStore,
   OkxCreds,
+  TigerCreds,
 } from "@/lib/market/creds-types";
 import type { CryptoVendorId, EquityVendorId } from "@/lib/market/types";
 import { isFutuOAuthConfigured } from "@/lib/market/providers/futu-oauth";
 import { isLongbridgeOAuthConfigured } from "@/lib/market/providers/longbridge-oauth";
+import { isTigerOAuthConfigured } from "@/lib/market/providers/tiger-oauth";
 
 const als = new AsyncLocalStorage<MarketCredsStore>();
 
@@ -93,6 +95,22 @@ function parseFutu(raw: unknown): FutuCreds | undefined {
   return undefined;
 }
 
+function parseTiger(raw: unknown): TigerCreds | undefined {
+  if (!raw || typeof raw !== "object") return undefined;
+  const o = raw as Record<string, unknown>;
+  const mode = String(o.mode ?? "bearer").toLowerCase();
+  if (mode !== "bearer") return undefined;
+  const accessToken = String(o.accessToken ?? "").trim();
+  if (!accessToken) return undefined;
+  const refreshToken = String(o.refreshToken ?? "").trim() || undefined;
+  const expiresAtRaw = Number(o.expiresAt);
+  const expiresAt =
+    Number.isFinite(expiresAtRaw) && expiresAtRaw > 0
+      ? expiresAtRaw
+      : undefined;
+  return { mode: "bearer", accessToken, refreshToken, expiresAt };
+}
+
 function parseBinance(raw: unknown): BinanceCreds | undefined {
   if (!raw || typeof raw !== "object") return undefined;
   const o = raw as Record<string, unknown>;
@@ -150,6 +168,8 @@ export async function loadUserMarketCreds(
         store.longbridge = parseLongbridge(parsed);
       } else if (row.provider === "futu") {
         store.futu = parseFutu(parsed);
+      } else if (row.provider === "tiger") {
+        store.tiger = parseTiger(parsed);
       } else if (row.provider === "binance") {
         store.binance = parseBinance(parsed);
       } else if (row.provider === "okx") {
@@ -180,6 +200,11 @@ export async function getUserMarketCredsStatus(userId: string): Promise<{
     mode?: "bearer" | "appkey";
     oauthAvailable: boolean;
   };
+  tiger: {
+    configured: boolean;
+    mode?: "bearer";
+    oauthAvailable: boolean;
+  };
   binance: { configured: boolean };
   okx: { configured: boolean };
   fuyao: { configured: boolean };
@@ -198,6 +223,11 @@ export async function getUserMarketCredsStatus(userId: string): Promise<{
       configured: Boolean(store.futu),
       mode: store.futu?.mode,
       oauthAvailable: isFutuOAuthConfigured(),
+    },
+    tiger: {
+      configured: Boolean(store.tiger),
+      mode: store.tiger ? "bearer" : undefined,
+      oauthAvailable: isTigerOAuthConfigured(),
     },
     binance: { configured: Boolean(store.binance) },
     okx: { configured: Boolean(store.okx) },

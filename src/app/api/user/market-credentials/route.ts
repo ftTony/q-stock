@@ -48,7 +48,7 @@ const putSchema = z
     binance: binanceSchema.optional(),
     okx: okxSchema.optional(),
     fuyao: fuyaoSchema.optional(),
-    equityVendor: z.enum(["longbridge", "futu"]).optional(),
+    equityVendor: z.enum(["longbridge", "futu", "tiger"]).optional(),
     cryptoVendor: z.enum(["binance", "okx"]).optional(),
   })
   .refine(
@@ -207,12 +207,16 @@ export async function DELETE(req: Request) {
   if (
     provider !== "longbridge" &&
     provider !== "futu" &&
+    provider !== "tiger" &&
     provider !== "binance" &&
     provider !== "okx" &&
     provider !== "fuyao"
   ) {
     return NextResponse.json(
-      { error: "provider must be longbridge, futu, binance, okx, or fuyao" },
+      {
+        error:
+          "provider must be longbridge, futu, tiger, binance, okx, or fuyao",
+      },
       { status: 400 },
     );
   }

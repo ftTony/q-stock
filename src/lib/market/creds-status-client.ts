@@ -9,16 +9,25 @@ export type MarketCredsStatus = {
     mode?: "bearer" | "appkey";
     oauthAvailable?: boolean;
   };
+  tiger?: {
+    configured: boolean;
+    mode?: "bearer";
+    oauthAvailable?: boolean;
+  };
   binance?: { configured: boolean };
   okx?: { configured: boolean };
   fuyao?: { configured: boolean };
-  equityVendor?: "longbridge" | "futu";
+  equityVendor?: "longbridge" | "futu" | "tiger";
   cryptoVendor?: "binance" | "okx";
 };
 
-/** True when the user has at least one broker OpenAPI key. */
+/** True when the user has at least one broker OpenAPI key / OAuth. */
 export function hasAnyBrokerCreds(status: MarketCredsStatus | null | undefined): boolean {
-  return Boolean(status?.longbridge.configured || status?.futu.configured);
+  return Boolean(
+    status?.longbridge.configured ||
+      status?.futu.configured ||
+      status?.tiger?.configured,
+  );
 }
 
 export const CREDS_DISMISS_KEY = "market-creds-prompt-dismissed";

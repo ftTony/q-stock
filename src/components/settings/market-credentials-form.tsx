@@ -25,6 +25,7 @@ type Status = MarketCredsStatus;
 
 const FUTU_OAUTH_FLASH_KEY = "q-stock.futu-oauth";
 const LB_OAUTH_FLASH_KEY = "q-stock.lb-oauth";
+const TIGER_OAUTH_FLASH_KEY = "q-stock.tiger-oauth";
 
 function mapFutuOAuthError(code: string, t: (key: string) => string): string {
   if (code === "denied") return t("credsFutuOAuthDenied");
@@ -38,6 +39,13 @@ function mapLbOAuthError(code: string, t: (key: string) => string): string {
   if (code === "need_login") return t("credsLongbridgeOAuthNeedLogin");
   if (code === "oauth_unavailable") return t("credsLongbridgeOAuthUnavailable");
   return t("credsLongbridgeOAuthError");
+}
+
+function mapTigerOAuthError(code: string, t: (key: string) => string): string {
+  if (code === "denied") return t("credsTigerOAuthDenied");
+  if (code === "need_login") return t("credsTigerOAuthNeedLogin");
+  if (code === "oauth_unavailable") return t("credsTigerOAuthUnavailable");
+  return t("credsTigerOAuthError");
 }
 
 export function MarketCredentialsForm({
@@ -57,6 +65,7 @@ export function MarketCredentialsForm({
   const panelRef = useRef<HTMLDivElement>(null);
   const futuFlashHandled = useRef(false);
   const lbFlashHandled = useRef(false);
+  const tigerFlashHandled = useRef(false);
   const { message, messageKind, flash, clearFlash } = useFlashMessage();
 
   const { data: statusData, isLoading: loading, refetch } =
@@ -75,6 +84,7 @@ export function MarketCredentialsForm({
                 ...detail,
                 longbridge: detail.longbridge ?? prev.longbridge,
                 futu: detail.futu ?? prev.futu,
+                tiger: detail.tiger ?? prev.tiger,
                 binance: detail.binance ?? prev.binance,
                 okx: detail.okx ?? prev.okx,
                 fuyao: detail.fuyao ?? prev.fuyao,
@@ -195,6 +205,55 @@ export function MarketCredentialsForm({
     router,
   ]);
 
+  useEffect(() => {
+    if (loading || tigerFlashHandled.current) return;
+    let raw = searchParams.get("tiger");
+    if (!raw) {
+      try {
+        raw = sessionStorage.getItem(TIGER_OAUTH_FLASH_KEY);
+        if (raw) sessionStorage.removeItem(TIGER_OAUTH_FLASH_KEY);
+      } catch {
+        raw = null;
+      }
+    }
+    if (!raw) return;
+    tigerFlashHandled.current = true;
+
+    if (raw === "connected") {
+      void refetch().then((res) => {
+        try {
+          sessionStorage.removeItem(CREDS_DISMISS_KEY);
+        } catch {
+          /* ignore */
+        }
+        flash("ok", t("credsTigerConnected"));
+        if (setupKeys && hasAnyBrokerCreds(res.data)) {
+          onSetupKeysDone?.();
+          if (!forceSetupKeys) router.replace("/settings");
+        }
+      });
+    } else if (raw !== "need_login") {
+      flash("error", mapTigerOAuthError(raw, t));
+    }
+
+    if (searchParams.get("tiger")) {
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete("tiger");
+      const qs = next.toString();
+      router.replace(qs ? `/settings?${qs}` : "/settings");
+    }
+  }, [
+    loading,
+    searchParams,
+    refetch,
+    flash,
+    t,
+    setupKeys,
+    forceSetupKeys,
+    onSetupKeysDone,
+    router,
+  ]);
+
   function onCredsSaved(next: Status | undefined) {
     try {
       sessionStorage.removeItem(CREDS_DISMISS_KEY);
@@ -212,7 +271,9 @@ export function MarketCredentialsForm({
     flash("error", msg);
   }
 
-  async function clearProvider(provider: "longbridge" | "futu" | "binance") {
+  async function clearProvider(
+    provider: "longbridge" | "futu" | "tiger" | "binance",
+  ) {
     clearFlash();
     try {
       await deleteMut.mutateAsync(provider);
@@ -235,6 +296,7 @@ export function MarketCredentialsForm({
         <h2 className="text-[15px] font-semibold tracking-[-0.2px]">
           {t("credsTitle")}
         </h2>
+        <SettingsHint className="mt-2">{t("credsHint")}</SettingsHint>
         <SettingsHint tone="trust" className="mt-2">
           {t("credsTrustNote")}
         </SettingsHint>

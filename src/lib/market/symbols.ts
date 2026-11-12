@@ -102,6 +102,34 @@ export function toFutuSymbol(symbol: string, assetType: AssetType): string {
   return `US.${s}`;
 }
 
+/**
+ * Tiger OpenAPI wire symbol (no region suffix).
+ * stock → AAPL ; hk → 00700 ; cn → 600519 (market/sec_type in biz, not suffix).
+ */
+export function toTigerSymbol(symbol: string, assetType: AssetType): string {
+  if (assetType === "crypto") {
+    throw new Error("Tiger provider does not support crypto");
+  }
+  const s = normalizeSymbol(symbol, assetType);
+  if (assetType === "hk") {
+    return s.padStart(5, "0");
+  }
+  if (assetType === "cn") {
+    return toThscode(s).split(".")[0] ?? s;
+  }
+  return s.replace(/\.US$/i, "").replace(/^US\./, "");
+}
+
+/** Optional Tiger biz fields for market / sec_type. */
+export function tigerMarketBiz(
+  assetType: AssetType,
+): { market?: string; sec_type?: string } {
+  if (assetType === "hk") return { market: "HK", sec_type: "STK" };
+  if (assetType === "cn") return { market: "CN", sec_type: "STK" };
+  if (assetType === "stock") return { market: "US", sec_type: "STK" };
+  return {};
+}
+
 export function toFinnhubSymbol(symbol: string, assetType: AssetType): string {
   const upper = symbol.toUpperCase().trim();
   if (Object.prototype.hasOwnProperty.call(INDEX_FINNHUB, upper)) {

@@ -60,7 +60,7 @@ ADANOS_API_KEY=你的_adanos_key
 EMAIL_FROM=alerts@example.com
 RESEND_API_KEY=re_xxx
 ALERT_POLL_INTERVAL_MS=45000
-MARKET_DATA_PROVIDERS=longbridge,futu,finnhub,binance
+MARKET_DATA_PROVIDERS=longbridge,futu,tiger,finnhub,binance
 ```
 
 **股票 failover**：（1）用户未配 Key/OAuth → 平台长桥 → 平台富途 → Finnhub；（2）用户仅富途 → 用户富途 → 平台长桥 → 平台富途 → Finnhub；（3）用户仅长桥 → 用户长桥 → 平台长桥 → 平台富途 → Finnhub。扶摇 / 币安 / OKX 仍 env 优先。富途设置页为 OAuth；长桥为填写 Key。设置页「已配置」只反映用户凭证。
@@ -137,13 +137,17 @@ curl -X POST "$APP_URL/api/admin/learn/articles" \
 | `AUTH_TRUST_HOST` | 建议 | Docker / 代理场景设为 `true` |
 | `DATABASE_URL` | 是 | Prisma PostgreSQL 连接串 |
 | `CREDENTIALS_ENCRYPTION_KEY` | 是* | 32 字节 hex/base64；加密用户 BYOK。缺则无法在设置页保存 Key |
-| `MARKET_DATA_PROVIDERS` | 否 | 行情源优先级 CSV，默认含 longbridge,futu,finnhub,binance |
+| `MARKET_DATA_PROVIDERS` | 否 | 行情源优先级 CSV，默认含 longbridge,futu,tiger,finnhub,binance |
 | `LONGBRIDGE_OAUTH_CLIENT_ID` | 否* | 用户设置页「去长桥验证」；注册 public client 后填入 |
 | `LONGBRIDGE_OAUTH_REDIRECT_URI` | 否 | 默认 `{APP_URL}/api/oauth/longbridge/callback`，须与注册时一致 |
 | `LONGBRIDGE_APP_KEY` / `APP_SECRET` / `ACCESS_TOKEN` | 否 | 平台长桥兜底（旧版 API Key）；用户未 OAuth 时使用 |
 | `FUTU_OAUTH_CLIENT_ID` | 否* | 用户设置页「去富途验证」；注册 public client 后填入 |
 | `FUTU_OAUTH_REDIRECT_URI` | 否 | 默认 `{APP_URL}/api/oauth/futu/callback`，须与注册时一致 |
 | `FUTU_ACCESS_TOKEN` | 否 | 平台富途 Bearer（服务端兜底） |
+| `TIGER_OAUTH_CLIENT_ID` / `CLIENT_SECRET` | 否* | 用户设置页「去老虎验证」；老虎开发者应用凭据 |
+| `TIGER_OAUTH_REDIRECT_URI` | 否 | 默认 `{APP_URL}/api/oauth/tiger/callback`，须与老虎后台一致 |
+| `TIGER_API_HOST` | 否 | 行情网关 Host，默认 `https://openapi.tigerfintech.com`（sandbox 可切） |
+| `TIGER_ACCESS_TOKEN` | 否 | 平台老虎 Bearer（服务端兜底，可选；有值才插入 platform tiger hop） |
 | `FUTU_APP_KEY` + `FUTU_PRIVATE_KEY` | 否 | 平台富途 AppKey 签名（可选） |
 | `FUYAO_API_KEY` | 否 | 平台扶摇；优先于用户 BYOK |
 | `BINANCE_API_KEY` / `API_SECRET` | 否 | 可选；有 Key 时走官方 API Host |

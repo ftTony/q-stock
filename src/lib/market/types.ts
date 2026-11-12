@@ -3,12 +3,13 @@ import type { AssetType, OhlcvBar, Quote, SearchResult } from "@/lib/types";
 export type MarketProviderId =
   | "longbridge"
   | "futu"
+  | "tiger"
   | "finnhub"
   | "binance"
   | "okx"
   | "fuyao";
 
-export type EquityVendorId = "longbridge" | "futu";
+export type EquityVendorId = "longbridge" | "futu" | "tiger";
 export type CryptoVendorId = "binance" | "okx";
 
 export type QuoteWithSource = Quote & { source?: MarketProviderId };

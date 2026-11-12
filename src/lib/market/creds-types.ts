@@ -42,6 +42,17 @@ export type FutuAppKeyCreds = {
 
 export type FutuCreds = FutuBearerCreds | FutuAppKeyCreds;
 
+export type TigerBearerCreds = {
+  mode: "bearer";
+  accessToken: string;
+  /** Rotated on every refresh — always persist the new value. */
+  refreshToken?: string;
+  /** Unix ms when accessToken expires. */
+  expiresAt?: number;
+};
+
+export type TigerCreds = TigerBearerCreds;
+
 export type BinanceCreds = {
   apiKey: string;
   apiSecret?: string;
@@ -64,6 +75,7 @@ export type MarketCredsStore = {
   userId?: string;
   longbridge?: LongbridgeCreds;
   futu?: FutuCreds;
+  tiger?: TigerCreds;
   binance?: BinanceCreds;
   okx?: OkxCreds;
   fuyao?: FuyaoCreds;
@@ -90,6 +102,10 @@ export function fingerprintFutu(c: FutuCreds): string {
     return `futu:bearer:${c.accessToken.slice(0, 8)}`;
   }
   return `futu:appkey:${c.appKey}`;
+}
+
+export function fingerprintTiger(c: TigerCreds): string {
+  return `tiger:bearer:${c.accessToken.slice(0, 8)}`;
 }
 
 export function fingerprintBinance(c: BinanceCreds): string {

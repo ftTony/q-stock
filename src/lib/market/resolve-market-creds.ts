@@ -5,6 +5,7 @@ import type {
   FuyaoCreds,
   LongbridgeCreds,
   OkxCreds,
+  TigerCreds,
 } from "@/lib/market/creds-types";
 
 /** Platform Longbridge keys from env (legacy API Key; all three required). */
@@ -46,6 +47,20 @@ export function resolveFutuCreds(): FutuCreds | undefined {
   if (store.brokerCredsSource === "user") return store.futu;
   if (store.brokerCredsSource === "platform") return envFutuCreds();
   return store.futu ?? envFutuCreds();
+}
+
+/** Platform Tiger Bearer (optional env fallback). */
+export function envTigerCreds(): TigerCreds | undefined {
+  const accessToken = process.env.TIGER_ACCESS_TOKEN?.trim();
+  if (!accessToken) return undefined;
+  return { mode: "bearer", accessToken };
+}
+
+export function resolveTigerCreds(): TigerCreds | undefined {
+  const store = getMarketCreds();
+  if (store.brokerCredsSource === "user") return store.tiger;
+  if (store.brokerCredsSource === "platform") return envTigerCreds();
+  return store.tiger ?? envTigerCreds();
 }
 
 export function envBinanceCreds(): BinanceCreds | undefined {

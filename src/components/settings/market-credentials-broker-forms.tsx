@@ -2,16 +2,20 @@
 
 import { MarketLbForm } from "@/components/settings/market-lb-form";
 import { MarketFutuForm } from "@/components/settings/market-futu-form";
+import { MarketTigerForm } from "@/components/settings/market-tiger-form";
 import { MarketBinanceForm } from "@/components/settings/market-binance-form";
 import type { MarketCredsStatus } from "@/lib/market/creds-status-client";
+import type { EquityVendorId } from "@/lib/market/types";
 
 type Props = {
   status: MarketCredsStatus | null;
-  equityVendor: "longbridge" | "futu";
+  equityVendor: EquityVendorId;
   cryptoVendor: "binance" | "okx";
   onSaved: (next: MarketCredsStatus | undefined) => void;
   onError: (msg: string) => void;
-  onClearProvider: (provider: "longbridge" | "futu" | "binance") => void;
+  onClearProvider: (
+    provider: "longbridge" | "futu" | "tiger" | "binance",
+  ) => void;
 };
 
 export function MarketCredentialsBrokerForms({
@@ -34,6 +38,12 @@ export function MarketCredentialsBrokerForms({
         <MarketFutuForm
           status={status}
           onClear={() => onClearProvider("futu")}
+        />
+      ) : null}
+      {equityVendor === "tiger" ? (
+        <MarketTigerForm
+          status={status}
+          onClear={() => onClearProvider("tiger")}
         />
       ) : null}
       {cryptoVendor === "binance" ? (
