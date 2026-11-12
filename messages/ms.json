@@ -708,7 +708,7 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "Kami tidak pernah menyimpan kunci anda dalam teks biasa. Ia disulitkan untuk akaun anda sahaja — sila tambah dengan yakin.",
+    "credsTrustNote": "Broker disambung melalui OAuth. Token disulitkan untuk akaun anda sahaja dan tidak dipulangkan sebagai teks biasa.",
     "inviteTitle": "Jemputan",
     "inviteHint": "Kod jemputan terhad—kongsi hanya dengan orang yang dipercayai. Bila seseorang daftar Q-Stock dengan kod anda, anda menerima kod baharu.",
     "inviteCopyCode": "Salin kod",
@@ -1114,7 +1114,7 @@
     "principle3Title": "Alat mesti telus",
     "principle3Body": "Dari mana data datang, berapa kelewatan, sama ada merosot, sama ada ia tiba — semuanya dipaparkan. Lebih baik papar “tiada data” daripada meneka nombor.",
     "principle4Title": "Data anda milik anda",
-    "principle4Body": "Kredensial pasaran anda berikan sendiri (BYOK) dan disimpan disulitkan dengan AES-256-GCM. Platform tidak berdagang untuk anda, tidak mengeksport kedudukan anda dan tidak menggunakan kredensial anda untuk orang lain.",
+    "principle4Body": "Sebutharga broker melalui kebenaran OAuth anda; token disimpan dengan AES-256-GCM. Platform tidak berdagang untuk anda, tidak mengeksport kedudukan anda dan tidak menggunakan kelayakan anda untuk orang lain.",
     "boundaryTitle": "Apa yang ia bukan",
     "boundary1": "Bukan perkhidmatan syor saham atau penasihat berlesen: tiada isyarat beli dan tiada janji pulangan.",
     "boundary2": "Bukan saluran dagangan sebenar. Semua pesanan berlaku dalam akaun simulasi; tiada API dagangan broker disambungkan.",
@@ -1418,8 +1418,8 @@
         "body": "We emphasize invalidation and review over shouty narratives."
       },
       "privacy": {
-        "title": "Bring your own keys",
-        "body": "Broker quotes support BYOK; keys are encrypted and never echoed in plain text."
+        "title": "Benarkan untuk sambung",
+        "body": "Longbridge / Futu disambung melalui OAuth sekali klik; token disulitkan dan tidak pernah dipulangkan sebagai teks biasa."
       }
     },
     "storyTitle": "Why it exists",

@@ -708,7 +708,7 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "ระบบไม่เก็บ Key เป็นข้อความธรรมดา จะเข้ารหัสเฉพาะบัญชีของคุณ เพิ่มได้อย่างมั่นใจ",
+    "credsTrustNote": "โบรกเกอร์เชื่อมผ่าน OAuth โทเคนเข้ารหัสสำหรับบัญชีคุณเท่านั้น และไม่ส่งกลับเป็นข้อความล้วน",
     "inviteTitle": "เชิญชวน",
     "inviteHint": "รหัสเชิญมีจำกัด—แชร์เฉพาะกับคนที่ไว้ใจ เมื่อมีคนสมัคร Q-Stock ด้วยรหัสของคุณ คุณจะได้รหัสใหม่",
     "inviteCopyCode": "คัดลอกรหัส",
@@ -1114,7 +1114,7 @@
     "principle3Title": "เครื่องมือต้องโปร่งใส",
     "principle3Body": "ข้อมูลมาจากไหน ดีเลย์เท่าไร ลดคุณภาพหรือไม่ ได้ข้อมูลมาจริงหรือเปล่า ทั้งหมดแสดงบนหน้าจอ ดีกว่าแสดงว่า “ไม่มีข้อมูล” มากกว่าเดาตัวเลข",
     "principle4Title": "ข้อมูลเป็นของคุณ",
-    "principle4Body": "คีย์ตลาดคุณเป็นผู้ให้เอง (BYOK) และเข้ารหัสด้วย AES-256-GCM ก่อนจัดเก็บ แพลตฟอร์มไม่ซื้อขายแทน ไม่ส่งออกพอร์ตของคุณ และไม่ใช้คีย์ของคุณให้คนอื่น",
+    "principle4Body": "ราคาตลาดเชื่อมผ่าน OAuth ของคุณ โทเคนเก็บแบบ AES-256-GCM แพลตฟอร์มไม่เทรดแทน ไม่ส่งออกโพสิชัน และไม่ใช้โทเคนของคุณเพื่อผู้อื่น",
     "boundaryTitle": "สิ่งที่มันไม่ใช่",
     "boundary1": "ไม่ใช่บริการแนะนำหุ้นและไม่ใช่ที่ปรึกษาการลงทุนที่ได้รับใบอนุญาต ไม่มีสัญญาณซื้อและไม่มีการรับประกันผลตอบแทน",
     "boundary2": "ไม่ใช่ช่องทางซื้อขายจริง คำสั่งทั้งหมดอยู่ในบัญชีทดลอง ไม่ได้เชื่อมต่อ API ซื้อขายของโบรกเกอร์",
@@ -1418,8 +1418,8 @@
         "body": "We emphasize invalidation and review over shouty narratives."
       },
       "privacy": {
-        "title": "Bring your own keys",
-        "body": "Broker quotes support BYOK; keys are encrypted and never echoed in plain text."
+        "title": "เชื่อมต่อด้วยการอนุญาต",
+        "body": "Longbridge / Futu เชื่อมด้วย OAuth คลิกเดียว โทเคนเข้ารหัสและไม่ส่งกลับเป็นข้อความล้วน"
       }
     },
     "storyTitle": "Why it exists",

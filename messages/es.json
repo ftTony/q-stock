@@ -708,7 +708,7 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "Nunca guardamos tus claves en texto plano. Se cifran solo para tu cuenta — añádelas con confianza.",
+    "credsTrustNote": "Los brókers se conectan vía OAuth. Los tokens se cifran solo para tu cuenta y nunca se muestran en texto plano.",
     "inviteTitle": "Invitación",
     "inviteHint": "Los códigos son limitados—compártelos solo con personas de confianza. Cuando alguien se une a Q-Stock con tu código, recibes uno nuevo.",
     "inviteCopyCode": "Copiar código",
@@ -1114,7 +1114,7 @@
     "principle3Title": "La herramienta debe ser transparente",
     "principle3Body": "Origen del dato, retraso, si se degradó, si llegó o no: todo se muestra en pantalla. Prefiero «sin datos» antes que inventar una cifra.",
     "principle4Title": "Tus datos son tuyos",
-    "principle4Body": "Las credenciales de mercado las aportas tú (BYOK) y se guardan cifradas con AES-256-GCM. La plataforma no opera por ti, no exporta tus posiciones ni usa tus credenciales para otros.",
+    "principle4Body": "Las cotizaciones del bróker llegan con tu autorización OAuth; los tokens se guardan con AES-256-GCM. La plataforma no opera por ti, no exporta posiciones ni usa tus credenciales para otros.",
     "boundaryTitle": "Lo que no es",
     "boundary1": "No es un servicio de recomendaciones ni un asesor autorizado: no hay señales de compra ni promesas de rentabilidad.",
     "boundary2": "No es un canal de operación real. Todas las órdenes ocurren en una cuenta simulada; no hay API de bróker conectada.",
@@ -1418,8 +1418,8 @@
         "body": "We emphasize invalidation and review over shouty narratives."
       },
       "privacy": {
-        "title": "Bring your own keys",
-        "body": "Broker quotes support BYOK; keys are encrypted and never echoed in plain text."
+        "title": "Autorizar para conectar",
+        "body": "Longbridge / Futu se conectan con OAuth en un clic; los tokens se cifran y nunca se devuelven en texto plano."
       }
     },
     "storyTitle": "Why it exists",

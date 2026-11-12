@@ -708,7 +708,7 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "Wir speichern Ihre Keys nie im Klartext. Sie werden nur für Ihr Konto verschlüsselt — Sie können sie bedenkenlos hinterlegen.",
+    "credsTrustNote": "Broker verbinden sich per OAuth. Tokens werden nur für Ihr Konto verschlüsselt und nie im Klartext zurückgegeben.",
     "inviteTitle": "Einladung",
     "inviteHint": "Einladungscodes sind begrenzt—teilen Sie sie nur mit Vertrauenspersonen. Wer mit Ihrem Code bei Q-Stock beitritt, bringt Ihnen einen neuen Code.",
     "inviteCopyCode": "Code kopieren",
@@ -1114,7 +1114,7 @@
     "principle3Title": "Das Werkzeug muss transparent sein",
     "principle3Body": "Herkunft, Verzögerung, mögliche Degradierung, ob Daten überhaupt kamen: alles steht auf dem Schirm. Lieber „keine Daten“ als eine geratene Zahl.",
     "principle4Title": "Deine Daten gehören dir",
-    "principle4Body": "Marktzugänge stellst du selbst bereit (BYOK) und sie werden mit AES-256-GCM verschlüsselt gespeichert. Die Plattform handelt nicht für dich, exportiert keine Positionen und nutzt deine Zugänge nicht für andere.",
+    "principle4Body": "Broker-Kurse kommen über Ihre OAuth-Freigabe; Tokens werden mit AES-256-GCM gespeichert. Die Plattform handelt nicht für Sie, exportiert keine Positionen und nutzt Ihre Credentials nicht für andere.",
     "boundaryTitle": "Was es nicht ist",
     "boundary1": "Kein Empfehlungsdienst und kein zugelassener Anlageberater: keine Kaufsignale, keine Renditeversprechen.",
     "boundary2": "Kein Kanal für echten Handel. Jede Order läuft im Papierkonto; keine Broker-Handels-API ist verbunden.",
@@ -1418,8 +1418,8 @@
         "body": "We emphasize invalidation and review over shouty narratives."
       },
       "privacy": {
-        "title": "Bring your own keys",
-        "body": "Broker quotes support BYOK; keys are encrypted and never echoed in plain text."
+        "title": "Per Autorisierung verbinden",
+        "body": "Longbridge / Futu verbinden per Ein-Klick-OAuth; Tokens werden verschlüsselt und nie im Klartext zurückgegeben."
       }
     },
     "storyTitle": "Why it exists",

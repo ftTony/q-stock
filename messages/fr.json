@@ -708,7 +708,7 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "Nous ne stockons jamais vos clés en clair. Elles sont chiffrées pour votre compte uniquement — ajoutez-les en toute confiance.",
+    "credsTrustNote": "Les courtiers se connectent via OAuth. Les jetons sont chiffrés pour votre compte et jamais renvoyés en clair.",
     "inviteTitle": "Invitation",
     "inviteHint": "Les codes sont limités—partagez-les avec des personnes de confiance. Quand quelqu'un rejoint Q-Stock avec votre code, vous en recevez un nouveau.",
     "inviteCopyCode": "Copier le code",
@@ -1114,7 +1114,7 @@
     "principle3Title": "L’outil doit être transparent",
     "principle3Body": "Provenance, délai, dégradation éventuelle, disponibilité : tout est affiché. Mieux vaut « pas de données » qu’un chiffre deviné.",
     "principle4Title": "Vos données restent les vôtres",
-    "principle4Body": "Les identifiants de marché sont les vôtres (BYOK) et stockés chiffrés en AES-256-GCM. La plateforme ne trade pas pour vous, n’exporte pas vos positions et n’utilise pas vos identifiants pour d’autres.",
+    "principle4Body": "Les cotations courtier passent par votre autorisation OAuth ; les jetons sont stockés en AES-256-GCM. La plateforme ne trade pas pour vous, n'exporte pas vos positions et n'utilise pas vos identifiants pour autrui.",
     "boundaryTitle": "Ce que ce n’est pas",
     "boundary1": "Ni un service de recommandations, ni un conseiller agréé : aucun signal d’achat, aucune promesse de rendement.",
     "boundary2": "Pas un canal de trading réel. Tous les ordres se font dans un compte simulé ; aucune API de courtier n’est connectée.",
@@ -1418,8 +1418,8 @@
         "body": "We emphasize invalidation and review over shouty narratives."
       },
       "privacy": {
-        "title": "Bring your own keys",
-        "body": "Broker quotes support BYOK; keys are encrypted and never echoed in plain text."
+        "title": "Autoriser pour connecter",
+        "body": "Longbridge / Futu se connectent via OAuth en un clic ; les jetons sont chiffrés et jamais renvoyés en clair."
       }
     },
     "storyTitle": "Why it exists",

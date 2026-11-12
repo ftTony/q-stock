@@ -708,7 +708,7 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "キーは平文では保存されません。アカウント専用に暗号化されますので、安心してご登録ください。",
+    "credsTrustNote": "ブローカーは OAuth で接続。トークンはあなたのアカウント専用に暗号化され、平文では返りません。",
     "inviteTitle": "招待",
     "inviteHint": "招待コードには限りがあります。信頼できる人にだけシェアしてください。Q-Stock で登録されると、新たに1つコードが付与されます。",
     "inviteCopyCode": "コードをコピー",
@@ -1114,7 +1114,7 @@
     "principle3Title": "道具は透明であるべき",
     "principle3Body": "データの出所、遅延、劣化の有無、取得できたかどうかを画面に表示します。数字を推測するより「データなし」と出す方を選びます。",
     "principle4Title": "データはあなたのもの",
-    "principle4Body": "相場の資格情報は利用者自身が用意し（BYOK）、AES-256-GCMで暗号化して保存します。代理売買も、保有の持ち出しも、他の利用者への流用も行いません。",
+    "principle4Body": "相場はご本人の OAuth 認可で接続し、トークンは AES-256-GCM で暗号化保存します。当プラットフォームは代行売買・ポジションの持ち出し・他者への流用をしません。",
     "boundaryTitle": "これは何ではないか",
     "boundary1": "銘柄推奨サービスでも、認可を受けた投資助言者でもありません。「買いシグナル」も収益の約束もありません。",
     "boundary2": "実取引の経路ではありません。注文はすべてペーパー口座内で完結し、証券会社の取引APIには接続していません。",
@@ -1418,8 +1418,8 @@
         "body": "We emphasize invalidation and review over shouty narratives."
       },
       "privacy": {
-        "title": "Bring your own keys",
-        "body": "Broker quotes support BYOK; keys are encrypted and never echoed in plain text."
+        "title": "認可で接続",
+        "body": "Longbridge / Futu はワンクリック OAuth。トークンは暗号化保存し、平文では返しません。"
       }
     },
     "storyTitle": "Why it exists",

@@ -731,7 +731,7 @@
     "emailSaved": "Email settings saved",
     "emailCleared": "Email settings cleared",
     "emailSaveError": "Failed to save email settings",
-    "credsTrustNote": "We never store your keys in plain text. They are encrypted for your account only — feel free to add them.",
+    "credsTrustNote": "Brokers connect via OAuth. Tokens are encrypted for your account only and never echoed in plain text.",
     "inviteTitle": "Invite",
     "inviteHint": "Invite codes are limited—share them with people you trust. When someone registers with your code, you get +5 AI uses and a new invite code.",
     "inviteAiBonus": "AI uses: {remaining} / {limit} left (+5 per successful invite)",
@@ -1129,7 +1129,7 @@
     "principle3Title": "The tool must be transparent",
     "principle3Body": "Where the data came from, how delayed it is, whether it degraded, whether it arrived at all — all of it is on screen. I would rather show “no data” than guess a number.",
     "principle4Title": "Your data is yours",
-    "principle4Body": "Market credentials are yours (BYOK) and stored encrypted with AES-256-GCM. The platform never trades for you, never exports your positions, and never uses your credentials to serve anyone else.",
+    "principle4Body": "Broker quotes connect through your own OAuth grant; tokens are stored with AES-256-GCM. The platform never trades for you, never exports your positions, and never uses your credentials to serve anyone else.",
     "boundaryTitle": "What it is not",
     "boundary1": "Not a stock-tipping service or a licensed adviser: there are no buy signals and no return promises here.",
     "boundary2": "Not a live trading channel. Every order happens inside a paper account; no broker trading API is connected.",
@@ -1455,8 +1455,8 @@
         "body": "Built against FOMO: size, levels, and post-trade review before more screen time."
       },
       "privacy": {
-        "title": "Bring your own keys",
-        "body": "Broker quotes support BYOK; keys are encrypted and never echoed in plain text."
+        "title": "Authorize to connect",
+        "body": "Longbridge / Futu connect via one-click OAuth; tokens are encrypted and never echoed in plain text."
       }
     },
     "storyTitle": "Why it exists",
