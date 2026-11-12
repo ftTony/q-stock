@@ -7,16 +7,12 @@ import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { SubmitButton } from "@/components/ui/submit-button";
-import { QtSelect } from "@/components/ui/qt-select";
-import { SymbolSearchField } from "@/components/ui/symbol-search-field";
 import {
   StrategyDetailRulesPanel,
   type RulesMode,
 } from "@/components/strategy/strategy-detail-rules-panel";
+import { StrategyDetailReplayAside } from "@/components/strategy/strategy-detail-replay-aside";
 import { type ReplayResultView } from "@/components/strategy/strategy-replay-panel";
-import { StrategyReplayResultDrawer } from "@/components/strategy/strategy-replay-result-drawer";
-import { StrategyLabTools } from "@/components/strategy/strategy-lab-tools";
 import { StrategyDetailHeader } from "@/components/strategy/strategy-detail-header";
 import { replayErrorMessage } from "@/lib/strategy/replay-errors";
 import {
@@ -286,8 +282,24 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
     }
   }
 
-  if (!strategy) {
+  if (detailQuery.isLoading) {
     return <p className="text-sm text-[var(--muted)]">{t("loading")}</p>;
+  }
+
+  if (!strategy) {
+    const missing =
+      detailQuery.isError &&
+      detailQuery.error instanceof Error &&
+      /not found/i.test(detailQuery.error.message);
+    return (
+      <p className={`text-sm ${missing ? "text-[var(--muted)]" : "text-[var(--down)]"}`}>
+        {missing
+          ? t("strategyMissing")
+          : detailQuery.error instanceof Error
+            ? detailQuery.error.message
+            : t("loadFailed")}
+      </p>
+    );
   }
 
   return (
@@ -320,186 +332,37 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
           onRulesJsonChange={setRulesJson}
         />
 
-        <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3 lg:max-h-[calc(100dvh-10rem)] lg:overflow-y-auto">
-          <div className="mb-2 flex items-center justify-between gap-2">
-            <h2 className="text-[13px] font-medium">{t("replay")}</h2>
-            {quota ? (
-              <span className="text-[10px] tabular-nums text-[var(--muted)]">
-                {t("replayQuota", {
-                  used: quota.used,
-                  limit: quota.limit,
-                })}
-              </span>
-            ) : null}
-          </div>
-          <form
-            onSubmit={(e) => void startReplay(e)}
-            className="space-y-2"
-          >
-            <SymbolSearchField
-              value={symbol}
-              assetType={assetType}
-              onChange={setSymbol}
-              onSelect={(r) => {
-                setSymbol(r.symbol);
-                setAssetType(r.assetType);
-              }}
-              label={t("symbol")}
-              placeholder={t("symbolPlaceholder")}
-              required
-            />
-            <div>
-              <label className="mb-1 block text-[10px] text-[var(--muted)]">
-                {t("market")}
-              </label>
-              <QtSelect
-                value={assetType}
-                onChange={(v) => setAssetType(v as AssetType)}
-                options={[
-                  { value: "stock", label: "US" },
-                  { value: "hk", label: "HK" },
-                  { value: "cn", label: "CN" },
-                  { value: "crypto", label: "Crypto" },
-                ]}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="mb-1 block text-[10px] text-[var(--muted)]">
-                  {t("from")}
-                </label>
-                <input
-                  type="date"
-                  className="qt-input h-8 w-full px-1.5 text-[12px]"
-                  value={rangeFrom}
-                  onChange={(e) => setRangeFrom(e.target.value)}
-                  required
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-[10px] text-[var(--muted)]">
-                  {t("to")}
-                </label>
-                <input
-                  type="date"
-                  className="qt-input h-8 w-full px-1.5 text-[12px]"
-                  value={rangeTo}
-                  onChange={(e) => setRangeTo(e.target.value)}
-                  required
-                />
-              </div>
-            </div>
-            <SubmitButton
-              type="submit"
-              loading={busy}
-              loadingLabel={t("loading")}
-              className="qt-btn qt-btn-primary h-9 w-full text-sm"
-            >
-              {t("runReplay")}
-            </SubmitButton>
-          </form>
-
-          {session?.user ? (
-            <div className="mt-3 border-t border-[var(--border)] pt-3">
-              <StrategyLabTools
-                compact
-                strategyId={strategyId}
-                strategyName={name}
-                symbol={symbol}
-                assetType={assetType}
-                rangeFrom={rangeFrom}
-                rangeTo={rangeTo}
-                quota={quota}
-                onQuota={(next) => {
-                  qc.setQueryData(
-                    queryKeys.strategies.replays(strategyId),
-                    (prev: { replays?: Replay[]; quota?: Quota } | undefined) =>
-                      prev ? { ...prev, quota: next } : prev,
-                  );
-                }}
-              />
-            </div>
-          ) : null}
-
-          {replays.length > 0 ? (
-            <div className="mt-3 border-t border-[var(--border)] pt-3">
-              <p className="mb-1.5 text-[12px] text-[var(--muted)]">
-                {t("recentReplays")}
-              </p>
-              <ul className="overflow-hidden rounded-md border border-[var(--border)] divide-y divide-[var(--border)]">
-                {replays.slice(0, 5).map((r) => {
-                  const on = active?.id === r.id;
-                  const statusKey =
-                    r.status === "done"
-                      ? "statusDone"
-                      : r.status === "failed"
-                        ? "statusFailed"
-                        : r.status === "running"
-                          ? "statusRunning"
-                          : "statusPending";
-                  const statusTone =
-                    r.status === "done"
-                      ? "text-[var(--brand-text)]"
-                      : r.status === "failed"
-                        ? "text-[var(--down)]"
-                        : "text-[var(--muted)]";
-                  const ret = r.result?.totalReturnPct;
-                  return (
-                    <li key={r.id}>
-                      <button
-                        type="button"
-                        onClick={() => selectReplay(r)}
-                        className={`flex w-full items-center justify-between gap-2 px-2.5 py-2 text-left text-[13px] transition ${
-                          on
-                            ? "bg-[var(--brand-soft)]"
-                            : "bg-[var(--panel)] hover:bg-[var(--surface-2)]/70"
-                        }`}
-                      >
-                        <span className="flex min-w-0 items-baseline gap-2">
-                          <span className="font-medium tabular-nums text-[var(--foreground)]">
-                            {r.symbol}
-                          </span>
-                          <span className={`text-[12px] ${statusTone}`}>
-                            {t(statusKey)}
-                          </span>
-                        </span>
-                        <span
-                          className={`shrink-0 tabular-nums text-[12px] ${
-                            typeof ret === "number"
-                              ? ret >= 0
-                                ? "text-[var(--up)]"
-                                : "text-[var(--down)]"
-                              : "text-[var(--muted)]"
-                          }`}
-                        >
-                          {typeof ret === "number"
-                            ? `${ret > 0 ? "+" : ""}${ret.toFixed(1)}%`
-                            : "—"}
-                        </span>
-                      </button>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-          ) : null}
-
-          {active ? (
-            <div className="mt-3 border-t border-[var(--border)] pt-3">
-              <StrategyReplayResultDrawer
-                replay={{
-                  ...active,
-                  strategyId,
-                }}
-                onShareChange={
-                  session?.user
-                    ? (token) => patchShareToken(active.id, token)
-                    : undefined
-                }
-              />
-            </div>
-          ) : null}
-        </section>
+        <StrategyDetailReplayAside
+          strategyId={strategyId}
+          strategyName={name}
+          symbol={symbol}
+          assetType={assetType}
+          rangeFrom={rangeFrom}
+          rangeTo={rangeTo}
+          busy={busy}
+          quota={quota}
+          replays={replays}
+          active={active}
+          signedIn={Boolean(session?.user)}
+          onSymbolChange={setSymbol}
+          onAssetTypeChange={setAssetType}
+          onRangeFromChange={setRangeFrom}
+          onRangeToChange={setRangeTo}
+          onStartReplay={(e) => void startReplay(e)}
+          onSelectReplay={selectReplay}
+          onQuota={(next) => {
+            qc.setQueryData(
+              queryKeys.strategies.replays(strategyId),
+              (prev: { replays?: Replay[]; quota?: Quota } | undefined) =>
+                prev ? { ...prev, quota: next } : prev,
+            );
+          }}
+          onShareChange={
+            session?.user && active
+              ? (token) => patchShareToken(active.id, token)
+              : undefined
+          }
+        />
       </div>
 
       <ConfirmDialog

@@ -1,6 +1,10 @@
 import { cachedFetch } from "@/lib/cache";
 import { fingerprintLongbridge } from "@/lib/market/creds-types";
-import { hasLongbridgeCreds, loadLb } from "@/lib/market/providers/longbridge-client";
+import {
+  hasLongbridgeCreds,
+  loadLb,
+  makeLongbridgeConfig,
+} from "@/lib/market/providers/longbridge-client";
 import { resolveLongbridgeCreds } from "@/lib/market/resolve-market-creds";
 import { normalizeSymbol } from "@/lib/market/symbols";
 import type { QuoteWithSource } from "@/lib/market/types";
@@ -22,11 +26,7 @@ async function getMarketCtx(): Promise<InstanceType<LbModule["MarketContext"]>> 
   const hit = marketCtxCache.get(key);
   if (hit) return hit;
   const lb = await loadLb();
-  const config = lb.Config.fromApikey(
-    creds.appKey,
-    creds.appSecret,
-    creds.accessToken,
-  );
+  const config = await makeLongbridgeConfig(lb, creds);
   const ctx = lb.MarketContext.new(config);
   marketCtxCache.set(key, ctx);
   if (marketCtxCache.size > 32) {

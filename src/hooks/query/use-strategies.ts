@@ -136,6 +136,12 @@ export function useStrategyDetail(
       fetchJson<{ strategy: StrategyDetail }>(
         `/api/strategies/${encodeURIComponent(strategyId)}?locale=${encodeURIComponent(locale)}`,
       ),
+    retry: (failureCount, error) => {
+      if (error instanceof Error && /not found/i.test(error.message)) {
+        return false;
+      }
+      return failureCount < 2;
+    },
   });
 }
 

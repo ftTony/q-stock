@@ -24,12 +24,20 @@ import { queryKeys } from "@/lib/query/keys";
 type Status = MarketCredsStatus;
 
 const FUTU_OAUTH_FLASH_KEY = "q-stock.futu-oauth";
+const LB_OAUTH_FLASH_KEY = "q-stock.lb-oauth";
 
 function mapFutuOAuthError(code: string, t: (key: string) => string): string {
   if (code === "denied") return t("credsFutuOAuthDenied");
   if (code === "need_login") return t("credsFutuOAuthNeedLogin");
   if (code === "oauth_unavailable") return t("credsFutuOAuthUnavailable");
   return t("credsFutuOAuthError");
+}
+
+function mapLbOAuthError(code: string, t: (key: string) => string): string {
+  if (code === "denied") return t("credsLongbridgeOAuthDenied");
+  if (code === "need_login") return t("credsLongbridgeOAuthNeedLogin");
+  if (code === "oauth_unavailable") return t("credsLongbridgeOAuthUnavailable");
+  return t("credsLongbridgeOAuthError");
 }
 
 export function MarketCredentialsForm({
@@ -48,6 +56,7 @@ export function MarketCredentialsForm({
     forceSetupKeys || searchParams.get("setupKeys") === "1";
   const panelRef = useRef<HTMLDivElement>(null);
   const futuFlashHandled = useRef(false);
+  const lbFlashHandled = useRef(false);
   const { message, messageKind, flash, clearFlash } = useFlashMessage();
 
   const { data: statusData, isLoading: loading, refetch } =
@@ -87,7 +96,7 @@ export function MarketCredentialsForm({
     panelRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
   }, [setupKeys, loading]);
 
-  /** OAuth callback lands on /settings?futu=… then modal via sessionStorage. */
+  /** OAuth callback lands on /settings?futu|longbridge=… then modal via sessionStorage. */
   useEffect(() => {
     if (loading || futuFlashHandled.current) return;
     let raw = searchParams.get("futu");
@@ -122,6 +131,55 @@ export function MarketCredentialsForm({
     if (searchParams.get("futu")) {
       const next = new URLSearchParams(searchParams.toString());
       next.delete("futu");
+      const qs = next.toString();
+      router.replace(qs ? `/settings?${qs}` : "/settings");
+    }
+  }, [
+    loading,
+    searchParams,
+    refetch,
+    flash,
+    t,
+    setupKeys,
+    forceSetupKeys,
+    onSetupKeysDone,
+    router,
+  ]);
+
+  useEffect(() => {
+    if (loading || lbFlashHandled.current) return;
+    let raw = searchParams.get("longbridge");
+    if (!raw) {
+      try {
+        raw = sessionStorage.getItem(LB_OAUTH_FLASH_KEY);
+        if (raw) sessionStorage.removeItem(LB_OAUTH_FLASH_KEY);
+      } catch {
+        raw = null;
+      }
+    }
+    if (!raw) return;
+    lbFlashHandled.current = true;
+
+    if (raw === "connected") {
+      void refetch().then((res) => {
+        try {
+          sessionStorage.removeItem(CREDS_DISMISS_KEY);
+        } catch {
+          /* ignore */
+        }
+        flash("ok", t("credsLongbridgeConnected"));
+        if (setupKeys && hasAnyBrokerCreds(res.data)) {
+          onSetupKeysDone?.();
+          if (!forceSetupKeys) router.replace("/settings");
+        }
+      });
+    } else if (raw !== "need_login") {
+      flash("error", mapLbOAuthError(raw, t));
+    }
+
+    if (searchParams.get("longbridge")) {
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete("longbridge");
       const qs = next.toString();
       router.replace(qs ? `/settings?${qs}` : "/settings");
     }

@@ -27,8 +27,6 @@ export function MarketCredentialsBrokerForms({
       {equityVendor === "longbridge" ? (
         <MarketLbForm
           status={status}
-          onSaved={onSaved}
-          onError={onError}
           onClear={() => onClearProvider("longbridge")}
         />
       ) : null}

@@ -20,6 +20,7 @@ function SettingsDeepLink() {
     done.current = true;
     const setupKeys = searchParams.get("setupKeys") === "1";
     const futu = searchParams.get("futu");
+    const longbridge = searchParams.get("longbridge");
     if (futu) {
       try {
         sessionStorage.setItem("q-stock.futu-oauth", futu);
@@ -27,14 +28,25 @@ function SettingsDeepLink() {
         /* ignore */
       }
     }
+    if (longbridge) {
+      try {
+        sessionStorage.setItem("q-stock.lb-oauth", longbridge);
+      } catch {
+        /* ignore */
+      }
+    }
     settingsModal?.openSettings(
       setupKeys
         ? { setupKeys: true }
-        : futu
+        : futu || longbridge
           ? { section: "market" }
           : undefined,
     );
-    if (typeof window !== "undefined" && window.history.length > 1) {
+    // OAuth callback history is … → broker authorize → /settings?…;
+    // router.back() would return to the broker page and restart auth.
+    if (futu || longbridge) {
+      router.replace("/markets");
+    } else if (typeof window !== "undefined" && window.history.length > 1) {
       router.back();
     } else {
       router.replace("/markets");

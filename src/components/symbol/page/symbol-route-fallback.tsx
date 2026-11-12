@@ -4,7 +4,6 @@ import { useSyncExternalStore } from "react";
 import { ChartLoadingOverlay } from "@/components/ui/panel-skeleton";
 import {
   WATCH_DEFAULT,
-  readWatchlistOpen,
   readWatchlistWidth,
 } from "@/components/symbol/hooks/use-watchlist-resize";
 
@@ -23,16 +22,11 @@ function subscribeNoop() {
  * Pathname flips immediately, so the marketing page unmounts before quote/candles
  * RSC arrives — without this, users only see empty parchment + white panel.
  *
- * Left watchlist width is reserved from localStorage when the user last left it
- * open — otherwise loading.tsx paints full-bleed chart and the real page jumps.
+ * Desktop always reserves the left watchlist chrome (row skeletons). Gating on
+ * localStorage open-state failed on SSR (`useSyncExternalStore` server snapshot
+ * is always false), so loading looked like “自选没有点位”.
  */
 export function SymbolRouteFallback() {
-  // Primitives only — object snapshots would break useSyncExternalStore identity checks.
-  const watchOpen = useSyncExternalStore(
-    subscribeNoop,
-    readWatchlistOpen,
-    () => false,
-  );
   const watchWidth = useSyncExternalStore(
     subscribeNoop,
     readWatchlistWidth,
@@ -47,33 +41,41 @@ export function SymbolRouteFallback() {
       aria-label="Loading"
     >
       <div className="flex min-h-0 flex-1">
-        {watchOpen ? (
-          <aside
-            className="hidden shrink-0 flex-col border-r border-[var(--aw-hairline,var(--border))] bg-[var(--symbol-shell-bg,var(--background))] lg:flex"
-            style={{
-              flex: `0 0 ${watchWidth}px`,
-              width: watchWidth,
-              minWidth: 180,
-              maxWidth: "min(420px, 36vw)",
-            }}
-            aria-hidden
-          >
-            <div className="flex h-10 shrink-0 items-center gap-2 border-b border-[var(--aw-hairline,var(--border))] px-2.5">
-              <div className={`${skel} h-3.5 w-10`} />
-              <div className={`${skel} ml-auto h-6 w-6`} />
-            </div>
-            <div className="flex h-8 shrink-0 items-center gap-2 border-b border-[var(--aw-hairline,var(--border))] px-2">
-              <div className={`${skel} h-3 w-14`} />
-              <div className={`${skel} ml-auto h-3 w-10`} />
-              <div className={`${skel} h-3 w-10`} />
-            </div>
-            <div className="space-y-2 p-2">
-              {Array.from({ length: 8 }, (_, i) => (
-                <div key={i} className={`${skel} h-7 w-full`} />
-              ))}
-            </div>
-          </aside>
-        ) : null}
+        <aside
+          className="hidden shrink-0 flex-col border-r border-[var(--aw-hairline,var(--border))] bg-[var(--symbol-shell-bg,var(--background))] lg:flex"
+          style={{
+            flex: `0 0 ${watchWidth}px`,
+            width: watchWidth,
+            minWidth: 180,
+            maxWidth: "min(420px, 36vw)",
+          }}
+          aria-hidden
+        >
+          <div className="flex h-10 shrink-0 items-center gap-2 border-b border-[var(--aw-hairline,var(--border))] px-2.5">
+            <div className={`${skel} h-3.5 w-10`} />
+            <div className={`${skel} ml-auto h-6 w-6`} />
+          </div>
+          <div className="flex h-8 shrink-0 items-center gap-2 border-b border-[var(--aw-hairline,var(--border))] px-2">
+            <div className={`${skel} h-3 w-14`} />
+            <div className={`${skel} ml-auto h-3 w-10`} />
+            <div className={`${skel} h-3 w-10`} />
+          </div>
+          <div className="min-h-0 flex-1 space-y-0 overflow-hidden p-0">
+            {Array.from({ length: 10 }, (_, i) => (
+              <div
+                key={i}
+                className="grid h-11 grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_minmax(0,0.85fr)] items-center gap-1 border-b border-[var(--aw-hairline,var(--border))] px-2"
+              >
+                <div className="min-w-0 space-y-1">
+                  <div className={`${skel} h-3 w-12`} />
+                  <div className={`${skel} h-2.5 w-16`} />
+                </div>
+                <div className={`${skel} ml-auto h-3 w-12`} />
+                <div className={`${skel} ml-auto h-3 w-10`} />
+              </div>
+            ))}
+          </div>
+        </aside>
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <div className="flex h-11 shrink-0 items-center gap-3 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--symbol-shell-bg,var(--background))] px-3">

@@ -17,6 +17,7 @@ import {
 } from "@/hooks/use-quote-socket";
 import { queryKeys } from "@/lib/query/keys";
 import { LG_MIN, useMinWidth } from "@/hooks/use-min-width";
+import { useMounted } from "@/hooks/use-mounted";
 import type { ServerMessage } from "@/lib/market/stream/protocol";
 import type { AssetType } from "@/lib/types";
 
@@ -26,6 +27,7 @@ const ROTATE_MS = 5_000;
 
 function IndexChip({ item }: { item: IndexQuote }) {
   const t = useTranslations("market");
+  const mounted = useMounted();
   const pct = item.percentChange;
   const up = pct != null && pct >= 0;
 
@@ -58,7 +60,8 @@ function IndexChip({ item }: { item: IndexQuote }) {
       <span className="hidden max-w-[7rem] truncate text-[12px] leading-none tracking-[-0.08px] text-[var(--muted)] sm:inline">
         {fullName}
       </span>
-      {item.price != null ? (
+      {/* Seed rows are null on SSR; client may already have live prices — wait for mount. */}
+      {mounted && item.price != null ? (
         <>
           <span className="hidden text-[13px] font-semibold leading-none tabular-nums tracking-[-0.12px] text-[var(--foreground)] sm:inline">
             {formatNumber(item.price, {

@@ -9,6 +9,7 @@ import { EmptyStateBlock } from "@/components/symbol/shared/symbol-empty-art";
 import { RailPanelSkeleton } from "@/components/ui/panel-skeleton";
 import { useStrategiesList } from "@/hooks/query/use-strategies";
 import { useTradingOrders } from "@/hooks/query/use-trading";
+import { useMounted } from "@/hooks/use-mounted";
 import { formatNumber, formatTime } from "@/lib/format-number";
 import {
   deviationFlags,
@@ -65,6 +66,7 @@ export function SymbolReviewRail({
 }: Props) {
   const t = useTranslations("symbolRail");
   const locale = useLocale();
+  const mounted = useMounted();
   const { data: session, status } = useSession();
   const [filter, setFilter] = useState<Filter>("all");
   const signedIn = Boolean(session?.user);
@@ -105,7 +107,7 @@ export function SymbolReviewRail({
     });
   }, [orders, filter, t]);
 
-  if (status === "loading") {
+  if (!mounted || status === "loading") {
     return <RailPanelSkeleton rows={6} label={t("reviewLoading")} />;
   }
 

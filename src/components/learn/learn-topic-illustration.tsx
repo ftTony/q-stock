@@ -11,7 +11,8 @@ type TopicDiagram =
   | "stocks-exit-rules"
   | "paper-review"
   | "money-traps-small-capital"
-  | "book-poor-charlie-almanack";
+  | "book-poor-charlie-almanack"
+  | "money-and-desire";
 
 const DIAGRAMS = new Set<string>([
   "multi-market-101",
@@ -27,6 +28,7 @@ const DIAGRAMS = new Set<string>([
   "paper-review",
   "money-traps-small-capital",
   "book-poor-charlie-almanack",
+  "money-and-desire",
 ]);
 
 const LABELS: Record<
@@ -112,6 +114,12 @@ const LABELS: Record<
         "左边「怎么赚 20%」没有可执行答案；右边「怎么亏 30%」能列出具体清单——避开清单上的事，剩下的路自动更接近正收益。",
       note: "概念示意；避坑算术见站内避坑篇",
     },
+    "money-and-desire": {
+      title: "享乐跑步机：收入在爬，欲望在跳级",
+      caption:
+        "收入是缓升曲线，欲望是阶梯——每次「暂时满足」之后基线跳一级。两条线之间的缺口就是焦虑；跑步机上唯一有效的比较对象是去年的自己。",
+      note: "概念示意，数字示例见正文",
+    },
   },
   en: {
     "multi-market-101": {
@@ -191,6 +199,12 @@ const LABELS: Record<
       caption:
         "Left: 'how do I make 20%' — no executable answer. Right: 'how do I lose 30%' — a concrete list. Delete the list, and what remains drifts toward positive returns.",
       note: "Conceptual; the arithmetic lives in the traps article",
+    },
+    "money-and-desire": {
+      title: "The hedonic treadmill: income climbs, desire jumps a level",
+      caption:
+        "Income is a slow curve; desire is a staircase — the baseline jumps right after each 'temporary satisfaction'. The gap between the lines is the anxiety. The only fair benchmark is last year's you.",
+      note: "Conceptual; worked numbers live in the article",
     },
   },
 };
@@ -816,6 +830,48 @@ function InversionDiagram({ zh }: { zh: boolean }) {
   );
 }
 
+function MoneyDesireDiagram({ zh }: { zh: boolean }) {
+  const incomeLabel = zh ? "收入（缓升）" : "Income (slow)";
+  const desireLabel = zh ? "欲望基线（跳级）" : "Desire baseline (jumps)";
+  const gapLabel = zh ? "缺口 = 焦虑" : "gap = anxiety";
+  const resetLabel = zh ? "基线重置" : "baseline reset";
+  const youLabel = zh ? "参照系：去年的自己" : "Benchmark: last year's you";
+  return (
+    <>
+      <path d="M60 30V190H640" className="axis-line" />
+      <path
+        d="M60 176C180 166 320 148 470 126C540 116 600 108 636 102"
+        className="ma-fast"
+      />
+      <text x="486" y="94" className="diagram-strong-sm">{incomeLabel}</text>
+      <path
+        d="M60 178H130L170 148H250L290 122H380L420 96H510L550 74H636"
+        stroke="var(--down)"
+        strokeWidth="2.4"
+        strokeLinejoin="round"
+        strokeLinecap="round"
+        fill="none"
+      />
+      <text x="470" y="60" stroke="none" fill="var(--down)" className="diagram-strong-sm">
+        {desireLabel}
+      </text>
+      {[[170, 148], [290, 122], [420, 96], [550, 74]].map(([x, y]) => (
+        <g key={x}>
+          <line x1={x} y1={y + 8} x2={x} y2={y + 26} stroke="var(--muted)" strokeDasharray="3 4" />
+          <circle cx={x} cy={y} r="3" fill="var(--down)" />
+        </g>
+      ))}
+      <text x="216" y="188" className="diagram-tiny">{resetLabel}</text>
+      <rect x="330" y="118" width="220" height="34" rx="8" fill="var(--brand)" fillOpacity="0.08" />
+      <text x="440" y="140" textAnchor="middle" fill="var(--foreground)" className="diagram-tiny">
+        {gapLabel}
+      </text>
+      <rect x="60" y="42" width="180" height="30" rx="8" fill="var(--surface-2, var(--panel))" className="card-border" />
+      <text x="150" y="62" textAnchor="middle" className="diagram-tiny">{youLabel}</text>
+    </>
+  );
+}
+
 function Diagram({ id, zh }: { id: TopicDiagram; zh: boolean }) {
   switch (id) {
     case "multi-market-101":
@@ -842,6 +898,8 @@ function Diagram({ id, zh }: { id: TopicDiagram; zh: boolean }) {
       return <PaperReviewDiagram zh={zh} />;
     case "money-traps-small-capital":
       return <MoneyTrapsDiagram zh={zh} />;
+    case "money-and-desire":
+      return <MoneyDesireDiagram zh={zh} />;
     case "book-poor-charlie-almanack":
       return <InversionDiagram zh={zh} />;
   }

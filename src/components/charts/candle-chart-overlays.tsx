@@ -132,8 +132,8 @@ export function CandleChartOverlays({
   return (
     <>
       {showDrawingTools ? (
-        /* Mobile toggle after mount; md+: strip always on */
-        <div className="pointer-events-none absolute bottom-10 left-0 top-[40px] z-10 flex flex-col items-start gap-1 p-1.5 sm:p-2 md:top-[45px]">
+        /* Period toolbar lives outside the chart shell — strip starts at canvas top. */
+        <div className="pointer-events-none absolute bottom-10 left-0 top-0 z-10 flex flex-col items-start gap-1 p-1.5 sm:p-2">
           {mounted ? (
             <button
               type="button"

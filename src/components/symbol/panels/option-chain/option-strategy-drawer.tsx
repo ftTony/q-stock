@@ -17,8 +17,10 @@ import {
   buildExpiryScenarios,
   buildLegs,
   DUAL_EXPIRY_STRATEGIES,
+  earliestOptionExpiry,
   evaluateStrategy,
   premiumFromChain,
+  quoteFromChain,
   STRATEGY_IDS,
   strategyGlyph,
   strategyLabelKey,
@@ -145,16 +147,31 @@ export function OptionStrategyDrawerBody({
   const pricedLegs: PricedLeg[] = useMemo(
     () =>
       legs.map((l) => {
-        if (l.kind === "stock") return { ...l, premium: null };
+        if (l.kind === "stock") return { ...l, premium: null, iv: null };
         const src = l.expiry === farExpiry && needsFar ? farRows : rows;
-        return { ...l, premium: premiumFromChain(src, l.kind, l.strike ?? 0) };
+        const q = quoteFromChain(src, l.kind, l.strike ?? 0);
+        return { ...l, premium: q.premium, iv: q.iv };
       }),
     [legs, rows, farRows, farExpiry, needsFar],
   );
 
+  const horizonYmd = useMemo(
+    () => earliestOptionExpiry(pricedLegs) ?? expiry,
+    [pricedLegs, expiry],
+  );
+
+  const fallbackIvPct = useMemo(() => {
+    const hit = pricedLegs.find((l) => l.iv != null && l.iv > 0)?.iv;
+    return hit != null && hit > 0 ? hit : 30;
+  }, [pricedLegs]);
+
   const eval_ = useMemo(
-    () => evaluateStrategy(pricedLegs, spot),
-    [pricedLegs, spot],
+    () =>
+      evaluateStrategy(pricedLegs, spot, spot, {
+        horizonYmd,
+        fallbackIvPct,
+      }),
+    [pricedLegs, spot, horizonYmd, fallbackIvPct],
   );
 
   const strikes = useMemo(() => availableStrikes(rows), [rows]);
@@ -203,12 +220,13 @@ export function OptionStrategyDrawerBody({
     () =>
       buildExpiryScenarios({
         spot,
-        ivPct: scenarioIv != null && scenarioIv > 0 ? scenarioIv : 30,
-        daysToExpiry: daysToExpiry(expiry),
+        ivPct: scenarioIv != null && scenarioIv > 0 ? scenarioIv : fallbackIvPct,
+        daysToExpiry: daysToExpiry(horizonYmd),
         ratePct: DEFAULT_RATE_PCT,
         legs: pricedLegs,
+        horizonYmd,
       }),
-    [spot, scenarioIv, expiry, pricedLegs],
+    [spot, scenarioIv, fallbackIvPct, horizonYmd, pricedLegs],
   );
   const quoteGreeks = useMemo(
     () =>
@@ -371,7 +389,7 @@ export function OptionStrategyDrawerBody({
         <div className={SECTION_CLS}>
           <div className="mb-2 flex items-baseline justify-between gap-2">
             <span className="text-[12px] font-medium text-[var(--foreground)]">
-              {t("atExpiry")}
+              {needsFar ? t("atNearExpiry") : t("atExpiry")}
             </span>
             <span className="text-[11px] tabular-nums text-[var(--muted)]">
               {t("perContract")} · {t("spotLabel")}{" "}
@@ -389,7 +407,7 @@ export function OptionStrategyDrawerBody({
             />
           ) : null}
           <p className="mt-1.5 text-[11px] leading-relaxed text-[var(--muted)]">
-            {t("pickFromChain")}
+            {needsFar ? t("nearExpiryHint") : t("pickFromChain")}
           </p>
         </div>
 

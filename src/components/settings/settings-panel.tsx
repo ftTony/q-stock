@@ -19,6 +19,7 @@ import { SettingsGeneralForm } from "@/components/settings/settings-general-form
 import { NotificationsSettingsPanel } from "@/components/settings/notifications-settings-panel";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
+import { useMounted } from "@/hooks/use-mounted";
 
 export type SettingsSection =
   | "general"
@@ -66,10 +67,11 @@ export function SettingsPanel({
 }: Props) {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
+  const mounted = useMounted();
   const { data: session, status } = useSession();
   const loggedIn = Boolean(session?.user);
 
-  if (status === "loading") {
+  if (!mounted || status === "loading") {
     return <PanelSkeleton rows={4} label={tCommon("loading")} />;
   }
 

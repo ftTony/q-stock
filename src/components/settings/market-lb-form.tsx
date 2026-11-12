@@ -1,139 +1,66 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   SETTINGS_BTN_GHOST,
-  SETTINGS_SUBMIT_PRIMARY,
+  SETTINGS_BTN_PRIMARY,
 } from "@/components/settings/settings-btn";
-import { SubmitButton } from "@/components/ui/submit-button";
+import { SettingsHint } from "@/components/settings/settings-hint";
 import type { MarketCredsStatus } from "@/lib/market/creds-status-client";
-import { useSaveMarketCredentials } from "@/hooks/query/use-credentials";
-
-type LbValues = {
-  appKey: string;
-  appSecret: string;
-  accessToken: string;
-};
 
 type Props = {
   status: MarketCredsStatus | null;
-  onSaved: (next: MarketCredsStatus | undefined) => void;
-  onError: (msg: string) => void;
   onClear: () => void;
 };
 
-export function MarketLbForm({ status, onSaved, onError, onClear }: Props) {
+/** Longbridge BYOK: OAuth 2.0 + PKCE only (no AppKey paste). */
+export function MarketLbForm({ status, onClear }: Props) {
   const t = useTranslations("settings");
-  const tCommon = useTranslations("common");
-  const saveMut = useSaveMarketCredentials();
-  const {
-    register,
-    handleSubmit,
-    reset,
-    watch,
-    formState: { isSubmitting },
-  } = useForm<LbValues>({
-    defaultValues: { appKey: "", appSecret: "", accessToken: "" },
-  });
+  const locale = useLocale();
 
-  const appKey = watch("appKey");
-  const appSecret = watch("appSecret");
-  const accessToken = watch("accessToken");
-
-  async function onSubmit(values: LbValues) {
-    try {
-      const next = await saveMut.mutateAsync({
-        longbridge: {
-          appKey: values.appKey.trim(),
-          appSecret: values.appSecret.trim(),
-          accessToken: values.accessToken.trim(),
-        },
-      });
-      reset({ appKey: "", appSecret: "", accessToken: "" });
-      onSaved(next);
-    } catch (err) {
-      onError(err instanceof Error ? err.message : t("credsSaveError"));
-    }
-  }
+  const oauthAvailable = status?.longbridge.oauthAvailable !== false;
+  const configured = Boolean(status?.longbridge.configured);
 
   return (
-    <form
-      onSubmit={handleSubmit(onSubmit)}
-      className="space-y-3 border-t border-[var(--border)] pt-4"
-    >
+    <div className="space-y-3 border-t border-[var(--border)] pt-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-sm font-semibold">{t("credsLongbridge")}</h3>
         <span className="text-[11px] text-[var(--muted)]">
-          {status?.longbridge.configured
-            ? t("credsConfigured")
-            : t("credsNotConfigured")}
+          {configured ? t("credsLongbridgeConnected") : t("credsNotConfigured")}
         </span>
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        <label className="block space-y-1.5">
-          <span className="block text-xs text-[var(--muted)]">
-            {t("credsAppKey")}
-          </span>
-          <input
-            {...register("appKey")}
-            autoComplete="off"
-            className="qt-input h-9 w-full px-3 font-mono text-[14px] leading-none"
-            placeholder={
-              status?.longbridge.configured ? t("credsKeepPlaceholder") : ""
-            }
-          />
-        </label>
-        <label className="block space-y-1.5">
-          <span className="block text-xs text-[var(--muted)]">
-            {t("credsAppSecret")}
-          </span>
-          <input
-            type="password"
-            {...register("appSecret")}
-            autoComplete="off"
-            className="qt-input h-9 w-full px-3 font-mono text-[14px] leading-none"
-            placeholder={
-              status?.longbridge.configured ? t("credsKeepPlaceholder") : ""
-            }
-          />
-        </label>
-        <label className="block space-y-1.5 sm:col-span-2">
-          <span className="block text-xs text-[var(--muted)]">
-            {t("credsAccessToken")}
-          </span>
-          <input
-            type="password"
-            {...register("accessToken")}
-            autoComplete="off"
-            className="qt-input h-9 w-full px-3 font-mono text-[14px] leading-none"
-            placeholder={
-              status?.longbridge.configured ? t("credsKeepPlaceholder") : ""
-            }
-          />
-        </label>
-      </div>
+
+      <SettingsHint tone="trust">
+        {oauthAvailable
+          ? t("credsLongbridgeOAuthHint")
+          : t("credsLongbridgeOAuthUnavailable")}
+      </SettingsHint>
+
       <div className="flex flex-wrap gap-2">
-        <SubmitButton
-          loading={isSubmitting}
-          loadingLabel={tCommon("loading")}
-          className={SETTINGS_SUBMIT_PRIMARY}
-          disabled={
-            !appKey.trim() || !appSecret.trim() || !accessToken.trim()
-          }
-        >
-          {t("credsSaveLongbridge")}
-        </SubmitButton>
-        {status?.longbridge.configured ? (
+        {oauthAvailable ? (
+          <a
+            href={`/api/oauth/longbridge/start?locale=${encodeURIComponent(locale)}`}
+            className={`${SETTINGS_BTN_PRIMARY} inline-flex items-center`}
+          >
+            {configured
+              ? t("credsLongbridgeOAuthReconnect")
+              : t("credsLongbridgeOAuthConnect")}
+          </a>
+        ) : (
           <button
             type="button"
-            onClick={onClear}
-            className={SETTINGS_BTN_GHOST}
+            disabled
+            className={`${SETTINGS_BTN_PRIMARY} opacity-50`}
           >
+            {t("credsLongbridgeOAuthConnect")}
+          </button>
+        )}
+        {configured ? (
+          <button type="button" onClick={onClear} className={SETTINGS_BTN_GHOST}>
             {t("credsClear")}
           </button>
         ) : null}
       </div>
-    </form>
+    </div>
   );
 }

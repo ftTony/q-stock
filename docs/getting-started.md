@@ -138,7 +138,9 @@ curl -X POST "$APP_URL/api/admin/learn/articles" \
 | `DATABASE_URL` | 是 | Prisma PostgreSQL 连接串 |
 | `CREDENTIALS_ENCRYPTION_KEY` | 是* | 32 字节 hex/base64；加密用户 BYOK。缺则无法在设置页保存 Key |
 | `MARKET_DATA_PROVIDERS` | 否 | 行情源优先级 CSV，默认含 longbridge,futu,finnhub,binance |
-| `LONGBRIDGE_APP_KEY` / `APP_SECRET` / `ACCESS_TOKEN` | 否 | 平台长桥兜底；用户未填 Key 时使用 |
+| `LONGBRIDGE_OAUTH_CLIENT_ID` | 否* | 用户设置页「去长桥验证」；注册 public client 后填入 |
+| `LONGBRIDGE_OAUTH_REDIRECT_URI` | 否 | 默认 `{APP_URL}/api/oauth/longbridge/callback`，须与注册时一致 |
+| `LONGBRIDGE_APP_KEY` / `APP_SECRET` / `ACCESS_TOKEN` | 否 | 平台长桥兜底（旧版 API Key）；用户未 OAuth 时使用 |
 | `FUTU_OAUTH_CLIENT_ID` | 否* | 用户设置页「去富途验证」；注册 public client 后填入 |
 | `FUTU_OAUTH_REDIRECT_URI` | 否 | 默认 `{APP_URL}/api/oauth/futu/callback`，须与注册时一致 |
 | `FUTU_ACCESS_TOKEN` | 否 | 平台富途 Bearer（服务端兜底） |

@@ -13,6 +13,7 @@ import { AiChatHistoryPanel } from "@/components/market/ai-chat-history-panel";
 import { AiChatPanel } from "@/components/market/ai-chat-panel";
 import { useAiChartRead } from "@/components/market/use-ai-chart-read";
 import { InlineLoading, PanelSkeleton } from "@/components/ui/panel-skeleton";
+import { useMounted } from "@/hooks/use-mounted";
 import type { AssetType } from "@/lib/types";
 
 type Props = {
@@ -23,13 +24,14 @@ type Props = {
 /** Inline AI desk for desktop stack bottom panel (no SideDrawer). */
 export function SymbolStackAiPane({ symbol, assetType }: Props) {
   const t = useTranslations("symbol");
+  const mounted = useMounted();
   const { status } = useSession();
   const [view, setView] = useState<"desk" | "history">("desk");
   const [loadSessionId, setLoadSessionId] = useState<string | null>(null);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const chart = useAiChartRead(symbol, assetType);
 
-  if (status === "loading") {
+  if (!mounted || status === "loading") {
     return (
       <div className="flex min-h-[12rem] flex-col gap-4 p-4">
         <InlineLoading label={t("openAi")} />

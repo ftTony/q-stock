@@ -1,4 +1,11 @@
 import { createHash, createHmac } from "crypto";
+import {
+  isLongbridgeBearer,
+  type LongbridgeAppKeyCreds,
+} from "@/lib/market/creds-types";
+import {
+  ensureFreshLongbridgeBearer,
+} from "@/lib/market/providers/longbridge-client";
 import { resolveLongbridgeCreds } from "@/lib/market/resolve-market-creds";
 
 const HOST =
@@ -39,22 +46,22 @@ function signGet(
   )}`;
 }
 
-/** Signed Longbridge OpenAPI GET (JSON body). Env keys first, else BYOK. */
-export async function longbridgeHttpGet<T = unknown>(
-  path: string,
+function buildQuery(
   params: Record<string, string | number | undefined>,
-): Promise<T> {
-  const creds = resolveLongbridgeCreds();
-  if (!creds) {
-    throw new Error("Longbridge credentials not configured");
-  }
-  const { appKey: key, appSecret: secret, accessToken: token } = creds;
-
-  const query = Object.entries(params)
+): string {
+  return Object.entries(params)
     .filter(([, v]) => v !== undefined && v !== "")
     .map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(String(v))}`)
     .join("&");
+}
 
+async function longbridgeHttpGetAppKey<T>(
+  creds: LongbridgeAppKeyCreds,
+  path: string,
+  params: Record<string, string | number | undefined>,
+): Promise<T> {
+  const { appKey: key, appSecret: secret, accessToken: token } = creds;
+  const query = buildQuery(params);
   const ts = String(Math.floor(Date.now() / 1000));
   const signature = signGet(path, query, ts, key, secret, token);
   const url = query ? `${HOST}${path}?${query}` : `${HOST}${path}`;
@@ -74,4 +81,40 @@ export async function longbridgeHttpGet<T = unknown>(
     throw new Error(`Longbridge HTTP ${res.status} ${path}`);
   }
   return (await res.json()) as T;
+}
+
+async function longbridgeHttpGetBearer<T>(
+  path: string,
+  params: Record<string, string | number | undefined>,
+  accessToken: string,
+): Promise<T> {
+  const query = buildQuery(params);
+  const url = query ? `${HOST}${path}?${query}` : `${HOST}${path}`;
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+    },
+    signal: AbortSignal.timeout(20_000),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    throw new Error(`Longbridge HTTP ${res.status} ${path}`);
+  }
+  return (await res.json()) as T;
+}
+
+/** Signed Longbridge OpenAPI GET (JSON body). Env keys first, else BYOK. */
+export async function longbridgeHttpGet<T = unknown>(
+  path: string,
+  params: Record<string, string | number | undefined>,
+): Promise<T> {
+  const creds = resolveLongbridgeCreds();
+  if (!creds) {
+    throw new Error("Longbridge credentials not configured");
+  }
+  if (isLongbridgeBearer(creds)) {
+    const fresh = await ensureFreshLongbridgeBearer(creds);
+    return longbridgeHttpGetBearer(path, params, fresh.accessToken);
+  }
+  return longbridgeHttpGetAppKey(creds, path, params);
 }

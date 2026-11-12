@@ -1,8 +1,23 @@
+import { prisma } from "@/lib/db";
+import { encryptJson } from "@/lib/crypto/secret-box";
+import {
+  getMarketCreds,
+  invalidateUserMarketCredsCache,
+} from "@/lib/market/creds-context";
 import { resolveLongbridgeCreds } from "@/lib/market/resolve-market-creds";
 import {
   fingerprintLongbridge,
+  isLongbridgeBearer,
+  type LongbridgeBearerCreds,
   type LongbridgeCreds,
 } from "@/lib/market/creds-types";
+import {
+  expiresAtFromExpiresIn,
+  getLongbridgeOAuthClientId,
+  refreshAccessToken,
+  shouldRefreshAccessToken,
+  writeLongbridgeSdkTokenFile,
+} from "@/lib/market/providers/longbridge-oauth";
 import { toLongbridgeSymbol, normalizeSymbol } from "@/lib/market/symbols";
 import { MarketDataError } from "@/lib/market/types";
 import type { AssetType, OhlcvBar } from "@/lib/types";
@@ -76,11 +91,84 @@ function longbridgeEnableOvernight(): boolean {
   return true;
 }
 
-function makeConfig(
-  lb: LbModule,
-  creds: LongbridgeCreds,
-  language?: LbLanguageId,
-) {
+/** Serialize disk token write + OAuth.build (SDK path is per client_id). */
+let oauthGate: Promise<unknown> = Promise.resolve();
+
+function withOAuthGate<T>(fn: () => Promise<T>): Promise<T> {
+  const run = oauthGate.then(fn, fn);
+  oauthGate = run.then(
+    () => undefined,
+    () => undefined,
+  );
+  return run;
+}
+
+const refreshInflight = new Map<string, Promise<LongbridgeBearerCreds>>();
+
+async function persistUserBearer(
+  userId: string,
+  next: LongbridgeBearerCreds,
+): Promise<void> {
+  const payload = encryptJson(next);
+  await prisma.userMarketCredential.upsert({
+    where: { userId_provider: { userId, provider: "longbridge" } },
+    create: { userId, provider: "longbridge", payload },
+    update: { payload },
+  });
+  invalidateUserMarketCredsCache(userId);
+  const store = getMarketCreds();
+  if (store.userId === userId) {
+    store.longbridge = next;
+  }
+}
+
+/**
+ * Renew OAuth access_token when near expiry. Env-only / no-refresh tokens
+ * are returned unchanged.
+ */
+export async function ensureFreshLongbridgeBearer(
+  creds: LongbridgeBearerCreds,
+): Promise<LongbridgeBearerCreds> {
+  if (!shouldRefreshAccessToken(creds.expiresAt) || !creds.refreshToken) {
+    return creds;
+  }
+  const clientId = getLongbridgeOAuthClientId();
+  const userId = getMarketCreds().userId;
+  if (!clientId || !userId) return creds;
+
+  const existing = refreshInflight.get(userId);
+  if (existing) return existing;
+
+  const job = (async () => {
+    const tokens = await refreshAccessToken({
+      refreshToken: creds.refreshToken!,
+      clientId,
+    });
+    const next: LongbridgeBearerCreds = {
+      mode: "bearer",
+      accessToken: tokens.accessToken,
+      refreshToken: tokens.refreshToken || creds.refreshToken,
+      expiresAt: expiresAtFromExpiresIn(tokens.expiresIn),
+    };
+    await persistUserBearer(userId, next);
+    return next;
+  })().finally(() => {
+    refreshInflight.delete(userId);
+  });
+
+  refreshInflight.set(userId, job);
+  try {
+    return await job;
+  } catch (err) {
+    console.warn(
+      "[longbridge] token refresh failed:",
+      err instanceof Error ? err.message : err,
+    );
+    return creds;
+  }
+}
+
+function extraConfig(language?: LbLanguageId) {
   const extra: {
     language?: number;
     enableOvernight?: boolean;
@@ -90,12 +178,54 @@ function makeConfig(
   if (language !== undefined && language !== "default") {
     extra.language = language;
   }
-  return lb.Config.fromApikey(
-    creds.appKey,
-    creds.appSecret,
-    creds.accessToken,
-    extra,
-  );
+  return extra;
+}
+
+/**
+ * Build SDK Config for API Key or OAuth bearer.
+ * Bearer path: refresh → write SDK token file → Config.fromOAuth.
+ */
+export async function makeLongbridgeConfig(
+  lb: LbModule,
+  creds: LongbridgeCreds,
+  language?: LbLanguageId,
+) {
+  const extra = extraConfig(language);
+  if (!isLongbridgeBearer(creds)) {
+    return lb.Config.fromApikey(
+      creds.appKey,
+      creds.appSecret,
+      creds.accessToken,
+      extra,
+    );
+  }
+
+  const clientId = getLongbridgeOAuthClientId();
+  if (!clientId) {
+    throw new MarketDataError(
+      "Longbridge OAuth is not configured (LONGBRIDGE_OAUTH_CLIENT_ID)",
+      "longbridge",
+    );
+  }
+
+  const fresh = await ensureFreshLongbridgeBearer(creds);
+  return withOAuthGate(async () => {
+    await writeLongbridgeSdkTokenFile(clientId, fresh);
+    const oauth = await new Promise<InstanceType<LbModule["OAuth"]>>(
+      (resolve, reject) => {
+        void lb.OAuth.build(clientId, (err, url) => {
+          reject(
+            new MarketDataError(
+              err?.message ||
+                `Longbridge OAuth requires re-authorization${url ? ` (${url})` : ""}`,
+              "longbridge",
+            ),
+          );
+        }).then(resolve, reject);
+      },
+    );
+    return lb.Config.fromOAuth(oauth, extra);
+  });
 }
 
 function trimFpMap<V>(map: Map<string, V>, max: number) {
@@ -139,7 +269,7 @@ export async function getQuoteCtx(): Promise<QuoteCtx> {
     if (again) return again;
     try {
       const lb = await loadLb();
-      const ctx = lb.QuoteContext.new(makeConfig(lb, creds));
+      const ctx = lb.QuoteContext.new(await makeLongbridgeConfig(lb, creds));
       G.quote.set(key, ctx);
       trimFpMap(G.quote, MAX_FP);
       return ctx;
@@ -195,7 +325,9 @@ export async function getContentCtx(_language: LbLanguageId = "default") {
     try {
       const lb = await loadLb();
       // Prefer zh-CN for this product; quota cannot afford per-locale sockets.
-      const ctx = lb.ContentContext.new(makeConfig(lb, creds, 0));
+      const ctx = lb.ContentContext.new(
+        await makeLongbridgeConfig(lb, creds, 0),
+      );
       G.content.set(key, ctx);
       trimFpMap(G.content, MAX_FP);
       return ctx;
@@ -216,7 +348,9 @@ export async function getFundamentalCtx(_language: LbLanguageId = "default") {
     if (again) return again;
     try {
       const lb = await loadLb();
-      const ctx = lb.FundamentalContext.new(makeConfig(lb, creds, 0));
+      const ctx = lb.FundamentalContext.new(
+        await makeLongbridgeConfig(lb, creds, 0),
+      );
       G.fundamental.set(key, ctx);
       trimFpMap(G.fundamental, MAX_FP);
       return ctx;

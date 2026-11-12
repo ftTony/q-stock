@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { LEGAL_CONTACT_EMAIL } from "@/lib/legal/legal-shared";
 import { SETTINGS_BTN_PRIMARY } from "@/components/settings/settings-btn";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
+import { useMounted } from "@/hooks/use-mounted";
 
 type View = "compose" | "history";
 
@@ -63,6 +64,8 @@ function formatWhen(iso: string, locale: string) {
 export function SettingsFeedbackPanel() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
+  const locale = useLocale();
+  const mounted = useMounted();
   const { data: session, status } = useSession();
   const loginModal = useLoginModalOptional();
   const fileRef = useRef<HTMLInputElement>(null);
@@ -77,8 +80,6 @@ export function SettingsFeedbackPanel() {
   const [historyError, setHistoryError] = useState<string | null>(null);
 
   const loggedIn = Boolean(session?.user);
-  const locale =
-    typeof document !== "undefined" ? document.documentElement.lang || "zh-CN" : "zh-CN";
 
   const loadHistory = useCallback(async () => {
     if (!loggedIn) {
@@ -163,7 +164,7 @@ export function SettingsFeedbackPanel() {
     }
   };
 
-  if (status === "loading") {
+  if (!mounted || status === "loading") {
     return <PanelSkeleton rows={5} label={tCommon("loading")} />;
   }
 

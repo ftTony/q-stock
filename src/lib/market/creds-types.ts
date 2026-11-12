@@ -1,10 +1,28 @@
 import type { CryptoVendorId, EquityVendorId } from "@/lib/market/types";
 
-export type LongbridgeCreds = {
+export type LongbridgeBearerCreds = {
+  mode: "bearer";
+  accessToken: string;
+  /** Present after OAuth PKCE; used to renew accessToken. */
+  refreshToken?: string;
+  /** Unix ms when accessToken expires. */
+  expiresAt?: number;
+};
+
+export type LongbridgeAppKeyCreds = {
+  mode?: "appkey";
   appKey: string;
   appSecret: string;
   accessToken: string;
 };
+
+export type LongbridgeCreds = LongbridgeBearerCreds | LongbridgeAppKeyCreds;
+
+export function isLongbridgeBearer(
+  c: LongbridgeCreds,
+): c is LongbridgeBearerCreds {
+  return (c as LongbridgeBearerCreds).mode === "bearer";
+}
 
 export type FutuBearerCreds = {
   mode: "bearer";
@@ -61,6 +79,9 @@ export type MarketCredsStore = {
 };
 
 export function fingerprintLongbridge(c: LongbridgeCreds): string {
+  if (isLongbridgeBearer(c)) {
+    return `lb:bearer:${c.accessToken.slice(0, 8)}`;
+  }
   return `lb:${c.appKey}:${c.accessToken.slice(0, 8)}`;
 }
 

@@ -11,6 +11,7 @@ import type {
 } from "@/lib/market/creds-types";
 import type { CryptoVendorId, EquityVendorId } from "@/lib/market/types";
 import { isFutuOAuthConfigured } from "@/lib/market/providers/futu-oauth";
+import { isLongbridgeOAuthConfigured } from "@/lib/market/providers/longbridge-oauth";
 
 const als = new AsyncLocalStorage<MarketCredsStore>();
 
@@ -48,11 +49,23 @@ export function invalidateUserMarketCredsCache(userId: string): void {
 function parseLongbridge(raw: unknown): LongbridgeCreds | undefined {
   if (!raw || typeof raw !== "object") return undefined;
   const o = raw as Record<string, unknown>;
+  const mode = String(o.mode ?? "").toLowerCase();
+  if (mode === "bearer") {
+    const accessToken = String(o.accessToken ?? "").trim();
+    if (!accessToken) return undefined;
+    const refreshToken = String(o.refreshToken ?? "").trim() || undefined;
+    const expiresAtRaw = Number(o.expiresAt);
+    const expiresAt =
+      Number.isFinite(expiresAtRaw) && expiresAtRaw > 0
+        ? expiresAtRaw
+        : undefined;
+    return { mode: "bearer", accessToken, refreshToken, expiresAt };
+  }
   const appKey = String(o.appKey ?? "").trim();
   const appSecret = String(o.appSecret ?? "").trim();
   const accessToken = String(o.accessToken ?? "").trim();
   if (!appKey || !appSecret || !accessToken) return undefined;
-  return { appKey, appSecret, accessToken };
+  return { mode: "appkey", appKey, appSecret, accessToken };
 }
 
 function parseFutu(raw: unknown): FutuCreds | undefined {
@@ -157,7 +170,11 @@ export async function loadUserMarketCreds(
 }
 
 export async function getUserMarketCredsStatus(userId: string): Promise<{
-  longbridge: { configured: boolean };
+  longbridge: {
+    configured: boolean;
+    mode?: "bearer" | "appkey";
+    oauthAvailable: boolean;
+  };
   futu: {
     configured: boolean;
     mode?: "bearer" | "appkey";
@@ -170,8 +187,13 @@ export async function getUserMarketCredsStatus(userId: string): Promise<{
   cryptoVendor: CryptoVendorId;
 }> {
   const store = await loadUserMarketCreds(userId);
+  const lb = store.longbridge;
   return {
-    longbridge: { configured: Boolean(store.longbridge) },
+    longbridge: {
+      configured: Boolean(lb),
+      mode: lb ? (lb.mode === "bearer" ? "bearer" : "appkey") : undefined,
+      oauthAvailable: isLongbridgeOAuthConfigured(),
+    },
     futu: {
       configured: Boolean(store.futu),
       mode: store.futu?.mode,

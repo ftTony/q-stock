@@ -1,4 +1,4 @@
-import type { StrikeRow } from "./option-chain-utils";
+import { bsGreeks, type StrikeRow } from "./option-chain-utils";
 
 /** One position line inside the strategy editor. */
 export type StrategyLeg = {
@@ -168,22 +168,88 @@ export function buildLegs(opts: {
 }
 
 const CONTRACT = 100;
+const FALLBACK_IV_PCT = 30;
 
-/** Payoff of one option leg at `price`, per contract, in account currency. */
-function legPayoff(leg: PricedLeg, price: number): number {
-  const sign = leg.action === "long" ? 1 : -1;
-  const qty = leg.qty * CONTRACT;
+/** Calendar days between two `YYYY-MM-DD` strings (to − from). */
+export function daysBetweenYmd(fromYmd: string, toYmd: string): number {
+  const a = /^(\d{4})-(\d{2})-(\d{2})$/.exec(fromYmd);
+  const b = /^(\d{4})-(\d{2})-(\d{2})$/.exec(toYmd);
+  if (!a || !b) return 0;
+  const from = Date.UTC(Number(a[1]), Number(a[2]) - 1, Number(a[3]));
+  const to = Date.UTC(Number(b[1]), Number(b[2]) - 1, Number(b[3]));
+  return Math.round((to - from) / 86_400_000);
+}
+
+/** Earliest option expiry in the structure — chart horizon for dual-expiry. */
+export function earliestOptionExpiry(legs: StrategyLeg[]): string | null {
+  let best: string | null = null;
+  for (const leg of legs) {
+    if (leg.kind === "stock" || !leg.expiry) continue;
+    if (!best || leg.expiry < best) best = leg.expiry;
+  }
+  return best;
+}
+
+export type PayoffCtx = {
+  /** Evaluation date (near-month expiry for calendar/diagonal). */
+  horizonYmd?: string | null;
+  /** Used when a surviving leg has no IV quote. */
+  fallbackIvPct?: number;
+};
+
+/**
+ * Mark of one option at underlying `price`.
+ * Expired / horizon legs → intrinsic; longer-dated legs → BS with remaining T.
+ */
+function optionMark(
+  leg: PricedLeg,
+  price: number,
+  ctx: PayoffCtx | undefined,
+): number {
   const k = leg.strike ?? 0;
   const intrinsic =
     leg.kind === "call" ? Math.max(price - k, 0) : Math.max(k - price, 0);
-  return sign * (intrinsic - (leg.premium ?? 0)) * qty;
+  const horizon = ctx?.horizonYmd;
+  if (
+    !horizon ||
+    !leg.expiry ||
+    leg.expiry <= horizon ||
+    leg.kind === "stock"
+  ) {
+    return intrinsic;
+  }
+  const daysLeft = Math.max(daysBetweenYmd(horizon, leg.expiry), 0);
+  if (daysLeft <= 0) return intrinsic;
+  const iv = leg.iv != null && leg.iv > 0 ? leg.iv : (ctx?.fallbackIvPct ?? FALLBACK_IV_PCT);
+  const theo = bsGreeks(
+    price,
+    k,
+    iv,
+    daysLeft,
+    leg.kind === "call",
+    0,
+  ).theo;
+  return theo != null && theo > 0 ? theo : intrinsic;
 }
 
-/** Combined strategy P&L at a single underlying price (expiry assumption). */
+/** P&L of one option leg at `price`, in account currency. */
+function legPayoff(
+  leg: PricedLeg,
+  price: number,
+  ctx?: PayoffCtx,
+): number {
+  const sign = leg.action === "long" ? 1 : -1;
+  const qty = leg.qty * CONTRACT;
+  const mark = optionMark(leg, price, ctx);
+  return sign * (mark - (leg.premium ?? 0)) * qty;
+}
+
+/** Combined strategy P&L at a single underlying price. */
 export function strategyPayoffAt(
   legs: PricedLeg[],
   price: number,
   stockEntry: number,
+  ctx?: PayoffCtx,
 ): number | null {
   const priced = legs.filter(
     (l) => l.kind === "stock" || (l.premium != null && l.strike != null),
@@ -194,7 +260,7 @@ export function strategyPayoffAt(
       const sign = leg.action === "long" ? 1 : -1;
       return s + sign * (price - stockEntry) * leg.qty * CONTRACT;
     }
-    return s + legPayoff(leg, price);
+    return s + legPayoff(leg, price, ctx);
   }, 0);
 }
 
@@ -214,12 +280,18 @@ export function buildExpiryScenarios(input: {
   daysToExpiry: number;
   ratePct?: number;
   legs: PricedLeg[];
+  /** Near-month horizon for dual-expiry mark-to-model. */
+  horizonYmd?: string | null;
 }): ExpiryScenarioRow[] {
   const { spot, legs } = input;
   if (!(spot > 0)) return [];
   const sigma = input.ivPct > 2 ? input.ivPct / 100 : input.ivPct;
   const T = Math.max(input.daysToExpiry, 0) / 365;
   const r = (input.ratePct ?? 0) / 100;
+  const ctx: PayoffCtx = {
+    horizonYmd: input.horizonYmd ?? earliestOptionExpiry(legs),
+    fallbackIvPct: input.ivPct > 0 ? input.ivPct : FALLBACK_IV_PCT,
+  };
   const levels: { key: string; z: number }[] = [
     { key: "m2", z: -2 },
     { key: "m1", z: -1 },
@@ -237,13 +309,17 @@ export function buildExpiryScenarios(input: {
     return {
       key,
       price,
-      pnl: strategyPayoffAt(legs, price, spot),
+      pnl: strategyPayoffAt(legs, price, spot, ctx),
     };
   });
 }
 
-/** A leg enriched with its entry premium (per share). */
-export type PricedLeg = StrategyLeg & { premium: number | null };
+/** A leg enriched with entry premium + IV (for surviving-leg BS marks). */
+export type PricedLeg = StrategyLeg & {
+  premium: number | null;
+  /** Implied vol (percent or decimal); used when the leg outlives the horizon. */
+  iv?: number | null;
+};
 
 export type StrategyEval = {
   prices: number[];
@@ -257,13 +333,15 @@ export type StrategyEval = {
 };
 
 /**
- * Evaluate a strategy at expiry over a price grid around the spot.
- * Legs missing a premium are skipped (they can't be priced yet).
+ * Evaluate a strategy over a price grid.
+ * Default: all option legs at intrinsic (true expiry).
+ * Dual-expiry: pass `horizonYmd` = near month; farther legs marked with BS.
  */
 export function evaluateStrategy(
   legs: PricedLeg[],
   spot: number,
   stockEntry = spot,
+  ctx?: PayoffCtx,
 ): StrategyEval {
   const span = Math.max(spot * 0.5, 0.01);
   const lo = Math.max(spot - span, spot * 0.1);
@@ -273,6 +351,11 @@ export function evaluateStrategy(
   for (let i = 0; i <= steps; i++) {
     prices.push(lo + ((hi - lo) * i) / steps);
   }
+
+  const payoffCtx: PayoffCtx = {
+    horizonYmd: ctx?.horizonYmd ?? earliestOptionExpiry(legs),
+    fallbackIvPct: ctx?.fallbackIvPct ?? FALLBACK_IV_PCT,
+  };
 
   const priced = legs.filter(
     (l) => l.kind === "stock" || (l.premium != null && l.strike != null),
@@ -284,7 +367,7 @@ export function evaluateStrategy(
         (p) => sign * (p - stockEntry) * leg.qty * CONTRACT,
       );
     }
-    return prices.map((p) => legPayoff(leg, p));
+    return prices.map((p) => legPayoff(leg, p, payoffCtx));
   });
   const combined = prices.map((_, i) =>
     perLeg.reduce((s, arr) => s + (arr[i] ?? 0), 0),
@@ -319,7 +402,7 @@ export function evaluateStrategy(
         const sign = leg.action === "long" ? 1 : -1;
         return s + sign * (p - stockEntry) * leg.qty * CONTRACT;
       }
-      return s + legPayoff(leg, p);
+      return s + legPayoff(leg, p, payoffCtx);
     }, 0);
   const hasLongStock = priced.some(
     (l) => l.kind === "stock" && l.action === "long",
@@ -353,11 +436,23 @@ export function premiumFromChain(
   kind: "call" | "put",
   strike: number,
 ): number | null {
+  return quoteFromChain(rows, kind, strike).premium;
+}
+
+/** Mid/last premium + IV for one strike side. */
+export function quoteFromChain(
+  rows: StrikeRow[],
+  kind: "call" | "put",
+  strike: number,
+): { premium: number | null; iv: number | null } {
   const row = rows.find((r) => r.strike === strike);
   const o = kind === "call" ? row?.call : row?.put;
-  if (!o) return null;
+  if (!o) return { premium: null, iv: null };
+  let premium: number | null = null;
   if (o.bid != null && o.ask != null && o.bid > 0 && o.ask > 0) {
-    return (o.bid + o.ask) / 2;
+    premium = (o.bid + o.ask) / 2;
+  } else if (o.last > 0) {
+    premium = o.last;
   }
-  return o.last > 0 ? o.last : null;
+  return { premium, iv: o.iv != null && o.iv > 0 ? o.iv : null };
 }

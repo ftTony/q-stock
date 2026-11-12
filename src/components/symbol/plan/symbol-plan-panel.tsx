@@ -18,6 +18,7 @@ import {
   useStrategyReplayDetail,
   useStrategyReplayList,
 } from "@/hooks/query/use-strategies";
+import { useMounted } from "@/hooks/use-mounted";
 import { formatNumber } from "@/lib/format-number";
 import type { AssetType } from "@/lib/types";
 import {
@@ -88,6 +89,7 @@ export function SymbolPlanPanel({
   const t = useTranslations("symbolRail");
   const tSt = useTranslations("strategies");
   const locale = useLocale();
+  const mounted = useMounted();
   const { data: session, status } = useSession();
   const [msg, setMsg] = useState<string | null>(null);
   const [matchedReplayId, setMatchedReplayId] = useState<string | null>(null);
@@ -99,9 +101,13 @@ export function SymbolPlanPanel({
     locale,
     Boolean(strategyId),
   );
+  const detailMissing =
+    detailQuery.isError &&
+    detailQuery.error instanceof Error &&
+    /not found/i.test(detailQuery.error.message);
   const replaysQuery = useStrategyReplayList(
     strategyId ?? "",
-    Boolean(strategyId),
+    Boolean(strategyId) && !detailMissing,
   );
   const copyMut = useCopyStrategyTemplate(locale);
   const startReplayMut = useStartStrategyReplay(strategyId ?? "");
@@ -113,11 +119,25 @@ export function SymbolPlanPanel({
   const loading = listQuery.isLoading;
   const busy = copyMut.isPending || startReplayMut.isPending;
 
+  function bind(id: string | null, name?: string | null) {
+    setBoundStrategyId(assetType, symbol, id);
+    onStrategyIdChange(id, name ?? null);
+    setMsg(null);
+  }
+
   useEffect(() => {
     const bound = getBoundStrategyId(assetType, symbol);
     if (bound && !strategyId) onStrategyIdChange(bound);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once per symbol
   }, [assetType, symbol]);
+
+  // Stale localStorage / deleted strategy → stop 404 spam and unbind.
+  useEffect(() => {
+    if (!strategyId || !detailMissing) return;
+    bind(null);
+    setMsg(t("planMissing"));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- clear once per missing id
+  }, [strategyId, detailMissing]);
 
   useEffect(() => {
     if (!strategyId) {
@@ -138,7 +158,7 @@ export function SymbolPlanPanel({
     strategyId ?? "",
     matchedReplayId,
     {
-      enabled: Boolean(strategyId && matchedReplayId),
+      enabled: Boolean(strategyId && matchedReplayId && !detailMissing),
       refetchInterval: (q) => {
         const st = (q.state.data as { replay?: ReplayRow } | undefined)?.replay
           ?.status;
@@ -154,12 +174,6 @@ export function SymbolPlanPanel({
       (r) => r.id === matchedReplayId,
     ) ??
       null);
-
-  function bind(id: string | null, name?: string | null) {
-    setBoundStrategyId(assetType, symbol, id);
-    onStrategyIdChange(id, name ?? null);
-    setMsg(null);
-  }
 
   async function copyTemplate(templateId: string) {
     if (!session?.user) {
@@ -212,7 +226,9 @@ export function SymbolPlanPanel({
     return opts;
   }, [mine, t]);
 
-  if (status === "loading" || loading) {
+  // SessionProvider is often still "loading" on SSR and resolved on the first
+  // client pass — keep a stable skeleton until mount so hydration matches.
+  if (!mounted || status === "loading" || loading) {
     return <RailPanelSkeleton rows={6} label={tSt("loading")} />;
   }
 
@@ -234,6 +250,11 @@ export function SymbolPlanPanel({
   return (
     <div className="space-y-3 p-3">
       <p className="aw-caption">{t("planSubtitle")}</p>
+      {msg ? (
+        <p className="text-[12px] text-[var(--muted)]" role="status">
+          {msg}
+        </p>
+      ) : null}
 
       <div>
         <label className="aw-caption mb-1.5 block">{t("planBind")}</label>

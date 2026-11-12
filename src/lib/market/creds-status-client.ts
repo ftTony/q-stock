@@ -1,5 +1,9 @@
 export type MarketCredsStatus = {
-  longbridge: { configured: boolean };
+  longbridge: {
+    configured: boolean;
+    mode?: "bearer" | "appkey";
+    oauthAvailable?: boolean;
+  };
   futu: {
     configured: boolean;
     mode?: "bearer" | "appkey";

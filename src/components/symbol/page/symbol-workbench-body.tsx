@@ -164,12 +164,15 @@ export function SymbolWorkbenchBody({
         } as CSSProperties
       }
     >
-      {isDesktop && watch.open ? (
+      {/* CSS (.aw-watchlist-pane) hides below lg — do not gate on isDesktop or
+          hydration keeps the column empty until useMinWidth flips after paint. */}
+      {watch.open ? (
         <>
           <SymbolWatchlistPanel
             currentSymbol={symbol}
             currentAssetType={assetType}
             onCollapse={() => setWatchOpen(false)}
+            quotesEnabled={isDesktop}
           />
           <button
             type="button"

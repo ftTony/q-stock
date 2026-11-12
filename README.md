@@ -17,7 +17,7 @@
 | 自选 & 资产 | 自选 CRUD（含 cn）、sparkline；Portfolio 资金/持仓/挂单/重置 |
 | 价格提醒 | ≥ / ≤ 触发邮件（Resend / SMTP）；Worker 轮询 |
 | 模拟交易 | 仅做多；市价 / 限价 / 止损；初始 **$100,000** |
-| 设置 | 语言 / 主题 / 涨跌色；长桥 Key / 富途 OAuth·币安·OKX BYOK；多厂商 AI Key；邀请码 |
+| 设置 | 语言 / 主题 / 涨跌色；长桥/富途 OAuth·币安·OKX BYOK；多厂商 AI Key；邀请码 |
 | 体验 | 10 语言、亮暗主题、红涨绿跌/绿涨红跌；侧栏可收起（图标模式）；H5 底栏 |
 
 技术栈：Next.js 15 · TypeScript · Tailwind · KLineChart · Auth.js · Prisma · PostgreSQL · Docker。
@@ -80,7 +80,7 @@ docker compose up --build
 | 变量 | 说明 |
 |---|---|
 | `MARKET_DATA_PROVIDERS` | 优先级 CSV；省略则按已配置凭证探测 |
-| `LONGBRIDGE_APP_KEY` / `SECRET` / `ACCESS_TOKEN` | 平台长桥（三键齐全） |
+| `LONGBRIDGE_OAUTH_CLIENT_ID`（用户一键验证）/ `LONGBRIDGE_APP_KEY` 三键 | 长桥 OAuth + 平台 API Key 兜底 |
 | `FUTU_OAUTH_CLIENT_ID`（用户一键验证）/ `FUTU_ACCESS_TOKEN` 或 AppKey | 富途 OAuth + 平台兜底 |
 | `BINANCE_API_KEY` / `SECRET` | 可选 |
 | `OKX_API_KEY` / `SECRET` / `PASSPHRASE` | 可选 |

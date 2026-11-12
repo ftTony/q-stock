@@ -7,13 +7,13 @@ import type {
   OkxCreds,
 } from "@/lib/market/creds-types";
 
-/** Platform Longbridge keys from env (all three required). */
+/** Platform Longbridge keys from env (legacy API Key; all three required). */
 export function envLongbridgeCreds(): LongbridgeCreds | undefined {
   const appKey = process.env.LONGBRIDGE_APP_KEY?.trim();
   const appSecret = process.env.LONGBRIDGE_APP_SECRET?.trim();
   const accessToken = process.env.LONGBRIDGE_ACCESS_TOKEN?.trim();
   if (!appKey || !appSecret || !accessToken) return undefined;
-  return { appKey, appSecret, accessToken };
+  return { mode: "appkey", appKey, appSecret, accessToken };
 }
 
 /**
