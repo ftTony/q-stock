@@ -70,6 +70,9 @@ COPY --from=builder /app/prisma ./prisma
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+# ISR cache (symbol pages revalidate every 300s). Kept as a named volume in
+# compose so a restart does not throw away every rendered page.
+RUN mkdir -p /app/.next/cache && chown nextjs:nodejs /app/.next/cache
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000

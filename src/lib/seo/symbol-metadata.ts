@@ -163,6 +163,15 @@ export type SymbolSeoCopy = {
   aboutLabel: string;
   howTitle: string;
   howSteps: [string, string, string];
+  /** Crawl-body block: market / quote currency / session for this instrument. */
+  factsTitle: string;
+  factsLine: string;
+  /** Crawl-body block: how to use this page as a practice subject. */
+  learnTitle: string;
+  learnBody: string;
+  /** Crawl-body block: exchange-level rules for this market. */
+  rulesTitle: string;
+  rulesBody: string;
   disclaimer: string;
   breadcrumbHome: string;
 };
@@ -210,6 +219,10 @@ export async function buildSymbolSeoCopy(
   const t = await getTranslations({ locale, namespace: "seo" });
   const name = seoSymbolName(locale, symbol, assetType, quote);
   const currency = currencyFor(assetType);
+  // `assetType` doubles as the i18n key for market / session labels
+  // ("stock" | "hk" | "cn" | "crypto").
+  const market = t(`markets.${assetType}`);
+  const session = t(`sessions.${assetType}`);
   const crawl = {
     intro: t("symbolIntro", { symbol, name }),
     aboutLabel: t("symbolAbout"),
@@ -219,6 +232,12 @@ export async function buildSymbolSeoCopy(
       string,
       string,
     ],
+    factsTitle: t("symbolFactsTitle"),
+    factsLine: t("symbolFactsLine", { market, currency, session }),
+    learnTitle: t("symbolLearnTitle"),
+    learnBody: t("symbolLearnBody", { symbol }),
+    rulesTitle: t("symbolRulesTitle"),
+    rulesBody: t(`symbolRules.${assetType}`),
     disclaimer: t("symbolDisclaimer"),
     breadcrumbHome: t("breadcrumbHome"),
   };

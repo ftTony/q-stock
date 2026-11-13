@@ -42,6 +42,12 @@ async function removeStaleSegmentFiles(
 }
 
 /**
+ * Bump when the on-disk layout / index shape changes so an already-current day
+ * still gets rewritten after a deploy (the marker also carries this version).
+ */
+const SITEMAP_LAYOUT_VERSION = "2";
+
+/**
  * Write sitemap index + per-market urlsets under `public/sitemaps/`.
  * Large markets are split into `sitemap-{market}-N.xml` chunks.
  * Idempotent per America/New_York calendar day via `.seo-sitemap-day`.
@@ -53,6 +59,7 @@ export async function writeDailySitemapFile(opts?: {
 }): Promise<{ wrote: boolean; day: string; files: string[] }> {
   const now = opts?.now ?? new Date();
   const day = usTradeDate(now);
+  const markerValue = `${day}:v${SITEMAP_LAYOUT_VERSION}`;
   const root = sitemapOutDir();
   const marker = path.join(root, ".seo-sitemap-day");
   const files: string[] = [];
@@ -60,7 +67,7 @@ export async function writeDailySitemapFile(opts?: {
   if (!opts?.force) {
     try {
       const prev = await fs.readFile(marker, "utf8");
-      if (prev.trim() === day) {
+      if (prev.trim() === markerValue) {
         return { wrote: false, day, files };
       }
     } catch {
@@ -107,15 +114,23 @@ export async function writeDailySitemapFile(opts?: {
     }
   }
 
+  // Advertise the *route* (`/sitemap/{id}.xml` → `/sitemap/{id}`), not the
+  // on-disk file. The route falls back to a generated seed when the volume is
+  // missing the file, so a WEB/WORKER image or chunk-name mismatch can no longer
+  // hand Googlebot a 404 (prod shipped index → `sitemap-stock-1.xml` while the
+  // volume still held `sitemap-stock.xml`).
   const indexXml = buildSitemapIndexXml(
-    childNames.map((n) => `/sitemaps/${n}`),
-    now,
+    childNames.map(
+      (n) =>
+        `/sitemap/${n.replace(/^sitemap-/, "").replace(/\.xml$/, "")}.xml`,
+    ),
+    new Date(`${day}T00:00:00Z`),
   );
   const indexLatest = path.join(root, "sitemap.xml");
   const indexDated = path.join(dayDir, "sitemap.xml");
   await fs.writeFile(indexLatest, indexXml, "utf8");
   await fs.writeFile(indexDated, indexXml, "utf8");
-  await fs.writeFile(marker, `${day}\n`, "utf8");
+  await fs.writeFile(marker, `${markerValue}\n`, "utf8");
   files.push(indexLatest, indexDated);
 
   console.info(

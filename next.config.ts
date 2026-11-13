@@ -81,6 +81,30 @@ const nextConfig: NextConfig = {
         { key: "Content-Type", value: "application/manifest+json" },
       ],
     },
+    /**
+     * Symbol pages carry no per-user data on the server (quote + candles
+     * hydrate on the client), so they can be served from the edge. Without an
+     * explicit s-maxage, Cloudflare answered `cf-cache-status: DYNAMIC` and
+     * every crawler hit queued on the 1 vCPU origin at 5–15s TTFB.
+     */
+    {
+      source: "/symbol/:path*",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, s-maxage=300, stale-while-revalidate=86400",
+        },
+      ],
+    },
+    {
+      source: "/:locale/symbol/:path*",
+      headers: [
+        {
+          key: "Cache-Control",
+          value: "public, s-maxage=300, stale-while-revalidate=86400",
+        },
+      ],
+    },
   ],
 };
 

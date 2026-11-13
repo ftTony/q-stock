@@ -8,7 +8,11 @@ import { seoPublicOrigin } from "@/lib/seo/site-url";
 import { getLearnArticle, listLearnSlugs } from "@/lib/learn/articles";
 import { TOOL_CATALOG } from "@/lib/tools/catalog";
 import { ARTICLE_LOCALES } from "@/lib/learn/locale-gating";
-import { sitemapLocales } from "@/lib/seo/sitemap-locales";
+import { usTradeDate } from "@/lib/market/session";
+import {
+  sitemapLocales,
+  sitemapPrimaryLocales,
+} from "@/lib/seo/sitemap-locales";
 import {
   resolveSymbolsForMarket,
   seedSymbolsForMarket,
@@ -33,7 +37,7 @@ export type SitemapEntry = {
 
 export type SitemapSegmentId = "static" | SitemapMarket;
 
-export { sitemapLocales } from "@/lib/seo/sitemap-locales";
+export { sitemapLocales, sitemapPrimaryLocales };
 
 export const SITEMAP_SEGMENTS: SitemapSegmentId[] = [
   "static",
@@ -113,7 +117,8 @@ export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
   const seen = new Set<string>();
   for (const p of STATIC_PATHS) {
     const languages = languageMapForPath(origin, p.path);
-    for (const locale of sitemapLocales()) {
+    // `<loc>` only for primary locales; alternates still cover every locale.
+    for (const locale of sitemapPrimaryLocales()) {
       pushUnique(entries, seen, {
         url: languages[locale]!,
         lastModified: now,
@@ -135,8 +140,8 @@ export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
     const stamp = article?.updatedAt ?? article?.publishedAt;
     const lastModified = stamp ? new Date(stamp) : now;
     const locales = only
-      ? sitemapLocales().filter((l) => only.includes(l))
-      : sitemapLocales();
+      ? sitemapPrimaryLocales().filter((l) => only.includes(l))
+      : sitemapPrimaryLocales();
     for (const locale of locales) {
       pushUnique(entries, seen, {
         url: languages[locale]!,
@@ -152,8 +157,8 @@ export function buildStaticSitemapEntries(now = new Date()): SitemapEntry[] {
     // alternates for locales where the page 404s.
     const languages = languageMapForPath(origin, tool.href, tool.locales);
     const locales = tool.locales
-      ? sitemapLocales().filter((l) => tool.locales!.includes(l))
-      : sitemapLocales();
+      ? sitemapPrimaryLocales().filter((l) => tool.locales!.includes(l))
+      : sitemapPrimaryLocales();
     for (const locale of locales) {
       pushUnique(entries, seen, {
         url: languages[locale]!,
@@ -176,15 +181,18 @@ export function buildMarketSitemapEntries(
   const entries: SitemapEntry[] = [];
   const seen = new Set<string>();
   const priority = MARKET_PRIORITY[market];
+  // Market quotes settle once a US session closes, so a per-request `now`
+  // stamped every URL "today" and Google learned to ignore `lastmod` entirely.
+  const tradeDay = new Date(`${usTradeDate(now)}T00:00:00Z`);
   for (const symbol of symbols) {
     // Defense in depth — resolveSymbolsForMarket already filters.
     if (!symbol || /[^\x20-\x7E]/.test(symbol)) continue;
     const path = `/symbol/${market}/${symbol}`;
     const languages = languageMapForPath(origin, path);
-    for (const locale of sitemapLocales()) {
+    for (const locale of sitemapPrimaryLocales()) {
       pushUnique(entries, seen, {
         url: languages[locale]!,
-        lastModified: now,
+        lastModified: tradeDay,
         changeFrequency: "daily",
         priority,
         languages,

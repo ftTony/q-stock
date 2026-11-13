@@ -21,16 +21,21 @@ export async function SymbolRelatedLinks({ symbol, assetType }: Props) {
       className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-xs text-[var(--muted)]"
     >
       <span className="font-medium text-[var(--fg)]">{t("relatedSymbols")}</span>
-      {peers.map((s) => (
-        <Link
-          key={s}
-          href={`/symbol/${assetType}/${encodeURIComponent(s)}`}
-          className="hover:text-[var(--brand-text)] hover:underline"
-        >
-          {s}
-          <span className="sr-only"> {displayName(s, assetType)}</span>
-        </Link>
-      ))}
+      {peers.map((s) => {
+        // Bare tickers ("600887.SH 600887.SH") read as machine noise to both
+        // users and crawlers — prefer "600887.SH 伊利股份" when a name exists.
+        const label = displayName(s, assetType);
+        const text = label && label !== s ? `${s} ${label}` : s;
+        return (
+          <Link
+            key={s}
+            href={`/symbol/${assetType}/${encodeURIComponent(s)}`}
+            className="hover:text-[var(--brand-text)] hover:underline"
+          >
+            {text}
+          </Link>
+        );
+      })}
     </nav>
   );
 }

@@ -1299,7 +1299,30 @@
       "หุ้น",
       "คริปโต",
       "AI"
-    ]
+    ],
+    "markets": {
+      "stock": "US equities",
+      "hk": "Hong Kong stocks",
+      "cn": "China A-shares",
+      "crypto": "Crypto"
+    },
+    "sessions": {
+      "stock": "US regular session 09:30–16:00 ET",
+      "hk": "Hong Kong 09:30–16:00 HKT",
+      "cn": "Shanghai/Shenzhen 09:30–15:00 CST",
+      "crypto": "24/7 continuous trading"
+    },
+    "symbolFactsTitle": "Instrument facts",
+    "symbolFactsLine": "Market: {market} · Quoted in: {currency} · Session: {session}",
+    "symbolLearnTitle": "Practise on this instrument",
+    "symbolLearnBody": "Treat {symbol} as a practice subject: write down the price and conditions under which you would buy or sell, execute the plan in the paper-trading account, then review the chart against your fills. Recording why you made each call matters more than any single profit or loss.",
+    "symbolRulesTitle": "Trading rules at a glance",
+    "symbolRules": {
+      "stock": "US shares trade per share, one share minimum, with no daily price limit; LULD bands can briefly halt a stock intraday. The regular session runs 09:30–16:00 ET, with separate pre-market and after-hours sessions.",
+      "hk": "Hong Kong stocks trade in board lots whose size differs by ticker, settle T+0 for same-day round trips, and have no daily price limit. Quotes are in HKD and the market breaks at 12:00–13:00.",
+      "cn": "A-shares trade in lots of 100 and settle T+1 (bought today, sellable tomorrow). Main boards are capped at ±10% a day, while STAR and ChiNext allow ±20%. Sessions run 09:30–11:30 and 13:00–15:00.",
+      "crypto": "Crypto trades continuously 24/7 with no price limit and no closing bell. Volatility is far higher than equities, and quotes plus depth can differ between venues."
+    }
   },
   "analysis": {
     "subtitle": "Pick an industry, then compare 2–4 peer stocks side by side",
