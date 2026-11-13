@@ -12,7 +12,8 @@ type TopicDiagram =
   | "paper-review"
   | "money-traps-small-capital"
   | "book-poor-charlie-almanack"
-  | "money-and-desire";
+  | "money-and-desire"
+  | "wealth-skill-or-luck";
 
 const DIAGRAMS = new Set<string>([
   "multi-market-101",
@@ -29,6 +30,7 @@ const DIAGRAMS = new Set<string>([
   "money-traps-small-capital",
   "book-poor-charlie-almanack",
   "money-and-desire",
+  "wealth-skill-or-luck",
 ]);
 
 const LABELS: Record<
@@ -120,6 +122,12 @@ const LABELS: Record<
         "收入是缓升曲线，欲望是阶梯——每次「暂时满足」之后基线跳一级。两条线之间的缺口就是焦虑；跑步机上唯一有效的比较对象是去年的自己。",
       note: "概念示意，数字示例见正文",
     },
+    "wealth-skill-or-luck": {
+      title: "先扣 beta，再谈本事",
+      caption:
+        "同样 +25%：市场 beta 贡献 21 个点，真正算选择的只有 4 个点。下面四根柱子是各层的运气权重——越往尾部，能力能解释的部分越少。",
+      note: "示意数字，费税未计；幸存者未出现在样本里",
+    },
   },
   en: {
     "multi-market-101": {
@@ -205,6 +213,12 @@ const LABELS: Record<
       caption:
         "Income is a slow curve; desire is a staircase — the baseline jumps right after each 'temporary satisfaction'. The gap between the lines is the anxiety. The only fair benchmark is last year's you.",
       note: "Conceptual; worked numbers live in the article",
+    },
+    "wealth-skill-or-luck": {
+      title: "Subtract beta before calling it talent",
+      caption:
+        "Same +25%: beta delivered 21 points, only 4 were selection. The four bars below are luck weight by layer — the further toward the tail, the less skill explains.",
+      note: "Illustrative figures, fees and taxes ignored; losers are missing from the sample",
     },
   },
 };
@@ -872,6 +886,51 @@ function MoneyDesireDiagram({ zh }: { zh: boolean }) {
   );
 }
 
+function SkillOrLuckDiagram({ zh }: { zh: boolean }) {
+  const barTitle = zh ? "同一个 +25%，拆开看" : "Same +25%, decomposed";
+  const betaLabel = zh ? "beta 应得 +21%" : "beta earned +21%";
+  const alphaLabel = zh ? "选择 +4%" : "selection +4%";
+  const layers = zh
+    ? ["生存", "第一笔结余", "复利", "尾部"]
+    : ["Survival", "First 100k", "Compounding", "Tail"];
+  const luckShare = zh
+    ? ["运气 ≈ 90%", "≈ 20%", "≈ 40%", "≈ 90%"]
+    : ["luck ≈ 90%", "≈ 20%", "≈ 40%", "≈ 90%"];
+  const barHeights = [34, 18, 46, 92];
+  const axisNote = zh ? "越往右，样本越少，运气越重" : "further right: fewer samples, more luck";
+  return (
+    <>
+      <text x="60" y="34" className="diagram-strong-sm">{barTitle}</text>
+      <rect x="60" y="48" width="470" height="30" rx="6" fill="var(--muted)" fillOpacity="0.45" />
+      <rect x="530" y="48" width="90" height="30" rx="6" fill="var(--brand)" fillOpacity="0.85" />
+      <text x="70" y="96" className="diagram-tiny">{betaLabel}</text>
+      <text x="540" y="96" className="diagram-tiny">{alphaLabel}</text>
+
+      <path d="M60 206H640" className="axis-line" />
+      {barHeights.map((h, i) => (
+        <g key={layers[i]}>
+          <rect
+            x={80 + i * 145}
+            y={200 - h}
+            width="72"
+            height={h}
+            rx="4"
+            fill="var(--brand)"
+            fillOpacity={0.18 + i * 0.22}
+          />
+          <text x={116 + i * 145} y={188 - h} textAnchor="middle" className="diagram-tiny">
+            {luckShare[i]}
+          </text>
+          <text x={116 + i * 145} y={222} textAnchor="middle" className="diagram-tiny">
+            {layers[i]}
+          </text>
+        </g>
+      ))}
+      <text x="640" y="234" textAnchor="end" className="diagram-tiny">{axisNote}</text>
+    </>
+  );
+}
+
 function Diagram({ id, zh }: { id: TopicDiagram; zh: boolean }) {
   switch (id) {
     case "multi-market-101":
@@ -900,6 +959,8 @@ function Diagram({ id, zh }: { id: TopicDiagram; zh: boolean }) {
       return <MoneyTrapsDiagram zh={zh} />;
     case "money-and-desire":
       return <MoneyDesireDiagram zh={zh} />;
+    case "wealth-skill-or-luck":
+      return <SkillOrLuckDiagram zh={zh} />;
     case "book-poor-charlie-almanack":
       return <InversionDiagram zh={zh} />;
   }

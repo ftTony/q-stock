@@ -12,9 +12,12 @@ type Props = {
   invalidationPrice: string;
   onInvalidationPrice: (v: string) => void;
   strategies: Array<{ id: string; name: string }>;
+  /** Order tag for this ticket (may differ from Plan binding). */
   strategyId: string;
-  /** Readable name when id not yet in strategies list. */
+  /** Readable name — never show raw cuid. */
   strategyName?: string | null;
+  /** Plan-bound id; order tag changes do not rewrite this. */
+  planStrategyId?: string;
   onStrategyId: (v: string) => void;
   onOpenPlan?: () => void;
   equity: number | null;
@@ -33,6 +36,7 @@ export function TradeCalmFields({
   strategies,
   strategyId,
   strategyName = null,
+  planStrategyId = "",
   onStrategyId,
   onOpenPlan,
   equity,
@@ -60,6 +64,10 @@ export function TradeCalmFields({
       : []),
   ];
 
+  const planBound = Boolean(planStrategyId);
+  const orderDiverges =
+    planBound && (strategyId || "") !== planStrategyId;
+
   return (
     <>
       <div>
@@ -86,7 +94,7 @@ export function TradeCalmFields({
               className="aw-text-link text-[11px] leading-none"
               onClick={onOpenPlan}
             >
-              {strategyId ? t("changePlanRule") : t("bindPlanRule")}
+              {planBound ? t("changePlanRule") : t("bindPlanRule")}
             </button>
           ) : null}
         </div>
@@ -109,7 +117,11 @@ export function TradeCalmFields({
         )}
         {!strategyId ? (
           <p className="mt-1 text-[11px] leading-snug text-[var(--muted)]">
-            {t("strategySuggest")}
+            {planBound ? t("strategyClearedHint") : t("strategySuggest")}
+          </p>
+        ) : orderDiverges ? (
+          <p className="mt-1 text-[11px] leading-snug text-[var(--muted)]">
+            {t("strategyOrderOnlyHint")}
           </p>
         ) : null}
       </div>

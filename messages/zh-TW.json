@@ -338,7 +338,7 @@
     "watchlistGroupAll": "全部",
     "watchlistColCode": "代碼",
     "watchlistColMarket": "市場",
-    "watchlistSelectAll": "全部",
+    "watchlistSelectAll": "全選",
     "watchlistDeleteSelected": "刪除",
     "watchlistAddTo": "添加到",
     "watchlistCreateGroup": "建立分組",
@@ -1023,7 +1023,24 @@
     "useCalmDraft": "用 AI 情景填草稿",
     "askSymbol": "問這只股票",
     "riskSettings": "風控設置",
-    "emptyPositionsCta": "Browse markets and place a paper order"
+    "emptyPositionsCta": "Browse markets and place a paper order",
+    "viewSymbolReview": "查看本標的復盤",
+    "viewReviewDesk": "過程復盤台",
+    "errRiskEmotion": "請先標記下單原因（風控設定要求）。",
+    "errRiskDailyLoss": "已觸達單日虧損上限，暫停新開倉。",
+    "errRiskSymbolCap": "超過單票倉位上限。",
+    "errRiskExposure": "超過總敞口上限。",
+    "errRiskOrderSize": "超過單筆名義占權益上限。",
+    "errInsufficientCash": "可用資金不足。",
+    "errInsufficientPosition": "可賣持倉不足。",
+    "errNoQuote": "暫無可用報價，請稍後重試。",
+    "errInvalidQty": "請輸入有效數量。",
+    "errInvalidLimit": "限價單需填寫限價。",
+    "errInvalidStop": "止損單需填寫觸發價。",
+    "errNotFound": "找不到該訂單。",
+    "errNotPending": "只能撤銷掛單。",
+    "strategyClearedHint": "本單不掛標籤 — 計劃綁定未改動",
+    "strategyOrderOnlyHint": "僅本單更換標籤 — 計劃綁定未改動"
   },
   "ai": {
     "loading": "正在結合新聞與財報生成分析…",
@@ -2185,7 +2202,8 @@
     "guideReviewBody": "對照本標的成交與規則偏差。",
     "guidePrev": "上一步",
     "guideNext": "下一步",
-    "guideDone": "完成"
+    "guideDone": "完成",
+    "reviewInvalidation": "失效價 {price}"
   },
   "symbolEmotion": {
     "title": "情绪自检",
@@ -2553,7 +2571,10 @@
     "tabProfile": "公司資訊",
     "resizeBottom": "調整底欄高度",
     "collapseBottom": "收起底欄",
-    "expandBottom": "展開底欄"
+    "expandBottom": "展開底欄",
+    "tabPlan": "計劃",
+    "tabReview": "復盤",
+    "tabMarket": "行情"
   },
   "lab": {
     "seo": {

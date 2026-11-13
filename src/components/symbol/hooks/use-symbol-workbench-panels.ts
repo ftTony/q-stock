@@ -35,6 +35,10 @@ export function useSymbolWorkbenchPanels({
   const [boundRuleName, setBoundRuleName] = useState<string | null>(null);
   const [boundStrategyId, setBoundStrategyId] = useState<string | null>(null);
   const [planFocusKey, setPlanFocusKey] = useState(0);
+  const [reviewFocusKey, setReviewFocusKey] = useState(0);
+  const [highlightOrderId, setHighlightOrderId] = useState<string | null>(
+    null,
+  );
   const [mobileSegment, setMobileSegment] = useState<MobileSegment>("plan");
   const [mobilePlanOpen, setMobilePlanOpen] = useState(false);
   const [mobilePlanReady, setMobilePlanReady] = useState(false);
@@ -46,6 +50,7 @@ export function useSymbolWorkbenchPanels({
     setAiOpen(false);
     setMobilePlanOpen(false);
     setMobileSegment("plan");
+    setHighlightOrderId(null);
   }, [symbol, assetType]);
 
   useEffect(() => {
@@ -118,6 +123,24 @@ export function useSymbolWorkbenchPanels({
     setMobilePlanOpen(false);
     setDock("trade");
   }, []);
+
+  /** Close trade chrome and focus this symbol's review rail (desktop / H5). */
+  const openReview = useCallback(
+    (orderId?: string | null) => {
+      setAiOpen(false);
+      setSeoOpen(false);
+      setDock(null);
+      setMobilePlanOpen(false);
+      setHighlightOrderId(orderId ?? null);
+      setReviewFocusKey((k) => k + 1);
+      if (isDesktop) setRailOpen(true);
+      else {
+        setMobileSegment("review");
+        setTab("chart");
+      }
+    },
+    [isDesktop, setRailOpen, setTab],
+  );
 
   const onMobileSegment = useCallback(
     (segment: MobileSegment) => {
@@ -210,6 +233,8 @@ export function useSymbolWorkbenchPanels({
     boundRuleName,
     boundStrategyId,
     planFocusKey,
+    reviewFocusKey,
+    highlightOrderId,
     mobileSegment,
     mobilePlanOpen,
     setMobilePlanOpen,
@@ -217,6 +242,7 @@ export function useSymbolWorkbenchPanels({
     sideIcon,
     openPlan,
     openTrade,
+    openReview,
     onMobileSegment,
     onMoreTabChange,
     onBoundStrategyChange,

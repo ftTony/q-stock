@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
@@ -38,6 +38,7 @@ type Props = {
   symbol: string;
   assetType: AssetType;
   strategyNameById?: Record<string, string>;
+  highlightOrderId?: string | null;
   onOpenPlan?: () => void;
 };
 
@@ -58,10 +59,18 @@ function deviationChips(
   return deviationFlags(order).map((f) => t(FLAG_TO_RAIL[f]));
 }
 
+function invalidationLabel(note: string | null | undefined): string | null {
+  if (!note?.trim()) return null;
+  const m = note.match(/invalidation\s*=\s*(\d+(\.\d+)?)/i);
+  if (m?.[1]) return m[1];
+  return note.trim();
+}
+
 export function SymbolReviewRail({
   symbol,
   assetType,
   strategyNameById = {},
+  highlightOrderId = null,
   onOpenPlan,
 }: Props) {
   const t = useTranslations("symbolRail");
@@ -70,6 +79,7 @@ export function SymbolReviewRail({
   const { data: session, status } = useSession();
   const [filter, setFilter] = useState<Filter>("all");
   const signedIn = Boolean(session?.user);
+  const highlightRef = useRef<HTMLLIElement | null>(null);
 
   const ordersQuery = useTradingOrders({
     symbol,
@@ -106,6 +116,14 @@ export function SymbolReviewRail({
       return true;
     });
   }, [orders, filter, t]);
+
+  useEffect(() => {
+    if (!highlightOrderId || loading) return;
+    highlightRef.current?.scrollIntoView({
+      block: "nearest",
+      behavior: "smooth",
+    });
+  }, [highlightOrderId, loading, filtered.length]);
 
   if (!mounted || status === "loading") {
     return <RailPanelSkeleton rows={6} label={t("reviewLoading")} />;
@@ -177,8 +195,19 @@ export function SymbolReviewRail({
             const chips = deviationChips(o, t);
             const price = o.filledPrice;
             const when = o.filledAt || o.createdAt;
+            const inv = invalidationLabel(o.invalidationNote);
+            const highlighted = highlightOrderId === o.id;
             return (
-              <li key={o.id} className="space-y-1.5 py-2.5">
+              <li
+                key={o.id}
+                ref={highlighted ? highlightRef : undefined}
+                data-highlight={highlighted ? "true" : undefined}
+                className={`space-y-1.5 py-2.5 ${
+                  highlighted
+                    ? "-mx-1 rounded border border-[color-mix(in_srgb,var(--brand)_35%,var(--aw-hairline,var(--border)))] bg-[color-mix(in_srgb,var(--brand)_8%,transparent)] px-1"
+                    : ""
+                }`}
+              >
                 <div className="flex items-baseline justify-between gap-2">
                   <span
                     className={`text-[12px] font-medium ${
@@ -212,6 +241,11 @@ export function SymbolReviewRail({
                         nameById[o.strategyId] ||
                         t("reviewTagged")}
                     </Link>
+                  ) : null}
+                  {inv ? (
+                    <span className="rounded border border-[var(--aw-hairline,var(--border))] px-1.5 py-0.5 text-[12px] tabular-nums text-[var(--muted)]">
+                      {t("reviewInvalidation", { price: inv })}
+                    </span>
                   ) : null}
                   {chips.map((c) => (
                     <span

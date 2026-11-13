@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import { usePathname } from "@/i18n/routing";
 import { ConsoleWelcome } from "@/components/brand/console-welcome";
-import { MainAppShellFallback } from "@/components/layout/main-app-shell-fallback";
 
 /**
  * 营销 / 产品壳按路由动态加载，避免官网首屏把 MainAppShell
@@ -19,16 +18,18 @@ const MarketingAppShell = dynamic(
   { ssr: true },
 );
 
+/**
+ * No `loading:` UI here — next/dynamic’s loading slot replaces the whole
+ * component (and its `{children}`). That briefly unmounted ScopedMessages’
+ * NextIntlClientProvider and caused recoverable
+ * “No intl context found” on SymbolPageClient during marketing → app soft-nav.
+ */
 const MainAppShell = dynamic(
   () =>
     import("@/components/layout/main-app-shell").then((m) => ({
       default: m.MainAppShell,
     })),
-  {
-    ssr: true,
-    // Marketing → app chunk gap: skeleton chrome, not a centered spinner.
-    loading: () => <MainAppShellFallback />,
-  },
+  { ssr: true },
 );
 
 function isMarketingPath(pathname: string) {

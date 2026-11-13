@@ -22,6 +22,8 @@ type Props = {
   onSegmentChange: (segment: MobileSegment) => void;
   onOpenTrade: () => void;
   focusPlanToken: number;
+  focusReviewToken?: number;
+  highlightOrderId?: string | null;
   onBoundStrategyChange: (name: string | null, id?: string | null) => void;
   panelTab: SymbolTab;
   moreTabs: TabItem[];
@@ -41,6 +43,8 @@ export function SymbolH5BelowSlot({
   onSegmentChange,
   onOpenTrade,
   focusPlanToken,
+  focusReviewToken = 0,
+  highlightOrderId = null,
   onBoundStrategyChange,
   panelTab,
   moreTabs,
@@ -58,6 +62,8 @@ export function SymbolH5BelowSlot({
       onSegmentChange={onSegmentChange}
       onOpenTrade={onOpenTrade}
       focusPlanToken={focusPlanToken}
+      focusReviewToken={focusReviewToken}
+      highlightOrderId={highlightOrderId}
       onBoundStrategyChange={onBoundStrategyChange}
       moreBody={secondary}
       moreStrip={

@@ -1,15 +1,13 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
-import { ChartLoadingOverlay } from "@/components/ui/panel-skeleton";
+import { ChartLoadingOverlay, Skel } from "@/components/ui/panel-skeleton";
+import { SymbolDesktopRailSkeleton } from "@/components/symbol/rail/symbol-desktop-rail-skeleton";
+import { SymbolWatchlistPaneSkeleton } from "@/components/symbol/watchlist/symbol-watchlist-pane-skeleton";
 import {
   WATCH_DEFAULT,
   readWatchlistWidth,
 } from "@/components/symbol/hooks/use-watchlist-resize";
-
-/** Visible on parchment — `--surface-2` equals shell bg in light mode, so unused. */
-const skel =
-  "animate-pulse rounded-sm border border-[var(--wb-hairline,var(--border))] bg-[var(--wb-canvas,var(--panel))]";
 
 function subscribeNoop() {
   return () => {};
@@ -51,60 +49,30 @@ export function SymbolRouteFallback() {
           }}
           aria-hidden
         >
-          <div className="flex h-10 shrink-0 items-center gap-2 border-b border-[var(--aw-hairline,var(--border))] px-2.5">
-            <div className={`${skel} h-3.5 w-10`} />
-            <div className={`${skel} ml-auto h-6 w-6`} />
-          </div>
-          <div className="flex h-8 shrink-0 items-center gap-2 border-b border-[var(--aw-hairline,var(--border))] px-2">
-            <div className={`${skel} h-3 w-14`} />
-            <div className={`${skel} ml-auto h-3 w-10`} />
-            <div className={`${skel} h-3 w-10`} />
-          </div>
-          <div className="min-h-0 flex-1 space-y-0 overflow-hidden p-0">
-            {Array.from({ length: 10 }, (_, i) => (
-              <div
-                key={i}
-                className="grid h-11 grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)_minmax(0,0.85fr)] items-center gap-1 border-b border-[var(--aw-hairline,var(--border))] px-2"
-              >
-                <div className="min-w-0 space-y-1">
-                  <div className={`${skel} h-3 w-12`} />
-                  <div className={`${skel} h-2.5 w-16`} />
-                </div>
-                <div className={`${skel} ml-auto h-3 w-12`} />
-                <div className={`${skel} ml-auto h-3 w-10`} />
-              </div>
-            ))}
-          </div>
+          <SymbolWatchlistPaneSkeleton chrome fillParent rows={10} />
         </aside>
 
         <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden">
           <div className="flex h-11 shrink-0 items-center gap-3 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--symbol-shell-bg,var(--background))] px-3">
-            <div className={`${skel} h-4 w-16`} />
-            <div className={`${skel} h-5 w-24`} />
-            <div className={`${skel} h-4 w-14`} />
-            <div className={`${skel} ml-auto hidden h-4 w-28 sm:block`} />
+            <Skel className="h-4 w-16" />
+            <Skel className="h-5 w-24" />
+            <Skel className="h-4 w-14" />
+            <Skel className="ml-auto hidden h-4 w-28 sm:block" />
           </div>
 
           <div className="flex min-h-0 flex-1">
             <div className="relative flex min-h-0 min-w-0 flex-1 flex-col border-r border-[var(--aw-hairline,var(--border))] bg-[var(--panel,var(--surface))]">
               <div className="flex h-9 shrink-0 items-center gap-2 border-b border-[var(--aw-hairline,var(--border))] px-2">
-                <div className={`${skel} h-5 w-10`} />
-                <div className={`${skel} h-5 w-10`} />
-                <div className={`${skel} h-5 w-10`} />
+                <Skel className="h-5 w-10" />
+                <Skel className="h-5 w-10" />
+                <Skel className="h-5 w-10" />
               </div>
               <div className="relative min-h-0 flex-1">
                 <ChartLoadingOverlay placement="center" />
               </div>
             </div>
 
-            <aside className="hidden w-[min(360px,32vw)] shrink-0 bg-[var(--symbol-shell-bg,var(--background))] lg:block">
-              <div className="space-y-3 p-3">
-                <div className={`${skel} h-4 w-24`} />
-                <div className={`${skel} h-24 w-full`} />
-                <div className={`${skel} h-24 w-full`} />
-                <div className={`${skel} h-40 w-full`} />
-              </div>
-            </aside>
+            <SymbolDesktopRailSkeleton />
           </div>
         </div>
       </div>

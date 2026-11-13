@@ -182,6 +182,21 @@ export function SymbolPageClient({
     p.openTrade();
   }, [isStack, p]);
 
+  /** Plan / review always use the right rail (side + stack). */
+  const openPlan = useCallback(() => {
+    p.setAiOpen(false);
+    p.closeDock();
+    p.openPlan();
+  }, [p]);
+
+  const openSymbolReview = useCallback(
+    (orderId?: string | null) => {
+      p.closeDock();
+      p.openReview(orderId);
+    },
+    [p],
+  );
+
   const onSideSelect = useCallback(
     (id: SideIconId) => {
       if (!isStack) {
@@ -296,6 +311,8 @@ export function SymbolPageClient({
           stackKey={stackKey}
           newsFeedTab={newsFeedTab}
           openTrade={openTrade}
+          openPlan={openPlan}
+          openSymbolReview={openSymbolReview}
           onSideSelect={onSideSelect}
           onToggleWatchlist={onToggleWatchlist}
           aboutLabel={seoCopy.aboutLabel}
@@ -336,8 +353,9 @@ export function SymbolPageClient({
           }}
           onOpenPlan={() => {
             p.setDock(null);
-            p.openPlan();
+            openPlan();
           }}
+          onOpenSymbolReview={openSymbolReview}
           newsFeedTab={newsFeedTab}
           onNewsFeedTabChange={(tab) => s.setTab(tab)}
           news={s.news}
@@ -365,6 +383,8 @@ export function SymbolPageClient({
           mobilePlanOpen={p.mobilePlanOpen}
           onCloseMobilePlan={() => p.setMobilePlanOpen(false)}
           focusPlanToken={p.planFocusKey}
+          focusReviewToken={p.reviewFocusKey}
+          highlightOrderId={p.highlightOrderId}
           onRequestOrder={openTrade}
           aiReady={p.aiReady}
           aiOpen={isStack ? false : p.aiOpen}

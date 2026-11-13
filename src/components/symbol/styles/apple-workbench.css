@@ -212,6 +212,7 @@ html.aw-rail-resizing {
 /* Watchlist columns — header row matches .aw-chart-toolbar (36px / 12px) */
 .aw-watchlist-cols,
 .aw-watchlist-row {
+  display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.9fr) minmax(0, 0.85fr);
 }
 

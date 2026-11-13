@@ -57,6 +57,7 @@ export default async function SymbolPage({ params }: Props) {
       />
       <SymbolSeoCrawl symbol={symbol} assetType={assetType} copy={copy} />
       <ScopedMessages
+        locale={locale}
         namespaces={[
           "ai",
           "aiChart",

@@ -44,6 +44,7 @@ type Props = {
   strategies: Array<{ id: string; name: string }>;
   strategyId: string;
   strategyName: string | null;
+  planStrategyId?: string;
   onStrategyId: (id: string) => void;
   onOpenPlan?: () => void;
   onOpenCalm?: () => void;
@@ -88,6 +89,7 @@ export function TradePanelStackLayout({
   strategies,
   strategyId,
   strategyName,
+  planStrategyId = "",
   onStrategyId,
   onOpenPlan,
   onOpenCalm,
@@ -118,6 +120,7 @@ export function TradePanelStackLayout({
           strategies={strategies}
           strategyId={strategyId}
           strategyName={strategyName}
+          planStrategyId={planStrategyId}
           onStrategyId={onStrategyId}
           onOpenPlan={onOpenPlan}
           equity={equity}

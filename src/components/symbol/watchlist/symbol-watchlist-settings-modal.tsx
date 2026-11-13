@@ -294,7 +294,7 @@ export function SymbolWatchlistSettingsModal({
       <button
         type="button"
         aria-label={tCommon("close")}
-        className="absolute inset-0 bg-black/40"
+        className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
         onClick={onClose}
       />
       <div
@@ -303,17 +303,25 @@ export function SymbolWatchlistSettingsModal({
         aria-label={t("watchlistManage")}
         className="relative z-10 flex h-[min(88dvh,36rem)] w-full max-w-[44rem] flex-col overflow-hidden rounded-none border border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] shadow-[0_24px_80px_rgba(15,23,42,0.28)]"
       >
-        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--aw-hairline,var(--border))] px-4 py-3">
-          <h2 className="text-[15px] font-semibold tracking-tight">
+        <div className="flex shrink-0 items-center justify-between gap-3 border-b border-[var(--aw-hairline,var(--border))] px-5 py-3">
+          <h2 className="text-[15px] font-semibold tracking-tight text-[var(--foreground)]">
             {t("watchlistManage")}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-8 w-8 items-center justify-center text-[var(--muted)] hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-none text-[var(--muted)] transition hover:bg-[var(--aw-parchment,var(--surface-2))] hover:text-[var(--foreground)]"
             aria-label={tCommon("close")}
           >
-            <svg className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+            <svg
+              className="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              aria-hidden
+            >
               <path d="M6 6l12 12M18 6L6 18" />
             </svg>
           </button>

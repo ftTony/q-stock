@@ -31,6 +31,8 @@ type Props = {
   metrics: EarningsMetric[];
   marketCap: number | null;
   focusPlanToken: number;
+  focusReviewToken?: number;
+  highlightOrderId?: string | null;
   onBoundStrategyChange: (name: string | null, id?: string | null) => void;
   onRequestOrder: () => void;
   dragging: boolean;
@@ -58,6 +60,8 @@ export function SymbolDesktopRail({
   metrics,
   marketCap,
   focusPlanToken,
+  focusReviewToken = 0,
+  highlightOrderId = null,
   onBoundStrategyChange,
   onRequestOrder,
   dragging,
@@ -122,6 +126,8 @@ export function SymbolDesktopRail({
           isIndex={isIndex}
           onBoundStrategyChange={onBoundStrategyChange}
           focusPlanToken={focusPlanToken}
+          focusReviewToken={focusReviewToken}
+          highlightOrderId={highlightOrderId}
           onRequestOrder={onRequestOrder}
         />
       </aside>

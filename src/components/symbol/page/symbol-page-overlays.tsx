@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import { SymbolAiFab } from "@/components/symbol/page/symbol-page-dynamics";
 import { SymbolDockDrawers } from "@/components/symbol/page/symbol-page-dynamics";
 import { SymbolMobilePlanDrawer } from "@/components/symbol/mobile/symbol-mobile-plan-drawer";
-import { setBoundStrategyId as persistBoundStrategyId } from "@/components/symbol/plan/symbol-plan-binding";
 import type { SideIconId } from "@/components/symbol/rail/symbol-side-icon-rail";
 import type {
   CommentRow,
@@ -39,6 +38,7 @@ type Props = {
   onBoundStrategyChange: (name: string | null, id?: string | null) => void;
   onOpenAi: () => void;
   onOpenPlan: () => void;
+  onOpenSymbolReview?: (orderId?: string | null) => void;
   newsFeedTab: NewsFeedTab;
   onNewsFeedTabChange: (tab: NewsFeedTab) => void;
   news: NewsRow[];
@@ -66,6 +66,8 @@ type Props = {
   mobilePlanOpen: boolean;
   onCloseMobilePlan: () => void;
   focusPlanToken: number;
+  focusReviewToken?: number;
+  highlightOrderId?: string | null;
   onRequestOrder: () => void;
   aiReady: boolean;
   aiOpen: boolean;
@@ -103,13 +105,9 @@ export function SymbolPageOverlays(p: Props) {
           ask={p.ask}
           strategyId={p.boundStrategyId}
           strategyName={p.boundRuleName}
-          onStrategyIdChange={(id, name) => {
-            const next = id || null;
-            persistBoundStrategyId(p.assetType, p.symbol, next);
-            p.onBoundStrategyChange(name || null, next);
-          }}
           onOpenAi={p.onOpenAi}
           onOpenPlan={p.onOpenPlan}
+          onOpenSymbolReview={p.onOpenSymbolReview}
           newsFeedTab={p.newsFeedTab}
           onNewsFeedTabChange={p.onNewsFeedTabChange}
           news={p.news}
@@ -146,6 +144,8 @@ export function SymbolPageOverlays(p: Props) {
           assetType={p.assetType}
           isIndex={p.isIndex}
           focusPlanToken={p.focusPlanToken}
+          focusReviewToken={p.focusReviewToken}
+          highlightOrderId={p.highlightOrderId}
           onBoundStrategyChange={p.onBoundStrategyChange}
           onRequestOrder={p.onRequestOrder}
           edgeOffsetPx={0}

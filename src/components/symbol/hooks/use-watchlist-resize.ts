@@ -59,14 +59,10 @@ export function readWatchlistOpen(): boolean {
 
 /** Left watchlist width + open state (default closed for first visit). */
 export function useWatchlistResize() {
-  // Client soft-nav: seed from storage on first client render. SSR stays closed
-  // (no window); useLayoutEffect aligns after hydration before paint.
-  const [width, setWidth] = useState(() =>
-    typeof window !== "undefined" ? readWatchlistWidth() : WATCH_DEFAULT,
-  );
-  const [open, setOpenState] = useState(() =>
-    typeof window !== "undefined" ? readWatchlistOpen() : false,
-  );
+  // SSR + first client render must match. Reading localStorage in useState
+  // causes hydration mismatch (open/width differ → data-resizing tree regenerates).
+  const [width, setWidth] = useState(WATCH_DEFAULT);
+  const [open, setOpenState] = useState(false);
   const [dragging, setDragging] = useState(false);
   const widthRef = useRef(width);
   widthRef.current = width;

@@ -13,7 +13,7 @@ import {
 import { SymbolWatchlistSettingsModal } from "@/components/symbol/watchlist/symbol-watchlist-settings-modal";
 import { SymbolWatchlistVirtualList } from "@/components/symbol/watchlist/symbol-watchlist-virtual-list";
 import { EmptyStateBlock } from "@/components/symbol/shared/symbol-empty-art";
-import { Skel } from "@/components/ui/panel-skeleton";
+import { SymbolWatchlistPaneSkeleton } from "@/components/symbol/watchlist/symbol-watchlist-pane-skeleton";
 import { useMounted } from "@/hooks/use-mounted";
 import { useWatchlist } from "@/hooks/query/use-watchlist";
 import { queryKeys } from "@/lib/query/keys";
@@ -26,33 +26,6 @@ type Props = {
   /** False on H5 (pane is CSS-hidden) so we skip quote polling on small hosts. */
   quotesEnabled?: boolean;
 };
-
-/** Row-shaped placeholders — matches live watchlist density (not generic rail skel). */
-function WatchlistRowsSkeleton({ label }: { label: string }) {
-  return (
-    <div
-      role="status"
-      aria-busy="true"
-      aria-label={label}
-      className="min-h-0 flex-1 overflow-hidden"
-    >
-      {Array.from({ length: 10 }, (_, i) => (
-        <div
-          key={i}
-          className="aw-watchlist-row grid items-center gap-1 border-b border-[var(--aw-hairline,var(--border))] px-2"
-        >
-          <div className="min-w-0 space-y-1.5">
-            <Skel className="h-3 w-12" />
-            <Skel className="h-2.5 w-16" />
-          </div>
-          <Skel className="ml-auto h-3 w-12" />
-          <Skel className="ml-auto h-3 w-10" />
-        </div>
-      ))}
-      <span className="sr-only">{label}</span>
-    </div>
-  );
-}
 
 /** Futu-style left watchlist column (名称代码 / 最新价 / 涨跌幅). */
 export function SymbolWatchlistPanel({
@@ -137,7 +110,7 @@ export function SymbolWatchlistPanel({
       </div>
 
       {!mounted || status === "loading" ? (
-        <WatchlistRowsSkeleton label={tCommon("loading")} />
+        <SymbolWatchlistPaneSkeleton label={tCommon("loading")} />
       ) : status === "unauthenticated" ? (
         <div className="flex flex-1 flex-col items-center justify-center px-3 py-6">
           <AuthLoginGate
@@ -149,7 +122,7 @@ export function SymbolWatchlistPanel({
         </div>
       ) : !quotesEnabled || (loading && rows.length === 0) ? (
         // quotesEnabled waits on useMinWidth after hydration — keep row skels, not empty.
-        <WatchlistRowsSkeleton label={tCommon("loading")} />
+        <SymbolWatchlistPaneSkeleton label={tCommon("loading")} />
       ) : error ? (
         <p className="aw-caption flex flex-1 items-center justify-center px-3 py-8 text-center text-[var(--down)]">
           {error}

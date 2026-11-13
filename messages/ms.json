@@ -306,7 +306,7 @@
     "watchlistColCode": "Symbol",
     "watchlistColName": "Nama",
     "watchlistColMarket": "Market",
-    "watchlistSelectAll": "All",
+    "watchlistSelectAll": "Select all",
     "watchlistDeleteSelected": "Delete",
     "watchlistAddTo": "Add to",
     "watchlistCreateGroup": "New group",
@@ -1021,7 +1021,24 @@
     "strategySuggest": "Tag a rule so review can compare against it",
     "bindPlanRule": "Bind in Plan",
     "changePlanRule": "Change rule",
-    "emptyPositionsCta": "Browse markets and place a paper order"
+    "emptyPositionsCta": "Browse markets and place a paper order",
+    "viewSymbolReview": "View this symbol's review",
+    "viewReviewDesk": "Process review desk",
+    "errRiskEmotion": "Mark a reason chip before submitting (risk settings).",
+    "errRiskDailyLoss": "Daily loss limit reached — new buys paused.",
+    "errRiskSymbolCap": "This order exceeds the single-name position cap.",
+    "errRiskExposure": "This order exceeds the gross exposure cap.",
+    "errRiskOrderSize": "This order exceeds the max order size vs equity.",
+    "errInsufficientCash": "Not enough buying power.",
+    "errInsufficientPosition": "Not enough shares to sell.",
+    "errNoQuote": "No usable quote — try again shortly.",
+    "errInvalidQty": "Enter a valid quantity.",
+    "errInvalidLimit": "Limit price required.",
+    "errInvalidStop": "Stop price required.",
+    "errNotFound": "Order not found.",
+    "errNotPending": "Only pending orders can be cancelled.",
+    "strategyClearedHint": "No tag on this order — Plan binding is unchanged",
+    "strategyOrderOnlyHint": "Tag applies to this order only — Plan binding unchanged"
   },
   "ai": {
     "loading": "Menjana analisis daripada berita dan pendapatan…",
@@ -2183,7 +2200,8 @@
     "reviewRevise": "Revise rule",
     "reviewOpenDesk": "Process review",
     "ruleBadgeBound": "Rule: {name}",
-    "ruleBadgeUnbound": "No rule bound"
+    "ruleBadgeUnbound": "No rule bound",
+    "reviewInvalidation": "Invalidation {price}"
   },
   "symbolEmotion": {
     "title": "Emotion check",
@@ -2551,7 +2569,10 @@
     "tabProfile": "Syarikat",
     "resizeBottom": "Ubah saiz panel bawah",
     "collapseBottom": "Kuncupkan panel bawah",
-    "expandBottom": "Kembangkan panel bawah"
+    "expandBottom": "Kembangkan panel bawah",
+    "tabPlan": "Pelan",
+    "tabReview": "Semakan",
+    "tabMarket": "Pasaran"
   },
   "lab": {
     "seo": {

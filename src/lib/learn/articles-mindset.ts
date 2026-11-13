@@ -9,6 +9,7 @@ import { LEARN_ARTICLE_WEALTH_BUILDING } from "@/lib/learn/articles-mindset-weal
 import { LEARN_ARTICLE_WEALTH_STAGES } from "@/lib/learn/articles-mindset-wealth-stages";
 import { LEARN_ARTICLE_MONEY_TRAPS } from "@/lib/learn/articles-mindset-money-traps";
 import { LEARN_ARTICLE_MONEY_DESIRE } from "@/lib/learn/articles-mindset-money-desire";
+import { LEARN_ARTICLE_SKILL_OR_LUCK } from "@/lib/learn/articles-mindset-skill-luck";
 
 /** Mindset articles — depth aligned with long-form craft essays. */
 export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
@@ -22,4 +23,5 @@ export const LEARN_ARTICLES_MINDSET: LearnArticle[] = [
   LEARN_ARTICLE_WEALTH_STAGES,
   LEARN_ARTICLE_MONEY_TRAPS,
   LEARN_ARTICLE_MONEY_DESIRE,
+  LEARN_ARTICLE_SKILL_OR_LUCK,
 ];

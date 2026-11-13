@@ -56,4 +56,5 @@ build-timing-log.txt
 *.tsbuildinfo
 next-env.d.ts
 *.key
+.worker.log
 docker-compose.prod.yml

@@ -132,8 +132,8 @@ export type StackBottomPanesProps = {
   ask: number | null;
   boundStrategyId: string | null;
   boundRuleName: string | null;
-  onBoundStrategyChange: (name: string | null, id?: string | null) => void;
   onOpenPlan: () => void;
+  onOpenSymbolReview?: (orderId?: string | null) => void;
   onOpenAi: () => void;
   onNewsFeedTabChange: (tab: NewsFeedTab) => void;
   news: NewsRow[];
@@ -193,8 +193,8 @@ export function SymbolStackBottomPanes({
   ask,
   boundStrategyId,
   boundRuleName,
-  onBoundStrategyChange,
   onOpenPlan,
+  onOpenSymbolReview,
   onOpenAi,
   onNewsFeedTabChange,
   news,
@@ -310,11 +310,9 @@ export function SymbolStackBottomPanes({
                       ask={ask}
                       onOpenAi={onOpenAi}
                       onOpenPlan={onOpenPlan}
+                      onOpenSymbolReview={onOpenSymbolReview}
                       strategyId={boundStrategyId ?? ""}
                       strategyName={boundRuleName}
-                      onStrategyIdChange={(id, name) =>
-                        onBoundStrategyChange(name ?? null, id)
-                      }
                       density="stack"
                     />
                   </div>

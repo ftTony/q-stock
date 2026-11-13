@@ -49,6 +49,10 @@ type Props = {
   ) => void;
   /** Increment to force Plan tab (e.g. quote bar rule badge). */
   focusPlanToken?: number;
+  /** Increment to force Review tab (post-submit CTA). */
+  focusReviewToken?: number;
+  /** Highlight this order id in the review rail. */
+  highlightOrderId?: string | null;
   /** Open trade in parent drawer (side icon / plan CTA). */
   onRequestOrder?: () => void;
   /** Controlled tab (H5 quick actions). */
@@ -88,6 +92,8 @@ export function SymbolOrderRail({
   isIndex = false,
   onBoundStrategyChange,
   focusPlanToken = 0,
+  focusReviewToken = 0,
+  highlightOrderId = null,
   onRequestOrder,
   tab: tabProp,
   onTabChange,
@@ -113,6 +119,11 @@ export function SymbolOrderRail({
     if (focusPlanToken <= 0) return;
     setTab("plan");
   }, [focusPlanToken, setTab]);
+
+  useEffect(() => {
+    if (focusReviewToken <= 0) return;
+    setTab("review");
+  }, [focusReviewToken, setTab]);
 
   useEffect(() => {
     setStrategyId(null);
@@ -204,6 +215,7 @@ export function SymbolOrderRail({
               symbol={symbol}
               assetType={assetType}
               strategyNameById={nameById}
+              highlightOrderId={highlightOrderId}
               onOpenPlan={() => setTab("plan")}
             />
           </div>

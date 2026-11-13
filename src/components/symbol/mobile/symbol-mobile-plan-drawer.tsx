@@ -12,6 +12,8 @@ type Props = {
   assetType: AssetType;
   isIndex: boolean;
   focusPlanToken: number;
+  focusReviewToken?: number;
+  highlightOrderId?: string | null;
   onBoundStrategyChange: (name: string | null, id?: string | null) => void;
   onRequestOrder: () => void;
   /** Leave room for fixed H5 side dock. */
@@ -26,6 +28,8 @@ export function SymbolMobilePlanDrawer({
   assetType,
   isIndex,
   focusPlanToken,
+  focusReviewToken = 0,
+  highlightOrderId = null,
   onBoundStrategyChange,
   onRequestOrder,
   edgeOffsetPx = 44,
@@ -48,6 +52,8 @@ export function SymbolMobilePlanDrawer({
           isIndex={isIndex}
           onBoundStrategyChange={onBoundStrategyChange}
           focusPlanToken={focusPlanToken}
+          focusReviewToken={focusReviewToken}
+          highlightOrderId={highlightOrderId}
           onRequestOrder={onRequestOrder}
         />
       </div>

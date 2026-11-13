@@ -59,9 +59,9 @@ type Props = {
   ask: number | null;
   strategyId: string | null;
   strategyName: string | null;
-  onStrategyIdChange?: (id: string, name?: string) => void;
   onOpenAi: () => void;
   onOpenPlan: () => void;
+  onOpenSymbolReview?: (orderId?: string | null) => void;
   newsFeedTab: NewsFeedTab;
   onNewsFeedTabChange: (tab: NewsFeedTab) => void;
   news: NewsRow[];
@@ -103,9 +103,9 @@ export function SymbolDockDrawers({
   ask,
   strategyId,
   strategyName,
-  onStrategyIdChange,
   onOpenAi,
   onOpenPlan,
+  onOpenSymbolReview,
   newsFeedTab,
   onNewsFeedTabChange,
   news,
@@ -232,9 +232,16 @@ export function SymbolDockDrawers({
                     onClose();
                     onOpenPlan();
                   }}
+                  onOpenSymbolReview={
+                    onOpenSymbolReview
+                      ? (orderId) => {
+                          onClose();
+                          onOpenSymbolReview(orderId);
+                        }
+                      : undefined
+                  }
                   strategyId={strategyId ?? ""}
                   strategyName={strategyName}
-                  onStrategyIdChange={onStrategyIdChange}
                 />
               </Suspense>
             </>

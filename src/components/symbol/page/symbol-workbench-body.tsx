@@ -61,6 +61,8 @@ type Props = {
   stackKey: number;
   newsFeedTab: "news" | "press";
   openTrade: () => void;
+  openPlan: () => void;
+  openSymbolReview: (orderId?: string | null) => void;
   onSideSelect: (id: SideIconId) => void;
   onToggleWatchlist: () => void;
   aboutLabel: string;
@@ -96,6 +98,8 @@ export function SymbolWorkbenchBody({
   stackKey,
   newsFeedTab,
   openTrade,
+  openPlan,
+  openSymbolReview,
   onSideSelect,
   onToggleWatchlist,
   aboutLabel,
@@ -116,8 +120,8 @@ export function SymbolWorkbenchBody({
       ask={s.quote?.ask ?? null}
       boundStrategyId={p.boundStrategyId}
       boundRuleName={p.boundRuleName}
-      onBoundStrategyChange={p.onBoundStrategyChange}
-      onOpenPlan={p.openPlan}
+      onOpenPlan={openPlan}
+      onOpenSymbolReview={openSymbolReview}
       onOpenAi={() => {
         p.setAiOpen(true);
         p.closeDock();
@@ -227,6 +231,7 @@ export function SymbolWorkbenchBody({
             stackKey={stackKey}
             newsFeedTab={newsFeedTab}
             openTrade={openTrade}
+            openPlan={openPlan}
             onSideSelect={onSideSelect}
             onToggleWatchlist={onToggleWatchlist}
             aboutLabel={aboutLabel}
@@ -264,6 +269,7 @@ type MainGridProps = {
   stackKey: number;
   newsFeedTab: "news" | "press";
   openTrade: () => void;
+  openPlan: () => void;
   onSideSelect: (id: SideIconId) => void;
   onToggleWatchlist: () => void;
   aboutLabel: string;
@@ -293,6 +299,7 @@ function SymbolWorkbenchMainGrid({
   marketCap,
   setStackTab,
   openTrade,
+  openPlan,
   onSideSelect,
   onToggleWatchlist,
   aboutLabel,
@@ -308,7 +315,7 @@ function SymbolWorkbenchMainGrid({
             assetType={assetType}
             quote={s.quote}
             boundRuleName={p.boundRuleName}
-            onOpenPlan={p.openPlan}
+            onOpenPlan={openPlan}
             onOpenTrade={openTrade}
             feedStatus={feedStatus}
             tabs={isDesktop && !embedChartToolbar ? desktopQuoteTabs : undefined}
@@ -372,6 +379,8 @@ function SymbolWorkbenchMainGrid({
                           onSegmentChange={p.onMobileSegment}
                           onOpenTrade={openTrade}
                           focusPlanToken={p.planFocusKey}
+                          focusReviewToken={p.reviewFocusKey}
+                          highlightOrderId={p.highlightOrderId}
                           onBoundStrategyChange={p.onBoundStrategyChange}
                           panelTab={panelTab}
                           moreTabs={mobileMoreTabs}
@@ -386,9 +395,10 @@ function SymbolWorkbenchMainGrid({
             />
           </div>
 
-          {/* Stack mode uses the bottom panel — keep the side rail off so drawers
-              (说明 / news / …) are not flanked by a leftover metrics strip. */}
-          {isDesktop && !isStack && rail.open ? (
+          {/* Side rail (报价头 + 行情/计划/复盘) stays in both side and stack layouts.
+              Stack keeps news/trade/AI in the bottom strip; icon dock stays side-only
+              so bottom tabs aren't duplicated by edge drawers. */}
+          {isDesktop && rail.open ? (
             <SymbolDesktopRail
               symbol={symbol}
               assetType={assetType}
@@ -408,6 +418,8 @@ function SymbolWorkbenchMainGrid({
               metrics={s.earningsMetrics}
               marketCap={marketCap}
               focusPlanToken={p.planFocusKey}
+              focusReviewToken={p.reviewFocusKey}
+              highlightOrderId={p.highlightOrderId}
               onBoundStrategyChange={p.onBoundStrategyChange}
               onRequestOrder={openTrade}
               dragging={rail.dragging}

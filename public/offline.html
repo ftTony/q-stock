@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#e6edf6" />
+    <title>钱力股 Q-Stock · Offline</title>
+    <link rel="icon" href="/favicon-32.png" sizes="32x32" />
+    <script>
+      (function () {
+        try {
+          var t = localStorage.getItem("theme");
+          if (t === "dark") document.documentElement.classList.add("dark");
+          else if (t === "light") document.documentElement.classList.remove("dark");
+          else if (window.matchMedia("(prefers-color-scheme: dark)").matches)
+            document.documentElement.classList.add("dark");
+        } catch (e) {}
+      })();
+    </script>
+    <style>
+      /* Mirror app tokens from globals.css (:root / html.dark). */
+      :root {
+        --wb-parchment: #e6edf6;
+        --wb-canvas: #ffffff;
+        --wb-pearl: #fafafc;
+        --wb-hairline: #d5dce8;
+        --wb-ink: #1d1d1f;
+        --wb-ink-muted: #7a7a7a;
+        --background: var(--wb-parchment);
+        --foreground: var(--wb-ink);
+        --panel: var(--wb-canvas);
+        --muted: var(--wb-ink-muted);
+        --border: var(--wb-hairline);
+        --brand: #0066cc;
+        --brand-text: #0066cc;
+        --on-brand: #ffffff;
+        --font-sans:
+          ui-sans-serif, system-ui, -apple-system, "Segoe UI", "PingFang SC",
+          "Microsoft YaHei", "Noto Sans SC", sans-serif;
+      }
+      html.dark {
+        --wb-parchment: #06090f;
+        --wb-canvas: #0f1520;
+        --wb-pearl: #121925;
+        --wb-hairline: #1c2433;
+        --wb-ink: #edf2ff;
+        --wb-ink-muted: #8b97ad;
+        --background: var(--wb-parchment);
+        --foreground: var(--wb-ink);
+        --panel: var(--wb-canvas);
+        --muted: var(--wb-ink-muted);
+        --border: var(--wb-hairline);
+        --brand: #2997ff;
+        --brand-text: #64b5ff;
+        --on-brand: #ffffff;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+      body {
+        min-height: 100dvh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        font-family: var(--font-sans);
+        background: var(--background);
+        color: var(--foreground);
+      }
+      main {
+        width: min(100%, 24rem);
+        padding: 1.75rem 1.5rem 1.5rem;
+        border: 1px solid var(--border);
+        background: var(--panel);
+      }
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 0.65rem;
+        margin-bottom: 1.25rem;
+      }
+      .brand img {
+        width: 28px;
+        height: 28px;
+        display: block;
+      }
+      .brand strong {
+        font-size: 0.95rem;
+        font-weight: 650;
+        letter-spacing: 0.01em;
+      }
+      .brand .en {
+        font-weight: 500;
+        color: var(--muted);
+      }
+      h1 {
+        margin: 0 0 0.35rem;
+        font-size: 1.15rem;
+        font-weight: 650;
+        letter-spacing: -0.01em;
+      }
+      .sub {
+        margin: 0 0 0.85rem;
+        font-size: 0.8125rem;
+        font-weight: 500;
+        color: var(--muted);
+      }
+      p {
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.55;
+        color: var(--muted);
+      }
+      p + p {
+        margin-top: 0.45rem;
+      }
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 1.25rem;
+      }
+      button,
+      a.btn {
+        appearance: none;
+        border: 0;
+        border-radius: 0;
+        cursor: pointer;
+        font: inherit;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        line-height: 1.35;
+        padding: 0.7rem 0.95rem;
+        text-decoration: none;
+        text-align: center;
+      }
+      button.primary {
+        background: var(--brand);
+        color: var(--on-brand);
+      }
+      a.btn.ghost {
+        color: var(--brand-text);
+        background: transparent;
+        border: 1px solid var(--border);
+      }
+      .btn-label {
+        display: block;
+      }
+      .btn-label-en {
+        display: block;
+        margin-top: 0.15rem;
+        font-size: 0.6875rem;
+        font-weight: 500;
+        opacity: 0.85;
+      }
+      .hint {
+        margin-top: 1rem;
+        font-size: 0.75rem;
+        line-height: 1.45;
+        color: var(--muted);
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <div class="brand">
+        <img src="/logo.png" alt="" width="28" height="28" />
+        <strong>钱力股 <span class="en">Q-Stock</span></strong>
+      </div>
+      <h1>当前处于离线状态</h1>
+      <p class="sub">You're offline</p>
+      <p>行情与账户数据需要联网。恢复网络后可继续看盘、分析与复盘。</p>
+      <p>
+        Quotes and account data need a network. When you're back online, you
+        can continue watching, analyzing, and reviewing.
+      </p>
+      <div class="actions">
+        <button type="button" class="primary" id="retry">
+          <span class="btn-label">重新连接</span>
+          <span class="btn-label-en">Try again</span>
+        </button>
+        <a class="btn ghost" href="/">
+          <span class="btn-label">回首页</span>
+          <span class="btn-label-en">Home</span>
+        </a>
+      </div>
+      <p class="hint" id="status">
+        等待网络恢复… · Waiting for network...
+      </p>
+    </main>
+    <script>
+      (function () {
+        var meta = document.querySelector('meta[name="theme-color"]');
+        if (meta) {
+          meta.setAttribute(
+            "content",
+            document.documentElement.classList.contains("dark")
+              ? "#06090f"
+              : "#e6edf6",
+          );
+        }
+
+        var statusEl = document.getElementById("status");
+        function reload() {
+          if (statusEl) {
+            statusEl.textContent =
+              "网络已恢复，正在刷新… · Back online — reloading...";
+          }
+          location.reload();
+        }
+        document.getElementById("retry").addEventListener("click", function () {
+          location.reload();
+        });
+        window.addEventListener("online", reload);
+      })();
+    </script>
+  </body>
+</html>

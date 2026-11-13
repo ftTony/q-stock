@@ -10,15 +10,24 @@ import { clientMessages } from "@/i18n/client-messages";
  *
  * `namespaces` 只填本页客户端组件额外用到的命名空间，外壳部分会自动带上；
  * 漏填会导致运行时 MISSING_MESSAGE，`npm run check:i18n` 会提前发现。
+ *
+ * Prefer passing `locale` from `params` so the nested provider never relies on
+ * request-config inference during Turbopack / soft-nav recovery.
  */
 export async function ScopedMessages({
   namespaces = [],
+  locale: localeProp,
   children,
 }: {
   namespaces?: readonly string[];
+  locale?: string;
   children: React.ReactNode;
 }) {
-  const [all, locale] = await Promise.all([getMessages(), getLocale()]);
+  const [all, requestLocale] = await Promise.all([
+    getMessages(),
+    localeProp ? Promise.resolve(localeProp) : getLocale(),
+  ]);
+  const locale = localeProp ?? requestLocale;
   return (
     <NextIntlClientProvider
       locale={locale}

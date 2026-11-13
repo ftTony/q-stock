@@ -50,8 +50,8 @@ type Props = {
   ask: number | null;
   boundStrategyId: string | null;
   boundRuleName: string | null;
-  onBoundStrategyChange: (name: string | null, id?: string | null) => void;
   onOpenPlan: () => void;
+  onOpenSymbolReview?: (orderId?: string | null) => void;
   onOpenAi: () => void;
   tab: StackBottomTab;
   onTabChange: (tab: StackBottomTab) => void;
@@ -145,8 +145,8 @@ export function SymbolStackBottomPanel({
   ask,
   boundStrategyId,
   boundRuleName,
-  onBoundStrategyChange,
   onOpenPlan,
+  onOpenSymbolReview,
   onOpenAi,
   tab,
   onTabChange,
@@ -205,6 +205,12 @@ export function SymbolStackBottomPanel({
       const next = [id, ...prev.filter((x) => x !== id)];
       return next.slice(0, SOFT_KEEP_MAX);
     });
+  }, [active]);
+
+  /** External openPlan / openTrade / review while collapsed → show content. */
+  useEffect(() => {
+    if (bottom.collapsed) bottom.expand();
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- expand on tab change only
   }, [active]);
 
   const mountNews =
@@ -345,8 +351,8 @@ export function SymbolStackBottomPanel({
           ask={ask}
           boundStrategyId={boundStrategyId}
           boundRuleName={boundRuleName}
-          onBoundStrategyChange={onBoundStrategyChange}
           onOpenPlan={onOpenPlan}
+          onOpenSymbolReview={onOpenSymbolReview}
           onOpenAi={onOpenAi}
           onNewsFeedTabChange={onNewsFeedTabChange}
           news={news}

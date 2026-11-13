@@ -1,10 +1,9 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import {
-  ChartLoadingOverlay,
-  RailPanelSkeleton,
-} from "@/components/ui/panel-skeleton";
+import { ChartLoadingOverlay } from "@/components/ui/panel-skeleton";
+import { SymbolDesktopRailSkeleton } from "@/components/symbol/rail/symbol-desktop-rail-skeleton";
+import { SymbolWatchlistPaneSkeleton } from "@/components/symbol/watchlist/symbol-watchlist-pane-skeleton";
 
 /** Quiet chart host while the chunk loads — no fake candlestick skeleton. */
 function ChartChunkPlaceholder() {
@@ -36,11 +35,7 @@ export const SymbolWatchlistPanel = dynamic(
     })),
   {
     ssr: false,
-    loading: () => (
-      <div className="flex h-full min-h-0 w-[var(--aw-watchlist-width,280px)] flex-col border-r border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas,var(--surface))]">
-        <RailPanelSkeleton rows={10} className="min-h-0 flex-1" />
-      </div>
-    ),
+    loading: () => <SymbolWatchlistPaneSkeleton chrome rows={10} />,
   },
 );
 
@@ -68,11 +63,7 @@ export const SymbolDesktopRail = dynamic(
     })),
   {
     ssr: false,
-    loading: () => (
-      <aside className="aw-rail hidden min-h-0 flex-col border-l border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas,var(--surface))] lg:flex lg:w-[var(--aw-rail-width,360px)]">
-        <RailPanelSkeleton rows={8} className="min-h-0 flex-1" />
-      </aside>
-    ),
+    loading: () => <SymbolDesktopRailSkeleton />,
   },
 );
 

@@ -1,10 +1,15 @@
 /* Minimal offline shell for installed PWA.
  * Never precache HTML navigations — locale/URL changes (e.g. /en → /) would
  * serve stale markup against new JS and trigger React hydration #418.
- * Do NOT cache-first /_next/* — chunk URLs must always hit network.
+ * JS under /_next/* stays network-only. CSS under /_next/static/ is
+ * network-first + cache so the last visit's styles survive offline.
  */
-const CACHE = "q-stock-shell-v6";
+const CACHE = "q-stock-shell-v8";
+const STYLE_CACHE = "q-stock-styles-v1";
+const STYLE_CACHE_MAX = 24;
+const OFFLINE_URL = "/offline.html";
 const PRECACHE = [
+  OFFLINE_URL,
   "/manifest.webmanifest",
   "/logo.png",
   "/logo-cn.png",
@@ -23,11 +28,67 @@ self.addEventListener("install", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
+  const keep = new Set([CACHE, STYLE_CACHE]);
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k))),
+      Promise.all(keys.filter((k) => !keep.has(k)).map((k) => caches.delete(k))),
     ).then(() => self.clients.claim()),
   );
+});
+
+function offlineResponse() {
+  return caches.match(OFFLINE_URL).then(
+    (hit) =>
+      hit ||
+      new Response(
+        "<!DOCTYPE html><html><head><meta charset=utf-8><title>Offline</title></head><body><p>Offline</p><p><a href='/'>Home</a></p></body></html>",
+        {
+          status: 503,
+          headers: { "Content-Type": "text/html; charset=utf-8" },
+        },
+      ),
+  );
+}
+
+async function putStyle(req, res) {
+  if (!res || !res.ok) return;
+  const cache = await caches.open(STYLE_CACHE);
+  await cache.put(req, res.clone());
+  const keys = await cache.keys();
+  if (keys.length <= STYLE_CACHE_MAX) return;
+  const drop = keys.length - STYLE_CACHE_MAX;
+  for (let i = 0; i < drop; i++) await cache.delete(keys[i]);
+}
+
+async function cacheStyleUrls(urls) {
+  const list = (urls || [])
+    .filter((u) => typeof u === "string")
+    .map((u) => {
+      try {
+        return new URL(u, self.location.origin);
+      } catch {
+        return null;
+      }
+    })
+    .filter((u) => u && u.origin === self.location.origin)
+    .filter((u) => u.pathname.startsWith("/_next/static/") && /\.css$/i.test(u.pathname));
+
+  await Promise.all(
+    list.map(async (u) => {
+      try {
+        const res = await fetch(u.href, { credentials: "same-origin" });
+        await putStyle(u.href, res);
+      } catch {
+        /* ignore */
+      }
+    }),
+  );
+}
+
+self.addEventListener("message", (event) => {
+  const data = event.data;
+  if (!data || data.type !== "CACHE_STYLES") return;
+  event.waitUntil(cacheStyleUrls(data.urls));
 });
 
 self.addEventListener("fetch", (event) => {
@@ -36,24 +97,30 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   if (url.origin !== self.location.origin) return;
 
-  // App Router / Turbopack / webpack — always hit network.
-  if (url.pathname.startsWith("/_next/")) return;
-
-  // Navigations: network-only (no HTML cache) so locale routing stays consistent.
-  if (req.mode === "navigate") {
+  // Last-visit CSS: network-first, fall back to cache when offline.
+  if (url.pathname.startsWith("/_next/static/") && /\.css$/i.test(url.pathname)) {
     event.respondWith(
-      fetch(req).catch(() => caches.match("/manifest.webmanifest").then(() =>
-        new Response("Offline", {
-          status: 503,
-          headers: { "Content-Type": "text/plain; charset=utf-8" },
-        }),
-      )),
+      fetch(req)
+        .then((res) => {
+          void putStyle(req, res);
+          return res;
+        })
+        .catch(() => caches.match(req).then((hit) => hit || Response.error())),
     );
     return;
   }
 
+  // Other App Router / Turbopack / webpack assets — always hit network.
+  if (url.pathname.startsWith("/_next/")) return;
+
+  // Navigations: network-only (no HTML cache) so locale routing stays consistent.
+  if (req.mode === "navigate") {
+    event.respondWith(fetch(req).catch(() => offlineResponse()));
+    return;
+  }
+
   // Cache-first only for static brand assets (not JS/CSS bundles).
-  if (url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|woff2?|webmanifest)$/i)) {
+  if (url.pathname.match(/\.(png|jpg|jpeg|svg|webp|ico|woff2?|webmanifest|html)$/i)) {
     event.respondWith(
       caches.match(req).then(
         (hit) =>
