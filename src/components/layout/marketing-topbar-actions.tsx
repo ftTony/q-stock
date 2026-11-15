@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { useTheme } from "next-themes";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
@@ -32,7 +32,9 @@ export function MarketingTopbarActions({
   const router = useRouter();
   const mounted = useMounted();
   const [langOpen, setLangOpen] = useState(false);
+  const [userOpen, setUserOpen] = useState(false);
   const langRef = useRef<HTMLDivElement>(null);
+  const userRef = useRef<HTMLDivElement>(null);
   const dark = mounted && (resolvedTheme || theme) === "dark";
   const loggedIn = mounted && Boolean(session?.user);
 
@@ -44,6 +46,15 @@ export function MarketingTopbarActions({
     document.addEventListener("mousedown", onDoc);
     return () => document.removeEventListener("mousedown", onDoc);
   }, [langOpen]);
+
+  useEffect(() => {
+    if (!userOpen) return;
+    function onDoc(e: MouseEvent) {
+      if (!userRef.current?.contains(e.target as Node)) setUserOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    return () => document.removeEventListener("mousedown", onDoc);
+  }, [userOpen]);
 
   return (
     <div className="flex items-center gap-1 sm:gap-1.5" suppressHydrationWarning>
@@ -157,21 +168,69 @@ export function MarketingTopbarActions({
       {!mounted ? (
         <span className="inline-block h-8 w-[4.5rem] shrink-0" aria-hidden />
       ) : loggedIn ? (
-        <Link
-          href="/markets"
-          className="qt-btn qt-btn-ghost inline-flex h-8 min-w-8 items-center justify-center px-2.5 text-[12px] font-bold"
-          aria-label={
-            session?.user?.name ||
-            session?.user?.email?.split("@")[0] ||
-            t("markets")
-          }
-        >
-          {(
-            session?.user?.name?.trim()?.[0] ||
-            session?.user?.email?.[0] ||
-            "U"
-          ).toUpperCase()}
-        </Link>
+        <div className="relative" ref={userRef}>
+          <button
+            type="button"
+            className="qt-btn qt-btn-ghost inline-flex h-8 min-w-8 items-center justify-center px-2.5 text-[12px] font-bold"
+            aria-label={
+              session?.user?.name ||
+              session?.user?.email?.split("@")[0] ||
+              t("markets")
+            }
+            aria-haspopup="menu"
+            aria-expanded={userOpen}
+            onClick={() => {
+              setUserOpen((v) => !v);
+              setLangOpen(false);
+            }}
+          >
+            {(
+              session?.user?.name?.trim()?.[0] ||
+              session?.user?.email?.[0] ||
+              "U"
+            ).toUpperCase()}
+          </button>
+          {userOpen ? (
+            <div
+              role="menu"
+              className="absolute right-0 z-50 mt-2 w-44 overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--panel)] p-1 shadow-[0_12px_40px_rgba(15,23,42,0.16)]"
+            >
+              <div className="border-b border-[var(--border)] px-2.5 py-2">
+                <div className="truncate text-sm font-medium text-[var(--foreground)]">
+                  {session?.user?.name?.trim() ||
+                    session?.user?.email?.split("@")[0] ||
+                    "User"}
+                </div>
+                {session?.user?.email ? (
+                  <div className="mt-0.5 truncate text-[11px] text-[var(--muted)]">
+                    {session.user.email}
+                  </div>
+                ) : null}
+              </div>
+              <Link
+                href="/markets"
+                role="menuitem"
+                className="block rounded-lg px-2.5 py-2 text-sm transition-colors hover:bg-[var(--sidebar-hover)]"
+                onClick={() => setUserOpen(false)}
+              >
+                {t("markets")}
+              </Link>
+              <button
+                type="button"
+                role="menuitem"
+                className="block w-full rounded-lg px-2.5 py-2 text-left text-sm text-[var(--down)] transition-colors hover:bg-[var(--sidebar-hover)]"
+                onClick={() => {
+                  setUserOpen(false);
+                  void signOut({ redirect: false }).then(() => {
+                    router.refresh();
+                  });
+                }}
+              >
+                {t("logout")}
+              </button>
+            </div>
+          ) : null}
+        </div>
       ) : (
         <Link
           href="/login"

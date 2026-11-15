@@ -27,7 +27,8 @@
     "billing:grant-pro": "tsx scripts/grant-pro.ts",
     "billing:create-code": "tsx scripts/create-redeem-code.ts",
     "postinstall": "prisma generate",
-    "auth:refresh-jwks": "node scripts/fetch-google-jwks.mjs"
+    "auth:refresh-jwks": "node scripts/fetch-google-jwks.mjs",
+    "postbuild": "node scripts/copy-public-standalone.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.65",

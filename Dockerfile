@@ -77,8 +77,11 @@ USER nextjs
 EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
-# ✅ 只启动Next服务，移除 prisma migrate deploy
-CMD ["node", "standalone/server.js"]
+# Flat standalone layout: .next/standalone/server.js is copied to /app/server.js
+# by the COPY above. public/ is layered in full right before this point (the
+# COPY order matters — public must come after standalone so offline.html,
+# sw.js etc. survive), then we launch the server.
+CMD ["node", "server.js"]
 
 # ---- alert worker ----
 FROM base AS worker

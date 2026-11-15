@@ -4,26 +4,27 @@
  * JS under /_next/* stays network-only. CSS under /_next/static/ is
  * network-first + cache so the last visit's styles survive offline.
  */
-const CACHE = "q-stock-shell-v8";
+const CACHE = "q-stock-shell-v9";
 const STYLE_CACHE = "q-stock-styles-v1";
 const STYLE_CACHE_MAX = 24;
 const OFFLINE_URL = "/offline.html";
-const PRECACHE = [
-  OFFLINE_URL,
-  "/manifest.webmanifest",
-  "/logo.png",
-  "/logo-cn.png",
-  "/logo-en.png",
-  "/favicon-16.png",
-  "/favicon-32.png",
-  "/icon-192.png",
-  "/icon-512.png",
-  "/apple-touch-icon.png",
-];
+// Precache only what the offline shell truly needs. Favicons/icons/logos are
+// browser-cache territory — precaching them caused a burst of canceled fetches
+// on every install and one 404 would previously abort the whole install.
+const PRECACHE = [OFFLINE_URL, "/manifest.webmanifest"];
 
 self.addEventListener("install", (event) => {
+  // Per-URL cache.add: a single missing file (404) skips that file instead of
+  // failing the whole install (addAll is all-or-nothing).
   event.waitUntil(
-    caches.open(CACHE).then((cache) => cache.addAll(PRECACHE)).then(() => self.skipWaiting()),
+    caches
+      .open(CACHE)
+      .then((cache) =>
+        Promise.allSettled(
+          PRECACHE.map((url) => cache.add(new Request(url, { cache: "reload" }))),
+        ),
+      )
+      .then(() => self.skipWaiting()),
   );
 });
 

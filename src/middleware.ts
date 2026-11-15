@@ -12,6 +12,6 @@ export const config = {
      * Skip API / Next internals / real static assets only — do NOT skip
      * tickers with dots (A-share `600519.SH`, `BRK.B`, `00700.HK`).
      */
-    "/((?!api|_next|_vercel|.*\\.(?:ico|png|jpg|jpeg|gif|svg|webp|txt|xml|json|js|css|map|woff2?|ttf|eot|webmanifest)$).*)",
+    "/((?!api|_next|_vercel|.*\\.(?:ico|png|jpg|jpeg|gif|svg|webp|txt|xml|json|js|css|map|woff2?|ttf|eot|webmanifest|html)$).*)",
   ],
 };
