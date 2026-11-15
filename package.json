@@ -26,7 +26,8 @@
     "learn:seed": "tsx scripts/import-learn.ts --seed",
     "billing:grant-pro": "tsx scripts/grant-pro.ts",
     "billing:create-code": "tsx scripts/create-redeem-code.ts",
-    "postinstall": "prisma generate"
+    "postinstall": "prisma generate",
+    "auth:refresh-jwks": "node scripts/fetch-google-jwks.mjs"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.65",
@@ -41,6 +42,7 @@
     "ai": "^7.0.111",
     "bcryptjs": "^3.0.3",
     "date-fns": "^4.4.0",
+    "jose": "^6.2.17",
     "klinecharts": "^10.0.3",
     "longbridge": "^5.1.0",
     "next": "15.5.25",

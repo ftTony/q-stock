@@ -7,6 +7,7 @@ import { locales, type AppLocale } from "@/i18n/config";
 import { ssgLocales } from "@/i18n/ssg-locales";
 import { shellMessages } from "@/i18n/client-messages";
 import { AppProviders } from "@/components/providers/app-providers";
+import { GoogleOneTapGate } from "@/components/auth/google-one-tap";
 import { AppShell } from "@/components/layout/app-shell";
 import { GoogleAnalytics } from "@/components/seo/google-analytics";
 import { gaMeasurementId, googleSiteVerification } from "@/lib/seo/analytics";
@@ -151,6 +152,7 @@ export default async function LocaleLayout({
         <NextIntlClientProvider locale={locale} messages={messages}>
           <AppProviders>
             <AppShell>{children}</AppShell>
+            <GoogleOneTapGate clientId={process.env.AUTH_GOOGLE_ID ?? ""} />
           </AppProviders>
         </NextIntlClientProvider>
         {gaId ? (

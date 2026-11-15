@@ -8,6 +8,7 @@ import { z } from "zod";
 import { prisma } from "@/lib/db";
 import { sendWelcomeEmail } from "@/lib/email";
 import { getProxyAwareFetch } from "@/lib/http/proxy-fetch";
+import { verifyGoogleIdToken } from "@/lib/auth/google-id-token";
 import { fromDbLocale, toDbLocale, defaultLocale, localizedPath } from "@/i18n/config";
 
 const credentialsSchema = z.object({
@@ -18,6 +19,8 @@ const credentialsSchema = z.object({
 const googleConfigured = Boolean(
   process.env.AUTH_GOOGLE_ID?.trim() && process.env.AUTH_GOOGLE_SECRET?.trim(),
 );
+
+const oneTapConfigured = Boolean(process.env.AUTH_GOOGLE_ID?.trim());
 
 const githubConfigured = Boolean(
   process.env.AUTH_GITHUB_ID?.trim() && process.env.AUTH_GITHUB_SECRET?.trim(),
@@ -96,6 +99,45 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             clientId: process.env.AUTH_GITHUB_ID!,
             clientSecret: process.env.AUTH_GITHUB_SECRET!,
             allowDangerousEmailAccountLinking: true,
+          }),
+        ]
+      : []),
+    ...(oneTapConfigured
+      ? [
+          Credentials({
+            id: "onetap",
+            name: "Google One Tap",
+            credentials: {
+              credential: { label: "Google ID Token", type: "text" },
+            },
+            async authorize(raw) {
+              const credential =
+                typeof raw?.credential === "string" ? raw.credential : "";
+              if (!credential) return null;
+              try {
+                const claims = await verifyGoogleIdToken(
+                  credential,
+                  process.env.AUTH_GOOGLE_ID!,
+                );
+                if (!claims) return null;
+                const dbUser = await upsertOAuthUser({
+                  email: claims.email,
+                  name: claims.name,
+                  provider: "google-onetap",
+                });
+                return {
+                  id: dbUser.id,
+                  email: dbUser.email,
+                  name: dbUser.name ?? undefined,
+                  locale: dbUser.locale,
+                  theme: dbUser.theme,
+                  changeColorScheme: dbUser.changeColorScheme,
+                };
+              } catch (err) {
+                console.error("[auth] one-tap token rejected:", err);
+                return null;
+              }
+            },
           }),
         ]
       : []),
