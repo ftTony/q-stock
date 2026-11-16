@@ -34,6 +34,7 @@ import {
 } from "@/components/charts/candle-chart-settings";
 import { captureAndDownloadChart } from "@/components/charts/candle-chart-screenshot";
 import {
+  ensurePaperFillOverlay,
   syncTradeMarkers,
   USER_DRAWINGS_GROUP,
   type ChartTradeMarker,
@@ -184,6 +185,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     void import("klinecharts").then((KC) => {
       if (disposed || !containerRef.current) return;
       kcRef.current = KC;
+      ensurePaperFillOverlay(KC.registerOverlay);
       const chart = KC.init(containerRef.current, {
         styles: buildChartStyles(tipLabelsRef.current, resolution, {
           liveSession: isAssetSessionOpen(assetType),
@@ -270,6 +272,13 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       volumePrecision: 2,
     });
     chart.setPeriod(periodFromResolution(resolution));
+    // setPeriod rebuilds panes — re-pin fills so period switches keep markers.
+    syncTradeMarkers(
+      chart,
+      chartSettingsRef.current.showTradeMarkers
+        ? tradeMarkersRef.current
+        : [],
+    );
   }, [hasBars, ready, symbol, resolution]);
 
   useEffect(() => {
@@ -316,6 +325,9 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     tradeMarkersKey,
     changeColorScheme,
     bars.length,
+    chartType,
+    resolution,
+    symbol,
     chartSettings.showTradeMarkers,
   ]);
 

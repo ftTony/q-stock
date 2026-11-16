@@ -41,7 +41,7 @@ export function serializeOrder(order: PaperOrder) {
     stopPrice: order.stopPrice != null ? Number(order.stopPrice) : null,
     status: order.status,
     filledPrice: order.filledPrice != null ? Number(order.filledPrice) : null,
-    filledAt: order.filledAt,
+    filledAt: order.filledAt ? order.filledAt.toISOString() : null,
     rejectReason: order.rejectReason,
     emotionTags: order.emotionTags ?? [],
     invalidationNote: order.invalidationNote ?? null,

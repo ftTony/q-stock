@@ -28,7 +28,10 @@ import {
 } from "@/components/charts/candle-chart-settings";
 import { CandleChartTypeMenu } from "@/components/charts/candle-chart-type-menu";
 import { CandleChartToolbarActions } from "@/components/charts/candle-chart-toolbar-actions";
-import { ordersToTradeMarkers } from "@/components/charts/candle-chart-trade-markers";
+import {
+  ordersToTradeMarkers,
+  snapTradeMarkersToBars,
+} from "@/components/charts/candle-chart-trade-markers";
 import { EmptyStateBlock } from "@/components/symbol/shared/symbol-empty-art";
 import { SymbolMarketCredsEmpty } from "@/components/symbol/shared/symbol-market-creds-empty";
 import {
@@ -128,7 +131,7 @@ export const SymbolChartSection = memo(function SymbolChartSection({
     if (typeof window !== "undefined" && "requestIdleCallback" in window) {
       idleId = window.requestIdleCallback(arm, { timeout: 2500 });
     } else {
-      timeoutId = setTimeout(arm, 600);
+      timeoutId = setTimeout(arm, 400);
     }
     return () => {
       cancelled = true;
@@ -161,11 +164,13 @@ export const SymbolChartSection = memo(function SymbolChartSection({
           | undefined
       )?.orders ?? [];
     const zh = locale.startsWith("zh");
-    return ordersToTradeMarkers(orders, {
+    const raw = ordersToTradeMarkers(orders, {
       buy: zh ? "买" : "B",
       sell: zh ? "卖" : "S",
     });
-  }, [fillsQuery.data, locale]);
+    // Snap to loaded bars so intraday fills sit on the D/Q candle, not between.
+    return snapTradeMarkersToBars(raw, bars);
+  }, [fillsQuery.data, locale, bars]);
   const periods: CandleResolution[] = ["T", "1", "5", "D", "Q", "Y"];
   const activeChartType = resolveCandleType(chartSettings, resolution);
   const primaryKeys = INDICATOR_KEYS.filter(([k]) => PRIMARY_INDICATORS.has(k));

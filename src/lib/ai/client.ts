@@ -154,6 +154,14 @@ export async function generateAiObject<T>(opts: {
   } catch (err) {
     const msg =
       err instanceof Error ? err.message : "AI generateObject failed";
+    // Zod / AI SDK attach the mismatch under `cause` — keep it in logs for schema debug.
+    const cause =
+      err && typeof err === "object" && "cause" in err
+        ? (err as { cause?: unknown }).cause
+        : undefined;
+    if (cause != null) {
+      console.error("[ai] generateObject schema mismatch:", cause);
+    }
     throw new AiError(msg);
   }
 }

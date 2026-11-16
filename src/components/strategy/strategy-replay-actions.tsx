@@ -165,29 +165,77 @@ export function StrategyReplayActions({
         </SubmitButton>
       </div>
       {ai ? (
-        <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3 text-[12px] leading-relaxed">
-          <h3 className="mb-2 text-[13px] font-medium">{t("aiReviewTitle")}</h3>
-          <p>{ai.processSummary}</p>
-          <Section title={t("aiStoodOut")} items={ai.whatStoodOut} />
-          <Section title={t("aiOverfit")} items={ai.overfittingRisks} />
-          <Section title={t("aiChecklist")} items={ai.nextChecklist} />
-          <p className="mt-2 text-[10px] text-[var(--muted)]">{ai.disclaimer}</p>
+        <div className="space-y-2 rounded-sm border border-[var(--border)] bg-[var(--panel)] p-3 text-[12px] leading-relaxed">
+          <section
+            className={`rounded-sm border-l-2 px-2.5 py-2 ${SECTION_TONE.summary}`}
+          >
+            <div className={`text-[11px] font-medium ${SECTION_LABEL.summary}`}>
+              {t("aiReviewTitle")}
+            </div>
+            <p className="mt-1 text-[var(--foreground)]">{ai.processSummary}</p>
+          </section>
+          <Section
+            title={t("aiStoodOut")}
+            items={ai.whatStoodOut}
+            tone="note"
+          />
+          <Section
+            title={t("aiOverfit")}
+            items={ai.overfittingRisks}
+            tone="risk"
+          />
+          <Section
+            title={t("aiChecklist")}
+            items={ai.nextChecklist}
+            tone="next"
+          />
+          <p className="text-[10px] text-[var(--muted)]">{ai.disclaimer}</p>
         </div>
       ) : null}
     </div>
   );
 }
 
-function Section({ title, items }: { title: string; items: string[] }) {
+type SectionTone = "summary" | "note" | "risk" | "next";
+
+/** Section chrome only — body stays neutral (no emotion/PnL coloring). */
+const SECTION_TONE: Record<SectionTone, string> = {
+  summary:
+    "border-[var(--border)] bg-[color-mix(in_srgb,var(--surface-2)_55%,transparent)]",
+  note: "border-[var(--brand)] bg-[color-mix(in_srgb,var(--brand)_8%,transparent)]",
+  risk: "border-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_8%,transparent)]",
+  next: "border-[var(--success)] bg-[color-mix(in_srgb,var(--success)_8%,transparent)]",
+};
+
+const SECTION_LABEL: Record<SectionTone, string> = {
+  summary: "text-[var(--muted)]",
+  note: "text-[var(--brand-text)]",
+  risk: "text-[var(--danger)]",
+  next: "text-[var(--success)]",
+};
+
+function Section({
+  title,
+  items,
+  tone,
+}: {
+  title: string;
+  items: string[];
+  tone: SectionTone;
+}) {
   if (!items?.length) return null;
   return (
-    <div className="mt-2">
-      <div className="text-[11px] font-medium text-[var(--muted)]">{title}</div>
-      <ul className="mt-1 list-disc space-y-0.5 pl-4">
+    <section
+      className={`rounded-sm border-l-2 px-2.5 py-2 ${SECTION_TONE[tone]}`}
+    >
+      <div className={`text-[11px] font-medium ${SECTION_LABEL[tone]}`}>
+        {title}
+      </div>
+      <ul className="mt-1 list-disc space-y-0.5 pl-4 text-[var(--foreground)]">
         {items.map((item, i) => (
           <li key={i}>{item}</li>
         ))}
       </ul>
-    </div>
+    </section>
   );
 }
