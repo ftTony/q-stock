@@ -330,7 +330,7 @@ export async function sendWelcomeEmail(opts: {
         <p style="margin:0 0 12px">感谢注册。你的账户（${escapeHtml(opts.to)}）已就绪，可以开始使用美股 / 港股 / 数字货币行情、自选、价格提醒、AI 分析与模拟交易。</p>
         <p style="margin:0 0 8px"><strong>建议接下来：</strong></p>
         <ol style="margin:0 0 16px;padding-left:20px">
-          <li>登录后进入<strong>设置</strong>，选择行情厂商（长桥 / 富途、币安 / OKX）并填写你自己的 API Key（BYOK）。</li>
+          <li>登录后进入<strong>设置</strong>：港股/美股用<strong>长桥或富途一键授权</strong>（OAuth，无需手填 Key）；数字货币可按需填写币安 / OKX 的 API Key。</li>
           <li>可选：配置 AI（DeepSeek / OpenAI / Gemini / Claude）与提醒邮件通道。</li>
           <li>在首页添加自选，或为关注标的设置价格提醒。</li>
         </ol>
@@ -347,7 +347,7 @@ export async function sendWelcomeEmail(opts: {
         <p style="margin:0 0 12px">Thanks for joining. Your account (${escapeHtml(opts.to)}) is ready for US / HK equities and crypto quotes, watchlists, price alerts, AI analysis, and paper trading.</p>
         <p style="margin:0 0 8px"><strong>Suggested next steps:</strong></p>
         <ol style="margin:0 0 16px;padding-left:20px">
-          <li>Sign in and open <strong>Settings</strong> to pick vendors (Longbridge / Futu, Binance / OKX) and add your own API keys (BYOK).</li>
+          <li>Sign in and open <strong>Settings</strong>: connect <strong>Longbridge or Futu with one-click OAuth</strong> for HK/US quotes (no manual API keys); optionally add Binance / OKX API keys for crypto.</li>
           <li>Optionally configure AI (DeepSeek / OpenAI / Gemini / Claude) and alert email delivery.</li>
           <li>Build a watchlist or set price alerts on symbols you care about.</li>
         </ol>
@@ -365,7 +365,7 @@ export async function sendWelcomeEmail(opts: {
     `账户已创建：${opts.to}`,
     "",
     "你可以在平台查看美股 / 港股 / 数字货币行情，管理自选、价格提醒、AI 分析与模拟交易。",
-    "建议登录后进入「设置」配置行情厂商与 BYOK API Key，并可按需配置 AI 与提醒邮件。",
+    "建议登录后进入「设置」：港股/美股用长桥或富途一键授权（OAuth）；数字货币可按需填写币安/OKX API Key；并可配置 AI 与提醒邮件。",
     `登录：${loginUrl}`,
     `设置：${settingsUrl}`,
     "",
@@ -376,7 +376,7 @@ export async function sendWelcomeEmail(opts: {
     `Account created: ${opts.to}`,
     "",
     "Use Qianli Gu for US / HK / crypto markets, watchlists, alerts, AI analysis, and paper trading.",
-    "After signing in, open Settings to configure vendors and bring-your-own API keys.",
+    "After signing in, open Settings: connect Longbridge or Futu via OAuth for HK/US; optionally add Binance/OKX API keys for crypto; configure AI and alert email as needed.",
     `Sign in: ${loginUrl}`,
     `Settings: ${settingsUrl}`,
   ].join("\n");
