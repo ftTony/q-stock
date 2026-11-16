@@ -30,14 +30,9 @@ type OverlayHost = {
   }) => unknown;
 };
 
-type RegisterOverlay = (template: {
-  name: string;
-  totalStep?: number;
-  createPointFigures: (args: {
-    overlay: { extendData?: unknown; styles?: Record<string, unknown> };
-    coordinates: Array<{ x: number; y: number }>;
-  }) => Array<Record<string, unknown>>;
-}) => void;
+/** Loose boundary for klinecharts `registerOverlay` (generic OverlayTemplate). */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any -- chart lib template variance
+type RegisterOverlay = (template: any) => unknown;
 
 let paperFillRegistered = false;
 
@@ -51,7 +46,13 @@ export function ensurePaperFillOverlay(registerOverlay: RegisterOverlay) {
   registerOverlay({
     name: PAPER_FILL_OVERLAY,
     totalStep: 2,
-    createPointFigures: ({ overlay, coordinates }) => {
+    createPointFigures: ({
+      overlay,
+      coordinates,
+    }: {
+      overlay: { extendData?: unknown; styles?: Record<string, unknown> };
+      coordinates: Array<{ x: number; y: number }>;
+    }) => {
       const raw = String(overlay.extendData ?? "");
       const sep = raw.indexOf(":");
       const side = sep >= 0 ? raw.slice(0, sep) : "buy";
