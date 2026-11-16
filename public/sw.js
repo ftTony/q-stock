@@ -4,8 +4,8 @@
  * JS under /_next/* stays network-only. CSS under /_next/static/ is
  * network-first + cache so the last visit's styles survive offline.
  */
-const CACHE = "q-stock-shell-v9";
-const STYLE_CACHE = "q-stock-styles-v1";
+const CACHE = "q-stock-shell-v10";
+const STYLE_CACHE = "q-stock-styles-v2";
 const STYLE_CACHE_MAX = 24;
 const OFFLINE_URL = "/offline.html";
 // Precache only what the offline shell truly needs. Favicons/icons/logos are
@@ -53,12 +53,24 @@ function offlineResponse() {
 
 async function putStyle(req, res) {
   if (!res || !res.ok) return;
-  const cache = await caches.open(STYLE_CACHE);
-  await cache.put(req, res.clone());
-  const keys = await cache.keys();
-  if (keys.length <= STYLE_CACHE_MAX) return;
-  const drop = keys.length - STYLE_CACHE_MAX;
-  for (let i = 0; i < drop; i++) await cache.delete(keys[i]);
+  // Clone before any await — returning `res` to the page can consume the body
+  // while caches.open() is pending (Response body is already used).
+  let copy;
+  try {
+    copy = res.clone();
+  } catch {
+    return;
+  }
+  try {
+    const cache = await caches.open(STYLE_CACHE);
+    await cache.put(req, copy);
+    const keys = await cache.keys();
+    if (keys.length <= STYLE_CACHE_MAX) return;
+    const drop = keys.length - STYLE_CACHE_MAX;
+    for (let i = 0; i < drop; i++) await cache.delete(keys[i]);
+  } catch {
+    /* quota / abort — ignore */
+  }
 }
 
 async function cacheStyleUrls(urls) {
@@ -103,7 +115,7 @@ self.addEventListener("fetch", (event) => {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          void putStyle(req, res);
+          event.waitUntil(putStyle(req, res));
           return res;
         })
         .catch(() => caches.match(req).then((hit) => hit || Response.error())),
