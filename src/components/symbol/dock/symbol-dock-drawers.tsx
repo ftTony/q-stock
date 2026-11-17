@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { Suspense, type FormEvent } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import {
@@ -151,7 +151,7 @@ export function SymbolDockDrawers({
     <div className="flex items-center justify-between gap-2">
       <span className="min-w-0 truncate text-[12px] leading-snug text-[var(--muted)]">
         {tRail("orderRuleTag")}
-        <span className="mx-1 text-[var(--border)]">·</span>
+        <span className="mx-1 text-[var(--border)]"></span>
         <span className="font-medium text-[var(--foreground)]">
           {strategyName}
         </span>

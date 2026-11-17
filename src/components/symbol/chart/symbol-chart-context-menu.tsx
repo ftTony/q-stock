@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
 import {
@@ -172,7 +172,7 @@ export function SymbolChartContextMenu({
           onClick={() => setGroupsOpen((v) => !v)}
           trailing={
             <span className="text-[10px] text-[var(--muted)]" aria-hidden>
-              ›
+              ?
             </span>
           }
         />

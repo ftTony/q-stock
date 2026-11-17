@@ -10,7 +10,7 @@ import {
   type MouseEvent as ReactMouseEvent,
 } from "react";
 import { createPortal } from "react-dom";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { useChartToolbarHost } from "@/components/symbol/chart/symbol-chart-toolbar-host";
 import {
@@ -165,8 +165,8 @@ export const SymbolChartSection = memo(function SymbolChartSection({
       )?.orders ?? [];
     const zh = locale.startsWith("zh");
     const raw = ordersToTradeMarkers(orders, {
-      buy: zh ? "买" : "B",
-      sell: zh ? "卖" : "S",
+      buy: zh ? "" : "B",
+      sell: zh ? "" : "S",
     });
     // Snap to loaded bars so intraday fills sit on the D/Q candle, not between.
     return snapTradeMarkersToBars(raw, bars);

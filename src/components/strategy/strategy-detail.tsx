@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
@@ -125,7 +125,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
       setRules(null);
       setRulesJson(JSON.stringify(s.rules, null, 2));
     }
-    // Seed drafts on navigate / first load only — not on every cache write.
+    // Seed drafts on navigate / first load only �� not on every cache write.
     // eslint-disable-next-line react-hooks/exhaustive-deps -- intentional
   }, [strategyId, locale, detailQuery.data?.strategy?.id]);
 

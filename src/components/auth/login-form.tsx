@@ -1,10 +1,10 @@
 "use client";
 
 import { FormEvent, useCallback, useState } from "react";
-import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
+import { apiLogin } from "@/lib/api/client";
 import { pathAfterAuth } from "@/lib/market/creds-status-client";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { OAuthSignInButtons } from "@/components/auth/oauth-sign-in-buttons";
@@ -54,12 +54,12 @@ export function LoginForm({
     setLoading(true);
     setError(null);
     try {
-      const res = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-      if (res?.error) {
+      try {
+        await apiLogin(email, password);
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("qstock-auth-changed"));
+        }
+      } catch {
         setError(t("error"));
         return;
       }

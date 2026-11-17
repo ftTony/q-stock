@@ -1,7 +1,7 @@
 "use client";
 
 import type { ReactNode, Ref, SVGProps } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useSectionReveal } from "@/components/marketing/use-section-reveal";
@@ -198,7 +198,7 @@ function LoopCard({
           className="relative mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-[var(--brand-text)] transition group-hover:gap-2.5"
         >
           {t(`${base}.cta`)}
-          <span aria-hidden>→</span>
+          <span aria-hidden></span>
         </Link>
       </article>
     </Reveal>
@@ -241,11 +241,11 @@ function AiCrosscut({ inView }: { inView: boolean }) {
               <p className="mt-2.5 flex flex-wrap gap-x-3 gap-y-1 text-[12px] text-[var(--foreground)]/75">
                 <span>{t("aiHighlight.points.chart")}</span>
                 <span className="text-[var(--border)]" aria-hidden>
-                  ·
+                  
                 </span>
                 <span>{t("aiHighlight.points.chat")}</span>
                 <span className="text-[var(--border)]" aria-hidden>
-                  ·
+                  
                 </span>
                 <span>{t("aiHighlight.points.scenario")}</span>
               </p>
@@ -300,7 +300,7 @@ function ExtensionsRow({ inView }: { inView: boolean }) {
   );
 }
 
-/** Capabilities: watch → verify → review cards; AI cross-cut; learn/tools extensions. */
+/** Capabilities: watch  verify  review cards; AI cross-cut; learn/tools extensions. */
 export function MarketingFeatureScreens() {
   const t = useTranslations("marketing");
   const { ref, visible } = useSectionReveal(0.2);

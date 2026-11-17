@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
@@ -27,7 +27,7 @@ type Props = {
   quotesEnabled?: boolean;
 };
 
-/** Futu-style left watchlist column (名称代码 / 最新价 / 涨跌幅). */
+/** Futu-style left watchlist column (ƴ / ¼ / ǵ). */
 export function SymbolWatchlistPanel({
   currentSymbol,
   currentAssetType,

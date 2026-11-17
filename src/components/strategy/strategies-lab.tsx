@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import {
@@ -179,7 +179,7 @@ export function StrategiesLab() {
 
   return (
     <div className="flex h-full max-lg:border-t max-lg:border-[var(--border)] lg:gap-3 lg:overflow-hidden">
-      {/* Height follows the lab viewport, not the right column’s content. */}
+      {/* Height follows the lab viewport, not the right columns content. */}
       <aside className="hidden h-full w-[260px] shrink-0 overflow-hidden bg-[var(--panel)] lg:flex lg:flex-col lg:rounded-lg lg:border lg:border-[var(--border)]">
         <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-3 py-2.5">
           <span className="text-[12px] font-medium">{t("mine")}</span>
@@ -242,7 +242,7 @@ export function StrategiesLab() {
                     className="flex w-9 shrink-0 items-center justify-center self-stretch text-[var(--muted)] opacity-0 hover:text-[var(--down)] group-hover:opacity-100 disabled:opacity-40"
                   >
                     {deletingId === s.id ? (
-                      <span className="text-[11px]">…</span>
+                      <span className="text-[11px]"></span>
                     ) : (
                       <svg
                         className="h-4 w-4"

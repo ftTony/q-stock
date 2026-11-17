@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "@/lib/auth/react";
 import { useTheme } from "next-themes";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
@@ -221,9 +221,7 @@ export function MarketingTopbarActions({
                 className="block w-full rounded-lg px-2.5 py-2 text-left text-sm text-[var(--down)] transition-colors hover:bg-[var(--sidebar-hover)]"
                 onClick={() => {
                   setUserOpen(false);
-                  void signOut({ redirect: false }).then(() => {
-                    router.refresh();
-                  });
+                  void signOut({ redirect: false }).then(() => router.refresh());
                 }}
               >
                 {t("logout")}

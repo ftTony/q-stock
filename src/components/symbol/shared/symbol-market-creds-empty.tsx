@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";

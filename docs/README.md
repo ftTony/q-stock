@@ -23,6 +23,7 @@
 | [启动与环境](./getting-started.md) | 本地开发、环境变量、Docker、常见问题 |
 | [架构说明](./architecture.md) | 系统结构、目录、行情/凭证数据流、安全边界 |
 | [行情多源与模拟交易实现思路](./market-trading-tech.md) | Provider、符号映射、撮合与实盘扩展点 |
+| [开源金融撮合系统调研](./opensource-matching-engines.md) | GitHub CLOB / 模拟成交项目对比与选型建议 |
 | [API 参考](./api.md) | BFF 接口约定与示例 |
 | [数据库说明](./database.md) | Prisma 模型、枚举、迁移与备份 |
 | [生产部署](./deployment.md) | 上线检查清单、反代、容量与回滚 |

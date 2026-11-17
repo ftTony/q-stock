@@ -1,6 +1,6 @@
 "use client";
 
-import { signOut } from "next-auth/react";
+import { signOut } from "@/lib/auth/react";
 import { Link, usePathname, useRouter } from "@/i18n/routing";
 import {
   locales,
@@ -206,9 +206,7 @@ export function UserMenuPanel({
         className="block w-full px-3 py-2 text-left text-sm text-[var(--down)] hover:bg-[var(--sidebar-hover)]"
         onClick={() => {
           onClose();
-          void signOut({ redirect: false }).then(() => {
-            router.refresh();
-          });
+          void signOut({ redirect: false }).then(() => router.refresh());
         }}
       >
         {logoutLabel}

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
@@ -216,7 +216,7 @@ export function SymbolReviewRail({
                         : "text-[var(--down)]"
                     }`}
                   >
-                    {o.side === "buy" ? t("reviewBuy") : t("reviewSell")} ·{" "}
+                    {o.side === "buy" ? t("reviewBuy") : t("reviewSell")} {" "}
                     <span className="tabular-nums text-[var(--foreground)]">
                       {formatNumber(o.qty, { maximumFractionDigits: 4 })}
                     </span>

@@ -12,6 +12,7 @@ import {
   SETTINGS_SUBMIT_GHOST,
 } from "@/components/settings/settings-btn";
 import { useFlashMessage } from "@/components/settings/use-flash-message";
+import { apiFetchJson } from "@/lib/api/client";
 import { trackBillingClick } from "@/lib/billing/client-events";
 import { fetchJson } from "@/lib/query/fetch-json";
 
@@ -114,22 +115,21 @@ export function BillingPanel() {
   async function onRedeem(values: RedeemValues) {
     clearFlash();
     try {
-      const res = await fetch("/api/billing/redeem", {
+      await apiFetchJson("/api/billing/redeem", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: values.code }),
       });
-      const data = (await res.json()) as { error?: string; ok?: boolean };
-      if (!res.ok) {
-        flash("error", data.error || t("billingRedeemError"));
-        return;
-      }
       flash("ok", t("billingRedeemOk"));
       reset({ code: "" });
       await qc.invalidateQueries({ queryKey: ["billing"] });
       await qc.invalidateQueries({ queryKey: ["ai", "quota"] });
-    } catch {
-      flash("error", t("billingRedeemError"));
+    } catch (err) {
+      flash(
+        "error",
+        err instanceof Error && err.message
+          ? err.message
+          : t("billingRedeemError"),
+      );
     }
   }
 

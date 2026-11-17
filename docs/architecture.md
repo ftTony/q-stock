@@ -1,6 +1,6 @@
 # Q-Stock 架构说明
 
-本文描述**当前生产架构**（Next.js BFF + Node Worker + PostgreSQL）。若规划 Python 统一 API、Redis、Kafka 与微服务演进，见 [python-backend-microservices.md](./python-backend-microservices.md)。
+本文描述**当前架构**。主路径业务 API 已迁到 FastAPI（`services/api`）+ Redis；其余域仍为 Next.js BFF。完整演进见 [python-backend-microservices.md](./python-backend-microservices.md)。
 
 ## 1. 总体架构
 
@@ -8,28 +8,23 @@
 ┌──────────────────────────────────────────────────────────┐
 │  Browser / H5 (locale + AppShell / 可折叠侧栏 / 底栏)     │
 └────────────────────────────┬─────────────────────────────┘
-                             │ HTTP
-┌────────────────────────────▼─────────────────────────────┐
-│  Next.js App Router                                      │
-│  ├─ pages: src/app/[locale]/*                            │
-│  ├─ BFF: src/app/api/*                                   │
-│  └─ Auth.js (Credentials + 可选 Google/GitHub, JWT)      │
-└───────┬──────────────┬──────────────┬────────────────────┘
-        │              │              │
-        ▼              ▼              ▼
-   PostgreSQL     Market facade    Adanos / AI vendors
-   (Prisma)       (@/lib/market)   (sentiment / analyze)
-        │              │
-        │    ┌─────────┼─────────┬──────────┐
-        │    ▼         ▼         ▼          ▼
-        │ Longbridge  Futu     Finnhub   Binance/OKX
-        │ (equity)    (equity) (fallback) (crypto)
-        │
-┌───────┴────────┐
-│ Alert Worker   │──► market.getQuote ──► Resend / SMTP
-│ (+ paper fill) │
-└────────────────┘
+                             │ HTTP (same-origin)
+              ┌──────────────┼──────────────────┐
+              ▼              ▼                  ▼
+     Next rewrite      Next BFF 残余       Auth.js session
+     /api/v1/* ────────► FastAPI           (OAuth / 残余 API)
+              │         services/api
+              │              │
+              ▼              ▼
+           Redis         PostgreSQL
+     (cache/rl/auth)    (Prisma + SQLAlchemy 共表)
+              │
+┌─────────────┴──────────┐
+│ Alert Worker (Node)    │──► 提醒 / 纸面限价撮合 / replay drain
+└────────────────────────┘
 ```
+
+**双栈过渡：** 登录 → 行情(quotes/candles/search + depth/trades/…) → 看板(ranks/news/company…) → 自选 / 模拟交易 / 策略 CRUD+replay → user/alerts/comments/research-cards/review → billing entitlements/redeem 走 `/api/v1`；AI 流式、Stripe checkout/webhook、券商 OAuth、策略实验室、push 等仍走 `src/app/api/*`。
 
 原则：
 
@@ -44,9 +39,11 @@
 
 | 单元 | 入口 | 职责 |
 |---|---|---|
-| web | Next.js | UI + BFF + Auth |
-| worker | `src/workers/price-alerts.ts` | 提醒邮件 + 模拟限价/止损撮合 + 美股收盘自选摘要 |
-| db | PostgreSQL 16 | 持久化 |
+| web | Next.js | UI + 残余 BFF + Auth.js；`/api/v1` rewrite → api |
+| api | `services/api` (FastAPI) | REST：auth JWT / market(+advanced/content) / watchlist / trading / strategies / user / alerts / comments / research-cards / review / billing(entitlements+redeem) |
+| redis | Redis 7 | 行情短缓存、限流、refresh 吊销（无则进程内降级） |
+| worker | `src/workers/price-alerts.ts` | 提醒邮件 + 模拟限价/止损撮合 + replay drain |
+| db | PostgreSQL 16 | 持久化（Prisma 独占迁移） |
 
 ## 3. 目录结构（节选）
 

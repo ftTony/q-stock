@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "@/i18n/routing";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { apiFetchJson } from "@/lib/api/client";
 import { fetchJson } from "@/lib/query/fetch-json";
 import type { AssetType } from "@/lib/types";
 
@@ -65,9 +66,8 @@ export function ResearchCardPanel({
     setBusy(true);
     setMessage(null);
     try {
-      const res = await fetch("/api/research-cards", {
+      await apiFetchJson("/api/research-cards", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           symbol,
           assetType,
@@ -77,26 +77,17 @@ export function ResearchCardPanel({
           risks,
         }),
       });
-      const data = (await res.json()) as {
-        error?: string;
-        code?: string;
-        limit?: number;
-      };
-      if (!res.ok) {
-        setMessageKind("err");
-        setMessage(
-          data.code === "PLAN_LIMIT_EXCEEDED"
-            ? t("limitReached", { limit: data.limit ?? 1 })
-            : data.error || t("saveError"),
-        );
-        return;
-      }
       setMessageKind("ok");
       setMessage(t("saved"));
       await qc.invalidateQueries({ queryKey: ["research-card"] });
-    } catch {
+    } catch (err) {
       setMessageKind("err");
-      setMessage(t("saveError"));
+      const e = err as Error & { code?: string; details?: { limit?: number } };
+      setMessage(
+        e.code === "PLAN_LIMIT_EXCEEDED"
+          ? t("limitReached", { limit: e.details?.limit ?? 1 })
+          : t("saveError"),
+      );
     } finally {
       setBusy(false);
     }

@@ -7,7 +7,7 @@ import { fmtMoney } from "@/components/portfolio/format";
 import { PortfolioTodayRiskCard } from "@/components/portfolio/portfolio-today-risk-card";
 import type { PaperOrder, PaperPosition } from "@/components/portfolio/types";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 
 const PortfolioPositionsCharts = dynamic(
   () =>
@@ -247,7 +247,7 @@ export function PortfolioPaperSection({
                     </Link>
                     <span className="text-[var(--muted)]">
                       {" "}
-                      · {labels.side(o.side)} · {labels.type(o.type)} · {o.qty}
+                       {labels.side(o.side)}  {labels.type(o.type)}  {o.qty}
                       {o.limitPrice != null && ` @ $${fmtMoney(o.limitPrice)}`}
                       {o.stopPrice != null &&
                         ` stop $${fmtMoney(o.stopPrice)}`}
@@ -297,11 +297,11 @@ export function PortfolioPaperSection({
                     </Link>
                     <span className="text-[var(--muted)]">
                       {" "}
-                      · {labels.side(o.side)} · {o.qty}
+                       {labels.side(o.side)}  {o.qty}
                     </span>
                     {o.strategyId ? (
                       <span className="ml-1 text-[11px] text-[var(--brand-text)]">
-                        ·{" "}
+                        {" "}
                         <Link
                           href={`/strategies/${o.strategyId}`}
                           className="hover:underline"

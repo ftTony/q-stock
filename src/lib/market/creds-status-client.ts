@@ -35,9 +35,8 @@ export function notifyMarketVendorsChanged(status: MarketCredsStatus): void {
 
 export async function fetchMarketCredsStatus(): Promise<MarketCredsStatus | null> {
   try {
-    const res = await fetch("/api/user/market-credentials");
-    if (!res.ok) return null;
-    return (await res.json()) as MarketCredsStatus;
+    const { apiFetchJson } = await import("@/lib/api/client");
+    return await apiFetchJson<MarketCredsStatus>("/api/user/market-credentials");
   } catch {
     return null;
   }

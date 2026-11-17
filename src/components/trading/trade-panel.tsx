@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
@@ -347,7 +347,7 @@ export function TradePanel({
       <p className="text-[12px] tabular-nums text-[var(--muted)]">
         {t("position")}: {position.qty}
         {position.avgCost != null
-          ? ` · ${t("avgCost")} $${fmtMoney(position.avgCost)}`
+          ? `  ${t("avgCost")} $${fmtMoney(position.avgCost)}`
           : ""}
       </p>
     ) : null;

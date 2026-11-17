@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useEffect, useMemo, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
@@ -175,7 +175,7 @@ function WatchlistContent() {
         </Link>
       </header>
 
-      {/* H5: market tabs + alerts — terminal chrome */}
+      {/* H5: market tabs + alerts �� terminal chrome */}
       <div className="sticky top-0 z-20 shrink-0 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--panel)] lg:static lg:z-auto lg:border-0 lg:bg-transparent">
         <div className="flex items-stretch lg:hidden">
           <div
@@ -235,7 +235,7 @@ function WatchlistContent() {
         </div>
       </div>
 
-      {/* Add symbol — desktop only */}
+      {/* Add symbol �� desktop only */}
       <div className="relative hidden shrink-0 border-b border-[var(--aw-hairline,var(--border))] pb-2 lg:block lg:px-0">
         <div className="flex items-center gap-2">
           {filter === "all" ? (
@@ -289,7 +289,7 @@ function WatchlistContent() {
         ) : null}
       </div>
 
-      {/* List — H5 fills with panel so no empty parchment void */}
+      {/* List �� H5 fills with panel so no empty parchment void */}
       <section className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-[var(--panel)] qt-scroll lg:mt-3 lg:border lg:border-[var(--aw-hairline,var(--border))]">
         {loading ? (
           <div className="px-4 py-10 text-center text-[13px] text-[var(--muted)]">
@@ -329,7 +329,7 @@ export default function WatchlistPage() {
     <Suspense
       fallback={
         <div className="px-4 py-10 text-center text-[13px] text-[var(--muted)]">
-          …
+          ��
         </div>
       }
     >

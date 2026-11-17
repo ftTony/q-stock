@@ -7,6 +7,7 @@ import { IndustryHeatmapTooltip } from "@/components/market/industry-heatmap-too
 import { Skel } from "@/components/ui/panel-skeleton";
 import type { IndustryHeatCell } from "@/lib/market/providers/longbridge-industry";
 import { squarify, type TreemapRect } from "@/lib/market/treemap";
+import { fetchJson } from "@/lib/query/fetch-json";
 import type { AssetType } from "@/lib/types";
 
 function tileColor(pct: number): string {
@@ -102,12 +103,9 @@ export function IndustryHeatmap({
     const gen = ++enrichGen.current;
     void (async () => {
       try {
-        const res = await fetch(
+        const data = await fetchJson<{ industries?: IndustryHeatCell[] }>(
           `/api/industry-ranks?assetType=${assetType}&limit=40`,
         );
-        const data = (await res.json()) as {
-          industries?: IndustryHeatCell[];
-        };
         if (gen !== enrichGen.current) return;
         const hit = (data.industries ?? []).find((c) => c.id === cell.id);
         setStockCache((prev) => ({
@@ -143,14 +141,10 @@ export function IndustryHeatmap({
     enrichGen.current += 1;
     (async () => {
       try {
-        const res = await fetch(
-          `/api/industry-ranks?assetType=${assetType}&limit=40`,
-        );
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = (await res.json()) as {
+        const data = await fetchJson<{
           industries?: IndustryHeatCell[];
           degraded?: boolean;
-        };
+        }>(`/api/industry-ranks?assetType=${assetType}&limit=40`);
         if (cancelled) return;
         setItems(data.industries ?? []);
         setDegraded(Boolean(data.degraded) || !(data.industries ?? []).length);

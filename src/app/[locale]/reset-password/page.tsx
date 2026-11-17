@@ -33,26 +33,20 @@ function ResetPasswordForm() {
     }
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/reset-password", {
+      const { apiFetchJson } = await import("@/lib/api/client");
+      await apiFetchJson("/api/auth/reset-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ token, password }),
+        skipAuth: true,
       });
-      if (!res.ok) {
-        const data = (await res.json().catch(() => null)) as {
-          error?: string;
-        } | null;
-        setError(
-          data?.error === "Invalid or expired token"
-            ? t("resetInvalid")
-            : t("resetError"),
-        );
-        return;
-      }
       router.push("/login?reset=1");
       router.refresh();
-    } catch {
-      setError(t("resetError"));
+    } catch (err) {
+      setError(
+        err instanceof Error && err.message === "Invalid or expired token"
+          ? t("resetInvalid")
+          : t("resetError"),
+      );
     } finally {
       setLoading(false);
     }

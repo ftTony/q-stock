@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { AiLoginGate } from "@/components/ai/ai-login-gate";
 import { AccountPageLoading } from "@/components/auth/account-page-fill";

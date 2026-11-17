@@ -1,13 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { LEGAL_CONTACT_EMAIL } from "@/lib/legal/legal-shared";
 import { SETTINGS_BTN_PRIMARY } from "@/components/settings/settings-btn";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
 import { useMounted } from "@/hooks/use-mounted";
+import { apiFetchJson } from "@/lib/api/client";
 
 type View = "compose" | "history";
 
@@ -60,7 +61,7 @@ function formatWhen(iso: string, locale: string) {
   }
 }
 
-/** Settings → 功能建议: compose + personal history (Futu-style desk form). */
+/** Settings �� ���ܽ���: compose + personal history (Futu-style desk form). */
 export function SettingsFeedbackPanel() {
   const t = useTranslations("settings");
   const tCommon = useTranslations("common");
@@ -88,15 +89,16 @@ export function SettingsFeedbackPanel() {
     }
     setHistoryError(null);
     try {
-      const res = await fetch("/api/user/suggestions", { cache: "no-store" });
-      if (res.status === 401) {
+      const data = await apiFetchJson<{ items: HistoryItem[] }>(
+        "/api/user/suggestions",
+      );
+      setHistory(data.items ?? []);
+    } catch (err) {
+      const status = (err as Error & { status?: number }).status;
+      if (status === 401) {
         setHistory([]);
         return;
       }
-      if (!res.ok) throw new Error("load");
-      const data = (await res.json()) as { items: HistoryItem[] };
-      setHistory(data.items ?? []);
-    } catch {
       setHistoryError(t("feedbackLoadError"));
       setHistory([]);
     }
@@ -136,29 +138,25 @@ export function SettingsFeedbackPanel() {
     }
     setBusy(true);
     try {
-      const res = await fetch("/api/user/suggestions", {
+      await apiFetchJson("/api/user/suggestions", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           body: trimmed,
           imageData,
         }),
       });
-      if (res.status === 429) {
-        setError(t("feedbackRateLimited"));
-        return;
-      }
-      if (!res.ok) {
-        setError(t("feedbackSubmitError"));
-        return;
-      }
       setBody("");
       setImageData(null);
       if (fileRef.current) fileRef.current.value = "";
       setFlash(t("feedbackSubmitted"));
       setHistory(null);
-    } catch {
-      setError(t("feedbackSubmitError"));
+    } catch (err) {
+      const status = (err as Error & { status?: number }).status;
+      if (status === 429) {
+        setError(t("feedbackRateLimited"));
+      } else {
+        setError(t("feedbackSubmitError"));
+      }
     } finally {
       setBusy(false);
     }
@@ -304,7 +302,7 @@ export function SettingsFeedbackPanel() {
                 if (fileRef.current) fileRef.current.value = "";
               }}
             >
-              ×
+              ��
             </button>
           </div>
         ) : (

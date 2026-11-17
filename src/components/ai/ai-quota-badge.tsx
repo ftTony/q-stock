@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { AiQuotaExhaustedHint } from "@/components/ai/ai-quota-exhausted";
 import { AI_QUOTA_CHANGED } from "@/lib/ai/quota-events";

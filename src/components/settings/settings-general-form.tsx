@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTheme } from "next-themes";
 import { useLocale, useTranslations } from "next-intl";
 import { usePathname, useRouter } from "@/i18n/routing";
@@ -49,10 +49,10 @@ function SchemePreview({ scheme }: { scheme: ChangeColorScheme }) {
       </div>
       <div className="flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-[11px] tabular-nums">
         <span className="font-semibold" style={{ color: up }}>
-          ▲ 128.50 +1.24%
+           128.50 +1.24%
         </span>
         <span className="font-semibold" style={{ color: down }}>
-          ▼ 96.20 −0.85%
+           96.20 ?0.85%
         </span>
       </div>
     </div>
@@ -311,7 +311,7 @@ export function SettingsGeneralForm() {
               color: messageKind === "ok" ? "var(--up)" : "var(--down)",
             }}
           >
-            {messageKind === "ok" ? "✓ " : ""}
+            {messageKind === "ok" ? "? " : ""}
             {message}
           </p>
         ) : null}

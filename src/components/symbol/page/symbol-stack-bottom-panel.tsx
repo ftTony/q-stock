@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import type { EarningsMetric } from "@/components/market/earnings-panel";
 import type { NewsFeedTab } from "@/components/symbol/dock/symbol-dock-news-panel";
@@ -207,7 +207,7 @@ export function SymbolStackBottomPanel({
     });
   }, [active]);
 
-  /** External openPlan / openTrade / review while collapsed → show content. */
+  /** External openPlan / openTrade / review while collapsed  show content. */
   useEffect(() => {
     if (bottom.collapsed) bottom.expand();
     // eslint-disable-next-line react-hooks/exhaustive-deps -- expand on tab change only
@@ -222,7 +222,7 @@ export function SymbolStackBottomPanel({
     <div className="flex items-center justify-between gap-2">
       <span className="min-w-0 truncate text-[12px] leading-snug text-[var(--muted)]">
         {tRail("orderRuleTag")}
-        <span className="mx-1 text-[var(--border)]">·</span>
+        <span className="mx-1 text-[var(--border)]"></span>
         <span className="font-medium text-[var(--foreground)]">
           {boundRuleName}
         </span>

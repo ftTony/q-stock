@@ -1,7 +1,7 @@
 "use client";
 
 import { FormEvent, Suspense, useCallback, useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
@@ -254,7 +254,7 @@ export default function AlertsPage() {
   return (
     <Suspense
       fallback={
-        <div className="qt-panel p-6 text-sm text-[var(--muted)]">…</div>
+        <div className="qt-panel p-6 text-sm text-[var(--muted)]">��</div>
       }
     >
       <AlertsContent />

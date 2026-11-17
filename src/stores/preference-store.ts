@@ -1,12 +1,12 @@
 "use client";
 
 import { create } from "zustand";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useLayoutEffect } from "react";
 
 export type ChangeColorScheme = "cn" | "us";
 
-/** v2：旧 key 曾被「语言默认」误写入 cn，英文页会被盖成红涨。 */
+/** v2���� key ����������Ĭ�ϡ���д�� cn��Ӣ��ҳ�ᱻ�ǳɺ��ǡ� */
 const STORAGE_KEY = "qstock.changeColorScheme.v2";
 
 type PreferenceState = {
@@ -39,7 +39,7 @@ function persistScheme(s: ChangeColorScheme) {
   }
 }
 
-/** SSR 已按语言写好 `html[data-change]`；无显式偏好时沿用它。 */
+/** SSR �Ѱ�����д�� `html[data-change]`������ʽƫ��ʱ�������� */
 function localeSchemeFromDom(): ChangeColorScheme {
   if (typeof document === "undefined") return "cn";
   const v = document.documentElement.dataset.change;
@@ -75,7 +75,7 @@ export function PreferenceProvider({
       : null;
 
   useLayoutEffect(() => {
-    // 账号设置 > 用户显式本地偏好 > 当前语言 SSR 默认（勿把语言默认持久化）
+    // �˺����� > �û���ʽ����ƫ�� > ��ǰ���� SSR Ĭ�ϣ��������Ĭ�ϳ־û���
     if (sessionScheme) {
       hydrate(sessionScheme, { persist: true });
       return;

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { type IndicatorFlags } from "@/components/charts/candle-chart";
 import type { SymbolTab } from "@/components/symbol/tabs/symbol-tabs-panel";

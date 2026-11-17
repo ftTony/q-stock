@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
 import {
@@ -201,7 +201,7 @@ export function PushNotifySettings() {
                 color: messageKind === "ok" ? "var(--up)" : "var(--down)",
               }}
             >
-              {messageKind === "ok" ? "✓ " : ""}
+              {messageKind === "ok" ? "? " : ""}
               {message}
             </p>
           ) : null}

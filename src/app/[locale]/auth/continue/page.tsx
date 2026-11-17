@@ -1,21 +1,46 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { pathAfterAuth } from "@/lib/market/creds-status-client";
+import { setTokenPair } from "@/lib/api/token-store";
 
-/** Post-OAuth landing: route to settings setup or home. */
+/** Post-OAuth landing: ingest tokens from query, then route to setup or home. */
 export default function AuthContinuePage() {
   const t = useTranslations("auth");
   const tCommon = useTranslations("common");
   const router = useRouter();
-  const { status } = useSession();
+  const { status, update } = useSession();
   const [error, setError] = useState<string | null>(null);
+  const [bootstrapped, setBootstrapped] = useState(false);
 
   useEffect(() => {
-    if (status === "loading") return;
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const access = params.get("accessToken");
+      const refresh = params.get("refreshToken");
+      const expiresIn = Number(params.get("expiresIn") || 1800);
+      if (access) {
+        setTokenPair(access, expiresIn, refresh);
+        // Strip tokens from URL
+        const url = new URL(window.location.href);
+        url.searchParams.delete("accessToken");
+        url.searchParams.delete("refreshToken");
+        url.searchParams.delete("expiresIn");
+        window.history.replaceState({}, "", url.pathname + url.search);
+        void update().finally(() => setBootstrapped(true));
+        return;
+      }
+    } catch {
+      /* ignore */
+    }
+    setBootstrapped(true);
+  }, [update]);
+
+  useEffect(() => {
+    if (!bootstrapped || status === "loading") return;
     if (status === "unauthenticated") {
       router.replace("/login");
       return;
@@ -34,7 +59,7 @@ export default function AuthContinuePage() {
     return () => {
       cancelled = true;
     };
-  }, [status, router, t]);
+  }, [bootstrapped, status, router, t]);
 
   return (
     <div className="qt-panel w-full space-y-3 p-6 sm:p-8">

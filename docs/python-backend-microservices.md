@@ -230,15 +230,14 @@ S1 落地前，也可先在仓库增加 `services/api` 单体目录，内部按�
 
 ### S1 — 模块化单体 FastAPI
 
-- 一个 API 进程 + Postgres；目录按域分包。
-- JWT 登录闭环；Next 改为调用 Python；按域删除 Next `route.ts`（auth → market → trading/strategy → AI）。
-- Worker 可用 Python 重写现有 tick（告警、撮合、replay drain、sitemap），**仍可用 DB 队列**。
+- **主路径已落地（分支 `feat/fastapi-redis-main-path`）：** `services/api` + `/api/v1`；JWT auth；quotes/candles/search + advanced/content market；watchlist / trading / strategies CRUD+replay；user / alerts / comments / research-cards / review；billing entitlements+redeem；对应 Next `route.ts` 已删。
+- 仍待：AI 流式、Stripe checkout/portal/webhook、券商 OAuth、策略实验室；earnings/ipo/options 等部分 content 仍 soft-degrade（Worker 预计算优先）；Worker 仍为 Node（DB 队列 drain）。
 - 机器：按实测设内存上限；遵守列表 cap、回测异步、SEO 预写盘。
 
 ### S2 — 引入 Redis
 
-- 缓存、限流、refresh 吊销。
-- API / Worker 配置 Redis；无 Redis 时降级到进程内缓存（fail soft）。
+- **主路径已落地：** 行情短缓存、路由限流、refresh 吊销；无 Redis 时进程内有界 Map 降级。
+- 后续：Worker 侧缓存对齐；生产 `maxmemory` 调参。
 
 ### S3 — 引入 Kafka + 独立 Worker
 

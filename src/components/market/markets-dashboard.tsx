@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 import { useEffect, useMemo, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
 import { MarketsHeaderToolbar } from "@/components/market/markets-header-toolbar";
@@ -73,12 +73,9 @@ export default function MarketsDashboard({
   initialBoards,
   initialList,
 }: {
-  /**
-   * `/markets` 服务端首屏榜单快照（默认 stock 榜单）。
-   * 有它就先把真实报价渲进 HTML，客户端 30s 后再自行刷新。
-   */
+  /** SSR-hydrated boards snapshot (default stock); client refetches after staleTime. */
   initialBoards?: MarketsFirstScreen;
-  /** `?list=` 的取值，由服务端解析后传入；不在此处读 useSearchParams，否则整个面板会被 CSR bailout。 */
+  /** `?list=` from the server page — avoids useSearchParams CSR bailout. */
   initialList?: string;
 } = {}) {
   const t = useTranslations("market");
@@ -214,11 +211,15 @@ export default function MarketsDashboard({
   }, [kpiQuotes]);
 
   const topPerformer = useMemo(() => {
+    const pct = (q: RankQuote) => {
+      const n =
+        q.percentChange ??
+        (q as { changePercent?: number | null }).changePercent;
+      return typeof n === "number" && Number.isFinite(n) ? n : 0;
+    };
     if (tab === "crypto") {
       if (!boards.hot.length) return null;
-      return [...boards.hot].sort(
-        (a, b) => b.percentChange - a.percentChange,
-      )[0];
+      return [...boards.hot].sort((a, b) => pct(b) - pct(a))[0];
     }
     if (!boards.gainers.length) return null;
     return boards.gainers[0];
@@ -265,9 +266,16 @@ export default function MarketsDashboard({
           {
             key: "top",
             label: t("kpiTop"),
-            value: topPerformer
-              ? `${topPerformer.symbol} ${topPerformer.percentChange >= 0 ? "+" : ""}${topPerformer.percentChange.toFixed(1)}%`
-              : "-",
+            value: (() => {
+              if (!topPerformer) return "-";
+              const pct =
+                topPerformer.percentChange ??
+                (topPerformer as { changePercent?: number }).changePercent;
+              if (typeof pct !== "number" || !Number.isFinite(pct)) {
+                return topPerformer.symbol;
+              }
+              return `${topPerformer.symbol} ${pct >= 0 ? "+" : ""}${pct.toFixed(1)}%`;
+            })(),
             valueClass: "text-[var(--brand-text)]",
           },
           {

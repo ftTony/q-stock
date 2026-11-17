@@ -50,9 +50,102 @@ const nextConfig: NextConfig = {
   },
   // Sitemap: index + children via lightweight routes (disk-first, not MetadataRoute).
   async rewrites() {
+    const apiInternal =
+      process.env.API_INTERNAL_URL?.replace(/\/$/, "") || "http://127.0.0.1:8000";
+    /** Legacy `/api/...` → FastAPI (covers raw `fetch` that skips `toV1Path`). */
+    const legacyToV1 = [
+      "quotes",
+      "candles",
+      "search",
+      "health",
+      "alerts",
+      "ranks",
+      "industry-ranks",
+      "indices",
+      "ipo",
+      "earnings",
+      "company",
+      "news",
+      "press",
+      "sentiment",
+      "comments",
+      "research-cards",
+    ].flatMap((p) => [
+      { source: `/api/${p}`, destination: `${apiInternal}/api/v1/${p}` },
+      {
+        source: `/api/${p}/:path*`,
+        destination: `${apiInternal}/api/v1/${p}/:path*`,
+      },
+    ]);
     return [
       { source: "/sitemap.xml", destination: "/sitemap-index.xml" },
       { source: "/sitemap/:id.xml", destination: "/sitemap/:id" },
+      ...legacyToV1,
+      {
+        source: "/api/market/:path*",
+        destination: `${apiInternal}/api/v1/market/:path*`,
+      },
+      {
+        source: "/api/watchlist/:path*",
+        destination: `${apiInternal}/api/v1/watchlist/:path*`,
+      },
+      { source: "/api/watchlist", destination: `${apiInternal}/api/v1/watchlist` },
+      {
+        source: "/api/trading/:path*",
+        destination: `${apiInternal}/api/v1/trading/:path*`,
+      },
+      { source: "/api/user/:path*", destination: `${apiInternal}/api/v1/user/:path*` },
+      {
+        source: "/api/review/:path*",
+        destination: `${apiInternal}/api/v1/review/:path*`,
+      },
+      {
+        source: "/api/billing/entitlements",
+        destination: `${apiInternal}/api/v1/billing/entitlements`,
+      },
+      {
+        source: "/api/billing/redeem",
+        destination: `${apiInternal}/api/v1/billing/redeem`,
+      },
+      {
+        source: "/api/auth/register",
+        destination: `${apiInternal}/api/v1/auth/register`,
+      },
+      {
+        source: "/api/auth/login",
+        destination: `${apiInternal}/api/v1/auth/login`,
+      },
+      {
+        source: "/api/auth/refresh",
+        destination: `${apiInternal}/api/v1/auth/refresh`,
+      },
+      {
+        source: "/api/auth/logout",
+        destination: `${apiInternal}/api/v1/auth/logout`,
+      },
+      { source: "/api/auth/me", destination: `${apiInternal}/api/v1/auth/me` },
+      {
+        source: "/api/auth/forgot-password",
+        destination: `${apiInternal}/api/v1/auth/forgot-password`,
+      },
+      {
+        source: "/api/auth/reset-password",
+        destination: `${apiInternal}/api/v1/auth/reset-password`,
+      },
+      {
+        source: "/api/auth/providers",
+        destination: `${apiInternal}/api/v1/auth/providers`,
+      },
+      {
+        source: "/api/auth/onetap",
+        destination: `${apiInternal}/api/v1/auth/onetap`,
+      },
+      {
+        source: "/api/auth/oauth/:path*",
+        destination: `${apiInternal}/api/v1/auth/oauth/:path*`,
+      },
+      // Explicit `/api/v1/*` proxy (same-origin for cookies / browser).
+      { source: "/api/v1/:path*", destination: `${apiInternal}/api/v1/:path*` },
     ];
   },
   images: {

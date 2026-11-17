@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTheme } from "next-themes";
 import { useLocale, useTranslations } from "next-intl";
 import {
@@ -92,7 +92,7 @@ export function SettingsAccountNameForm() {
               color: messageKind === "ok" ? "var(--up)" : "var(--down)",
             }}
           >
-            {messageKind === "ok" ? "✓ " : ""}
+            {messageKind === "ok" ? "? " : ""}
             {message}
           </p>
         ) : null}

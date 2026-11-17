@@ -20,15 +20,12 @@ export default function ForgotPasswordPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/forgot-password", {
+      const { apiFetchJson } = await import("@/lib/api/client");
+      await apiFetchJson("/api/auth/forgot-password", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
+        skipAuth: true,
       });
-      if (!res.ok) {
-        setError(t("forgotError"));
-        return;
-      }
       setDone(true);
     } catch {
       setError(t("forgotError"));

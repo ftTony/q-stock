@@ -1,9 +1,9 @@
 "use client";
 
 import { FormEvent, useCallback, useEffect, useState } from "react";
-import { signIn } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
+import { apiRegister } from "@/lib/api/client";
 import { pathAfterAuth } from "@/lib/market/creds-status-client";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { OAuthSignInButtons } from "@/components/auth/oauth-sign-in-buttons";
@@ -57,39 +57,27 @@ export function RegisterForm({
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      try {
+        await apiRegister({
           email,
           password,
           name: name || undefined,
           locale,
           inviteCode: inviteCode.trim() || undefined,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        if (data.error === "Invalid or used invite code") {
+        });
+        if (typeof window !== "undefined") {
+          window.dispatchEvent(new Event("qstock-auth-changed"));
+        }
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : t("error");
+        const code = err instanceof Error ? (err as Error & { code?: string }).code : undefined;
+        if (code === "INVALID_INVITE" || msg.includes("invite")) {
           setError(t("inviteInvalid"));
-        } else if (data.error === "Email already registered") {
+        } else if (code === "EMAIL_EXISTS" || msg.includes("already")) {
           setError(t("emailTaken"));
         } else {
-          setError(data.error || t("error"));
+          setError(msg || t("error"));
         }
-        return;
-      }
-      const signed = await signIn("credentials", {
-        email,
-        password,
-        redirect: false,
-      });
-      if (signed?.error) {
-        if (modal) {
-          onSwitchToLogin?.();
-          return;
-        }
-        router.push("/login?registered=1");
         return;
       }
       if (modal) {

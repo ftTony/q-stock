@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
@@ -131,7 +131,7 @@ export function SymbolPlanPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- hydrate once per symbol
   }, [assetType, symbol]);
 
-  // Stale localStorage / deleted strategy → stop 404 spam and unbind.
+  // Stale localStorage / deleted strategy  stop 404 spam and unbind.
   useEffect(() => {
     if (!strategyId || !detailMissing) return;
     bind(null);
@@ -293,7 +293,7 @@ export function SymbolPlanPanel({
                 <SubmitButton
                   type="button"
                   loading={busy}
-                  loadingLabel="…"
+                  loadingLabel=""
                   onClick={() => void copyTemplate(tpl.id)}
                   className="!h-7 shrink-0 !rounded-none !border-0 !bg-[var(--brand)] !px-2.5 !py-0 !text-[12px] !font-normal !leading-none !text-white"
                 >
@@ -332,7 +332,7 @@ export function SymbolPlanPanel({
           <div className="space-y-2 border-t border-[var(--border)] pt-3">
             <p className="aw-caption-strong text-[13px]">{t("planReplay")}</p>
             <p className="aw-caption tabular-nums">
-              {range.from} → {range.to}
+              {range.from}  {range.to}
             </p>
 
             <div className="flex items-stretch gap-2">
@@ -358,7 +358,7 @@ export function SymbolPlanPanel({
             {replay &&
             (replay.status === "pending" || replay.status === "running") ? (
               <p className="aw-caption">
-                {tSt("replayRunning")} · {replay.status}
+                {tSt("replayRunning")}  {replay.status}
               </p>
             ) : null}
             {replay?.status === "failed" ? (

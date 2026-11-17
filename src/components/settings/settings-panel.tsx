@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { PanelSkeleton } from "@/components/ui/panel-skeleton";
@@ -141,21 +141,21 @@ export function SettingsPanel({
               <span className="font-medium text-[var(--foreground)]">
                 {t("freemiumInvite")}
               </span>
-              {" — "}
+              {" �� "}
               {t("freemiumInviteBody")}
             </li>
             <li>
               <span className="font-medium text-[var(--foreground)]">
                 {t("freemiumByok")}
               </span>
-              {" — "}
+              {" �� "}
               {t("freemiumByokBody")}
             </li>
             <li>
               <span className="font-medium text-[var(--foreground)]">
                 {t("freemiumPro")}
               </span>
-              {" — "}
+              {" �� "}
               {t("freemiumProBody")}
             </li>
           </ul>

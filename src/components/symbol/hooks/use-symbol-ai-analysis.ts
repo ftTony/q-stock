@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { type AiTrendAnalysis } from "@/components/market/ai-analysis-panel";
 import { emitAiQuotaChanged } from "@/lib/ai/quota-events";

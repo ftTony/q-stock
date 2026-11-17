@@ -1,19 +1,33 @@
 # Q-Stock API 参考
 
-Base URL：同源，例如 `http://localhost:3000`。  
-鉴权：Auth.js Session Cookie（浏览器自动携带）。标注 **需登录** 的接口无 Session 时返回 `401`。
+Base URL：同源，例如 `http://localhost:3000`。
+
+## 双栈说明（2026-03）
+
+| 前缀 | 实现 | 鉴权 |
+|---|---|---|
+| `/api/v1/*` | FastAPI（`services/api`），经 Next rewrite | `Authorization: Bearer` + HttpOnly refresh cookie |
+| `/api/*`（其余） | Next Route Handlers | Auth.js Session Cookie |
+
+已迁 FastAPI 的域（auth / market advanced+content / watchlist / trading / strategies CRUD+replay / user / alerts / comments / research-cards / review/process / billing entitlements+redeem）以 **OpenAPI** 为准：本地 `http://127.0.0.1:8000/docs`。
+
+FastAPI 错误体：
+
+```json
+{ "error": { "code": "UNAUTHORIZED", "message": "…", "details": {} } }
+```
 
 通用约定：
 
-- `assetType`：`stock` | `hk` | `crypto`
-- 错误体常见形态：`{ "error": "..." }`
+- `assetType`：`stock` | `hk` | `crypto` | `cn`
+- 残余 Next 错误体常见形态：`{ "error": "..." }`
 - 部分外部依赖失败会返回降级字段：`degraded: true` 或空数组
 
 ---
 
 ## 健康检查
 
-### `GET /api/health`
+### `GET /api/v1/health`（FastAPI）
 
 无需登录。
 
@@ -22,30 +36,21 @@ Base URL：同源，例如 `http://localhost:3000`。
 ```json
 {
   "ok": true,
-  "providers": { "longbridge": true, "futu": false, "finnhub": true, "binance": true },
-  "providerPriority": ["longbridge", "finnhub", "binance"],
-  "brokers": [
-    { "id": "longbridge", "configured": true, "ready": false },
-    { "id": "futu", "configured": false, "ready": false }
-  ],
-  "finnhub": true,
-  "longbridge": true,
-  "futu": false,
-  "adanos": false,
-  "deepseek": true,
-  "binance": true
+  "db": true,
+  "redis": true,
+  "providers": { "finnhub": true, "binance": true, "longbridge": false, "futu": false }
 }
 ```
 
-`ok: false` 通常表示数据库不可用。报价/K 线经 `@/lib/market` 按资产类型选择源并回退（加密优先 Binance 公共行情）。
+`ok: false` 通常表示数据库不可用。行情主路径由 FastAPI market facade（Finnhub / Binance；无 Redis 时进程内缓存降级）。
 
 ---
 
 ## 鉴权
 
-### `POST /api/auth/register`
+### `POST /api/v1/auth/register`（FastAPI）
 
-注册。
+注册并签发 access token；refresh 经 HttpOnly cookie（path `/api/v1/auth`）。
 
 **Body**
 
@@ -58,38 +63,22 @@ Base URL：同源，例如 `http://localhost:3000`。
 }
 ```
 
-**成功**：`201` + `{ "user": { "id", "email", "name" } }`  
-**冲突**：`409` 邮箱已存在。
+**成功**：`201` + `{ "accessToken", "expiresIn", "user": { "id", "email", "name" } }`  
+**冲突**：`409` `EMAIL_EXISTS`。
+
+另有：`POST /api/v1/auth/login`、`/refresh`、`/logout`，`GET /api/v1/auth/me`。详见 OpenAPI。
 
 ### `GET|POST /api/auth/[...nextauth]`
 
-Auth.js 内置路由（Credentials 登录 / Session / CSRF 等）。前端使用 `next-auth/react` 的 `signIn` / `signOut` / `useSession`。
+已退役（410）。浏览器鉴权走 FastAPI JWT；残余 Next BFF 用同一 Bearer。
 
 ---
 
 ## 用户设置
 
-### `GET /api/user/settings`（需登录）
+### `GET|PATCH /api/v1/user/settings`（FastAPI，需登录）
 
-返回当前用户偏好。
-
-### `PATCH /api/user/settings`（需登录）
-
-**Body（字段均可选）**
-
-```json
-{
-  "locale": "zh-CN",
-  "theme": "dark",
-  "changeColorScheme": "us",
-  "name": "Nick"
-}
-```
-
-- `locale`：`zh-CN` | `zh-TW` | `en`
-- `theme`：`light` | `dark` | `system`
-- `changeColorScheme`：`cn` | `us`
-
+返回 / 更新当前用户偏好（`locale` / `theme` / `changeColorScheme` / `name`）。
 ---
 
 ## 行情

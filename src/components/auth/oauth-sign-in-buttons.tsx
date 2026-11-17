@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { signIn } from "next-auth/react";
+import { signIn } from "@/lib/auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { localizedPath } from "@/i18n/config";
 
@@ -30,12 +30,11 @@ export function OAuthSignInButtons({
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch("/api/auth/providers");
-        if (!res.ok) return;
-        const data = (await res.json()) as Record<string, unknown>;
+        const { getProviders } = await import("@/lib/auth/react");
+        const data = await getProviders();
         const list: OAuthId[] = [];
-        if (data.google) list.push("google");
-        if (data.github) list.push("github");
+        if (data?.google) list.push("google");
+        if (data?.github) list.push("github");
         if (!cancelled) setProviders(list);
       } catch {
         /* ignore */

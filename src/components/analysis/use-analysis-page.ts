@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import type { Quote } from "@/lib/types";
 import {
   ANALYSIS_BASKET_MAX,

@@ -1,18 +1,18 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { signIn, useSession } from "next-auth/react";
+import { signIn, useSession } from "@/lib/auth/react";
 import { useLocale } from "next-intl";
 import { localizedPath } from "@/i18n/config";
 
 /**
- * Google One Tap (FedCM) — the browser-level "continue as <name>" prompt, like
+ * Google One Tap (FedCM)  -  the browser-level "continue as <name>" prompt, like
  * longbridge.com. Renders nothing; mounts the Google Identity script once the
  * user is logged out, then lets Chrome show the account chooser.
  *
  * Requires:
  * - AUTH_GOOGLE_ID passed down from the server layout (not a secret).
- * - The OAuth client (Google Cloud Console → Credentials) must include the
+ * - The OAuth client (Google Cloud Console  Credentials) must include the
  *   site origin in **Authorized JavaScript origins** (no redirect URI needed
  *   for One Tap itself).
  */

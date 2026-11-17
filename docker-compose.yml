@@ -16,6 +16,40 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--maxmemory", "64mb", "--maxmemory-policy", "allkeys-lru"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  api:
+    build:
+      context: ./services/api
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:
+      DATABASE_URL: postgresql+asyncpg://qstock:qstock@db:5432/qstock
+      REDIS_URL: redis://redis:6379/0
+      JWT_SECRET: ${JWT_SECRET:-${AUTH_SECRET:-dev-change-me}}
+      CORS_ORIGINS: http://localhost:3000
+      FINNHUB_API_KEY: ${FINNHUB_API_KEY:-}
+      CREDENTIALS_ENCRYPTION_KEY: ${CREDENTIALS_ENCRYPTION_KEY:-}
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   web:
     build:
       context: .
@@ -23,6 +57,7 @@ services:
       target: runner
       args:
         NEXT_PUBLIC_QUOTE_WS_URL: ${NEXT_PUBLIC_QUOTE_WS_URL:-ws://localhost:3001/ws/quotes}
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
     restart: unless-stopped
     ports:
       - "3000:3000"
@@ -32,6 +67,8 @@ services:
       DATABASE_URL: postgresql://qstock:qstock@db:5432/qstock?schema=public
       APP_URL: http://localhost:3000
       NEXT_PUBLIC_QUOTE_WS_URL: ${NEXT_PUBLIC_QUOTE_WS_URL:-ws://localhost:3001/ws/quotes}
+      API_INTERNAL_URL: http://api:8000
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-}
       LEARN_DATA_DIR: /app/data/learn
     volumes:
       - sitemaps:/app/public/sitemaps
@@ -39,6 +76,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      api:
+        condition: service_started
     command: sh -c "npx prisma migrate deploy && node server.js"
 
   worker:

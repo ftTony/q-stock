@@ -1,6 +1,6 @@
 "use client";
 
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { AiBusyLabel } from "@/components/ai/ai-busy-label";
 import { AiLoginGate } from "@/components/ai/ai-login-gate";
@@ -22,10 +22,10 @@ export type AiTrendAnalysis = {
 };
 
 export function AiAnalysisPanel(props: {
-  /** `false` = AI 明确不可用；`null` / `undefined` = 尚未可知，按加载中处理。 */
+  /** `false` = AI ȷã`null` / `undefined` = δ֪д */
   available?: boolean | null;
   message?: string | null;
-  /** `null` / `undefined` = 暂无结论（走 message 降级提示）。 */
+  /** `null` / `undefined` = ޽ۣ message ʾ */
   analysis?: AiTrendAnalysis | null;
   disclaimer?: string | null;
   cached?: boolean;
@@ -105,7 +105,7 @@ export function AiAnalysisPanel(props: {
         {(cached || degraded) && (
           <div className="aw-metric-label">
             {cached ? t("cached") : null}
-            {cached && degraded ? " · " : null}
+            {cached && degraded ? "  " : null}
             {degraded ? tCommon("degraded") : null}
           </div>
         )}
@@ -151,7 +151,7 @@ export function AiAnalysisPanel(props: {
             earnings: src.earnings,
             metrics: src.metrics,
           })}
-          {src.hasQuote ? ` · ${t("withQuote")}` : ""}
+          {src.hasQuote ? `  ${t("withQuote")}` : ""}
         </p>
       )}
 

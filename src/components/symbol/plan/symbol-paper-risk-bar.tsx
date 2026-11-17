@@ -2,7 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import {
   usePaperRiskSettings,
@@ -175,12 +175,12 @@ export function SymbolPaperRiskBar({
         <span className="min-w-0 truncate text-[12px] leading-snug tabular-nums text-[var(--foreground)]">
           <span className="text-[var(--muted)]">{t("equity")}</span>
           <span className="mx-1 font-medium">${money(equity)}</span>
-          <span className="text-[var(--border)]">·</span>
+          <span className="text-[var(--border)]"></span>
           <span className="mx-1 text-[var(--muted)]">{t("cash")}</span>
           <span className="font-medium">${money(cash)}</span>
           {dense ? null : (
             <>
-              <span className="text-[var(--border)]">·</span>
+              <span className="text-[var(--border)]"></span>
               <span
                 className={`mx-1 font-medium ${
                   nearCap
@@ -192,7 +192,7 @@ export function SymbolPaperRiskBar({
               </span>
               {positionQty > 0 ? (
                 <>
-                  <span className="text-[var(--border)]">·</span>
+                  <span className="text-[var(--border)]"></span>
                   <span className="mx-1 text-[var(--muted)]">
                     {t("positionQty")} {positionQty}
                   </span>

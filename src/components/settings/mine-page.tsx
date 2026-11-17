@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { signOut, useSession } from "next-auth/react";
+import { signOut, useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { Link, useRouter } from "@/i18n/routing";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
@@ -208,9 +208,7 @@ export function MinePage({ setupKeys = false, section = null }: Props) {
             type="button"
             className="mt-auto shrink-0 border border-[color-mix(in_srgb,var(--down)_28%,var(--border))] bg-[color-mix(in_srgb,var(--down)_10%,var(--panel))] py-3 text-[13px] font-medium text-[var(--down)] transition hover:bg-[color-mix(in_srgb,var(--down)_16%,var(--panel))]"
             onClick={() => {
-              void signOut({ redirect: false }).then(() => {
-                router.refresh();
-              });
+              void signOut({ redirect: false }).then(() => router.refresh());
             }}
           >
             {tNav("logout")}

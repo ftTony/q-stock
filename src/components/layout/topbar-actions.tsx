@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode, type RefObject } from "react";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTheme } from "next-themes";
 import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
@@ -217,7 +217,7 @@ export function TopBarActions({
           suppressHydrationWarning
           onClick={() => setTheme(dark ? "light" : "dark")}
         >
-          {/* Fixed shell size so SSR/CSR never swap h-4 ↔ h-3.5 on the root child. */}
+          {/* Fixed shell size so SSR/CSR never swap h-4 ? h-3.5 on the root child. */}
           <span
             className="inline-flex h-3.5 w-3.5 items-center justify-center"
             aria-hidden

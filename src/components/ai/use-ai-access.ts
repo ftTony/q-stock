@@ -2,7 +2,7 @@
 
 import { useCallback, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import type { ToastTone } from "@/components/ui/top-toast";
 import { useAiQuota } from "@/hooks/query/use-ai-quota";
