@@ -5,12 +5,15 @@ import { fetchJson } from "@/lib/query/fetch-json";
 import { queryKeys } from "@/lib/query/keys";
 import type { AssetType } from "@/lib/types";
 
+export type AlertFrequency = "once" | "daily" | "always";
+
 export type AlertRow = {
   id: string;
   symbol: string;
   assetType: AssetType;
   condition: "gte" | "lte";
   triggerPrice: number;
+  frequency?: AlertFrequency;
   status: "active" | "triggered" | "disabled";
 };
 
@@ -36,6 +39,7 @@ export function useCreateAlert() {
       assetType: AssetType;
       condition: "gte" | "lte";
       triggerPrice: number;
+      frequency?: AlertFrequency;
     }) =>
       fetchJson("/api/alerts", {
         method: "POST",

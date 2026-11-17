@@ -412,6 +412,8 @@ function SymbolWorkbenchMainGrid({
               onAlertConditionChange={s.setAlertCondition}
               alertPrice={s.alertPrice}
               onAlertPriceChange={s.setAlertPrice}
+              alertFrequency={s.alertFrequency}
+              onAlertFrequencyChange={s.setAlertFrequency}
               alertBusy={s.alertBusy}
               alertMessage={s.alertMsg}
               onAlertSubmit={s.createAlert as (e: FormEvent) => void}

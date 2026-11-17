@@ -96,6 +96,9 @@ export function useSymbolPage(
   const [commentText, setCommentText] = useState("");
   const [alertPrice, setAlertPrice] = useState("");
   const [alertCondition, setAlertCondition] = useState<"gte" | "lte">("gte");
+  const [alertFrequency, setAlertFrequency] = useState<
+    "once" | "daily" | "always"
+  >("always");
   const [alertMsg, setAlertMsg] = useState<string | null>(null);
   const [alertBusy, setAlertBusy] = useState(false);
   const [commentBusy, setCommentBusy] = useState(false);
@@ -265,6 +268,7 @@ export function useSymbolPage(
       setCommentText,
       alertPrice,
       alertCondition,
+      alertFrequency,
       alertBusy,
       setAlertBusy,
       setAlertMsg,
@@ -329,6 +333,8 @@ export function useSymbolPage(
     setAlertPrice,
     alertCondition,
     setAlertCondition,
+    alertFrequency,
+    setAlertFrequency,
     alertMsg,
     alertBusy,
     commentBusy,

@@ -2,7 +2,8 @@
 
 export const TRADE_MARKERS_GROUP = "paper-fills";
 export const USER_DRAWINGS_GROUP = "user-drawings";
-export const PAPER_FILL_OVERLAY = "paperFillMarker";
+/** Bumped whenever figure geometry changes — klinecharts keeps the first register. */
+export const PAPER_FILL_OVERLAY = "paperFillTag";
 
 /** Cap overlays — dense fills must not storm createOverlay on small hosts. */
 export const TRADE_MARKERS_MAX = 40;
@@ -34,47 +35,59 @@ type OverlayHost = {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any -- chart lib template variance
 type RegisterOverlay = (template: any) => unknown;
 
-let paperFillRegistered = false;
+const registeredNames = new Set<string>();
+
+type OverlayStylesBag = {
+  line?: { color?: string };
+  text?: { backgroundColor?: string };
+};
 
 /**
- * Compact buy/sell pin (stem up for buy, down for sell) — readable on candle
- * and area, unlike the stock simpleAnnotation which always draws upward.
+ * Compact buy/sell tag: same-color chip + short stem + dot.
+ * Styles are set on each figure so the chip never falls back to chart blue.
  */
 export function ensurePaperFillOverlay(registerOverlay: RegisterOverlay) {
-  if (paperFillRegistered) return;
-  paperFillRegistered = true;
+  if (registeredNames.has(PAPER_FILL_OVERLAY)) return;
+  registeredNames.add(PAPER_FILL_OVERLAY);
   registerOverlay({
     name: PAPER_FILL_OVERLAY,
     totalStep: 2,
+    needDefaultPointFigure: false,
     createPointFigures: ({
       overlay,
       coordinates,
     }: {
-      overlay: { extendData?: unknown; styles?: Record<string, unknown> };
+      overlay: {
+        extendData?: unknown;
+        styles?: OverlayStylesBag;
+      };
       coordinates: Array<{ x: number; y: number }>;
     }) => {
       const raw = String(overlay.extendData ?? "");
       const sep = raw.indexOf(":");
       const side = sep >= 0 ? raw.slice(0, sep) : "buy";
-      const text = sep >= 0 ? raw.slice(sep + 1) : raw;
+      const text = sep >= 0 ? raw.slice(sep + 1) : raw || "·";
       const isBuy = side === "buy";
-      const startX = coordinates[0]?.x ?? 0;
-      const startY = coordinates[0]?.y ?? 0;
-      const stem = 22;
-      const tipY = isBuy ? startY - stem : startY + stem;
-      const arrowY = isBuy ? tipY - 5 : tipY + 5;
-      const textY = isBuy ? arrowY - 2 : arrowY + 2;
+      const fill =
+        overlay.styles?.text?.backgroundColor ||
+        overlay.styles?.line?.color ||
+        (isBuy ? "#e11d48" : "#16a34a");
+
+      const x = coordinates[0]?.x ?? 0;
+      const y = coordinates[0]?.y ?? 0;
+      const stem = 14;
+      const tipY = isBuy ? y - stem : y + stem;
+      const labelY = isBuy ? tipY - 1 : tipY + 1;
 
       return [
         {
-          type: "polygon",
-          attrs: {
-            coordinates: [
-              { x: startX, y: startY - 4 },
-              { x: startX + 4, y: startY },
-              { x: startX, y: startY + 4 },
-              { x: startX - 4, y: startY },
-            ],
+          type: "circle",
+          attrs: { x, y, r: 2.5 },
+          styles: {
+            color: fill,
+            style: "fill",
+            borderColor: fill,
+            borderSize: 0,
           },
           ignoreEvent: true,
         },
@@ -82,37 +95,36 @@ export function ensurePaperFillOverlay(registerOverlay: RegisterOverlay) {
           type: "line",
           attrs: {
             coordinates: [
-              { x: startX, y: startY },
-              { x: startX, y: tipY },
+              { x, y },
+              { x, y: tipY },
             ],
           },
-          ignoreEvent: true,
-        },
-        {
-          type: "polygon",
-          attrs: {
-            coordinates: isBuy
-              ? [
-                  { x: startX, y: tipY },
-                  { x: startX - 4, y: arrowY },
-                  { x: startX + 4, y: arrowY },
-                ]
-              : [
-                  { x: startX, y: tipY },
-                  { x: startX - 4, y: arrowY },
-                  { x: startX + 4, y: arrowY },
-                ],
-          },
+          styles: { color: fill, style: "solid", size: 1 },
           ignoreEvent: true,
         },
         {
           type: "text",
           attrs: {
-            x: startX,
-            y: textY,
+            x,
+            y: labelY,
             text,
             align: "center",
             baseline: isBuy ? "bottom" : "top",
+          },
+          styles: {
+            style: "fill",
+            color: "#ffffff",
+            backgroundColor: fill,
+            size: 10,
+            weight: "600",
+            family: "system-ui, -apple-system, sans-serif",
+            borderRadius: 2,
+            paddingLeft: 4,
+            paddingRight: 4,
+            paddingTop: 2,
+            paddingBottom: 2,
+            borderSize: 0,
+            borderColor: "transparent",
           },
           ignoreEvent: true,
         },
@@ -195,7 +207,7 @@ export function syncTradeMarkers(
   const colors = readUpDown();
   for (const m of markers) {
     if (!Number.isFinite(m.timeMs) || !Number.isFinite(m.price)) continue;
-    const color = m.side === "buy" ? colors.up : colors.down;
+    const fill = m.side === "buy" ? colors.up : colors.down;
     chart.createOverlay({
       name: PAPER_FILL_OVERLAY,
       id: `paper-fill-${m.side}-${m.id}`,
@@ -204,13 +216,33 @@ export function syncTradeMarkers(
       points: [{ timestamp: m.timeMs, value: m.price }],
       extendData: `${m.side}:${m.label}`,
       styles: {
-        line: { color, style: "solid", size: 1 },
-        polygon: { color, style: "fill", borderColor: color, borderSize: 1 },
+        // createPointFigures reads these when figure styles need a fill.
+        line: { color: fill, style: "solid", size: 1 },
+        circle: {
+          color: fill,
+          style: "fill",
+          borderColor: fill,
+          borderSize: 0,
+        },
+        polygon: {
+          color: fill,
+          style: "fill",
+          borderColor: fill,
+          borderSize: 0,
+        },
         text: {
-          color,
-          size: 11,
-          weight: "bold",
-          family: "system-ui, sans-serif",
+          color: "#ffffff",
+          backgroundColor: fill,
+          size: 10,
+          weight: "600",
+          family: "system-ui, -apple-system, sans-serif",
+          borderRadius: 2,
+          paddingLeft: 4,
+          paddingRight: 4,
+          paddingTop: 2,
+          paddingBottom: 2,
+          borderSize: 0,
+          borderColor: "transparent",
         },
       },
     });

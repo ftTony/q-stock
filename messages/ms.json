@@ -859,7 +859,11 @@
     "loginTitle": "Sign in to manage price alerts",
     "loginBody": "Set trigger prices and get an email when they hit. Alerts re-arm after the price moves back, so they will not spam while a breach persists.",
     "loginHint": "Alerts are sent to your account email.",
-    "backWatchlist": "Watchlist"
+    "backWatchlist": "Watchlist",
+    "frequency": "Frequency",
+    "freq_once": "Once",
+    "freq_daily": "Daily",
+    "freq_always": "Ongoing"
   },
   "comments": {
     "placeholder": "Kongsi pandangan anda…",

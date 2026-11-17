@@ -74,6 +74,7 @@ export function mapLbExtendedFields(q: LbSecurityQuote): {
   if (phase === "pre" && preMarket) activeSession = "pre";
   else if (phase === "post" && postMarket) activeSession = "post";
   else if (phase === "overnight" && overnight) activeSession = "overnight";
+  else if (phase === "overnight" && postMarket) activeSession = "post";
   else if (phase === "closed" && postMarket) activeSession = "post";
   else if (phase === "closed" && overnight) activeSession = "overnight";
   return { preMarket, postMarket, overnight, activeSession };

@@ -16,10 +16,16 @@ export function activeExtendedQuote(
   if (phase === "post" && quote.postMarket) {
     return { session: "post", quote: quote.postMarket };
   }
-  if (phase === "overnight" && quote.overnight) {
-    return { session: "overnight", quote: quote.overnight };
+  if (phase === "overnight") {
+    if (quote.overnight) {
+      return { session: "overnight", quote: quote.overnight };
+    }
+    // Many brokers keep last post prints after 20:00 ET with no overnight book.
+    if (quote.postMarket) {
+      return { session: "post", quote: quote.postMarket };
+    }
   }
-  // After regular close, prefer post then overnight when phase is closed overnight window.
+  // Weekend / holiday: prefer last post, then overnight.
   if (phase === "closed") {
     if (quote.postMarket) return { session: "post", quote: quote.postMarket };
     if (quote.overnight) return { session: "overnight", quote: quote.overnight };
@@ -78,6 +84,57 @@ export function regularQuoteDisplay(
   };
 }
 
+/**
+ * Secondary US tape for watchlist rows: phase-active first, then any leftover
+ * pre/post/overnight snapshot (vendors often keep last post after 20:00 ET).
+ */
+export function watchlistExtendedQuote(
+  quote: Pick<
+    Quote,
+    | "assetType"
+    | "preMarket"
+    | "postMarket"
+    | "overnight"
+    | "activeSession"
+    | "price"
+    | "change"
+    | "percentChange"
+    | "timestamp"
+    | "regularSession"
+  >,
+  phase: UsMarketPhase = getUsMarketPhase(),
+): { session: "pre" | "post" | "overnight"; quote: ExtendedSessionQuote } | null {
+  if (quote.assetType !== "stock" || phase === "regular") return null;
+
+  const active = activeExtendedQuote(quote, phase);
+  if (active) return active;
+
+  if (quote.postMarket) return { session: "post", quote: quote.postMarket };
+  if (quote.overnight) {
+    return { session: "overnight", quote: quote.overnight };
+  }
+  if (quote.preMarket) return { session: "pre", quote: quote.preMarket };
+
+  // Price already overlaid to extended, but nested snapshot missing.
+  if (
+    quote.activeSession &&
+    quote.activeSession !== "regular" &&
+    quote.regularSession &&
+    quote.price > 0
+  ) {
+    return {
+      session: quote.activeSession,
+      quote: {
+        price: quote.price,
+        change: quote.change,
+        percentChange: quote.percentChange,
+        timestamp: quote.timestamp,
+      },
+    };
+  }
+  return null;
+}
+
 /** Add extended-session data from a supplemental quote without replacing the primary quote. */
 export function mergeExtendedQuoteFields<T extends Quote>(
   row: T,
@@ -87,26 +144,31 @@ export function mergeExtendedQuoteFields<T extends Quote>(
   const preMarket = fresh.preMarket ?? row.preMarket;
   const postMarket = fresh.postMarket ?? row.postMarket;
   const overnight = fresh.overnight ?? row.overnight;
+  if (!preMarket && !postMarket && !overnight) return row;
+
   const active = activeExtendedQuote(
     { preMarket, postMarket, overnight },
     phase,
   );
-  if (!active) return row;
 
   return {
     ...row,
-    preMarket,
-    postMarket,
-    overnight,
-    activeSession: active.session,
-    regularSession:
-      fresh.regularSession ??
-      row.regularSession ?? {
-        price: row.price,
-        change: row.change,
-        percentChange: row.percentChange,
-        timestamp: row.timestamp,
-      },
+    ...(preMarket ? { preMarket } : {}),
+    ...(postMarket ? { postMarket } : {}),
+    ...(overnight ? { overnight } : {}),
+    ...(active
+      ? {
+          activeSession: active.session,
+          regularSession:
+            fresh.regularSession ??
+            row.regularSession ?? {
+              price: row.price,
+              change: row.change,
+              percentChange: row.percentChange,
+              timestamp: row.timestamp,
+            },
+        }
+      : {}),
   };
 }
 

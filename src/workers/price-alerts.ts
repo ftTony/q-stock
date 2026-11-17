@@ -76,7 +76,12 @@ async function tickAlerts() {
 
       const trigger = Number(alert.triggerPrice);
       const hit = isAlertThresholdHit(alert.condition, price, trigger);
-      const action = nextPriceAlertAction(alert.status, hit);
+      const action = nextPriceAlertAction(
+        alert.status,
+        hit,
+        alert.frequency ?? "always",
+        alert.triggeredAt,
+      );
 
       if (action === "hold") continue;
 

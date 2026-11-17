@@ -24,6 +24,7 @@ type MutateAlert = {
     assetType: AssetType;
     condition: "gte" | "lte";
     triggerPrice: number;
+    frequency?: "once" | "daily" | "always";
   }) => Promise<unknown>;
 };
 
@@ -49,6 +50,7 @@ type Args = {
   setCommentText: Dispatch<SetStateAction<string>>;
   alertPrice: string;
   alertCondition: "gte" | "lte";
+  alertFrequency: "once" | "daily" | "always";
   alertBusy: boolean;
   setAlertBusy: Dispatch<SetStateAction<boolean>>;
   setAlertMsg: Dispatch<SetStateAction<string | null>>;
@@ -129,6 +131,7 @@ export function useSymbolPageMutations(a: Args) {
           assetType: a.assetType,
           condition: a.alertCondition,
           triggerPrice: Number(a.alertPrice),
+          frequency: a.alertFrequency,
         });
         a.setAlertMsg("OK");
         a.setAlertPrice("");
@@ -147,6 +150,7 @@ export function useSymbolPageMutations(a: Args) {
       a.symbol,
       a.assetType,
       a.alertCondition,
+      a.alertFrequency,
       a.alertPrice,
       a.setAlertPrice,
       a.tCommon,

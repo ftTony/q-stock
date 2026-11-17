@@ -2,6 +2,10 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
+import {
+  AlertFrequencySeg,
+  type AlertFrequency,
+} from "@/components/alerts/alert-frequency-seg";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { QtSelect } from "@/components/ui/qt-select";
 import { IconBell } from "@/components/ui/icon-bell";
@@ -11,6 +15,8 @@ type Props = {
   onConditionChange: (v: "gte" | "lte") => void;
   price: string;
   onPriceChange: (v: string) => void;
+  frequency: AlertFrequency;
+  onFrequencyChange: (v: AlertFrequency) => void;
   busy: boolean;
   message: string | null;
   onSubmit: (e: FormEvent) => void;
@@ -23,6 +29,8 @@ export function SymbolAlertStrip({
   onConditionChange,
   price,
   onPriceChange,
+  frequency,
+  onFrequencyChange,
   busy,
   message,
   onSubmit,
@@ -99,6 +107,11 @@ export function SymbolAlertStrip({
                 className="aw-alert-field h-8 w-[5.5rem] shrink-0 px-2 text-[12px] tabular-nums"
               />
             </div>
+            <AlertFrequencySeg
+              dense
+              value={frequency}
+              onChange={onFrequencyChange}
+            />
             <SubmitButton
               type="submit"
               loading={busy}

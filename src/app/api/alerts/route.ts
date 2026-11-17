@@ -13,6 +13,7 @@ const createSchema = z.object({
   assetType: z.enum(["stock", "hk", "crypto", "cn"]),
   condition: z.enum(["gte", "lte"]),
   triggerPrice: z.number().positive(),
+  frequency: z.enum(["once", "daily", "always"]).optional().default("always"),
 });
 
 export async function GET() {
@@ -61,6 +62,7 @@ export async function POST(req: Request) {
       assetType: parsed.data.assetType,
       condition: parsed.data.condition,
       triggerPrice: parsed.data.triggerPrice,
+      frequency: parsed.data.frequency,
     },
   });
 

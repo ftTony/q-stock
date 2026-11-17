@@ -4,10 +4,17 @@ import {
   isFutuConfigured,
 } from "@/lib/market/providers/futu-http";
 import { futuSearchSymbols } from "@/lib/market/providers/futu-search";
+import { applyActiveExtendedPrice } from "@/lib/market/providers/longbridge-quote-map";
+import { getUsMarketPhase } from "@/lib/market/session";
 import { normalizeSymbol, toFutuSymbol } from "@/lib/market/symbols";
 import type { MarketDataProvider, QuoteWithSource } from "@/lib/market/types";
 import { MarketDataError } from "@/lib/market/types";
-import type { AssetType, OhlcvBar } from "@/lib/types";
+import type {
+  AssetType,
+  ExtendedSessionQuote,
+  OhlcvBar,
+  QuoteSession,
+} from "@/lib/types";
 
 /** History K-line: default/max num is 370 per docs. */
 const KLINE_PAGE_SIZE = 370;
@@ -30,6 +37,25 @@ type SnapshotRow = {
   ask_price?: number;
   bid_vol?: number;
   ask_vol?: number;
+  /** US pre / after / overnight — 0 when session inactive. */
+  pre_price?: number;
+  pre_high_price?: number;
+  pre_low_price?: number;
+  pre_volume?: number;
+  pre_change_val?: number;
+  pre_change_rate?: number;
+  after_price?: number;
+  after_high_price?: number;
+  after_low_price?: number;
+  after_volume?: number;
+  after_change_val?: number;
+  after_change_rate?: number;
+  overnight_price?: number;
+  overnight_high_price?: number;
+  overnight_low_price?: number;
+  overnight_volume?: number;
+  overnight_change_val?: number;
+  overnight_change_rate?: number;
 };
 
 type KlineRow = {
@@ -55,6 +81,26 @@ function displayName(snap: SnapshotRow): string | undefined {
   return n || undefined;
 }
 
+function mapFutuSessionQuote(
+  price: number | undefined,
+  changeVal: number | undefined,
+  changeRate: number | undefined,
+  high?: number,
+  low?: number,
+  volume?: number,
+): ExtendedSessionQuote | undefined {
+  const p = Number(price ?? 0);
+  if (!(p > 0)) return undefined;
+  return {
+    price: p,
+    change: Number(changeVal ?? 0),
+    percentChange: Number(changeRate ?? 0),
+    ...(Number(high) > 0 ? { high: Number(high) } : {}),
+    ...(Number(low) > 0 ? { low: Number(low) } : {}),
+    ...(Number(volume) > 0 ? { volume: Number(volume) } : {}),
+  };
+}
+
 function mapFutuSnapshot(
   snap: SnapshotRow,
   normalized: string,
@@ -70,7 +116,53 @@ function mapFutuSnapshot(
   const bidSize = Number(snap.bid_vol ?? 0);
   const askSize = Number(snap.ask_vol ?? 0);
   const name = displayName(snap);
-  return {
+
+  const preMarket =
+    assetType === "stock"
+      ? mapFutuSessionQuote(
+          snap.pre_price,
+          snap.pre_change_val,
+          snap.pre_change_rate,
+          snap.pre_high_price,
+          snap.pre_low_price,
+          snap.pre_volume,
+        )
+      : undefined;
+  const postMarket =
+    assetType === "stock"
+      ? mapFutuSessionQuote(
+          snap.after_price,
+          snap.after_change_val,
+          snap.after_change_rate,
+          snap.after_high_price,
+          snap.after_low_price,
+          snap.after_volume,
+        )
+      : undefined;
+  const overnight =
+    assetType === "stock"
+      ? mapFutuSessionQuote(
+          snap.overnight_price,
+          snap.overnight_change_val,
+          snap.overnight_change_rate,
+          snap.overnight_high_price,
+          snap.overnight_low_price,
+          snap.overnight_volume,
+        )
+      : undefined;
+
+  let activeSession: QuoteSession = "regular";
+  if (assetType === "stock") {
+    const phase = getUsMarketPhase();
+    if (phase === "pre" && preMarket) activeSession = "pre";
+    else if (phase === "post" && postMarket) activeSession = "post";
+    else if (phase === "overnight" && overnight) activeSession = "overnight";
+    else if (phase === "overnight" && postMarket) activeSession = "post";
+    else if (phase === "closed" && postMarket) activeSession = "post";
+    else if (phase === "closed" && overnight) activeSession = "overnight";
+  }
+
+  const base = {
     symbol: normalized,
     assetType,
     price,
@@ -88,8 +180,14 @@ function mapFutuSnapshot(
     ...(bidSize > 0 ? { bidSize } : {}),
     ...(askSize > 0 ? { askSize } : {}),
     ...(name ? { name } : {}),
+    ...(preMarket ? { preMarket } : {}),
+    ...(postMarket ? { postMarket } : {}),
+    ...(overnight ? { overnight } : {}),
+    activeSession,
     source: "futu" as const,
-  };
+  } satisfies QuoteWithSource;
+
+  return assetType === "stock" ? applyActiveExtendedPrice(base) : base;
 }
 
 function assertEquity(assetType: AssetType): void {

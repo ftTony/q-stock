@@ -8,6 +8,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { ChangePct, PriceText } from "@/components/market/price";
 import {
@@ -15,6 +16,10 @@ import {
   useSymbolNavPending,
 } from "@/components/symbol/page/symbol-nav-pending";
 import type { WatchlistItem } from "@/hooks/query/use-watchlist";
+import {
+  regularQuoteDisplay,
+  watchlistExtendedQuote,
+} from "@/lib/market/extended-hours";
 import { displayName } from "@/lib/market-names";
 import type { AssetType } from "@/lib/types";
 
@@ -38,8 +43,30 @@ type RowProps = {
 };
 
 function WatchlistRow({ row, active, style, onNavigate }: RowProps) {
-  const ch = row.quote?.percentChange ?? null;
-  const name = displayName(row.symbol, row.assetType, row.quote?.name);
+  const t = useTranslations("symbol");
+  const quote = row.quote;
+  const isUs = row.assetType === "stock";
+  /** Keep 最新价 as regular/last close; put 盘前/盘后 on the second line. */
+  const regular = quote
+    ? isUs
+      ? regularQuoteDisplay(quote)
+      : {
+          price: quote.price,
+          change: quote.change,
+          percentChange: quote.percentChange,
+        }
+    : null;
+  const extended = isUs && quote ? watchlistExtendedQuote(quote) : null;
+  const ch = regular?.percentChange ?? null;
+  const name = displayName(row.symbol, row.assetType, quote?.name);
+  const extLabel =
+    extended?.session === "pre"
+      ? t("quoteSessionPre")
+      : extended?.session === "post"
+        ? t("quoteSessionPost")
+        : extended
+          ? t("quoteSessionOvernight")
+          : null;
 
   return (
     <Link
@@ -58,26 +85,46 @@ function WatchlistRow({ row, active, style, onNavigate }: RowProps) {
       }}
     >
       <div className="min-w-0">
-        <div className="truncate text-[12px] font-semibold leading-tight text-[var(--foreground)]">
+        <div className="h-[14px] truncate text-[12px] font-semibold leading-[14px] text-[var(--foreground)]">
           {name}
         </div>
-        <div className="truncate text-[10px] leading-tight text-[var(--muted)]">
-          {row.symbol}
+        <div className="mt-px flex h-[12px] min-w-0 items-center gap-1 text-[10px] leading-[12px] text-[var(--muted)]">
+          <span className="truncate">{row.symbol}</span>
+          {extLabel ? (
+            <span className="shrink-0 text-[var(--muted)]">{extLabel}</span>
+          ) : null}
         </div>
       </div>
-      <div className="text-right text-[12px] font-medium tabular-nums leading-tight">
-        {row.quote?.price != null ? (
-          <PriceText value={row.quote.price} change={ch ?? undefined} />
-        ) : (
-          <span className="text-[var(--muted)]">—</span>
-        )}
+      <div className="min-w-0 text-right tabular-nums">
+        <div className="h-[14px] truncate text-[12px] font-medium leading-[14px]">
+          {regular ? (
+            <PriceText value={regular.price} change={ch ?? undefined} />
+          ) : (
+            <span className="text-[var(--muted)]">—</span>
+          )}
+        </div>
+        {extended ? (
+          <div className="mt-px h-[12px] truncate text-[10px] font-medium leading-[12px]">
+            <PriceText
+              value={extended.quote.price}
+              change={extended.quote.percentChange}
+            />
+          </div>
+        ) : null}
       </div>
-      <div className="text-right text-[11px] tabular-nums leading-tight">
-        {ch != null ? (
-          <ChangePct value={ch} />
-        ) : (
-          <span className="text-[var(--muted)]">—</span>
-        )}
+      <div className="min-w-0 text-right tabular-nums">
+        <div className="h-[14px] truncate text-[11px] leading-[14px]">
+          {ch != null ? (
+            <ChangePct value={ch} />
+          ) : (
+            <span className="text-[var(--muted)]">—</span>
+          )}
+        </div>
+        {extended ? (
+          <div className="mt-px h-[12px] truncate text-[10px] leading-[12px]">
+            <ChangePct value={extended.quote.percentChange} />
+          </div>
+        ) : null}
       </div>
     </Link>
   );

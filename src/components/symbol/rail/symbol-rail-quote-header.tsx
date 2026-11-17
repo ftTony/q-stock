@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslations } from "next-intl";
+import type { AlertFrequency } from "@/components/alerts/alert-frequency-seg";
 import { SymbolAlertStrip } from "@/components/symbol/quote/symbol-alert-strip";
 import { IconHeart } from "@/components/ui/icon-heart";
 import {
@@ -19,6 +20,8 @@ type AlertProps = {
   onConditionChange: (v: "gte" | "lte") => void;
   price: string;
   onPriceChange: (v: string) => void;
+  frequency: AlertFrequency;
+  onFrequencyChange: (v: AlertFrequency) => void;
   busy: boolean;
   message: string | null;
   onSubmit: (e: FormEvent) => void;
@@ -111,6 +114,8 @@ export function SymbolRailQuoteHeader({
               onConditionChange={alert.onConditionChange}
               price={alert.price}
               onPriceChange={alert.onPriceChange}
+              frequency={alert.frequency}
+              onFrequencyChange={alert.onFrequencyChange}
               busy={alert.busy}
               message={alert.message}
               onSubmit={alert.onSubmit}

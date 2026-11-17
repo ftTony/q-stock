@@ -25,6 +25,8 @@ type Props = {
   onAlertConditionChange: (v: "gte" | "lte") => void;
   alertPrice: string;
   onAlertPriceChange: (v: string) => void;
+  alertFrequency: "once" | "daily" | "always";
+  onAlertFrequencyChange: (v: "once" | "daily" | "always") => void;
   alertBusy: boolean;
   alertMessage: string | null;
   onAlertSubmit: (e: FormEvent) => void;
@@ -54,6 +56,8 @@ export function SymbolDesktopRail({
   onAlertConditionChange,
   alertPrice,
   onAlertPriceChange,
+  alertFrequency,
+  onAlertFrequencyChange,
   alertBusy,
   alertMessage,
   onAlertSubmit,
@@ -108,6 +112,8 @@ export function SymbolDesktopRail({
               onConditionChange: onAlertConditionChange,
               price: alertPrice,
               onPriceChange: onAlertPriceChange,
+              frequency: alertFrequency,
+              onFrequencyChange: onAlertFrequencyChange,
               busy: alertBusy,
               message: alertMessage,
               onSubmit: onAlertSubmit,
