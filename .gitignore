@@ -24,6 +24,13 @@
 .DS_Store
 *.pem
 
+# Python bytecode (uvicorn / FastAPI local runs)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
 # debug
 npm-debug.log*
 yarn-debug.log*
