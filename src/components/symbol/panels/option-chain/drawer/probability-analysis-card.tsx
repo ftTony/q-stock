@@ -4,13 +4,14 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { QtSelect } from "@/components/ui/qt-select";
 import { formatNumber } from "@/lib/format-number";
-import { FIELD_CLS, QT_TRIGGER } from "./drawer-ui";
+import { QT_TRIGGER } from "./drawer-ui";
 import { ProbabilityChart } from "./probability-chart";
 import {
   buildProbabilityCone,
   expectedMovePct,
   type ProbMode,
 } from "./probability-math";
+import { ProbabilityRangeSelect } from "./probability-range-select";
 
 type Props = {
   spot: number;
@@ -19,8 +20,6 @@ type Props = {
   ratePct: number;
   strikeMarks: number[];
 };
-
-const CONF_PRESETS = [50, 68, 90, 95];
 
 export function ProbabilityAnalysisCard({
   spot,
@@ -31,13 +30,7 @@ export function ProbabilityAnalysisCard({
 }: Props) {
   const t = useTranslations("symbol.optTool");
   const [mode, setMode] = useState<ProbMode>("inside");
-  const [confRaw, setConfRaw] = useState("68");
-
-  const confPct = useMemo(() => {
-    const n = Number(confRaw);
-    if (!Number.isFinite(n)) return 68;
-    return Math.min(99, Math.max(1, n));
-  }, [confRaw]);
+  const [confPct, setConfPct] = useState(68.27);
 
   const sigmaPct = ivPct != null && ivPct > 0 ? ivPct : 30;
 
@@ -88,19 +81,11 @@ export function ProbabilityAnalysisCard({
           </label>
           <label className="flex items-center gap-1.5 text-[11px] text-[var(--muted)]">
             <span className="shrink-0">{t("probRange")}</span>
-            <input
-              className={`${FIELD_CLS} w-14`}
-              inputMode="decimal"
-              value={confRaw}
-              list="opt-prob-conf"
-              onChange={(e) => setConfRaw(e.target.value)}
-              aria-label={t("probRange")}
+            <ProbabilityRangeSelect
+              value={confPct}
+              onChange={setConfPct}
+              ariaLabel={t("probRange")}
             />
-            <datalist id="opt-prob-conf">
-              {CONF_PRESETS.map((c) => (
-                <option key={c} value={c} />
-              ))}
-            </datalist>
             <span className="inline-flex h-7 min-w-[4.25rem] items-center justify-center border border-[var(--border)] px-1.5 text-[11px] font-semibold tabular-nums text-[var(--foreground)]">
               {movePct == null
                 ? "—"
@@ -124,7 +109,7 @@ export function ProbabilityAnalysisCard({
 
       <p className="text-[11px] leading-relaxed text-[var(--muted)]">
         {t("probFootnote", {
-          conf: confPct,
+          conf: formatNumber(confPct, { maximumFractionDigits: 2 }),
           iv: formatNumber(sigmaPct, { maximumFractionDigits: 1 }),
         })}
       </p>

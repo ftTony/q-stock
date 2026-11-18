@@ -460,7 +460,7 @@
       "probModeInside": "Inside",
       "probModeAbove": "Above",
       "probModeBelow": "Below",
-      "probRange": "Confidence",
+      "probRange": "Range",
       "probGreater": "Above",
       "probLess": "Below",
       "probUnavailable": "Need spot and expiry to build the probability cone",
