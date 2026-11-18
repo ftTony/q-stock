@@ -168,26 +168,65 @@ async def load_user_market_creds(db: AsyncSession, user_id: str) -> dict[str, An
     return store
 
 
-async def get_user_market_creds_status(db: AsyncSession, user_id: str) -> dict[str, Any]:
-    store = await load_user_market_creds(db, user_id)
-    lb = store.get("longbridge")
-    futu = store.get("futu")
+def get_anon_market_creds_status() -> dict[str, Any]:
+    """Platform env keys only — safe for unauthenticated symbol page probes."""
+    from app.services.market.creds_resolve import env_binance_creds, env_longbridge_creds
+    from app.services.market.futu_http import env_futu_appkey_creds
+
+    lb = env_longbridge_creds()
+    futu = env_futu_appkey_creds()
+    binance = env_binance_creds()
     return {
         "longbridge": {
             "configured": bool(lb),
-            "mode": (
-                "bearer"
-                if lb and lb.get("mode") == "bearer"
-                else ("appkey" if lb else None)
-            ),
+            "mode": "appkey" if lb else None,
             "oauthAvailable": _oauth_available("LONGBRIDGE_OAUTH_CLIENT_ID"),
         },
         "futu": {
             "configured": bool(futu),
-            "mode": futu.get("mode") if futu else None,
+            "mode": "appkey" if futu else None,
             "oauthAvailable": _oauth_available("FUTU_OAUTH_CLIENT_ID"),
         },
-        "binance": {"configured": bool(store.get("binance"))},
+        "binance": {"configured": bool(binance)},
+        "okx": {"configured": False},
+        "fuyao": {"configured": False},
+        "equityVendor": "longbridge",
+        "cryptoVendor": "binance",
+    }
+
+
+async def get_user_market_creds_status(db: AsyncSession, user_id: str) -> dict[str, Any]:
+    store = await load_user_market_creds(db, user_id)
+    anon = get_anon_market_creds_status()
+    # Prefer reporting user BYOK mode; fall back to platform env.
+    if store.get("longbridge"):
+        lb_user = store["longbridge"]
+        lb_status: dict[str, Any] = {
+            "configured": True,
+            "mode": (
+                "bearer"
+                if lb_user.get("mode") == "bearer"
+                else "appkey"
+            ),
+            "oauthAvailable": _oauth_available("LONGBRIDGE_OAUTH_CLIENT_ID"),
+        }
+    else:
+        lb_status = anon["longbridge"]
+    if store.get("futu"):
+        futu_user = store["futu"]
+        futu_status: dict[str, Any] = {
+            "configured": True,
+            "mode": futu_user.get("mode"),
+            "oauthAvailable": _oauth_available("FUTU_OAUTH_CLIENT_ID"),
+        }
+    else:
+        futu_status = anon["futu"]
+    return {
+        "longbridge": lb_status,
+        "futu": futu_status,
+        "binance": {
+            "configured": bool(store.get("binance")) or anon["binance"]["configured"]
+        },
         "okx": {"configured": bool(store.get("okx"))},
         "fuyao": {"configured": bool(store.get("fuyao"))},
         "equityVendor": store.get("equityVendor") or "longbridge",

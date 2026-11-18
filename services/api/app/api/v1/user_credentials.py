@@ -11,7 +11,7 @@ from pydantic import BaseModel, Field, field_validator, model_validator
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import enforce_rate_limit, require_user
+from app.api.deps import enforce_rate_limit, get_optional_user, require_user
 from app.core.db import get_db
 from app.core.errors import AppError
 from app.core.ids import new_id
@@ -206,8 +206,11 @@ async def _upsert_service(
 @router.get("/market-credentials")
 async def get_market_credentials(
     db: AsyncSession = Depends(get_db),
-    user: User = Depends(require_user),
+    user: User | None = Depends(get_optional_user),
 ) -> dict:
+    """Anonymous: env/platform vendor status only. Authed: merge user BYOK."""
+    if user is None:
+        return market_svc.get_anon_market_creds_status()
     return await market_svc.get_user_market_creds_status(db, user.id)
 
 

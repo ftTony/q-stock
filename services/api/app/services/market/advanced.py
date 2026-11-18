@@ -101,15 +101,38 @@ async def get_options(
     spot: float = 0,
     store: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    _ = (symbol, expiry, spot, store)
+    _ = spot
     if asset_type not in {"stock", "hk"}:
         return {"unavailable": True, "degraded": True}
-    # Soft degrade: option chain requires broker package; avoid hanging.
-    return {
-        "unavailable": True,
-        "degraded": True,
-        "detail": "options soft-degraded on FastAPI (broker package required)",
-    }
+
+    from app.services.market.futu_http import futu_configured
+    from app.services.market.futu_market import (
+        futu_option_chain,
+        futu_option_expiries,
+        futu_option_stats,
+    )
+
+    if not futu_configured(store):
+        return {
+            "unavailable": True,
+            "degraded": True,
+            "detail": "Futu credentials not configured for option chain",
+        }
+
+    try:
+        if not expiry:
+            expiries = await futu_option_expiries(symbol, asset_type, store=store)
+            stats = None
+            try:
+                stats = await futu_option_stats(symbol, asset_type, store=store)
+            except Exception as exc:  # noqa: BLE001
+                log.warning("[options] futu stats: %s", exc)
+            return {"expiries": expiries, "stats": stats, "source": "futu"}
+        return await futu_option_chain(symbol, asset_type, expiry, store=store)
+    except Exception as exc:  # noqa: BLE001
+        msg = str(exc)
+        log.warning("[options] futu failed: %s", msg)
+        return {"unavailable": True, "degraded": True, "detail": f"futu: {msg}"}
 
 
 async def get_warrants(

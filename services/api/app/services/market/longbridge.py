@@ -322,7 +322,10 @@ async def lb_candles(
     creds = resolve_longbridge_creds(store)
     if not creds:
         raise RuntimeError("Longbridge credentials not configured")
-    return await _run(_candles_sync, creds, symbol, asset_type, resolution, frm, to, timeout=12.0)
+    # Keep short so DNS/connect failures fail over to Futu/Finnhub quickly.
+    return await _run(
+        _candles_sync, creds, symbol, asset_type, resolution, frm, to, timeout=4.0
+    )
 
 
 async def lb_search(q: str, asset_type: str) -> list[dict[str, Any]]:

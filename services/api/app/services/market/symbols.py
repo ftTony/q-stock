@@ -134,6 +134,25 @@ def to_longbridge_symbol(symbol: str, asset_type: str) -> str:
     return f"{s}.US"
 
 
+def to_futu_symbol(symbol: str, asset_type: str) -> str:
+    """Mirror src/lib/market/symbols.ts toFutuSymbol (AAPL → US.AAPL)."""
+    if asset_type == "crypto":
+        raise ValueError("Futu does not support crypto")
+    s = normalize_symbol(symbol, asset_type)
+    if asset_type == "hk":
+        return f"HK.{s}"
+    if asset_type == "cn":
+        ths = normalize_cn_thscode(s)
+        ticker, _, ex = ths.partition(".")
+        if ex:
+            return f"{ex}.{ticker}"
+        return ths
+    for pref in ("US.", "HK.", "SH.", "SZ.", "BJ."):
+        if s.startswith(pref):
+            return s
+    return f"US.{s}"
+
+
 def indices_for_market(asset_type: str) -> list[dict[str, str]]:
     if asset_type == "hk":
         return list(HK_INDICES)

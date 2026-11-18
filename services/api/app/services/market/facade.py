@@ -7,6 +7,7 @@ from typing import Any
 from app.core.errors import AppError
 from app.core.redis_client import cache_get, cache_set
 from app.services.market import longbridge, providers
+from app.services.market.futu_market import futu_candles
 from app.services.market.router import list_providers_for
 from app.services.market.symbols import normalize_symbol
 
@@ -90,7 +91,8 @@ async def get_candles(
     store: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     sym = normalize_symbol(symbol, asset_type)
-    cache_key = f"mkt:cndl:{asset_type}:{sym}:{resolution}:{frm}:{to}"
+    # v2: response field is `bars` (frontend contract); bump key to drop `candles` cache.
+    cache_key = f"mkt:cndl:v2:{asset_type}:{sym}:{resolution}:{frm}:{to}"
     cached = await cache_get(cache_key)
     if cached:
         return json.loads(cached)
@@ -103,6 +105,16 @@ async def get_candles(
                     store, sym, asset_type, resolution=resolution, frm=frm, to=to
                 )
                 source = "longbridge"
+            elif pid == "futu":
+                candles = await futu_candles(
+                    sym,
+                    asset_type,
+                    resolution=resolution,
+                    frm=frm,
+                    to=to,
+                    store=store,
+                )
+                source = "futu"
             elif pid == "finnhub":
                 candles = await providers.finnhub_candles(
                     sym, resolution=resolution, frm=frm, to=to
@@ -115,7 +127,19 @@ async def get_candles(
                 source = "binance"
             else:
                 continue
-            payload = {"candles": candles, "source": source, "symbol": sym, "assetType": asset_type}
+            if not candles:
+                raise RuntimeError(f"{source} returned empty candles")
+            # Frontend / docs expect `bars` (+ hasMore), not `candles`.
+            payload = {
+                "bars": candles,
+                "hasMore": True,
+                "resolution": resolution,
+                "from": frm,
+                "to": to,
+                "source": source,
+                "symbol": sym,
+                "assetType": asset_type,
+            }
             await cache_set(cache_key, json.dumps(payload), 60)
             return payload
         except Exception as exc:  # noqa: BLE001
@@ -124,7 +148,7 @@ async def get_candles(
             log.warning("[market] candles via %s failed: %s", pid, msg)
 
     raise AppError(
-        errors[0] if errors else "No market data providers",
+        " | ".join(errors) if errors else "No market data providers",
         code="UPSTREAM",
         status_code=502,
     )

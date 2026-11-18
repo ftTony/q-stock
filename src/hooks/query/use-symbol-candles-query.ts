@@ -17,8 +17,14 @@ const MAX_BARS_DAILY = 2200;
 
 type CandlesPayload = {
   bars?: OhlcvBar[];
+  /** FastAPI briefly returned this; keep as fallback. */
+  candles?: OhlcvBar[];
   hasMore?: boolean;
 };
+
+function payloadBars(data: CandlesPayload): OhlcvBar[] {
+  return data.bars ?? data.candles ?? [];
+}
 
 export function useSymbolCandlesQuery(
   symbol: string,
@@ -42,7 +48,7 @@ export function useSymbolCandlesQuery(
       const data = await fetchJson<CandlesPayload>(
         `/api/candles?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&resolution=${resolution}`,
       );
-      const next = data.bars ?? [];
+      const next = payloadBars(data);
       setHasMoreCandles(next.length > 0 && data.hasMore !== false);
       return next;
     },
@@ -79,7 +85,7 @@ export function useSymbolCandlesQuery(
         const data = await fetchJson<CandlesPayload>(
           `/api/candles?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&resolution=${resolution}&from=${from}&to=${to}&indicators=0`,
         );
-        const older = data.bars ?? [];
+        const older = payloadBars(data);
         if (!older.length) {
           setHasMoreCandles(false);
           return [];
