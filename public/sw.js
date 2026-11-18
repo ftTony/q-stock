@@ -4,7 +4,7 @@
  * JS under /_next/* stays network-only. CSS under /_next/static/ is
  * network-first + cache so the last visit's styles survive offline.
  */
-const CACHE = "q-stock-shell-v10";
+const CACHE = "q-stock-shell-v14";
 const STYLE_CACHE = "q-stock-styles-v2";
 const STYLE_CACHE_MAX = 24;
 const OFFLINE_URL = "/offline.html";
