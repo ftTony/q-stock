@@ -85,7 +85,41 @@ def _build_quote_ctx(creds: dict[str, Any]) -> Any:
     return ctx
 
 
+def _map_lb_session(pp: Any, regular_price: float) -> dict[str, Any] | None:
+    if pp is None:
+        return None
+    price = _dec(getattr(pp, "last_done", None) or getattr(pp, "lastDone", None))
+    if not (price > 0):
+        return None
+    # Percent vs regular last (TS longbridge-quote-map parity).
+    change = price - regular_price if regular_price > 0 else 0.0
+    pct = (change / regular_price * 100) if regular_price > 0 else 0.0
+    high = _dec(getattr(pp, "high", None))
+    low = _dec(getattr(pp, "low", None))
+    volume = float(getattr(pp, "volume", 0) or 0)
+    ts = getattr(pp, "timestamp", None)
+    out: dict[str, Any] = {
+        "price": price,
+        "change": change,
+        "percentChange": pct,
+    }
+    if isinstance(ts, datetime):
+        out["timestamp"] = int(ts.timestamp())
+    if high > 0:
+        out["high"] = high
+    if low > 0:
+        out["low"] = low
+    if volume > 0:
+        out["volume"] = volume
+    return out
+
+
 def _quote_sync(creds: dict[str, Any], symbol: str, asset_type: str) -> dict[str, Any]:
+    from app.services.market.session import (
+        apply_active_extended_price,
+        resolve_active_session,
+    )
+
     ctx = _build_quote_ctx(creds)
     normalized = normalize_symbol(symbol, asset_type)
     lb_sym = to_longbridge_symbol(normalized, asset_type)
@@ -99,7 +133,7 @@ def _quote_sync(creds: dict[str, Any], symbol: str, asset_type: str) -> dict[str
     ts = getattr(q, "timestamp", None)
     as_of = int(ts.timestamp()) if isinstance(ts, datetime) else int(datetime.now(tz=timezone.utc).timestamp())
     pct = (change / prev * 100) if prev else 0.0
-    return {
+    quote: dict[str, Any] = {
         "symbol": normalized,
         "assetType": asset_type,
         "price": price,
@@ -113,7 +147,32 @@ def _quote_sync(creds: dict[str, Any], symbol: str, asset_type: str) -> dict[str
         "volume": float(getattr(q, "volume", 0) or 0) or None,
         "source": "longbridge",
         "asOf": as_of,
+        "timestamp": as_of,
     }
+    if asset_type == "stock":
+        pre = _map_lb_session(
+            getattr(q, "pre_market_quote", None) or getattr(q, "preMarketQuote", None),
+            price,
+        )
+        post = _map_lb_session(
+            getattr(q, "post_market_quote", None) or getattr(q, "postMarketQuote", None),
+            price,
+        )
+        overnight = _map_lb_session(
+            getattr(q, "overnight_quote", None) or getattr(q, "overnightQuote", None),
+            price,
+        )
+        if pre:
+            quote["preMarket"] = pre
+        if post:
+            quote["postMarket"] = post
+        if overnight:
+            quote["overnight"] = overnight
+        quote["activeSession"] = resolve_active_session(
+            pre=pre, post=post, overnight=overnight
+        )
+        quote = apply_active_extended_price(quote)
+    return quote
 
 
 def _period_for(resolution: str) -> Any:
@@ -303,7 +362,7 @@ async def lb_quote(store: dict[str, Any] | None, symbol: str, asset_type: str) -
     creds = resolve_longbridge_creds(store)
     if not creds:
         raise RuntimeError("Longbridge credentials not configured")
-    return await _run(_quote_sync, creds, symbol, asset_type)
+    return await _run(_quote_sync, creds, symbol, asset_type, timeout=4.0)
 
 
 async def lb_candles(

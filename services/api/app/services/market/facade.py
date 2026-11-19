@@ -7,7 +7,7 @@ from typing import Any
 from app.core.errors import AppError
 from app.core.redis_client import cache_get, cache_set
 from app.services.market import longbridge, providers
-from app.services.market.futu_market import futu_candles
+from app.services.market.futu_market import futu_candles, futu_quote
 from app.services.market.router import list_providers_for
 from app.services.market.symbols import normalize_symbol
 
@@ -35,7 +35,8 @@ async def get_quote(
     store: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     sym = normalize_symbol(symbol, asset_type)
-    cache_key = f"mkt:q:{asset_type}:{sym}"
+    # v2: include US pre/post/overnight fields for watchlist second line.
+    cache_key = f"mkt:q:v2:{asset_type}:{sym}"
     cached = await cache_get(cache_key)
     if cached:
         return _normalize_quote(json.loads(cached))
@@ -45,6 +46,8 @@ async def get_quote(
         try:
             if pid == "longbridge":
                 quote = await longbridge.lb_quote(store, sym, asset_type)
+            elif pid == "futu":
+                quote = await futu_quote(sym, asset_type, store=store)
             elif pid == "finnhub":
                 quote = await providers.finnhub_quote(sym)
                 quote["assetType"] = asset_type

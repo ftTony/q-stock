@@ -108,15 +108,17 @@ export default function MarketsDashboard({
       tab === "stock" && initialBoards?.asOf
         ? { boards: initialBoards.boards }
         : undefined,
+    // Silent poll (~45s). Empty boards retry faster; RQ pauses intervals in
+    // background tabs (refetchIntervalInBackground default false).
     refetchInterval: (query) => {
       const data = query.state.data?.boards;
-      if (!data) return 45_000;
+      if (!data) return 20_000;
       const boards: Boards = {
         hot: data.hot ?? [],
         gainers: data.gainers ?? [],
         losers: data.losers ?? [],
       };
-      return boardsHaveData(boards, tab) ? false : 45_000;
+      return boardsHaveData(boards, tab) ? 45_000 : 20_000;
     },
   });
   const newsQuery = useMarketNews(tab, heavyReady && tab !== "cn");

@@ -8,6 +8,7 @@ from typing import Any
 from urllib.parse import quote
 
 from app.services.market.futu_http import futu_configured, futu_request
+from app.services.market.session import apply_active_extended_price, resolve_active_session
 from app.services.market.symbols import normalize_symbol, to_futu_symbol
 
 log = logging.getLogger(__name__)
@@ -17,6 +18,142 @@ KLINE_MAX_PAGES = 20
 
 # Futu ktype: 1=1m, 6=5m, 2=day, 3=week, 4=month
 _KTYPE = {"T": 1, "1": 1, "5": 6, "D": 2, "W": 3, "M": 4, "Q": 2, "Y": 2}
+
+
+def _session_quote(
+    price: Any,
+    change_val: Any,
+    change_rate: Any,
+    high: Any = None,
+    low: Any = None,
+    volume: Any = None,
+) -> dict[str, Any] | None:
+    try:
+        p = float(price or 0)
+    except (TypeError, ValueError):
+        return None
+    if not (p > 0):
+        return None
+    out: dict[str, Any] = {
+        "price": p,
+        "change": float(change_val or 0),
+        "percentChange": float(change_rate or 0),
+    }
+    try:
+        h = float(high or 0)
+        if h > 0:
+            out["high"] = h
+    except (TypeError, ValueError):
+        pass
+    try:
+        lo = float(low or 0)
+        if lo > 0:
+            out["low"] = lo
+    except (TypeError, ValueError):
+        pass
+    try:
+        vol = float(volume or 0)
+        if vol > 0:
+            out["volume"] = vol
+    except (TypeError, ValueError):
+        pass
+    return out
+
+
+async def futu_quote(
+    symbol: str,
+    asset_type: str,
+    *,
+    store: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    if asset_type == "crypto":
+        raise RuntimeError("Futu does not support crypto")
+    if not futu_configured(store):
+        raise RuntimeError("Futu credentials not configured")
+
+    normalized = normalize_symbol(symbol, asset_type)
+    code = to_futu_symbol(normalized, asset_type)
+    data = await futu_request(
+        "POST",
+        "/api/v1.0/quote/snapshot",
+        body={"code_list": [code]},
+        store=store,
+    )
+    rows = (data or {}).get("snapshot_list") or []
+    if not rows:
+        raise RuntimeError(f"No Futu quote for {code}")
+    snap = rows[0]
+    price = float(snap.get("last_price") or 0)
+    if not (price > 0):
+        raise RuntimeError(f"No Futu quote for {code}")
+    prev = float(snap.get("prev_close_price") or 0)
+    change = price - prev
+    pct = (change / prev * 100) if prev else 0.0
+    ts = _ms_to_sec(snap.get("update_time"))
+
+    pre = post = overnight = None
+    if asset_type == "stock":
+        pre = _session_quote(
+            snap.get("pre_price"),
+            snap.get("pre_change_val"),
+            snap.get("pre_change_rate"),
+            snap.get("pre_high_price"),
+            snap.get("pre_low_price"),
+            snap.get("pre_volume"),
+        )
+        post = _session_quote(
+            snap.get("after_price"),
+            snap.get("after_change_val"),
+            snap.get("after_change_rate"),
+            snap.get("after_high_price"),
+            snap.get("after_low_price"),
+            snap.get("after_volume"),
+        )
+        overnight = _session_quote(
+            snap.get("overnight_price"),
+            snap.get("overnight_change_val"),
+            snap.get("overnight_change_rate"),
+            snap.get("overnight_high_price"),
+            snap.get("overnight_low_price"),
+            snap.get("overnight_volume"),
+        )
+
+    name = (
+        str(snap.get("sc_name") or snap.get("name") or snap.get("tc_name") or "").strip()
+        or None
+    )
+    quote: dict[str, Any] = {
+        "symbol": normalized,
+        "assetType": asset_type,
+        "price": price,
+        "change": change,
+        "percentChange": pct,
+        "changePercent": pct,
+        "high": float(snap.get("high_price") or price),
+        "low": float(snap.get("low_price") or price),
+        "open": float(snap.get("open_price") or price),
+        "previousClose": prev,
+        "timestamp": ts,
+        "asOf": ts,
+        "source": "futu",
+    }
+    vol = float(snap.get("volume") or 0)
+    if vol > 0:
+        quote["volume"] = vol
+    if name:
+        quote["name"] = name
+    if pre:
+        quote["preMarket"] = pre
+    if post:
+        quote["postMarket"] = post
+    if overnight:
+        quote["overnight"] = overnight
+    if asset_type == "stock":
+        quote["activeSession"] = resolve_active_session(
+            pre=pre, post=post, overnight=overnight
+        )
+        quote = apply_active_extended_price(quote)
+    return quote
 
 
 def _ms_to_sec(ms: Any) -> int:
