@@ -9,6 +9,7 @@
     "build:prod": "tsx scripts/build-prod.ts",
     "start": "next start",
     "lint": "eslint",
+    "lint:staged": "lint-staged",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
@@ -28,7 +29,8 @@
     "billing:create-code": "tsx scripts/create-redeem-code.ts",
     "postinstall": "prisma generate",
     "auth:refresh-jwks": "node scripts/fetch-google-jwks.mjs",
-    "postbuild": "node scripts/copy-public-standalone.mjs"
+    "postbuild": "node scripts/copy-public-standalone.mjs",
+    "prepare": "husky"
   },
   "dependencies": {
     "@ai-sdk/anthropic": "^4.0.65",
@@ -78,9 +80,16 @@
     "@types/ws": "^8.18.2",
     "eslint": "^9",
     "eslint-config-next": "15.5.25",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.1",
     "prisma": "^6.19.3",
     "tailwindcss": "^4",
     "typescript": "^5",
     "vitest": "^3.2.7"
+  },
+  "lint-staged": {
+    "*.{js,jsx,mjs,cjs,ts,tsx}": [
+      "eslint --no-warn-ignored"
+    ]
   }
 }

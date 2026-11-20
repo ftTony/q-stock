@@ -18,6 +18,9 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
+      // Vendored OpenSpec / Superpowers skills (may include CommonJS helpers).
+      ".agents/**",
+      "openspec/**",
     ],
   },
 ];
