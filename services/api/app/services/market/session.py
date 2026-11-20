@@ -8,6 +8,46 @@ from zoneinfo import ZoneInfo
 _NY = ZoneInfo("America/New_York")
 
 
+def _as_ny(now: datetime | None = None) -> datetime:
+    if now is None:
+        return datetime.now(_NY)
+    if now.tzinfo is None:
+        return now.replace(tzinfo=_NY)
+    return now.astimezone(_NY)
+
+
+def _ny_clock(now: datetime | None = None) -> tuple[int, int]:
+    """Return (weekday Mon=0, minutes-from-midnight) in America/New_York."""
+    dt = _as_ny(now)
+    return dt.weekday(), dt.hour * 60 + dt.minute
+
+
+def us_trade_date(now: datetime | None = None) -> str:
+    return _as_ny(now).strftime("%Y-%m-%d")
+
+
+def is_us_market_close_window(
+    now: datetime | None = None,
+    *,
+    start_minutes: int = 16 * 60,
+    end_minutes: int = 17 * 60,
+) -> bool:
+    weekday, minutes = _ny_clock(now)
+    if weekday >= 5:
+        return False
+    return start_minutes <= minutes < end_minutes
+
+
+def is_us_midnight_window(
+    now: datetime | None = None,
+    *,
+    start_minutes: int = 0,
+    end_minutes: int = 60,
+) -> bool:
+    _weekday, minutes = _ny_clock(now)
+    return start_minutes <= minutes < end_minutes
+
+
 def get_us_market_phase(now: datetime | None = None) -> str:
     """pre | regular | post | overnight | closed."""
     dt = now.astimezone(_NY) if now else datetime.now(_NY)

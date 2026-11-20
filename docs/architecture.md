@@ -42,7 +42,7 @@
 | web | Next.js | UI + 残余 BFF + Auth.js；`/api/v1` rewrite → api |
 | api | `services/api` (FastAPI) | REST：auth JWT / market(+advanced/content) / watchlist / trading / strategies / user / alerts / comments / research-cards / review / billing(entitlements+redeem) |
 | redis | Redis 7 | 行情短缓存、限流、refresh 吊销（无则进程内降级） |
-| worker | `src/workers/price-alerts.ts` | 提醒邮件 + 模拟限价/止损撮合 + replay drain |
+| worker | `python -m app.worker`（`services/api`） | 提醒邮件 + 模拟限价/止损撮合 + digest/push + sitemap；`/ws/quotes`；策略 replay 暂降级（应急 `npm run worker:node`） |
 | db | PostgreSQL 16 | 持久化（Prisma 独占迁移） |
 
 ## 3. 目录结构（节选）
@@ -66,7 +66,7 @@ src/
     adanos/              # 情绪
     digest/              # 美股收盘自选摘要邮件
     crypto/secret-box.ts # BYOK 加解密
-  workers/price-alerts.ts
+  workers/price-alerts.ts   # deprecated Node; prefer services/api app/worker
   i18n/
 messages/                # 10 份 locale JSON
 prisma/

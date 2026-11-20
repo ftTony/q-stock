@@ -83,7 +83,9 @@ ENV HOSTNAME=0.0.0.0
 # sw.js etc. survive), then we launch the server.
 CMD ["node", "server.js"]
 
-# ---- alert worker ----
+# ---- alert worker (deprecated Node target) ----
+# Prefer Compose `worker` → services/api image + `python -m app.worker`.
+# Keep this stage for emergency `worker:node` builds only.
 FROM base AS worker
 WORKDIR /app
 ENV NODE_ENV=production

@@ -1,3 +1,8 @@
+/**
+ * @deprecated Prefer `python -m app.worker` (`npm run worker`).
+ * Keep `npm run worker:node` only for strategy job drain emergencies.
+ * Do not run Node + Python workers together.
+ */
 import { PrismaClient } from "@prisma/client";
 import {
   isAlertThresholdHit,

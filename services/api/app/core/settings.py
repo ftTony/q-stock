@@ -85,6 +85,23 @@ class Settings(BaseSettings):
     # PEM RSA private key for login/register passwordCipher (OAEP-SHA256).
     # Multiline: use literal newlines or \n escapes. Empty → ephemeral dev key.
     auth_password_rsa_private_key: str = ""
+    # Background worker (python -m app.worker)
+    alert_poll_interval_ms: int = 45000
+    quote_ws_enabled: bool = True
+    quote_ws_port: int = 3001
+    quote_ws_max_subscriptions: int = 40
+    quote_poll_ms: int = 4000
+    watchlist_digest_enabled: bool = True
+    watchlist_close_push_enabled: bool = True
+    watchlist_digest_start_et: str = "16:00"
+    watchlist_digest_end_et: str = "17:00"
+    sitemap_out_dir: str = ""
+    email_from: str = "alerts@example.com"
+    smtp_host: str = ""
+    smtp_port: int = 587
+    smtp_user: str = ""
+    smtp_pass: str = ""
+    smtp_secure: bool = False
     app_url: str = "http://localhost:3000"
     auth_google_id: str = ""
     auth_google_secret: str = ""

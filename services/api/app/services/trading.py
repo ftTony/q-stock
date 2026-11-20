@@ -245,6 +245,43 @@ async def place_order(
     return order
 
 
+def should_trigger_pending(
+    *,
+    order_type: str,
+    side: str,
+    price: float,
+    limit_price: float | None,
+    stop_price: float | None,
+) -> bool:
+    if order_type == "limit":
+        if limit_price is None:
+            return False
+        return price <= limit_price if side == "buy" else price >= limit_price
+    if order_type == "stop":
+        if stop_price is None:
+            return False
+        return price >= stop_price if side == "buy" else price <= stop_price
+    return False
+
+
+async def fill_pending_order(
+    db: AsyncSession, order_id: str, fill_price: float
+) -> PaperOrder | None:
+    order = await db.get(PaperOrder, order_id)
+    if not order or order.status != "pending":
+        return None
+    return await _apply_fill(
+        db,
+        user_id=order.userId,
+        symbol=order.symbol,
+        asset_type=order.assetType,
+        side=order.side,
+        qty=Decimal(order.qty),
+        fill_price=_dec(fill_price) or Decimal("0"),
+        order=order,
+    )
+
+
 async def cancel_order(db: AsyncSession, user_id: str, order_id: str) -> PaperOrder:
     order = await db.get(PaperOrder, order_id)
     if not order or order.userId != user_id:

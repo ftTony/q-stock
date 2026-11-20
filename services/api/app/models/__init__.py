@@ -1,4 +1,9 @@
-from app.models.alerts import PriceAlert
+from app.models.alerts import (
+    AlertDeliveryLog,
+    PriceAlert,
+    WatchlistClosePushLog,
+    WatchlistDigestLog,
+)
 from app.models.paper import PaperAccount, PaperOrder, PaperPosition, PaperRiskSettings
 from app.models.social import (
     Comment,
@@ -18,6 +23,9 @@ __all__ = [
     "UserMarketCredential",
     "UserServiceCredential",
     "PriceAlert",
+    "AlertDeliveryLog",
+    "WatchlistDigestLog",
+    "WatchlistClosePushLog",
     "FeatureSuggestion",
     "WatchlistItem",
     "WatchlistGroup",
