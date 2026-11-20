@@ -74,7 +74,7 @@ export function SymbolPageClient({
   const setWatchOpen = useCallback(
     (next: boolean | ((v: boolean) => boolean)) => {
       const value = typeof next === "function" ? next(watch.open) : next;
-      watch.setOpen(value);
+      if (value !== watch.open) watch.setOpen(value);
       layout.setModule("watchlist", value);
     },
     [watch.open, watch.setOpen, layout.setModule],
@@ -83,7 +83,7 @@ export function SymbolPageClient({
   const setRailOpen = useCallback(
     (next: boolean | ((v: boolean) => boolean)) => {
       const value = typeof next === "function" ? next(rail.open) : next;
-      rail.setOpen(value);
+      if (value !== rail.open) rail.setOpen(value);
       layout.setModule("rail", value);
     },
     [rail.open, rail.setOpen, layout.setModule],
@@ -322,7 +322,12 @@ export function SymbolPageClient({
             p.setMobilePlanOpen(false);
             p.setSeoOpen(true);
           }}
-          resizing={rail.dragging || watch.dragging}
+          resizing={
+            rail.dragging ||
+            watch.dragging ||
+            rail.settling ||
+            watch.settling
+          }
         />
         <SymbolPageOverlays
           isDesktop={isDesktop}

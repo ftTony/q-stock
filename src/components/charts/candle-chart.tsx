@@ -347,19 +347,24 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
   useEffect(() => {
     const shell = shellRef.current;
     if (!shell || typeof ResizeObserver === "undefined") return;
-    // Single-flight resize: mobile URL bar / soft keyboard can spam RO.
-    let raf = 0;
+    // Coalesce resize: watchlist/rail open toggles fire many RO ticks; trailing
+    // debounce + longer delay while shell[data-resizing] cuts chart jitter.
+    let timer = 0;
     const ro = new ResizeObserver(() => {
-      if (raf) return;
-      raf = requestAnimationFrame(() => {
-        raf = 0;
+      const settling =
+        document.documentElement.classList.contains("aw-rail-resizing") ||
+        Boolean(shell.closest(".aw-symbol-shell[data-resizing='true']"));
+      const delay = settling ? 160 : 48;
+      if (timer) window.clearTimeout(timer);
+      timer = window.setTimeout(() => {
+        timer = 0;
         chartRef.current?.resize();
-      });
+      }, delay);
     });
     ro.observe(shell);
     return () => {
       ro.disconnect();
-      if (raf) cancelAnimationFrame(raf);
+      if (timer) window.clearTimeout(timer);
     };
   }, [ready]);
 
