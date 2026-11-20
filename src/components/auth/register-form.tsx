@@ -96,7 +96,7 @@ export function RegisterForm({
   const fieldClass =
     "qt-input h-11 w-full px-3.5 text-[15px] leading-none";
   const submitClass =
-    "qt-btn qt-btn-primary mt-3 h-11 w-full px-4 text-[15px] font-semibold tracking-[-0.2px]";
+    "qt-btn qt-btn-primary auth-modal-submit mt-3 h-11 w-full px-4 text-[15px] font-semibold tracking-[-0.2px]";
   const labelClass = "block space-y-1.5 text-sm";
 
   return (

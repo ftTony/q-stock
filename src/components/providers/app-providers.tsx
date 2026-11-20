@@ -1,7 +1,7 @@
 "use client";
 
 import { ThemeProvider } from "next-themes";
-import { AuthSessionProvider } from "@/lib/auth/react";
+import { AuthSessionProvider } from "@/components/providers/auth-session-provider";
 import { PreferenceProvider } from "@/components/providers/preference-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { PwaRegister } from "@/components/pwa/pwa-register";
