@@ -64,26 +64,49 @@ export function useWatchlistResize() {
   const [width, setWidth] = useState(WATCH_DEFAULT);
   const [open, setOpenState] = useState(false);
   const [dragging, setDragging] = useState(false);
+  /** True briefly after open toggle / hydrate — chart debounces resize. */
+  const [settling, setSettling] = useState(false);
   const widthRef = useRef(width);
   widthRef.current = width;
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const pulseSettling = useCallback(() => {
+    setSettling(true);
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    settleTimerRef.current = setTimeout(() => {
+      settleTimerRef.current = null;
+      setSettling(false);
+    }, 200);
+  }, []);
 
   // Before paint so open watchlist does not flash away after loading.tsx.
   useLayoutEffect(() => {
     setWidth(readWatchlistWidth());
-    setOpenState(readWatchlistOpen());
-  }, []);
+    const nextOpen = readWatchlistOpen();
+    setOpenState(nextOpen);
+    // Hydrate-open shrinks the chart column — mark settling so RO coalesces.
+    if (nextOpen) pulseSettling();
+    return () => {
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    };
+  }, [pulseSettling]);
 
-  const setOpen = useCallback((next: boolean | ((v: boolean) => boolean)) => {
-    setOpenState((prev) => {
-      const value = typeof next === "function" ? next(prev) : next;
-      try {
-        localStorage.setItem(OPEN_KEY, value ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
-      return value;
-    });
-  }, []);
+  const setOpen = useCallback(
+    (next: boolean | ((v: boolean) => boolean)) => {
+      setOpenState((prev) => {
+        const value = typeof next === "function" ? next(prev) : next;
+        if (value === prev) return prev;
+        try {
+          localStorage.setItem(OPEN_KEY, value ? "1" : "0");
+        } catch {
+          /* ignore */
+        }
+        queueMicrotask(() => pulseSettling());
+        return value;
+      });
+    },
+    [pulseSettling],
+  );
 
   const applyWidth = useCallback((next: number) => {
     const value = clamp(next);
@@ -159,6 +182,7 @@ export function useWatchlistResize() {
     open,
     setOpen,
     dragging,
+    settling,
     onResizeStart,
     nudgeWidth,
     resetWidth,

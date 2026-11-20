@@ -88,11 +88,8 @@ function WatchlistRow({ row, active, style, onNavigate }: RowProps) {
         <div className="h-[14px] truncate text-[12px] font-semibold leading-[14px] text-[var(--foreground)]">
           {name}
         </div>
-        <div className="mt-px flex h-[12px] min-w-0 items-center gap-1 text-[10px] leading-[12px] text-[var(--muted)]">
-          <span className="truncate">{row.symbol}</span>
-          {extLabel ? (
-            <span className="shrink-0 text-[var(--muted)]">{extLabel}</span>
-          ) : null}
+        <div className="mt-px h-[12px] truncate text-[10px] leading-[12px] text-[var(--muted)]">
+          {row.symbol}
         </div>
       </div>
       <div className="min-w-0 text-right tabular-nums">
@@ -103,12 +100,15 @@ function WatchlistRow({ row, active, style, onNavigate }: RowProps) {
             <span className="text-[var(--muted)]">—</span>
           )}
         </div>
-        {extended ? (
+        {/* US: always reserve 盘前/盘后 row so late extended quotes don't reflow. */}
+        {isUs ? (
           <div className="mt-px h-[12px] truncate text-[10px] font-medium leading-[12px]">
-            <PriceText
-              value={extended.quote.price}
-              change={extended.quote.percentChange}
-            />
+            {extended ? (
+              <PriceText
+                value={extended.quote.price}
+                change={extended.quote.percentChange}
+              />
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -120,9 +120,19 @@ function WatchlistRow({ row, active, style, onNavigate }: RowProps) {
             <span className="text-[var(--muted)]">—</span>
           )}
         </div>
-        {extended ? (
-          <div className="mt-px h-[12px] truncate text-[10px] leading-[12px]">
-            <ChangePct value={extended.quote.percentChange} />
+        {/* Session chip sits with extended 涨跌幅 (ref: 24h next to chg%). */}
+        {isUs ? (
+          <div className="mt-px flex h-[12px] items-center justify-end gap-0.5">
+            {extended ? (
+              <span className="min-w-0 truncate text-[10px] leading-[12px]">
+                <ChangePct value={extended.quote.percentChange} />
+              </span>
+            ) : null}
+            {extLabel ? (
+              <span className="inline-flex h-3.5 shrink-0 items-center rounded border border-[var(--border)] px-0.5 text-[9px] font-medium leading-none text-[var(--muted)]">
+                {extLabel}
+              </span>
+            ) : null}
           </div>
         ) : null}
       </div>

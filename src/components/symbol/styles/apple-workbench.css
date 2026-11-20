@@ -162,6 +162,14 @@
   overflow: hidden;
 }
 
+/* Open/close watchlist or rail: coalesce chart resize (see candle-chart RO). */
+.aw-symbol-shell[data-resizing="true"] {
+  user-select: none;
+}
+.aw-symbol-shell[data-resizing="true"] canvas {
+  pointer-events: none;
+}
+
 .aw-side-icon-rule {
   display: block;
   flex-shrink: 0;

@@ -54,37 +54,62 @@ export function useRailResize() {
   // Start closed — avoids H5 flash before media/localStorage sync.
   const [open, setOpenState] = useState(false);
   const [dragging, setDragging] = useState(false);
+  const [settling, setSettling] = useState(false);
   const widthRef = useRef(width);
   widthRef.current = width;
+  const settleTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const pulseSettling = useCallback(() => {
+    setSettling(true);
+    if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    settleTimerRef.current = setTimeout(() => {
+      settleTimerRef.current = null;
+      setSettling(false);
+    }, 200);
+  }, []);
 
   // Before paint so desktop rail matches storage (fallback skeleton already reserves it).
   useLayoutEffect(() => {
     setWidth(readWidth());
-    setOpenState(readOpen());
-  }, []);
+    const nextOpen = readOpen();
+    setOpenState(nextOpen);
+    if (nextOpen) pulseSettling();
+    return () => {
+      if (settleTimerRef.current) clearTimeout(settleTimerRef.current);
+    };
+  }, [pulseSettling]);
 
   // Crossing below lg: force-close in-flow rail (plan opens via mobile drawer).
   useEffect(() => {
     const mq = window.matchMedia("(min-width: 1024px)");
     const onChange = () => {
       if (!mq.matches) setOpenState(false);
-      else setOpenState(readOpen());
+      else {
+        const next = readOpen();
+        setOpenState(next);
+        if (next) pulseSettling();
+      }
     };
     mq.addEventListener("change", onChange);
     return () => mq.removeEventListener("change", onChange);
-  }, []);
+  }, [pulseSettling]);
 
-  const setOpen = useCallback((next: boolean | ((v: boolean) => boolean)) => {
-    setOpenState((prev) => {
-      const value = typeof next === "function" ? next(prev) : next;
-      try {
-        localStorage.setItem(OPEN_KEY, value ? "1" : "0");
-      } catch {
-        /* ignore */
-      }
-      return value;
-    });
-  }, []);
+  const setOpen = useCallback(
+    (next: boolean | ((v: boolean) => boolean)) => {
+      setOpenState((prev) => {
+        const value = typeof next === "function" ? next(prev) : next;
+        if (value === prev) return prev;
+        try {
+          localStorage.setItem(OPEN_KEY, value ? "1" : "0");
+        } catch {
+          /* ignore */
+        }
+        queueMicrotask(() => pulseSettling());
+        return value;
+      });
+    },
+    [pulseSettling],
+  );
 
   const applyWidth = useCallback((next: number) => {
     const value = clamp(next);
@@ -160,6 +185,7 @@ export function useRailResize() {
     open,
     setOpen,
     dragging,
+    settling,
     onResizeStart,
     nudgeWidth,
     resetWidth,
