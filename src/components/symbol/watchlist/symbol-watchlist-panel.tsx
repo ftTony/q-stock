@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -11,11 +11,16 @@ import {
   IconSettingsGear,
 } from "@/components/symbol/watchlist/watchlist-toggle-icons";
 import { SymbolWatchlistSettingsModal } from "@/components/symbol/watchlist/symbol-watchlist-settings-modal";
+import { SymbolWatchlistSortCols } from "@/components/symbol/watchlist/symbol-watchlist-sort-cols";
 import { SymbolWatchlistVirtualList } from "@/components/symbol/watchlist/symbol-watchlist-virtual-list";
+import {
+  sortWatchlistRows,
+  type WatchlistSortState,
+} from "@/components/symbol/watchlist/sort-watchlist-rows";
+import { useWatchlistWithLiveQuotes } from "@/components/symbol/watchlist/use-watchlist-live-quotes";
 import { EmptyStateBlock } from "@/components/symbol/shared/symbol-empty-art";
 import { SymbolWatchlistPaneSkeleton } from "@/components/symbol/watchlist/symbol-watchlist-pane-skeleton";
 import { useMounted } from "@/hooks/use-mounted";
-import { useWatchlist } from "@/hooks/query/use-watchlist";
 import { queryKeys } from "@/lib/query/keys";
 import type { AssetType } from "@/lib/types";
 
@@ -42,16 +47,18 @@ export function SymbolWatchlistPanel({
   const { status } = useSession();
   const qc = useQueryClient();
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [sort, setSort] = useState<WatchlistSortState>(null);
   const closeSettings = useCallback(() => setSettingsOpen(false), []);
 
   const authenticated = mounted && status === "authenticated";
-  const watchlist = useWatchlist({
-    quotes: true,
-    enabled: authenticated && quotesEnabled,
-    refetchInterval: authenticated && quotesEnabled ? 45_000 : false,
-  });
+  const live = authenticated && quotesEnabled;
+  const watchlist = useWatchlistWithLiveQuotes(live);
 
   const rows = watchlist.data?.items ?? [];
+  const sortedRows = useMemo(
+    () => sortWatchlistRows(rows, sort),
+    [rows, sort],
+  );
   const loading = watchlist.isLoading;
   const error =
     watchlist.error instanceof Error
@@ -100,18 +107,17 @@ export function SymbolWatchlistPanel({
         onChanged={onChanged}
       />
 
-      <div
-        className="aw-watchlist-cols grid shrink-0 items-center border-b border-[var(--aw-hairline,var(--border))] px-2 text-[var(--muted)]"
-        aria-hidden
-      >
-        <span>{t("watchlistColName")}</span>
-        <span className="text-right">{t("watchlistColPrice")}</span>
-        <span className="text-right">{t("watchlistColChg")}</span>
-      </div>
+      <SymbolWatchlistSortCols
+        sort={sort}
+        onSortChange={setSort}
+        cols={[
+          { key: "name", label: t("watchlistColName"), align: "left" },
+          { key: "price", label: t("watchlistColPrice"), align: "right" },
+          { key: "chg", label: t("watchlistColChg"), align: "right" },
+        ]}
+      />
 
-      {!mounted || status === "loading" ? (
-        <SymbolWatchlistPaneSkeleton label={tCommon("loading")} />
-      ) : status === "unauthenticated" ? (
+      {status === "unauthenticated" ? (
         <div className="flex flex-1 flex-col items-center justify-center px-3 py-6">
           <AuthLoginGate
             compact
@@ -120,14 +126,22 @@ export function SymbolWatchlistPanel({
             hint={tWatch("loginHint")}
           />
         </div>
-      ) : !quotesEnabled || (loading && rows.length === 0) ? (
-        // quotesEnabled waits on useMinWidth after hydration — keep row skels, not empty.
+      ) : sortedRows.length > 0 ? (
+        // Keep cached rows across soft-nav remount / hydration — never blank the
+        // dock to skeletons when React Query already has the list.
+        <SymbolWatchlistVirtualList
+          rows={sortedRows}
+          currentSymbol={currentSymbol}
+          currentAssetType={currentAssetType}
+        />
+      ) : !mounted || status === "loading" || loading || !quotesEnabled ? (
+        // First paint / session / desktop gate with empty cache only.
         <SymbolWatchlistPaneSkeleton label={tCommon("loading")} />
       ) : error ? (
         <p className="aw-caption flex flex-1 items-center justify-center px-3 py-8 text-center text-[var(--down)]">
           {error}
         </p>
-      ) : rows.length === 0 ? (
+      ) : (
         <EmptyStateBlock art="watchlist" label={tMarket("watchlistEmpty")}>
           <Link
             href="/markets"
@@ -136,12 +150,6 @@ export function SymbolWatchlistPanel({
             {tMarket("viewAll")}
           </Link>
         </EmptyStateBlock>
-      ) : (
-        <SymbolWatchlistVirtualList
-          rows={rows}
-          currentSymbol={currentSymbol}
-          currentAssetType={currentAssetType}
-        />
       )}
     </aside>
   );

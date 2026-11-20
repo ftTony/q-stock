@@ -3,7 +3,6 @@
 import dynamic from "next/dynamic";
 import { ChartLoadingOverlay } from "@/components/ui/panel-skeleton";
 import { SymbolDesktopRailSkeleton } from "@/components/symbol/rail/symbol-desktop-rail-skeleton";
-import { SymbolWatchlistPaneSkeleton } from "@/components/symbol/watchlist/symbol-watchlist-pane-skeleton";
 
 /** Quiet chart host while the chunk loads — no fake candlestick skeleton. */
 function ChartChunkPlaceholder() {
@@ -25,17 +24,6 @@ export const SymbolChartSection = dynamic(
   {
     ssr: false,
     loading: () => <ChartChunkPlaceholder />,
-  },
-);
-
-export const SymbolWatchlistPanel = dynamic(
-  () =>
-    import("@/components/symbol/watchlist/symbol-watchlist-panel").then((m) => ({
-      default: m.SymbolWatchlistPanel,
-    })),
-  {
-    ssr: false,
-    loading: () => <SymbolWatchlistPaneSkeleton chrome rows={10} />,
   },
 );
 

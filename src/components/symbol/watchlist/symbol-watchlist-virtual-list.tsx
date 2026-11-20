@@ -73,7 +73,7 @@ function WatchlistRow({ row, active, style, onNavigate }: RowProps) {
       href={`/symbol/${row.assetType}/${encodeURIComponent(row.symbol)}`}
       data-active={active || undefined}
       onClick={() => onNavigate(row.symbol, row.assetType)}
-      className="aw-watchlist-row grid h-full items-center gap-x-1 px-2 transition hover:bg-[var(--aw-parchment,var(--surface-2))]"
+      className="aw-watchlist-row grid h-full items-center gap-x-1 px-2 transition-colors hover:bg-[var(--aw-parchment,var(--surface-2))]"
       style={{
         ...style,
         ...(active
@@ -113,7 +113,7 @@ function WatchlistRow({ row, active, style, onNavigate }: RowProps) {
         ) : null}
       </div>
       <div className="min-w-0 text-right tabular-nums">
-        <div className="h-[14px] truncate text-[11px] leading-[14px]">
+        <div className="h-[14px] truncate text-[12px] leading-[14px]">
           {ch != null ? (
             <ChangePct value={ch} />
           ) : (
