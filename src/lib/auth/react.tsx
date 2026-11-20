@@ -118,6 +118,9 @@ export async function signIn(
     const { apiLogin } = await import("@/lib/api/client");
     try {
       await apiLogin(options.email, options.password);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("qstock-auth-changed"));
+      }
       if (options.redirect !== false && typeof window !== "undefined") {
         window.location.href = options.callbackUrl || "/";
       }
@@ -140,6 +143,9 @@ export async function signIn(
         skipAuth: true,
       });
       setTokenPair(data.accessToken, data.expiresIn, data.refreshToken ?? null);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("qstock-auth-changed"));
+      }
       if (options.redirect !== false && typeof window !== "undefined") {
         window.location.href = options.callbackUrl || "/";
       }

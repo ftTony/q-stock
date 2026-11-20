@@ -1,6 +1,5 @@
 "use client";
 
-import "@/components/providers/silence-auth-console";
 import { FormEvent, useCallback, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -55,20 +54,9 @@ export function LoginForm({
     setLoading(true);
     setError(null);
     try {
-      try {
-        await apiLogin(email, password);
-        if (typeof window !== "undefined") {
-          window.dispatchEvent(new Event("qstock-auth-changed"));
-        }
-      } catch {
-        setError(t("error"));
-        return;
-      }
-      // signIn may soft-fail session refresh (ClientFetchError) even when the
-      // credentials cookie was set — verify before treating as success.
-      if (res == null || res.ok === false) {
-        setError(t("error"));
-        return;
+      await apiLogin(email, password);
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("qstock-auth-changed"));
       }
       if (modal) {
         onSuccess?.();

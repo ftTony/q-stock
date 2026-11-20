@@ -5,9 +5,18 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import enforce_rate_limit, get_refresh_token, require_user
 from app.core.db import get_db
+from app.core.password_crypto import decrypt_password_cipher, password_key_payload
 from app.core.settings import get_settings
 from app.models.user import User
-from app.schemas.auth import LoginRequest, MeResponse, RegisterRequest, TokenResponse
+from app.schemas.auth import (
+    ForgotPasswordRequest,
+    LoginRequest,
+    MeResponse,
+    PasswordKeyResponse,
+    RegisterRequest,
+    ResetPasswordRequest,
+    TokenResponse,
+)
 from app.services import auth_service
 
 router = APIRouter(dependencies=[Depends(enforce_rate_limit)])
@@ -43,16 +52,31 @@ def _clear_refresh_cookie(response: Response) -> None:
     )
 
 
+@router.get("/password-key", response_model=PasswordKeyResponse)
+async def password_key() -> PasswordKeyResponse:
+    payload = password_key_payload()
+    return PasswordKeyResponse(**payload)
+
+
 @router.post("/register", response_model=TokenResponse, status_code=201)
 async def register(
     body: RegisterRequest,
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
+    password = decrypt_password_cipher(body.passwordCipher)
+    if len(password) < 6:
+        from app.core.errors import AppError
+
+        raise AppError(
+            "Password too short",
+            code="PASSWORD_TOO_SHORT",
+            status_code=400,
+        )
     user = await auth_service.register_user(
         db,
         email=body.email,
-        password=body.password,
+        password=password,
         name=body.name,
         locale=body.locale,
         invite_code=body.inviteCode,
@@ -73,7 +97,8 @@ async def login(
     response: Response,
     db: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
-    user = await auth_service.authenticate(db, email=body.email, password=body.password)
+    password = decrypt_password_cipher(body.passwordCipher)
+    user = await auth_service.authenticate(db, email=body.email, password=password)
     access, refresh, access_ttl, refresh_ttl = await auth_service.issue_tokens(user)
     _set_refresh_cookie(response, refresh, refresh_ttl)
     return TokenResponse(
@@ -121,3 +146,30 @@ async def logout(
 @router.get("/me", response_model=MeResponse)
 async def me(user: User = Depends(require_user)) -> MeResponse:
     return MeResponse(user=auth_service.user_public(user))
+
+
+@router.post("/forgot-password")
+async def forgot_password(
+    body: ForgotPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    await auth_service.request_password_reset(db, email=body.email)
+    return {"ok": True}
+
+
+@router.post("/reset-password")
+async def reset_password(
+    body: ResetPasswordRequest,
+    db: AsyncSession = Depends(get_db),
+) -> dict:
+    password = decrypt_password_cipher(body.passwordCipher)
+    if len(password) < 6:
+        from app.core.errors import AppError
+
+        raise AppError(
+            "Password too short",
+            code="PASSWORD_TOO_SHORT",
+            status_code=400,
+        )
+    await auth_service.reset_password(db, token=body.token, password=password)
+    return {"ok": True}

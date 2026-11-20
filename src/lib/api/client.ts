@@ -251,9 +251,11 @@ export type AuthTokenResponse = {
 };
 
 export async function apiLogin(email: string, password: string): Promise<AuthTokenResponse> {
+  const { encryptPasswordForApi } = await import("@/lib/auth/encrypt-password");
+  const passwordCipher = await encryptPasswordForApi(password);
   const data = await apiFetchJson<AuthTokenResponse>("/api/v1/auth/login", {
     method: "POST",
-    body: JSON.stringify({ email, password }),
+    body: JSON.stringify({ email, passwordCipher }),
     skipAuth: true,
   });
   setTokenPair(data.accessToken, data.expiresIn, data.refreshToken ?? null);
@@ -267,9 +269,12 @@ export async function apiRegister(body: {
   locale?: string;
   inviteCode?: string;
 }): Promise<AuthTokenResponse> {
+  const { encryptPasswordForApi } = await import("@/lib/auth/encrypt-password");
+  const { password, ...rest } = body;
+  const passwordCipher = await encryptPasswordForApi(password);
   const data = await apiFetchJson<AuthTokenResponse>("/api/v1/auth/register", {
     method: "POST",
-    body: JSON.stringify(body),
+    body: JSON.stringify({ ...rest, passwordCipher }),
     skipAuth: true,
   });
   setTokenPair(data.accessToken, data.expiresIn, data.refreshToken ?? null);

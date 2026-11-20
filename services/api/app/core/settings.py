@@ -82,6 +82,9 @@ class Settings(BaseSettings):
     cookie_secure: bool = False
     cookie_samesite: str = "lax"
     refresh_cookie_name: str = "qstock_refresh"
+    # PEM RSA private key for login/register passwordCipher (OAEP-SHA256).
+    # Multiline: use literal newlines or \n escapes. Empty → ephemeral dev key.
+    auth_password_rsa_private_key: str = ""
     app_url: str = "http://localhost:3000"
     auth_google_id: str = ""
     auth_google_secret: str = ""

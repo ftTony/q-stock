@@ -34,9 +34,11 @@ function ResetPasswordForm() {
     setLoading(true);
     try {
       const { apiFetchJson } = await import("@/lib/api/client");
+      const { encryptPasswordForApi } = await import("@/lib/auth/encrypt-password");
+      const passwordCipher = await encryptPasswordForApi(password);
       await apiFetchJson("/api/auth/reset-password", {
         method: "POST",
-        body: JSON.stringify({ token, password }),
+        body: JSON.stringify({ token, passwordCipher }),
         skipAuth: true,
       });
       router.push("/login?reset=1");
