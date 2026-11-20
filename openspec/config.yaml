@@ -2,16 +2,22 @@ schema: spec-driven
 
 # Project context — guide OpenSpec artifacts (not discoverable from code alone).
 context: |
+  Language: zh
+  All artifacts must be written in zh.
+  Keep OpenSpec structural headings and SHALL/MUST keywords in English.
   Product: learning-oriented research terminal (看盘 → 分析 → 模拟 → 复盘). Neutral copy; no stock tips.
-  Locale: write OpenSpec artifacts (proposal, specs, design, tasks) in Simplified Chinese unless the user asks otherwise.
+  Project workflow: OpenSpec (what) + Superpowers (how). Skills are vendored in .agents/skills/ for multi-machine use.
+  After propose artifacts are ready, prefer openspec-write-plan then
+  openspec-executing-plans (TDD + subagent-driven-development) before archive.
   Runtime: production is 1GB RAM / 1 vCPU — prefer Worker/cron/precompute; bounded caches; no request-path full scans.
   Frontend: src/**/*.{ts,tsx} soft limit 500 lines; qt-* / aw-* / wb-shell token roles; App shell sharp corners.
   Stack: Next.js app + FastAPI market facade; keep changes scoped and reversible.
+  Never commit/push/merge on main without explicit user OK.
 
 rules:
   proposal:
-    - State why, what changes, and explicit non-goals
-    - Keep under ~500 Chinese characters for the summary section when possible; detail belongs in design/specs
+    - State why, scope, and out-of-scope clearly
+    - Keep summary tight; detail belongs in design/specs
   specs:
     - Requirements use SHALL; scenarios use WHEN/THEN
     - Cover empty states and failure/fallback paths for market data
@@ -19,16 +25,19 @@ rules:
     - Call out small-server impact (request path vs Worker/cache)
     - Note file splits if any touched module would exceed ~500 lines
   tasks:
-    - Bite-sized, ordered, verifiable; prefer red/green checks where practical
+    - Bite-sized, ordered, verifiable; mark TDD where feasible
     - Separate frontend / FastAPI / Worker tasks when the change spans them
+    - Include a verification task before done
 
 operations:
   apply:
     guidance:
       - Do not start coding until the user has approved the change artifacts
-      - Follow Superpowers TDD / task review when those skills are available
+      - Prefer openspec-write-plan → openspec-executing-plans over ad-hoc coding
+      - Follow Superpowers TDD when adding logic; systematic-debugging for bugs
       - Respect .cursor/rules (small-server, file-size, product-ui-frontend-craft, design-tokens)
+      - Run verification-before-completion before claiming done
   archive:
     guidance:
-      - Summarize what landed vs what was deferred before finishing
-      - Sync delta specs into openspec/specs/
+      - Summarize outcome and any follow-ups in Chinese
+      - Sync delta specs into openspec/specs/ only for completed requirements
