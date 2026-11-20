@@ -30,6 +30,7 @@ __pycache__/
 *$py.class
 *.so
 .Python
+.venv*/
 
 # debug
 npm-debug.log*
