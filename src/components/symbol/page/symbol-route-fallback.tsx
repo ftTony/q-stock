@@ -14,15 +14,11 @@ function subscribeNoop() {
 }
 
 /**
- * Soft-nav bridge while `/symbol/...` RSC resolves.
+ * Full-shell placeholder for cold entry into `/symbol/...` (e.g. marketing →
+ * symbol). Not used for symbol↔symbol soft-nav — that path keeps the live
+ * workbench and uses `SymbolNavPendingOverlay` so the watchlist does not flash.
  *
- * Why this exists: homepage uses MarketingAppShell; symbol uses MainAppShell.
- * Pathname flips immediately, so the marketing page unmounts before quote/candles
- * RSC arrives — without this, users only see empty parchment + white panel.
- *
- * Desktop always reserves the left watchlist chrome (row skeletons). Gating on
- * localStorage open-state failed on SSR (`useSyncExternalStore` server snapshot
- * is always false), so loading looked like “自选没有点位”.
+ * Desktop always reserves the left watchlist chrome (row skeletons).
  */
 export function SymbolRouteFallback() {
   const watchWidth = useSyncExternalStore(

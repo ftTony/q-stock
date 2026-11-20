@@ -4,8 +4,8 @@ import type { CSSProperties, FormEvent, ReactNode } from "react";
 import {
   SymbolDesktopRail,
   SymbolSideIconRail,
-  SymbolWatchlistPanel,
 } from "@/components/symbol/page/symbol-page-dynamics";
+import { SymbolWatchlistPanel } from "@/components/symbol/watchlist/symbol-watchlist-panel";
 import { SymbolH5BelowSlot } from "@/components/symbol/page/symbol-h5-below-slot";
 import { SymbolWorkbenchTopbar } from "@/components/symbol/page/symbol-workbench-topbar";
 import {

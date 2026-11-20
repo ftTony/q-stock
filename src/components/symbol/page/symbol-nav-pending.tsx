@@ -9,7 +9,6 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { ChartLoadingOverlay } from "@/components/ui/panel-skeleton";
 import type { AssetType } from "@/lib/types";
 
 export type SymbolNavTarget = {
@@ -76,7 +75,11 @@ export function SymbolNavPendingProvider({
   );
 }
 
-/** Cover only the workbench (quote + chart + rail), not the watchlist. */
+/**
+ * Cover only the workbench (quote + chart + rail), not the watchlist.
+ * Dim/block clicks while soft-nav resolves — do not render a second spinner;
+ * the chart pane already owns `ChartLoadingOverlay`.
+ */
 export function SymbolNavPendingOverlay({ label }: { label?: string }) {
   const { isSwitching } = useSymbolNavPending();
   if (!isSwitching) return null;
@@ -86,9 +89,8 @@ export function SymbolNavPendingOverlay({ label }: { label?: string }) {
       role="status"
       aria-busy="true"
       aria-live="polite"
-    >
-      <ChartLoadingOverlay label={label} placement="center" />
-    </div>
+      aria-label={label}
+    />
   );
 }
 

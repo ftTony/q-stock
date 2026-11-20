@@ -115,3 +115,28 @@ export function IconWatchlistExpand({ className }: { className?: string }) {
     </svg>
   );
 }
+
+/** Compact up/down caret for watchlist column sort. */
+export function IconWatchlistSort({
+  className,
+  direction,
+}: {
+  className?: string;
+  /** null = idle (both muted); asc/desc highlight one side */
+  direction?: "asc" | "desc" | null;
+}) {
+  const up =
+    direction === "asc"
+      ? "var(--foreground)"
+      : "color-mix(in srgb, var(--muted) 55%, transparent)";
+  const down =
+    direction === "desc"
+      ? "var(--foreground)"
+      : "color-mix(in srgb, var(--muted) 55%, transparent)";
+  return (
+    <svg className={className} viewBox="0 0 10 14" fill="none" aria-hidden>
+      <path d="M5 1.5L8.5 5.5H1.5L5 1.5Z" fill={up} />
+      <path d="M5 12.5L1.5 8.5H8.5L5 12.5Z" fill={down} />
+    </svg>
+  );
+}
