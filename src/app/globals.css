@@ -341,11 +341,23 @@ select.qt-input::-ms-expand {
     a.qt-btn-ghost,
     .qt-btn.qt-btn-primary,
     .qt-btn.qt-btn-ghost
-  ):not(.invite-action-btn) {
+  ):not(.invite-action-btn):not(.auth-modal-submit) {
   box-sizing: border-box;
   height: 2.25rem !important;
   min-height: 2.25rem !important;
   max-height: 2.25rem !important;
+  padding-top: 0 !important;
+  padding-bottom: 0 !important;
+  line-height: 1 !important;
+  border-radius: 0 !important;
+}
+
+/* Login/register modal: match field h-11 (settings-ui would otherwise clamp to h-9). */
+.settings-ui .auth-modal-submit {
+  box-sizing: border-box;
+  height: 2.75rem !important;
+  min-height: 2.75rem !important;
+  max-height: 2.75rem !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
   line-height: 1 !important;

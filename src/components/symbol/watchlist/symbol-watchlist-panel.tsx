@@ -117,7 +117,15 @@ export function SymbolWatchlistPanel({
         ]}
       />
 
-      {status === "unauthenticated" ? (
+      {sortedRows.length > 0 ? (
+        // Prefer cached rows over auth/skeleton — ClientFetchError can briefly
+        // flip session to null during soft-nav and used to flash the login gate.
+        <SymbolWatchlistVirtualList
+          rows={sortedRows}
+          currentSymbol={currentSymbol}
+          currentAssetType={currentAssetType}
+        />
+      ) : status === "unauthenticated" ? (
         <div className="flex flex-1 flex-col items-center justify-center px-3 py-6">
           <AuthLoginGate
             compact
@@ -126,14 +134,6 @@ export function SymbolWatchlistPanel({
             hint={tWatch("loginHint")}
           />
         </div>
-      ) : sortedRows.length > 0 ? (
-        // Keep cached rows across soft-nav remount / hydration — never blank the
-        // dock to skeletons when React Query already has the list.
-        <SymbolWatchlistVirtualList
-          rows={sortedRows}
-          currentSymbol={currentSymbol}
-          currentAssetType={currentAssetType}
-        />
       ) : !mounted || status === "loading" || loading || !quotesEnabled ? (
         // First paint / session / desktop gate with empty cache only.
         <SymbolWatchlistPaneSkeleton label={tCommon("loading")} />

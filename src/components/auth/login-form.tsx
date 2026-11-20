@@ -1,5 +1,6 @@
 "use client";
 
+import "@/components/providers/silence-auth-console";
 import { FormEvent, useCallback, useState } from "react";
 import { signIn } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
@@ -63,6 +64,12 @@ export function LoginForm({
         setError(t("error"));
         return;
       }
+      // signIn may soft-fail session refresh (ClientFetchError) even when the
+      // credentials cookie was set — verify before treating as success.
+      if (res == null || res.ok === false) {
+        setError(t("error"));
+        return;
+      }
       if (modal) {
         onSuccess?.();
         router.refresh();
@@ -71,6 +78,8 @@ export function LoginForm({
       const next = await pathAfterAuth();
       router.push(next);
       router.refresh();
+    } catch {
+      setError(t("error"));
     } finally {
       setLoading(false);
     }
@@ -79,7 +88,7 @@ export function LoginForm({
   const fieldClass =
     "qt-input h-11 w-full px-3.5 text-[15px] leading-none";
   const submitClass =
-    "qt-btn qt-btn-primary mt-3 h-11 w-full px-4 text-[15px] font-semibold tracking-[-0.2px]";
+    "qt-btn qt-btn-primary auth-modal-submit mt-3 h-11 w-full px-4 text-[15px] font-semibold tracking-[-0.2px]";
   const labelClass = "block space-y-1.5 text-sm";
 
   return (
