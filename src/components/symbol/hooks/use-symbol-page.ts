@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useLocale, useTranslations } from "next-intl";
@@ -116,65 +116,108 @@ export function useSymbolPage(
 
   const quoteKey = queryKeys.symbol.quote(assetType, symbol);
 
+  // WS quote ticks can arrive several times per second. Writing each tick to
+  // the query cache re-renders the whole page (quote flows through `s`). Buffer
+  // the newest tick and flush at most once per animation frame (~100ms cap),
+  // collapsing bursts into a single render while keeping the UI responsive.
+  const pendingQuoteRef = useRef<Quote | null>(null);
+  const quoteRafRef = useRef<number | null>(null);
+  const quoteTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const lastQuoteFlushRef = useRef(0);
+
+  useEffect(
+    () => () => {
+      if (quoteRafRef.current != null) cancelAnimationFrame(quoteRafRef.current);
+      if (quoteTimerRef.current != null) clearTimeout(quoteTimerRef.current);
+    },
+    [],
+  );
+
+  // Drop any buffered tick for the previous symbol when navigating to another.
+  useEffect(() => {
+    pendingQuoteRef.current = null;
+    if (quoteRafRef.current != null) {
+      cancelAnimationFrame(quoteRafRef.current);
+      quoteRafRef.current = null;
+    }
+    if (quoteTimerRef.current != null) {
+      clearTimeout(quoteTimerRef.current);
+      quoteTimerRef.current = null;
+    }
+  }, [symbol, assetType]);
+
+  const flushQuote = useCallback(() => {
+    quoteRafRef.current = null;
+    quoteTimerRef.current = null;
+    const incoming = pendingQuoteRef.current;
+    pendingQuoteRef.current = null;
+    if (!incoming) return;
+    lastQuoteFlushRef.current = performance.now();
+    qc.setQueryData(
+      quoteKey,
+      (prev: { quote?: Quote | null } | undefined) => {
+        const previous = prev?.quote;
+        return {
+          quote: {
+            ...incoming,
+            ...(incoming.name?.trim() || previous?.name
+              ? { name: incoming.name?.trim() || previous?.name }
+              : {}),
+            ...(incoming.preMarket || previous?.preMarket
+              ? { preMarket: incoming.preMarket ?? previous?.preMarket }
+              : {}),
+            ...(incoming.postMarket || previous?.postMarket
+              ? { postMarket: incoming.postMarket ?? previous?.postMarket }
+              : {}),
+            ...(incoming.overnight || previous?.overnight
+              ? { overnight: incoming.overnight ?? previous?.overnight }
+              : {}),
+            ...(incoming.regularSession || previous?.regularSession
+              ? {
+                  regularSession:
+                    incoming.regularSession ?? previous?.regularSession,
+                }
+              : {}),
+            ...(incoming.activeSession
+              ? { activeSession: incoming.activeSession }
+              : previous?.activeSession
+                ? { activeSession: previous.activeSession }
+                : {}),
+          },
+        };
+      },
+    );
+  }, [qc, quoteKey]);
+
+  const scheduleQuoteFlush = useCallback(() => {
+    if (quoteRafRef.current != null || quoteTimerRef.current != null) return;
+    const wait = Math.max(0, 100 - (performance.now() - lastQuoteFlushRef.current));
+    quoteTimerRef.current = setTimeout(() => {
+      quoteTimerRef.current = null;
+      quoteRafRef.current = requestAnimationFrame(flushQuote);
+    }, wait);
+  }, [flushQuote]);
+
   const onWsMessage = useCallback(
     (msg: ServerMessage) => {
-      const mergeQuote = (incoming: Quote) => {
-        qc.setQueryData(
-          quoteKey,
-          (prev: { quote?: Quote | null } | undefined) => {
-            const previous = prev?.quote;
-            return {
-              quote: {
-                ...incoming,
-                ...(incoming.name?.trim() || previous?.name
-                  ? { name: incoming.name?.trim() || previous?.name }
-                  : {}),
-                ...(incoming.preMarket || previous?.preMarket
-                  ? { preMarket: incoming.preMarket ?? previous?.preMarket }
-                  : {}),
-                ...(incoming.postMarket || previous?.postMarket
-                  ? { postMarket: incoming.postMarket ?? previous?.postMarket }
-                  : {}),
-                ...(incoming.overnight || previous?.overnight
-                  ? { overnight: incoming.overnight ?? previous?.overnight }
-                  : {}),
-                ...(incoming.regularSession || previous?.regularSession
-                  ? {
-                      regularSession:
-                        incoming.regularSession ?? previous?.regularSession,
-                    }
-                  : {}),
-                ...(incoming.activeSession
-                  ? { activeSession: incoming.activeSession }
-                  : previous?.activeSession
-                    ? { activeSession: previous.activeSession }
-                    : {}),
-              },
-            };
-          },
-        );
-      };
+      let hit: Quote | undefined;
       if (msg.op === "quote") {
-        if (
-          msg.quote.symbol.toUpperCase() === symbol.toUpperCase() &&
-          msg.quote.assetType === assetType &&
-          msg.quote.price > 0
-        ) {
-          mergeQuote(msg.quote);
-        }
+        hit = msg.quote;
+      } else if (msg.op === "snapshot" && msg.quotes?.length) {
+        hit = msg.quotes.find((q) => q.price > 0);
+      }
+      if (
+        !hit ||
+        hit.price <= 0 ||
+        hit.symbol.toUpperCase() !== symbol.toUpperCase() ||
+        hit.assetType !== assetType
+      ) {
         return;
       }
-      if (msg.op === "snapshot" && msg.quotes?.length) {
-        const hit = msg.quotes.find(
-          (q) =>
-            q.symbol.toUpperCase() === symbol.toUpperCase() &&
-            q.assetType === assetType &&
-            q.price > 0,
-        );
-        if (hit) mergeQuote(hit);
-      }
+      pendingQuoteRef.current = hit;
+      scheduleQuoteFlush();
     },
-    [symbol, assetType, qc, quoteKey],
+    [symbol, assetType, scheduleQuoteFlush],
   );
 
   const {

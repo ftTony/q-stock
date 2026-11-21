@@ -17,6 +17,7 @@ import {
   CandleChart,
   type CandleChartHandle,
   type IndicatorFlags,
+  type QuoteHeaderLabels,
 } from "@/components/charts/candle-chart";
 import { INDICATOR_KEYS } from "@/components/charts/candle-chart-overlays";
 import {
@@ -46,6 +47,7 @@ import {
   type AssetType,
   type CandleResolution,
   type OhlcvBar,
+  type Quote,
 } from "@/lib/types";
 
 const PRIMARY_INDICATORS = new Set(["ma", "macd"]);
@@ -63,6 +65,9 @@ type Props = {
   bars: OhlcvBar[];
   assetType: AssetType;
   symbol: string;
+  /** Stable ref to the latest quote (screenshot only); ticks must not re-render the chart. */
+  quoteRef?: { current: Quote | null | undefined };
+  quoteHeaderLabels?: QuoteHeaderLabels;
   onLoadMore: (earliestTime: number) => Promise<OhlcvBar[]>;
   loadingMore: boolean;
   hasMore: boolean;
@@ -84,6 +89,8 @@ export const SymbolChartSection = memo(function SymbolChartSection({
   bars,
   assetType,
   symbol,
+  quoteRef,
+  quoteHeaderLabels,
   onLoadMore,
   loadingMore,
   hasMore,
@@ -335,6 +342,8 @@ export const SymbolChartSection = memo(function SymbolChartSection({
             resolution={resolution}
             symbol={symbol}
             assetType={assetType}
+            quoteRef={quoteRef}
+            quoteHeaderLabels={quoteHeaderLabels}
             fillParent
             onLoadMore={onLoadMore}
             loadingMore={loadingMore}

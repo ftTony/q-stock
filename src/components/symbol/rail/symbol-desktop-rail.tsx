@@ -124,6 +124,7 @@ export function SymbolDesktopRail({
             metrics={metrics}
             assetType={assetType}
             marketCap={marketCap}
+            isIndex={isIndex}
           />
         </div>
         <SymbolOrderRail

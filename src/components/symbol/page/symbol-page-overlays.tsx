@@ -1,9 +1,11 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { SymbolAiFab } from "@/components/symbol/page/symbol-page-dynamics";
-import { SymbolDockDrawers } from "@/components/symbol/page/symbol-page-dynamics";
-import { SymbolMobilePlanDrawer } from "@/components/symbol/mobile/symbol-mobile-plan-drawer";
+import {
+  SymbolAiFab,
+  SymbolDockDrawers,
+  SymbolMobilePlanDrawer,
+} from "@/components/symbol/page/symbol-page-dynamics";
 import type { SideIconId } from "@/components/symbol/rail/symbol-side-icon-rail";
 import type {
   CommentRow,

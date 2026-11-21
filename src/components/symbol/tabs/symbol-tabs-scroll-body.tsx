@@ -12,17 +12,7 @@ import {
 import { SubmitButton } from "@/components/ui/submit-button";
 import { TopToast } from "@/components/ui/top-toast";
 import { formatDate, formatDateTime } from "@/lib/format-number";
-
-const SymbolFundamentalsPanel = dynamic(
-  () =>
-    import("@/components/symbol/panels/symbol-fundamentals-panel").then((m) => ({
-      default: m.SymbolFundamentalsPanel,
-    })),
-  {
-    ssr: false,
-    loading: () => <PanelSkeleton rows={5} />,
-  },
-);
+import { SymbolFundamentalsPanel } from "@/components/symbol/page/symbol-page-dynamics";
 
 const AiAnalysisPanel = dynamic(
   () =>

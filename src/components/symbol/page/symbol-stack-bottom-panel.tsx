@@ -22,6 +22,7 @@ import type { AssetType, Quote } from "@/lib/types";
 
 export type StackBottomTab =
   | "news"
+  | "constituents"
   | "press"
   | "trade"
   | "ai"
@@ -86,6 +87,7 @@ const ALL_TABS: {
   id: StackBottomTab;
   labelKey:
     | "tabNews"
+    | "tabConstituents"
     | "tabPress"
     | "tabTrade"
     | "tabAi"
@@ -95,6 +97,7 @@ const ALL_TABS: {
     | "tabProfile";
 }[] = [
   { id: "news", labelKey: "tabNews" },
+  { id: "constituents", labelKey: "tabConstituents" },
   { id: "press", labelKey: "tabPress" },
   { id: "trade", labelKey: "tabTrade" },
   { id: "ai", labelKey: "tabAi" },
@@ -112,6 +115,7 @@ function tabsForAsset(
     return ALL_TABS.filter(
       (x) =>
         x.id === "news" ||
+        (isIndex && x.id === "constituents") ||
         x.id === "trade" ||
         x.id === "ai" ||
         x.id === "comments",

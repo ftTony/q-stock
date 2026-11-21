@@ -11,6 +11,8 @@ type Props = {
   metrics?: EarningsMetric[];
   assetType?: AssetType;
   marketCap?: number | null;
+  /** Indices have no shares / valuation / bid fields — hide those rows. */
+  isIndex?: boolean;
 };
 
 type Cell = {
@@ -109,6 +111,7 @@ export function SymbolRailStats({
   metrics = [],
   assetType = "stock",
   marketCap = null,
+  isIndex = false,
 }: Props) {
   const t = useTranslations("symbol");
   const locale = useLocale();
@@ -161,7 +164,7 @@ export function SymbolRailStats({
     ],
   ];
 
-  if (assetType !== "crypto") {
+  if (assetType !== "crypto" && !isIndex) {
     primary.push([
       {
         labelKey: "mktCap",
@@ -172,7 +175,7 @@ export function SymbolRailStats({
   }
 
   const extra: [Cell, Cell][] =
-    assetType === "crypto"
+    assetType === "crypto" || isIndex
       ? []
       : [
           [

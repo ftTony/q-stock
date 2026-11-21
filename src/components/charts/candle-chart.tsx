@@ -5,6 +5,7 @@ import {
   useCallback,
   useEffect,
   useImperativeHandle,
+  useMemo,
   useRef,
   useState,
 } from "react";
@@ -32,7 +33,10 @@ import {
   resolveCandleType,
   type ChartUiSettings,
 } from "@/components/charts/candle-chart-settings";
-import { captureAndDownloadChart } from "@/components/charts/candle-chart-screenshot";
+import {
+  captureAndDownloadChart,
+  type ScreenshotQuoteInfo,
+} from "@/components/charts/candle-chart-screenshot";
 import {
   ensurePaperFillOverlay,
   syncTradeMarkers,
@@ -40,7 +44,9 @@ import {
   type ChartTradeMarker,
 } from "@/components/charts/candle-chart-trade-markers";
 import { isAssetSessionOpen } from "@/lib/market/session";
-import type { AssetType } from "@/lib/types";
+import { formatDate, formatNumber, formatTime } from "@/lib/format-number";
+import { displayName } from "@/lib/market-names";
+import type { AssetType, Quote } from "@/lib/types";
 
 export type { DrawingTool, IndicatorFlags, ChartTradeMarker };
 
@@ -52,6 +58,71 @@ export type CandleChartHandle = {
 
 type KLineChartsModule = typeof import("klinecharts");
 type ChartInstance = NonNullable<ReturnType<KLineChartsModule["init"]>>;
+
+export type QuoteHeaderLabels = {
+  sessionOpen: string;
+  sessionClosed: string;
+  open: string;
+  high: string;
+  low: string;
+  prevClose: string;
+  volume: string;
+  turnover: string;
+};
+
+function compactAmount(v: number | undefined, locale: string): string {
+  if (v == null || Number.isNaN(v)) return "-";
+  const abs = Math.abs(v);
+  const unit = (divisor: number, suffix: string) =>
+    `${formatNumber(v / divisor, { locale, maximumFractionDigits: 2 })}${suffix}`;
+  if (locale.startsWith("zh")) {
+    if (abs >= 1e8) return unit(1e8, "亿");
+    if (abs >= 1e4) return unit(1e4, "万");
+  }
+  if (abs >= 1e9) return unit(1e9, "B");
+  if (abs >= 1e6) return unit(1e6, "M");
+  if (abs >= 1e3) return unit(1e3, "K");
+  return formatNumber(v, { locale, maximumFractionDigits: 2 });
+}
+
+/** Build the pre-formatted quote block rendered into the exported PNG. */
+function buildScreenshotQuote(
+  quote: Quote,
+  symbol: string,
+  assetType: AssetType,
+  locale: string,
+  labels: QuoteHeaderLabels,
+  sessionOpen: boolean,
+): ScreenshotQuoteInfo {
+  const fmt = (v: number) =>
+    formatNumber(v, { locale, maximumFractionDigits: 6 });
+  const up = quote.change >= 0;
+  const changeText = `${up ? "+" : ""}${fmt(quote.change)}`;
+  const pctText = `${quote.percentChange >= 0 ? "+" : ""}${quote.percentChange.toFixed(2)}%`;
+  // Quote timestamps from providers are seconds, not milliseconds.
+  const time = quote.timestamp
+    ? `${formatDate(quote.timestamp * 1000, { locale })} ${formatTime(quote.timestamp * 1000, { locale, assetType })}`
+    : "";
+  return {
+    symbol,
+    name: displayName(symbol, assetType, quote.name),
+    statusTime: [sessionOpen ? labels.sessionOpen : labels.sessionClosed, time]
+      .filter(Boolean)
+      .join(" "),
+    price: fmt(quote.price),
+    change: changeText,
+    percentChange: pctText,
+    trend: up ? "up" : "down",
+    stats: [
+      { label: labels.high, value: fmt(quote.high) },
+      { label: labels.open, value: fmt(quote.open) },
+      { label: labels.volume, value: compactAmount(quote.volume, locale) },
+      { label: labels.low, value: fmt(quote.low) },
+      { label: labels.prevClose, value: fmt(quote.previousClose) },
+      { label: labels.turnover, value: compactAmount(quote.turnover, locale) },
+    ],
+  };
+}
 
 type CandleChartProps = {
   bars: OhlcvBar[];
@@ -70,6 +141,13 @@ type CandleChartProps = {
   resolution?: string;
   symbol?: string;
   assetType?: AssetType;
+  /**
+   * Stable ref holding the latest quote for the exported PNG header. Passed as
+   * a ref (not a value) so live quote ticks never re-render the chart tree.
+   */
+  quoteRef?: { current: Quote | null | undefined };
+  /** Localized labels for the exported quote header (locale-stable). */
+  quoteHeaderLabels?: QuoteHeaderLabels;
   onLoadMore?: (earliestTime: number) => Promise<OhlcvBar[] | void> | void;
   loadingMore?: boolean;
   hasMore?: boolean;
@@ -95,6 +173,8 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       resolution = "D",
       symbol = "",
       assetType = "stock",
+      quoteRef,
+      quoteHeaderLabels,
       onLoadMore,
       loadingMore = false,
       hasMore = true,
@@ -136,28 +216,34 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
   /** Corner mark follows locale (`app.name`: 钱力股 / 錢力股 / Qianli Gu / …). */
   const brandRef = useRef(tApp("name"));
   brandRef.current = tApp("name");
+  const taglineRef = useRef(tApp("tagline"));
+  taglineRef.current = tApp("tagline");
   const logoSrcRef = useRef("/logo-light.png?v=2");
-  logoSrcRef.current = locale.startsWith("zh")
-    ? "/logo-cn.png?v=2"
-    : locale.startsWith("en")
-      ? "/logo-en.png?v=2"
-      : "/logo-light.png?v=2";
-  const tipLabelsRef = useRef<TipLabels>({
-    time: t("time"),
-    open: t("open"),
-    high: t("high"),
-    low: t("low"),
-    close: t("close"),
-    volume: t("volume"),
-  });
-  tipLabelsRef.current = {
-    time: t("time"),
-    open: t("open"),
-    high: t("high"),
-    low: t("low"),
-    close: t("close"),
-    volume: t("volume"),
-  };
+  // logo-en carries a dark square backdrop (light-theme only); on a dark
+  // footer use the transparent mark so it stays legible on any background.
+  logoSrcRef.current =
+    resolvedTheme === "dark"
+      ? "/logo-light.png?v=2"
+      : locale.startsWith("zh")
+        ? "/logo-cn.png?v=2"
+        : locale.startsWith("en")
+          ? "/logo-en.png?v=2"
+          : "/logo-light.png?v=2";
+  const tipLabels = useMemo<TipLabels>(
+    () => ({
+      time: t("time"),
+      open: t("open"),
+      high: t("high"),
+      low: t("low"),
+      close: t("close"),
+      volume: t("volume"),
+    }),
+    [t],
+  );
+  const tipLabelsRef = useRef<TipLabels>(tipLabels);
+  tipLabelsRef.current = tipLabels;
+  const quoteHeaderLabelsRef = useRef(quoteHeaderLabels);
+  quoteHeaderLabelsRef.current = quoteHeaderLabels;
 
   barsRef.current = bars;
   hasMoreRef.current = hasMore;
@@ -310,9 +396,13 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     showDrawingTools,
   ]);
 
-  const tradeMarkersKey = tradeMarkers
-    .map((m) => `${m.id}:${m.timeMs}:${m.price}:${m.side}`)
-    .join("|");
+  const tradeMarkersKey = useMemo(
+    () =>
+      tradeMarkers
+        .map((m) => `${m.id}:${m.timeMs}:${m.price}:${m.side}`)
+        .join("|"),
+    [tradeMarkers],
+  );
   useEffect(() => {
     const chart = chartRef.current;
     if (!chart || !ready) return;
@@ -421,6 +511,19 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
   const captureScreenshot = () => {
     const chart = chartRef.current;
     if (!chart) return;
+    const currentQuote = quoteRef?.current;
+    const currentLabels = quoteHeaderLabelsRef.current;
+    const screenshotQuote =
+      currentQuote && currentLabels
+        ? buildScreenshotQuote(
+            currentQuote,
+            symbol,
+            assetType,
+            locale,
+            currentLabels,
+            liveSession,
+          )
+        : undefined;
     void captureAndDownloadChart({
       chart,
       labels: tipLabelsRef.current,
@@ -430,8 +533,10 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       chartType: resolveCandleType(chartSettingsRef.current, resolution),
       domain: domainRef.current,
       brand: brandRef.current,
+      tagline: taglineRef.current,
       logoSrc: logoSrcRef.current,
       filename: `${symbol || "chart"}-${resolution || "D"}.png`,
+      quote: screenshotQuote,
     });
   };
 

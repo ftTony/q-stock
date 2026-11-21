@@ -82,6 +82,7 @@ export function SymbolMobileBelowChart({
                   metrics={metrics}
                   assetType={assetType}
                   marketCap={marketCap}
+                  isIndex={isIndex}
                 />
               </div>
             ) : null}

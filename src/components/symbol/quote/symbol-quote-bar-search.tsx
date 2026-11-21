@@ -10,10 +10,18 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
+import { useLoginModalOptional } from "@/components/auth/login-modal-context";
 import { useSymbolNavPending } from "@/components/symbol/page/symbol-nav-pending";
 import { InlineLoading, Skel } from "@/components/ui/panel-skeleton";
+import { IconHeart } from "@/components/ui/icon-heart";
+import {
+  useAddWatchlistItem,
+  useRemoveWatchlistItem,
+  useWatchlist,
+} from "@/hooks/query/use-watchlist";
 import { useSymbolSearch } from "@/hooks/query/use-symbol-search";
 import { useMounted } from "@/hooks/use-mounted";
 import type { AssetType } from "@/lib/types";
@@ -30,6 +38,9 @@ type Props = {
 };
 
 type DropdownPos = { top: number; left: number; width: number };
+
+/** Stable empty set so `watchedKeys` memo keeps referential equality when signed out. */
+const EMPTY_WATCHED_KEYS: ReadonlySet<string> = new Set<string>();
 
 function useDebounced(value: string, ms: number) {
   const [v, setV] = useState(value);
@@ -107,6 +118,13 @@ export function SymbolQuoteBarSearch({
   const t = useTranslations("symbol");
   const router = useRouter();
   const { setPending } = useSymbolNavPending();
+  const { data: session } = useSession();
+  const loginModal = useLoginModalOptional();
+  const signedIn = Boolean(session?.user);
+  const watchlistQuery = useWatchlist({ enabled: signedIn });
+  const addWatch = useAddWatchlistItem();
+  const removeWatch = useRemoveWatchlistItem();
+  const [watchPendingKey, setWatchPendingKey] = useState<string | null>(null);
   const mounted = useMounted();
   const listId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -128,6 +146,37 @@ export function SymbolQuoteBarSearch({
     const cur = currentSymbol.toUpperCase();
     return rows.filter((r) => r.symbol.toUpperCase() !== cur).slice(0, 8);
   }, [search.data?.results, currentSymbol]);
+
+  /** Keys already in the user's watchlist — `assetType:symbol`. */
+  const watchedKeys = useMemo(() => {
+    if (!signedIn) return EMPTY_WATCHED_KEYS;
+    return new Set(
+      (watchlistQuery.data?.items ?? []).map(
+        (i) => `${i.assetType}:${i.symbol}`,
+      ),
+    );
+  }, [signedIn, watchlistQuery.data]);
+
+  async function toggleWatch(r: { symbol: string; assetType: AssetType }) {
+    if (!signedIn) {
+      loginModal?.openLogin();
+      return;
+    }
+    const key = `${r.assetType}:${r.symbol}`;
+    if (watchPendingKey) return;
+    setWatchPendingKey(key);
+    try {
+      if (watchedKeys.has(key)) {
+        await removeWatch.mutateAsync({ symbol: r.symbol, assetType: r.assetType });
+      } else {
+        await addWatch.mutateAsync({ symbol: r.symbol, assetType: r.assetType });
+      }
+    } catch {
+      // Mutation failures surface via watchlist refetch; keep dropdown open.
+    } finally {
+      setWatchPendingKey(null);
+    }
+  }
 
   /** Typing ahead of debounce, or request in flight. */
   const awaitingDebounce = trimmed.length > 0 && trimmed !== debounced;
@@ -312,28 +361,64 @@ export function SymbolQuoteBarSearch({
                 <ul
                   className={`py-1 ${refreshing ? "opacity-70 transition-opacity" : ""}`}
                 >
-                  {results.map((r, i) => (
-                    <li key={`${r.assetType}-${r.symbol}`} role="option">
-                      <button
-                        type="button"
+                  {results.map((r, i) => {
+                    const watchKey = `${r.assetType}:${r.symbol}`;
+                    const inWatchlist = watchedKeys.has(watchKey);
+                    const watchPending = watchPendingKey === watchKey;
+                    return (
+                      <li
+                        key={watchKey}
+                        role="option"
                         aria-selected={i === active}
-                        data-active={i === active}
-                        className="flex w-full items-baseline gap-2 px-3 py-1.5 text-left text-[12px] hover:bg-[var(--surface-2)] data-[active=true]:bg-[var(--brand-soft)]"
-                        onMouseEnter={() => setActive(i)}
-                        onMouseDown={(e) => e.preventDefault()}
-                        onClick={() => go(r.symbol, r.assetType)}
+                        className="group relative"
                       >
-                        <span className="shrink-0 font-semibold tabular-nums">
-                          {r.symbol}
-                        </span>
-                        {r.description ? (
-                          <span className="min-w-0 truncate text-[var(--muted)]">
-                            {r.description}
+                        <button
+                          type="button"
+                          data-active={i === active}
+                          className="flex w-full items-baseline gap-2 py-1.5 pl-3 pr-9 text-left text-[12px] hover:bg-[var(--surface-2)] data-[active=true]:bg-[var(--brand-soft)]"
+                          onMouseEnter={() => setActive(i)}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={() => go(r.symbol, r.assetType)}
+                        >
+                          <span className="shrink-0 font-semibold tabular-nums">
+                            {r.symbol}
                           </span>
-                        ) : null}
-                      </button>
-                    </li>
-                  ))}
+                          {r.description ? (
+                            <span className="min-w-0 truncate text-[var(--muted)]">
+                              {r.description}
+                            </span>
+                          ) : null}
+                        </button>
+                        <button
+                          type="button"
+                          aria-label={
+                            inWatchlist ? t("inWatchlist") : t("addWatchlist")
+                          }
+                          title={inWatchlist ? t("inWatchlist") : t("addWatchlist")}
+                          aria-pressed={inWatchlist || undefined}
+                          className={`absolute right-1 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-md transition hover:bg-[var(--surface-2)] ${
+                            inWatchlist
+                              ? "text-[#e11d48]"
+                              : "text-[var(--muted)] opacity-60 group-hover:opacity-100 hover:!text-[#e11d48]"
+                          }`}
+                          onMouseDown={(e) => e.preventDefault()}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void toggleWatch(r);
+                          }}
+                        >
+                          {watchPending ? (
+                            <SearchSpinner className="h-3 w-3" />
+                          ) : (
+                            <IconHeart
+                              filled={inWatchlist}
+                              className="h-4 w-4"
+                            />
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
               </>
             )}

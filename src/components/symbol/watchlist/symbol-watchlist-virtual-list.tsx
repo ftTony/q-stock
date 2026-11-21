@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  memo,
   useCallback,
   useEffect,
   useMemo,
@@ -42,7 +43,12 @@ type RowProps = {
   onNavigate: (symbol: string, assetType: AssetType) => void;
 };
 
-function WatchlistRow({ row, active, style, onNavigate }: RowProps) {
+const WatchlistRow = memo(function WatchlistRow({
+  row,
+  active,
+  style,
+  onNavigate,
+}: RowProps) {
   const t = useTranslations("symbol");
   const quote = row.quote;
   const isUs = row.assetType === "stock";
@@ -138,7 +144,7 @@ function WatchlistRow({ row, active, style, onNavigate }: RowProps) {
       </div>
     </Link>
   );
-}
+});
 
 /** Virtualized (or plain) watchlist body for large lists. */
 export function SymbolWatchlistVirtualList({

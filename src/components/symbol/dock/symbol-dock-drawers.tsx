@@ -1,7 +1,10 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { Suspense, type FormEvent } from "react";
+import {
+  TradePanel,
+  SymbolPaperRiskBar,
+} from "@/components/symbol/page/symbol-page-dynamics";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
@@ -23,29 +26,6 @@ import {
 } from "@/components/symbol/dock/symbol-dock-news-panel";
 import type { SideIconId } from "@/components/symbol/rail/symbol-side-icon-rail";
 import "../styles/apple-workbench.css";
-
-const TradePanel = dynamic(
-  () =>
-    import("@/components/trading/trade-panel").then((m) => ({
-      default: m.TradePanel,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="p-4">
-        <PanelSkeleton rows={5} />
-      </div>
-    ),
-  },
-);
-
-const SymbolPaperRiskBar = dynamic(
-  () =>
-    import("@/components/symbol/plan/symbol-paper-risk-bar").then((m) => ({
-      default: m.SymbolPaperRiskBar,
-    })),
-  { ssr: false },
-);
 
 type Props = {
   dock: Exclude<SideIconId, "ai"> | null;

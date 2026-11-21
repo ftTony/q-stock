@@ -4,14 +4,12 @@ import type { CSSProperties, FormEvent, ReactNode } from "react";
 import {
   SymbolDesktopRail,
   SymbolSideIconRail,
+  SymbolWatchlistPanel,
+  SymbolStackBottomPanel,
 } from "@/components/symbol/page/symbol-page-dynamics";
-import { SymbolWatchlistPanel } from "@/components/symbol/watchlist/symbol-watchlist-panel";
 import { SymbolH5BelowSlot } from "@/components/symbol/page/symbol-h5-below-slot";
 import { SymbolWorkbenchTopbar } from "@/components/symbol/page/symbol-workbench-topbar";
-import {
-  SymbolStackBottomPanel,
-  type StackBottomTab,
-} from "@/components/symbol/page/symbol-stack-bottom-panel";
+import type { StackBottomTab } from "@/components/symbol/page/symbol-stack-bottom-panel";
 import { SymbolPageTabs } from "@/components/symbol/page/symbol-page-tabs";
 import { SymbolNavPendingOverlay } from "@/components/symbol/page/symbol-nav-pending";
 import { SymbolQuoteBar } from "@/components/symbol/quote/symbol-quote-bar";

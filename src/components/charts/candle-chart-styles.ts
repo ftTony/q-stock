@@ -130,6 +130,8 @@ export function buildChartStyles(
         noChangeWickColor: c.muted,
       },
       area: {
+        // Default lineSize is 2 — thin it so intraday/area traces read clean.
+        lineSize: 1,
         point: {
           show: live,
           animation: live,

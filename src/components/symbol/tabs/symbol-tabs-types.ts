@@ -11,6 +11,7 @@ import type { AssetType } from "@/lib/types";
 
 export type SymbolTab =
   | "chart"
+  | "constituents"
   | "overview"
   | "derivatives"
   | "funds"
