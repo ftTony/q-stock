@@ -6,6 +6,7 @@ import {
   PanelSkeleton,
 } from "@/components/ui/panel-skeleton";
 import { SymbolDesktopRailSkeleton } from "@/components/symbol/rail/symbol-desktop-rail-skeleton";
+import { SymbolWatchlistPaneSkeleton } from "@/components/symbol/watchlist/symbol-watchlist-pane-skeleton";
 
 /**
  * Single source of truth for every lazily-loaded symbol page component.
@@ -97,7 +98,12 @@ export const SymbolWatchlistPanel = dynamic(
     import("@/components/symbol/watchlist/symbol-watchlist-panel").then((m) => ({
       default: m.SymbolWatchlistPanel,
     })),
-  { ssr: false, loading: () => <PanelLoading rows={8} /> },
+  // Watchlist-shaped skeleton (name/price/chg cols) — same as the route
+  // fallback and the panel's own loading state, so no style flash.
+  {
+    ssr: false,
+    loading: () => <SymbolWatchlistPaneSkeleton chrome rows={8} />,
+  },
 );
 
 export const SymbolStackBottomPanel = dynamic(
