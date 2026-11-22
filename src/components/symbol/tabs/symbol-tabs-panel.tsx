@@ -1,7 +1,10 @@
 "use client";
 
-import dynamic from "next/dynamic";
 import { FormEvent, type ReactNode } from "react";
+import {
+  SymbolDerivativesPanel,
+  SymbolIndexConstituentsPanel,
+} from "@/components/symbol/page/symbol-page-dynamics";
 import type { AiTrendAnalysis } from "@/components/market/ai-analysis-panel";
 import type {
   EarningsCalendarRow,
@@ -26,21 +29,6 @@ export type {
   PressRow,
   SymbolTab,
 } from "@/components/symbol/tabs/symbol-tabs-types";
-
-const SymbolDerivativesPanel = dynamic(
-  () =>
-    import("@/components/symbol/panels/symbol-derivatives-panel").then((m) => ({
-      default: m.SymbolDerivativesPanel,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="p-4 sm:p-5">
-        <PanelSkeleton rows={6} />
-      </div>
-    ),
-  },
-);
 
 type Props = {
   tab: SymbolTab;
@@ -175,7 +163,11 @@ export function SymbolTabsPanel({
       }`;
 
   const secondaryBody =
-    tab === "derivatives" ? (
+    tab === "constituents" ? (
+      <div className="flex min-h-0 flex-1 flex-col">
+        <SymbolIndexConstituentsPanel symbol={symbol} assetType={assetType} />
+      </div>
+    ) : tab === "derivatives" ? (
       <div className="flex min-h-0 flex-1 flex-col">
         {tabLoading ? (
           <div className="overflow-y-auto p-4 sm:p-5">

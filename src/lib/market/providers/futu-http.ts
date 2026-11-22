@@ -292,7 +292,7 @@ type FutuEnvelope<T> = {
   message?: string;
   data?: T;
   extra?: { next_time?: number };
-  pagination?: { has_more?: boolean; next_key?: string };
+  pagination?: { has_more?: boolean; next_key?: string; total?: number };
 };
 
 export type FutuRequestResult<T> = {
@@ -300,6 +300,7 @@ export type FutuRequestResult<T> = {
   nextTime?: number;
   hasMore?: boolean;
   nextKey?: string;
+  total?: number;
 };
 
 export async function futuRequest<T>(
@@ -372,5 +373,6 @@ export async function futuRequest<T>(
     nextTime,
     hasMore: json.pagination?.has_more,
     nextKey: json.pagination?.next_key,
+    total: json.pagination?.total,
   };
 }

@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { mergeWatchlistQuote } from "@/components/symbol/watchlist/merge-watchlist-quote";
+import { mergeWatchlistQuotes } from "@/components/symbol/watchlist/merge-watchlist-quote";
 import {
   useWatchlist,
   type WatchlistItem,
@@ -39,26 +39,67 @@ export function useWatchlistWithLiveQuotes(live: boolean) {
     }));
   }, [items, live]);
 
+  // Batch WS ticks into a single cache write per frame (throttled to ~100ms).
+  // Without this, a snapshot of N symbols triggers N setQueryData calls and N
+  // full watchlist renders; the buffer collapses them into one.
+  const pendingRef = useRef<Map<string, Parameters<typeof mergeWatchlistQuotes>[1][number]>>(
+    new Map(),
+  );
+  const flushTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const rafRef = useRef<number | null>(null);
+  const lastFlushRef = useRef(0);
+
+  const flushPending = useCallback(() => {
+    rafRef.current = null;
+    flushTimerRef.current = null;
+    const batch = pendingRef.current;
+    if (batch.size === 0) return;
+    pendingRef.current = new Map();
+    lastFlushRef.current = performance.now();
+    const quotes = Array.from(batch.values());
+    qc.setQueryData(
+      queryKeys.watchlist.list(true),
+      (prev: { items: WatchlistItem[] } | undefined) =>
+        mergeWatchlistQuotes(prev, quotes),
+    );
+  }, [qc]);
+
+  const scheduleFlush = useCallback(() => {
+    if (flushTimerRef.current != null || rafRef.current != null) return;
+    const wait = Math.max(0, 100 - (performance.now() - lastFlushRef.current));
+    flushTimerRef.current = setTimeout(() => {
+      flushTimerRef.current = null;
+      rafRef.current = requestAnimationFrame(flushPending);
+    }, wait);
+  }, [flushPending]);
+
+  // Cancel pending work if the hook unmounts (e.g. watchlist panel closed).
+  useEffect(
+    () => () => {
+      if (flushTimerRef.current != null) clearTimeout(flushTimerRef.current);
+      if (rafRef.current != null) cancelAnimationFrame(rafRef.current);
+      pendingRef.current.clear();
+    },
+    [],
+  );
+
   const onMessage = useCallback(
     (msg: ServerMessage) => {
-      const apply = (quote: Parameters<typeof mergeWatchlistQuote>[1]) => {
-        qc.setQueryData(
-          queryKeys.watchlist.list(true),
-          (prev: { items: WatchlistItem[] } | undefined) =>
-            mergeWatchlistQuote(prev, quote),
-        );
+      const queue = (quote: Parameters<typeof mergeWatchlistQuotes>[1][number]) => {
+        if (!(quote.price > 0)) return;
+        // Last tick per symbol wins within the batch.
+        pendingRef.current.set(`${quote.assetType}:${quote.symbol}`, quote);
+        scheduleFlush();
       };
-      if (msg.op === "quote" && msg.quote.price > 0) {
-        apply(msg.quote);
+      if (msg.op === "quote") {
+        queue(msg.quote);
         return;
       }
       if (msg.op === "snapshot" && msg.quotes?.length) {
-        for (const q of msg.quotes) {
-          if (q.price > 0) apply(q);
-        }
+        for (const q of msg.quotes) queue(q);
       }
     },
-    [qc],
+    [scheduleFlush],
   );
 
   const { enabled, connected, degraded, push } = useQuoteChannels(

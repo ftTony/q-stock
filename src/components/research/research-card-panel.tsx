@@ -156,7 +156,7 @@ export function ResearchCardPanel({
         ) : null}
         <SubmitButton
           type="submit"
-          className="qt-btn-primary mt-0.5 h-8 w-full text-[12px]"
+          className="qt-btn-primary mt-1 h-9 w-full text-[13px] font-medium"
           disabled={busy}
           loading={busy}
         >

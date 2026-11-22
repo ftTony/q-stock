@@ -26,44 +26,13 @@ import type {
 } from "@/components/market/earnings-panel";
 import type { AssetType, Quote } from "@/lib/types";
 import type { StackBottomTab } from "@/components/symbol/page/symbol-stack-bottom-panel";
-
-const TradePanel = dynamic(
-  () =>
-    import("@/components/trading/trade-panel").then((m) => ({
-      default: m.TradePanel,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="p-4">
-        <PanelSkeleton rows={5} />
-      </div>
-    ),
-  },
-);
-
-const SymbolPaperRiskBar = dynamic(
-  () =>
-    import("@/components/symbol/plan/symbol-paper-risk-bar").then((m) => ({
-      default: m.SymbolPaperRiskBar,
-    })),
-  { ssr: false },
-);
-
-const SymbolDerivativesPanel = dynamic(
-  () =>
-    import("@/components/symbol/panels/symbol-derivatives-panel").then((m) => ({
-      default: m.SymbolDerivativesPanel,
-    })),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="p-4">
-        <PanelSkeleton rows={6} />
-      </div>
-    ),
-  },
-);
+import {
+  TradePanel,
+  SymbolPaperRiskBar,
+  SymbolDerivativesPanel,
+  SymbolIndexConstituentsPanel,
+  SymbolFundamentalsPanel,
+} from "@/components/symbol/page/symbol-page-dynamics";
 
 const SymbolStackAiPane = dynamic(
   () =>
@@ -75,21 +44,6 @@ const SymbolStackAiPane = dynamic(
     loading: () => (
       <div className="p-4">
         <PanelSkeleton rows={5} />
-      </div>
-    ),
-  },
-);
-
-const SymbolFundamentalsPanel = dynamic(
-  () =>
-    import("@/components/symbol/panels/symbol-fundamentals-panel").then(
-      (m) => ({ default: m.SymbolFundamentalsPanel }),
-    ),
-  {
-    ssr: false,
-    loading: () => (
-      <div className="p-3">
-        <PanelSkeleton rows={6} />
       </div>
     ),
   },
@@ -326,6 +280,12 @@ export function SymbolStackBottomPanes({
       {mountAi ? (
         <PaneShell active={active === "ai"}>
           <SymbolStackAiPane symbol={symbol} assetType={assetType} />
+        </PaneShell>
+      ) : null}
+
+      {active === "constituents" && isIndex ? (
+        <PaneShell active>
+          <SymbolIndexConstituentsPanel symbol={symbol} assetType={assetType} />
         </PaneShell>
       ) : null}
 

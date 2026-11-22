@@ -475,6 +475,65 @@ a.qt-btn-ghost:hover,
   background: transparent;
 }
 
+/* Horizontal scrollbar is drawn by the component over scrollable columns only. */
+.qt-scroll-hide-x {
+  scrollbar-width: none;
+}
+
+.qt-scroll-hide-x::-webkit-scrollbar:horizontal {
+  display: none;
+}
+
+/* Constituents H thumb: visually identical to the option-chain native bar.
+   10px hit area, 4px painted via transparent vertical borders + padding-box. */
+.qt-h-thumb {
+  box-sizing: border-box;
+  height: 10px;
+  border-top: 3px solid transparent;
+  border-bottom: 3px solid transparent;
+  background-clip: padding-box;
+  background-color: color-mix(in srgb, var(--muted) 32%, transparent);
+  border-radius: 999px;
+  cursor: grab;
+  touch-action: none;
+}
+
+.qt-h-thumb:hover,
+.qt-h-thumb[data-dragging="true"] {
+  background-color: color-mix(in srgb, var(--muted) 48%, transparent);
+}
+
+.qt-h-thumb[data-dragging="true"] {
+  cursor: grabbing;
+}
+
+/* Instant column guide line while hovering a resize handle. Driven by direct
+   DOM class toggling so it appears in the same frame as the header CSS line. */
+.qt-resize-hover-line {
+  box-shadow: inset -1px 0 0 var(--aw-primary, var(--brand-text));
+}
+
+/* Column reorder (Pointer Events, no DnD library). Feedback is applied via
+   direct DOM class toggling so dragging never re-renders the table. */
+body.qstock-col-grabbing,
+body.qstock-col-grabbing * {
+  cursor: grabbing !important;
+  user-select: none !important;
+}
+
+th.qt-col-drag-source {
+  opacity: 0.45;
+}
+
+th.qt-col-drop-target {
+  box-shadow: inset 2px 0 0 var(--aw-primary, var(--brand-text));
+  background: color-mix(in srgb, var(--aw-primary, var(--brand-text)) 8%, var(--panel));
+}
+
+.qt-col-drag-ghost {
+  will-change: left, top;
+}
+
 @keyframes qtFade {
   from {
     opacity: 0;

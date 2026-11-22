@@ -52,18 +52,31 @@ export function sortWatchlistRows(
   if (!sort || rows.length < 2) return rows;
   const { key, dir } = sort;
   const sign = dir === "asc" ? 1 : -1;
-  const copy = rows.slice();
-  copy.sort((a, b) => {
+
+  // Decorate once: displayName()/regularQuoteDisplay() and Intl localeCompare
+  // are relatively expensive; computing them per comparison is O(n log n).
+  // Precomputing keeps the comparator cheap, which matters on every WS tick.
+  const decorated = rows.map((row) => ({
+    row,
+    name: key === "name" ? rowName(row) : "",
+    value:
+      key === "name"
+        ? 0
+        : (key === "price" ? rowPrice(row) : rowChg(row)) ?? Number.NaN,
+  }));
+
+  decorated.sort((a, b) => {
     if (key === "name") {
-      return sign * rowName(a).localeCompare(rowName(b), "zh");
+      return sign * a.name.localeCompare(b.name, "zh");
     }
-    const av = key === "price" ? rowPrice(a) : rowChg(a);
-    const bv = key === "price" ? rowPrice(b) : rowChg(b);
-    if (av == null && bv == null) return 0;
-    if (av == null) return 1;
-    if (bv == null) return -1;
-    if (av === bv) return 0;
-    return sign * (av < bv ? -1 : 1);
+    // NaN sorts last regardless of direction.
+    const aNaN = Number.isNaN(a.value);
+    const bNaN = Number.isNaN(b.value);
+    if (aNaN && bNaN) return 0;
+    if (aNaN) return 1;
+    if (bNaN) return -1;
+    if (a.value === b.value) return 0;
+    return sign * (a.value < b.value ? -1 : 1);
   });
-  return copy;
+  return decorated.map((d) => d.row);
 }

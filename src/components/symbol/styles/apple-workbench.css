@@ -321,8 +321,9 @@ html.aw-rail-resizing {
   }
 
   /* Beat globals `button:not(:disabled) { cursor: pointer }` (0,2,1).
-   * z-index above .aw-chart-toolbar (z-20): negative margins overlap the main
-   * column, and an opaque toolbar bg would otherwise punch a gap in the hairline. */
+   * z-index above .aw-chart-toolbar (z-20) AND sticky table headers (z-30 in
+   * the index-constituents panel): negative margins overlap the main column,
+   * and an opaque header bg would otherwise punch a gap in the hairline. */
   button.aw-watchlist-resizer:not(:disabled) {
     display: block;
     flex: 0 0 8px;
@@ -330,7 +331,7 @@ html.aw-rail-resizing {
     margin-left: -4px;
     margin-right: -4px;
     position: relative;
-    z-index: 25;
+    z-index: 40;
     cursor: ew-resize;
     touch-action: none;
     background: transparent;

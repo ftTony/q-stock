@@ -41,8 +41,8 @@ export function Sparkline({
         </linearGradient>
       </defs>
       <path d={area} fill={`url(#${gradId})`} />
-      <path d={line} fill="none" stroke={color} strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx={pts[4].x} cy={pts[4].y} r="2.1" fill={color} />
+      <path d={line} fill="none" stroke={color} strokeWidth="1.1" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx={pts[4].x} cy={pts[4].y} r="1.5" fill={color} />
     </svg>
   );
 }

@@ -3,7 +3,13 @@
 import { useCallback, useMemo } from "react";
 import { SymbolChartSection } from "@/components/symbol/page/symbol-page-dynamics";
 import type { IndicatorFlags } from "@/components/charts/candle-chart-overlays";
-import type { AssetType, CandleResolution, OhlcvBar } from "@/lib/types";
+import type {
+  AssetType,
+  CandleResolution,
+  OhlcvBar,
+  Quote,
+} from "@/lib/types";
+import type { QuoteHeaderLabels } from "@/components/charts/candle-chart";
 
 type Props = {
   resolution: CandleResolution;
@@ -18,6 +24,9 @@ type Props = {
   bars: OhlcvBar[];
   assetType: AssetType;
   symbol: string;
+  /** Stable ref to the latest quote (screenshot only); ticks must not re-render the chart. */
+  quoteRef?: { current: Quote | null | undefined };
+  quoteHeaderLabels?: QuoteHeaderLabels;
   onLoadMore: (earliestTime: number) => Promise<OhlcvBar[]>;
   loadingMore: boolean;
   hasMore: boolean;
@@ -40,6 +49,8 @@ export function SymbolPageChartSlot({
   bars,
   assetType,
   symbol,
+  quoteRef,
+  quoteHeaderLabels,
   onLoadMore,
   loadingMore,
   hasMore,
@@ -69,6 +80,8 @@ export function SymbolPageChartSlot({
         bars={bars}
         assetType={assetType}
         symbol={symbol}
+        quoteRef={quoteRef}
+        quoteHeaderLabels={quoteHeaderLabels}
         onLoadMore={onLoadMore}
         loadingMore={loadingMore}
         hasMore={hasMore}
@@ -90,6 +103,8 @@ export function SymbolPageChartSlot({
       bars,
       assetType,
       symbol,
+      quoteRef,
+      quoteHeaderLabels,
       onLoadMore,
       loadingMore,
       hasMore,

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import { SymbolPageChartSlot } from "@/components/symbol/chart/symbol-page-chart-slot";
 import { SymbolPageOverlays } from "@/components/symbol/page/symbol-page-overlays";
@@ -30,6 +30,7 @@ import { markPrice } from "@/lib/market/extended-hours";
 import { isMarketIndexSymbol } from "@/lib/market/indices";
 import type { SymbolSeoCopy } from "@/lib/seo/symbol-metadata";
 import type { AssetType, OhlcvBar, Quote } from "@/lib/types";
+import type { QuoteHeaderLabels } from "@/components/charts/candle-chart";
 import "./styles/apple-workbench.css";
 import "./styles/apple-quote-chrome.css";
 
@@ -53,16 +54,14 @@ export function SymbolPageClient({
   const isIndex = isMarketIndexSymbol(symbol);
   const isDesktop = useMinWidth(LG_MIN);
   const tLayout = useTranslations("symbolLayout");
+  const tNav = useTranslations("nav");
+  const tSymbol = useTranslations("symbol");
   const layout = useSymbolLayoutPrefs();
   const isStack = isDesktop && layout.prefs.layoutMode === "stack";
   const rail = useRailResize();
   const watch = useWatchlistResize();
   const [stackTab, setStackTab] = useState<StackBottomTab>("news");
   const [stackKey, setStackKey] = useState(0);
-
-  useEffect(() => {
-    document.getElementById("symbol-lcp-quote-seed")?.setAttribute("hidden", "");
-  }, []);
 
   useLayoutEffect(() => {
     if (!layout.ready || !isDesktop) return;
@@ -228,6 +227,25 @@ export function SymbolPageClient({
     void s.toggleWatchlist();
   }, [s.toggleWatchlist]);
 
+  // Live quote ticks must not re-render the memoized chart tree. Keep the
+  // latest quote in a stable ref (only the screenshot reads it on demand).
+  const quoteRef = useRef<Quote | null | undefined>(s.quote);
+  quoteRef.current = s.quote;
+
+  const quoteHeaderLabels = useMemo<QuoteHeaderLabels>(
+    () => ({
+      sessionOpen: tNav("marketOpen"),
+      sessionClosed: tNav("marketClosed"),
+      open: tSymbol("open"),
+      high: tSymbol("high"),
+      low: tSymbol("low"),
+      prevClose: tSymbol("prevClose"),
+      volume: tSymbol("volume"),
+      turnover: tSymbol("turnover"),
+    }),
+    [tNav, tSymbol],
+  );
+
   const chartSlot = chartEnabled ? (
     <SymbolPageChartSlot
       resolution={s.resolution}
@@ -242,6 +260,8 @@ export function SymbolPageClient({
       bars={s.bars}
       assetType={assetType}
       symbol={symbol}
+      quoteRef={quoteRef}
+      quoteHeaderLabels={quoteHeaderLabels}
       onLoadMore={s.loadMoreCandles}
       loadingMore={s.loadingMoreCandles}
       hasMore={s.hasMoreCandles}

@@ -23,7 +23,14 @@ export function buildSymbolTabs(
     { id: "press", label: t("press") },
   ];
 
-  if (assetType === "crypto" || isIndex) {
+  if (isIndex) {
+    return [
+      chart,
+      { id: "constituents", label: t("constituentsTab") },
+      ...rest.filter((x) => x.id === "news" || x.id === "comments"),
+    ];
+  }
+  if (assetType === "crypto") {
     return [
       chart,
       ...rest.filter((x) => x.id === "news" || x.id === "comments"),

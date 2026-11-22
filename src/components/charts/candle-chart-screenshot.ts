@@ -12,13 +12,39 @@ const DEFAULT_LOGO_SRC = "/logo-light.png?v=2";
 const FONT =
   'system-ui, -apple-system, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif';
 
+/** Header strip height at scale=1; must cover identity + price + 2 stat rows. */
+const QUOTE_HEADER_BASE = 168;
+
 export type ChartScreenshotOpts = {
   domain?: string;
   /** Localized product name from `app.name` (required for corner mark). */
   brand?: string;
+  /** Localized tagline from `app.tagline`, drawn next to the brand in footer. */
+  tagline?: string;
   /** Locale-aware mark; defaults to light logo. */
   logoSrc?: string;
   filename?: string;
+  /** Pre-formatted quote block drawn above the chart (no i18n in this module). */
+  quote?: ScreenshotQuoteInfo;
+};
+
+/** One label/value cell in the quote header (3 columns × 2 rows). */
+export type ScreenshotQuoteStat = { label: string; value: string };
+
+/**
+ * Symbol identity + quote snapshot rendered into the exported PNG header.
+ * All strings are formatted by the caller (which owns locale/i18n).
+ */
+export type ScreenshotQuoteInfo = {
+  symbol: string;
+  name: string;
+  /** e.g. "休市中 11/20 16:00:00" */
+  statusTime: string;
+  price: string;
+  change: string;
+  percentChange: string;
+  trend: "up" | "down" | "flat";
+  stats: ScreenshotQuoteStat[];
 };
 
 /**
@@ -48,9 +74,11 @@ export async function captureAndDownloadChart(opts: {
   flushEdge: boolean;
   domain: string;
   brand: string;
+  tagline: string;
   logoSrc: string;
   filename: string;
   chartType?: ChartCandleType;
+  quote?: ScreenshotQuoteInfo;
 }) {
   const { chart, labels, resolution } = opts;
   const styleOpts = {
@@ -82,8 +110,10 @@ export async function captureAndDownloadChart(opts: {
     await downloadChartScreenshot(url, {
       domain: opts.domain,
       brand: opts.brand,
+      tagline: opts.tagline,
       logoSrc: opts.logoSrc,
       filename: opts.filename,
+      quote: opts.quote,
     });
   } catch {
     try {
@@ -106,8 +136,129 @@ function loadImage(src: string): Promise<HTMLImageElement> {
   });
 }
 
+function readQuoteColors() {
+  const fallback = {
+    fg: "#edf2ff",
+    muted: "#8b97ad",
+    border: "#1c2433",
+    up: "#22c55e",
+    down: "#f87171",
+  };
+  if (typeof document === "undefined") return fallback;
+  const styles = getComputedStyle(document.documentElement);
+  // Custom props may be declared as `var(--wb-ink)`; some engines return that
+  // raw expression. Resolve through a probe element so canvas gets a real color.
+  const pick = (name: string, def: string) => {
+    const raw = styles.getPropertyValue(name).trim();
+    if (!raw) return def;
+    if (!raw.includes("var(")) return raw;
+    const probe = document.createElement("span");
+    probe.style.color = raw;
+    document.body.appendChild(probe);
+    const resolved = getComputedStyle(probe).color.trim() || def;
+    probe.remove();
+    return resolved;
+  };
+  return {
+    fg: pick("--foreground", fallback.fg),
+    muted: pick("--muted", fallback.muted),
+    border: pick("--border", fallback.border),
+    up: pick("--up", fallback.up),
+    down: pick("--down", fallback.down),
+  };
+}
+
+/**
+ * Draw the symbol identity + quote snapshot above the chart. Layout mirrors
+ * the page quote header: code + name / status + time, big price with change,
+ * then a 3-column × 2-row stat grid.
+ */
+function drawQuoteHeader(
+  ctx: CanvasRenderingContext2D,
+  width: number,
+  height: number,
+  bg: string,
+  info: ScreenshotQuoteInfo,
+  scale: number,
+) {
+  const colors = readQuoteColors();
+  const pad = Math.round(16 * scale);
+
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, width, height);
+
+  const trendColor =
+    info.trend === "up"
+      ? colors.up
+      : info.trend === "down"
+        ? colors.down
+        : colors.fg;
+
+  // Row 1: code + name (left), status + time (right).
+  const identitySize = Math.round(17 * scale);
+  const metaSize = Math.round(11 * scale);
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "left";
+  ctx.font = `600 ${identitySize}px ${FONT}`;
+  ctx.fillStyle = colors.fg;
+  let x = pad;
+  ctx.fillText(info.symbol, x, pad + identitySize / 2);
+  x += ctx.measureText(info.symbol).width + Math.round(8 * scale);
+  ctx.font = `400 ${Math.round(13 * scale)}px ${FONT}`;
+  ctx.fillStyle = colors.muted;
+  ctx.fillText(info.name, x, pad + identitySize / 2);
+  if (info.statusTime) {
+    ctx.textAlign = "right";
+    ctx.font = `400 ${metaSize}px ${FONT}`;
+    ctx.fillStyle = colors.muted;
+    ctx.fillText(info.statusTime, width - pad, pad + identitySize / 2);
+  }
+
+  // Row 2: price (colored) + change + percent.
+  const priceSize = Math.round(30 * scale);
+  const changeSize = Math.round(14 * scale);
+  const priceY = pad + identitySize + Math.round(6 * scale) + priceSize / 2;
+  ctx.textAlign = "left";
+  ctx.font = `700 ${priceSize}px ${FONT}`;
+  ctx.fillStyle = trendColor;
+  ctx.fillText(info.price, pad, priceY);
+  x = pad + ctx.measureText(info.price).width + Math.round(10 * scale);
+  ctx.font = `600 ${changeSize}px ${FONT}`;
+  ctx.fillStyle = trendColor;
+  ctx.fillText(info.change, x, priceY);
+  x += ctx.measureText(info.change).width + Math.round(8 * scale);
+  ctx.fillText(info.percentChange, x, priceY);
+
+  // Rows 3-4: stat grid, 3 columns × 2 rows (row-major).
+  // Each cell stacks label above value; leave enough vertical room so the
+  // first row's value never collides with the second row's label.
+  const stats = info.stats.slice(0, 6);
+  if (stats.length) {
+    const labelSize = Math.round(11 * scale);
+    const valueSize = Math.round(14 * scale);
+    const labelToValue = Math.round(18 * scale);
+    const rowStride = Math.round(40 * scale);
+    const colW = (width - pad * 2) / 3;
+    const gridTop = priceY + priceSize / 2 + Math.round(14 * scale);
+    stats.forEach((stat, i) => {
+      const col = i % 3;
+      const row = Math.floor(i / 3);
+      const cx = pad + col * colW;
+      const cellTop = gridTop + row * rowStride;
+      ctx.textAlign = "left";
+      ctx.font = `400 ${labelSize}px ${FONT}`;
+      ctx.fillStyle = colors.muted;
+      ctx.fillText(stat.label, cx, cellTop);
+      ctx.font = `600 ${valueSize}px ${FONT}`;
+      ctx.fillStyle = colors.fg;
+      ctx.fillText(stat.value, cx, cellTop + labelToValue);
+    });
+  }
+}
+
 /**
  * Composite chart PNG:
+ * - optional top strip: symbol identity + quote snapshot
  * - center: large semi-transparent domain
  * - bottom strip: logo + localized brand name
  */
@@ -117,7 +268,9 @@ export async function watermarkChartPng(
 ): Promise<string> {
   const domain = (opts?.domain || DEFAULT_DOMAIN).trim() || DEFAULT_DOMAIN;
   const brand = (opts?.brand || "").trim();
+  const tagline = (opts?.tagline || "").trim();
   const logoSrc = (opts?.logoSrc || DEFAULT_LOGO_SRC).trim() || DEFAULT_LOGO_SRC;
+  const quote = opts?.quote;
 
   const [chart, logo] = await Promise.all([
     loadImage(chartDataUrl),
@@ -131,15 +284,23 @@ export async function watermarkChartPng(
   const chartW = chart.naturalWidth || chart.width;
   const chartH = chart.naturalHeight || chart.height;
   const scale = Math.max(1, Math.min(chartW, chartH) / 720);
+  const exportBg =
+    typeof document === "undefined"
+      ? "#ffffff"
+      : getComputedStyle(document.documentElement)
+          .getPropertyValue("--panel")
+          .trim() || "#ffffff";
 
+  const headerH = quote ? Math.round(QUOTE_HEADER_BASE * scale) : 0;
   const footerH = Math.round(64 * scale);
   const canvas = document.createElement("canvas");
   canvas.width = chartW;
-  canvas.height = chartH + footerH;
+  canvas.height = headerH + chartH + footerH;
   const ctx = canvas.getContext("2d");
   if (!ctx) return chartDataUrl;
 
-  ctx.drawImage(chart, 0, 0);
+  if (quote) drawQuoteHeader(ctx, chartW, headerH, exportBg, quote, scale);
+  ctx.drawImage(chart, 0, headerH);
 
   const targetW = chartW * 0.36;
   let centerSize = Math.round(Math.min(chartW, chartH) * 0.09);
@@ -150,27 +311,30 @@ export async function watermarkChartPng(
     centerSize = Math.max(24, Math.round(centerSize * (targetW / textW)));
     ctx.font = `600 ${centerSize}px ${FONT}`;
   }
+  const themeColors = readQuoteColors();
   ctx.save();
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillStyle = "rgba(120, 130, 145, 0.22)";
-  ctx.fillText(domain, chartW / 2, chartH * 0.42);
+  ctx.fillStyle = themeColors.muted;
+  ctx.globalAlpha = 0.22;
+  ctx.fillText(domain, chartW / 2, headerH + chartH * 0.42);
   ctx.restore();
 
-  ctx.fillStyle = "#ffffff";
-  ctx.fillRect(0, chartH, chartW, footerH);
-  ctx.strokeStyle = "rgba(15, 23, 42, 0.08)";
+  const footerY = headerH + chartH;
+  ctx.fillStyle = exportBg;
+  ctx.fillRect(0, footerY, chartW, footerH);
+  ctx.strokeStyle = themeColors.border;
   ctx.lineWidth = Math.max(1, Math.round(scale));
   ctx.beginPath();
-  ctx.moveTo(0, chartH + 0.5);
-  ctx.lineTo(chartW, chartH + 0.5);
+  ctx.moveTo(0, footerY + 0.5);
+  ctx.lineTo(chartW, footerY + 0.5);
   ctx.stroke();
 
   const padX = Math.round(16 * scale);
   const logoH = Math.round(40 * scale);
   const gap = Math.round(10 * scale);
   const brandSize = Math.round(26 * scale);
-  const midY = chartH + footerH / 2;
+  const midY = footerY + footerH / 2;
 
   let cursorX = padX;
   if (logo && logo.naturalHeight > 0) {
@@ -184,8 +348,19 @@ export async function watermarkChartPng(
     ctx.font = `700 ${brandSize}px ${FONT}`;
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    ctx.fillStyle = "rgba(30, 41, 59, 0.88)";
+    ctx.fillStyle = themeColors.fg;
     ctx.fillText(brand, cursorX, midY);
+    cursorX += ctx.measureText(brand).width + Math.round(14 * scale);
+    ctx.restore();
+  }
+
+  if (tagline) {
+    ctx.save();
+    ctx.font = `400 ${Math.round(14 * scale)}px ${FONT}`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = themeColors.muted;
+    ctx.fillText(tagline, cursorX, midY);
     ctx.restore();
   }
 
