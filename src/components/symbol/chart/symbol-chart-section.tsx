@@ -257,7 +257,7 @@ export const SymbolChartSection = memo(function SymbolChartSection({
         onClearDrawings={() => chartRef.current?.clearDrawings()}
         fullscreen={fullscreen}
         onToggleFullscreen={() => chartRef.current?.toggleFullscreen()}
-        onScreenshot={() => chartRef.current?.captureScreenshot()}
+        onScreenshot={(mode) => chartRef.current?.captureScreenshot(mode)}
       />
     </>
   );

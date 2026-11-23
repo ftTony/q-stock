@@ -62,11 +62,9 @@ type ChartExportApi = {
   ) => string;
 };
 
-/**
- * Hide OHLC tip, rasterize main canvas, restore styles, then download
- * with brand watermark. klinecharts needs 2 rAFs after setStyles to paint.
- */
-export async function captureAndDownloadChart(opts: {
+export type ChartCaptureMode = "download" | "copy";
+
+type CaptureChartOpts = {
   chart: ChartExportApi;
   labels: TipLabels;
   resolution: string;
@@ -79,7 +77,26 @@ export async function captureAndDownloadChart(opts: {
   filename: string;
   chartType?: ChartCandleType;
   quote?: ScreenshotQuoteInfo;
-}) {
+};
+
+/** Sanitize ticker for download filenames. */
+export function chartScreenshotFilename(symbol: string, now = new Date()): string {
+  const code = (symbol || "chart")
+    .trim()
+    .replace(/[^\w.\u4e00-\u9fff-]+/g, "_")
+    .replace(/^_+|_+$/g, "") || "chart";
+  const pad = (n: number) => String(n).padStart(2, "0");
+  const stamp = `${now.getFullYear()}${pad(now.getMonth() + 1)}${pad(now.getDate())}-${pad(now.getHours())}${pad(now.getMinutes())}${pad(now.getSeconds())}`;
+  return `${code}_${stamp}.png`;
+}
+
+/**
+ * Hide OHLC tip, rasterize main canvas, restore styles, return watermarked
+ * PNG data URL. klinecharts needs 2 rAFs after setStyles to paint.
+ */
+export async function captureChartPng(
+  opts: Omit<CaptureChartOpts, "filename">,
+): Promise<string | null> {
   const { chart, labels, resolution } = opts;
   const styleOpts = {
     liveSession: opts.liveSession,
@@ -106,13 +123,12 @@ export async function captureAndDownloadChart(opts: {
 
     const url = chart.getConvertPictureUrl(false, "png", readChartExportBg());
     restoreStyles();
-    if (!url) return;
-    await downloadChartScreenshot(url, {
+    if (!url) return null;
+    return watermarkChartPng(url, {
       domain: opts.domain,
       brand: opts.brand,
       tagline: opts.tagline,
       logoSrc: opts.logoSrc,
-      filename: opts.filename,
       quote: opts.quote,
     });
   } catch {
@@ -121,7 +137,37 @@ export async function captureAndDownloadChart(opts: {
     } catch {
       /* ignore restore failure */
     }
+    return null;
   }
+}
+
+function triggerPngDownload(dataUrl: string, filename: string) {
+  const a = document.createElement("a");
+  a.href = dataUrl;
+  a.download = filename || "chart.png";
+  a.click();
+}
+
+/** Capture then download or copy to clipboard. */
+export async function captureChartAction(
+  mode: ChartCaptureMode,
+  opts: CaptureChartOpts,
+): Promise<"ok" | "unsupported" | "failed"> {
+  const stamped = await captureChartPng(opts);
+  if (!stamped) return "failed";
+  if (mode === "copy") {
+    return writePngToClipboard(stamped);
+  }
+  triggerPngDownload(stamped, opts.filename);
+  return "ok";
+}
+
+/**
+ * @deprecated Prefer `captureChartAction("download", …)`.
+ * Hide OHLC tip, rasterize, watermark, then download.
+ */
+export async function captureAndDownloadChart(opts: CaptureChartOpts) {
+  await captureChartAction("download", opts);
 }
 
 function loadImage(src: string): Promise<HTMLImageElement> {
@@ -372,8 +418,38 @@ export async function downloadChartScreenshot(
   opts?: ChartScreenshotOpts,
 ) {
   const stamped = await watermarkChartPng(chartDataUrl, opts);
-  const a = document.createElement("a");
-  a.href = stamped;
-  a.download = opts?.filename || "chart.png";
-  a.click();
+  triggerPngDownload(stamped, opts?.filename || "chart.png");
+}
+
+async function writePngToClipboard(
+  pngDataUrl: string,
+): Promise<"ok" | "unsupported" | "failed"> {
+  try {
+    if (
+      typeof navigator === "undefined" ||
+      !navigator.clipboard ||
+      typeof ClipboardItem === "undefined"
+    ) {
+      return "unsupported";
+    }
+    const res = await fetch(pngDataUrl);
+    const blob = await res.blob();
+    const png =
+      blob.type === "image/png"
+        ? blob
+        : new Blob([await blob.arrayBuffer()], { type: "image/png" });
+    await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
+    return "ok";
+  } catch {
+    return "failed";
+  }
+}
+
+/** Watermark (if needed) then copy PNG to the system clipboard. */
+export async function copyChartScreenshot(
+  chartDataUrl: string,
+  opts?: ChartScreenshotOpts,
+): Promise<"ok" | "unsupported" | "failed"> {
+  const stamped = await watermarkChartPng(chartDataUrl, opts);
+  return writePngToClipboard(stamped);
 }

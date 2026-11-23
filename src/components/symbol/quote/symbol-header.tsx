@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useLocale } from "next-intl";
 import { Link } from "@/i18n/routing";
 import type { EarningsMetric } from "@/components/market/earnings-panel";
 import { QuoteStatsGrid } from "@/components/market/quote-stats";
@@ -8,7 +9,7 @@ import { ChangePct, PriceText } from "@/components/market/price";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { IconHeart } from "@/components/ui/icon-heart";
 import { formatTime } from "@/lib/format-number";
-import { displayName } from "@/lib/market-names";
+import { displayName, localizedNameFromQuote } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
 type Props = {
@@ -111,13 +112,19 @@ function UpdatedAtLabel({
 function SymbolIdentity({
   symbol,
   assetType,
-  liveName,
+  quote,
 }: {
   symbol: string;
   assetType: AssetType;
-  liveName?: string | null;
+  quote?: Quote | null;
 }) {
-  const name = displayName(symbol, assetType, liveName);
+  const locale = useLocale();
+  const name = displayName(
+    symbol,
+    assetType,
+    localizedNameFromQuote(quote, locale),
+    locale,
+  );
   return (
     <div className="min-w-0">
       {/* Visual title; page H1 lives in SymbolSeoCrawl (SSR footer). */}
@@ -230,11 +237,7 @@ export function SymbolHeader({
         className="hidden h-3.5 w-px shrink-0 bg-[var(--border)] sm:block"
         aria-hidden
       />
-      <SymbolIdentity
-        symbol={symbol}
-        assetType={assetType}
-        liveName={quote?.name}
-      />
+      <SymbolIdentity symbol={symbol} assetType={assetType} quote={quote} />
       <div className="ml-auto flex items-center gap-2">
         <SymbolQuoteMeta
           quote={quote}

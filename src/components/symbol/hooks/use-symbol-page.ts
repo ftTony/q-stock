@@ -163,6 +163,12 @@ export function useSymbolPage(
             ...(incoming.name?.trim() || previous?.name
               ? { name: incoming.name?.trim() || previous?.name }
               : {}),
+            ...(incoming.nameZh?.trim() || previous?.nameZh
+              ? { nameZh: incoming.nameZh?.trim() || previous?.nameZh }
+              : {}),
+            ...(incoming.nameEn?.trim() || previous?.nameEn
+              ? { nameEn: incoming.nameEn?.trim() || previous?.nameEn }
+              : {}),
             ...(incoming.preMarket || previous?.preMarket
               ? { preMarket: incoming.preMarket ?? previous?.preMarket }
               : {}),

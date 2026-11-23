@@ -9,7 +9,7 @@ import {
   useState,
   type CSSProperties,
 } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { ChangePct, PriceText } from "@/components/market/price";
 import {
@@ -21,7 +21,7 @@ import {
   regularQuoteDisplay,
   watchlistExtendedQuote,
 } from "@/lib/market/extended-hours";
-import { displayName } from "@/lib/market-names";
+import { displayName, localizedNameFromQuote } from "@/lib/market-names";
 import type { AssetType } from "@/lib/types";
 
 /** Fixed row height — keep in sync with `.aw-watchlist-row` min-height. */
@@ -50,6 +50,7 @@ const WatchlistRow = memo(function WatchlistRow({
   onNavigate,
 }: RowProps) {
   const t = useTranslations("symbol");
+  const locale = useLocale();
   const quote = row.quote;
   const isUs = row.assetType === "stock";
   /** Keep 最新价 as regular/last close; put 盘前/盘后 on the second line. */
@@ -64,7 +65,12 @@ const WatchlistRow = memo(function WatchlistRow({
     : null;
   const extended = isUs && quote ? watchlistExtendedQuote(quote) : null;
   const ch = regular?.percentChange ?? null;
-  const name = displayName(row.symbol, row.assetType, quote?.name);
+  const name = displayName(
+    row.symbol,
+    row.assetType,
+    localizedNameFromQuote(quote, locale),
+    locale,
+  );
   const extLabel =
     extended?.session === "pre"
       ? t("quoteSessionPre")

@@ -1,7 +1,7 @@
 "use client";
 
 import type { KeyboardEvent as ReactKeyboardEvent } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { ChangePct, PriceText } from "@/components/market/price";
 import {
@@ -14,7 +14,7 @@ import { SymbolQuoteBarSearch } from "@/components/symbol/quote/symbol-quote-bar
 import { SymbolChartToolbarHostSlot } from "@/components/symbol/chart/symbol-chart-toolbar-host";
 import { IconWatchlistExpand } from "@/components/symbol/watchlist/watchlist-toggle-icons";
 import { primaryQuoteDisplay } from "@/lib/market/extended-hours";
-import { displayName } from "@/lib/market-names";
+import { displayName, localizedNameFromQuote } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
 type TabItem = { id: SymbolTab; label: string };
@@ -75,6 +75,7 @@ export function SymbolQuoteBar({
 }: Props) {
   const t = useTranslations("symbol");
   const tRail = useTranslations("symbolRail");
+  const locale = useLocale();
   const chipName = boundRuleName ? ruleChipLabel(boundRuleName) : null;
   const showTabs = Boolean(tabs?.length && onTabChange && tab);
 
@@ -103,7 +104,12 @@ export function SymbolQuoteBar({
     )[next];
     btn?.focus();
   }
-  const companyName = displayName(symbol, assetType, quote?.name);
+  const companyName = displayName(
+    symbol,
+    assetType,
+    localizedNameFromQuote(quote, locale),
+    locale,
+  );
   const primaryQuote = quote ? primaryQuoteDisplay(quote) : null;
   const showCompanyName =
     Boolean(companyName) &&

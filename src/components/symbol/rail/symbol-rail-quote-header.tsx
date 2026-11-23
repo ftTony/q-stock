@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { AlertFrequency } from "@/components/alerts/alert-frequency-seg";
 import { SymbolAlertStrip } from "@/components/symbol/quote/symbol-alert-strip";
 import { IconHeart } from "@/components/ui/icon-heart";
@@ -12,7 +12,7 @@ import {
 } from "@/lib/format-number";
 import { regularQuoteDisplay } from "@/lib/market/extended-hours";
 import { getUsMarketPhase } from "@/lib/market/session";
-import { displayName } from "@/lib/market-names";
+import { displayName, localizedNameFromQuote } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
 type AlertProps = {
@@ -59,6 +59,7 @@ export function SymbolRailQuoteHeader({
   alert,
 }: Props) {
   const t = useTranslations("symbol");
+  const locale = useLocale();
   const [timeLabel, setTimeLabel] = useState<string | null>(null);
   const regularQuote = quote ? regularQuoteDisplay(quote) : null;
   const showingPreviousClose =
@@ -91,7 +92,12 @@ export function SymbolRailQuoteHeader({
     showingPreviousClose,
   ]);
 
-  const name = displayName(symbol, assetType, quote?.name);
+  const name = displayName(
+    symbol,
+    assetType,
+    localizedNameFromQuote(quote, locale),
+    locale,
+  );
   const up = regularQuote != null ? regularQuote.change >= 0 : true;
   const tone = up ? "text-[var(--up)]" : "text-[var(--down)]";
   const watchLabel = inWatchlist ? t("inWatchlist") : t("addWatchlist");

@@ -34,7 +34,9 @@ import {
   type ChartUiSettings,
 } from "@/components/charts/candle-chart-settings";
 import {
-  captureAndDownloadChart,
+  captureChartAction,
+  chartScreenshotFilename,
+  type ChartCaptureMode,
   type ScreenshotQuoteInfo,
 } from "@/components/charts/candle-chart-screenshot";
 import {
@@ -45,14 +47,16 @@ import {
 } from "@/components/charts/candle-chart-trade-markers";
 import { isAssetSessionOpen } from "@/lib/market/session";
 import { formatDate, formatNumber, formatTime } from "@/lib/format-number";
-import { displayName } from "@/lib/market-names";
+import { displayName, localizedNameFromQuote } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
 export type { DrawingTool, IndicatorFlags, ChartTradeMarker };
 
 export type CandleChartHandle = {
   toggleFullscreen: () => void;
-  captureScreenshot: () => void;
+  captureScreenshot: (
+    mode?: ChartCaptureMode,
+  ) => void | Promise<"ok" | "unsupported" | "failed">;
   clearDrawings: () => void;
 };
 
@@ -105,7 +109,12 @@ function buildScreenshotQuote(
     : "";
   return {
     symbol,
-    name: displayName(symbol, assetType, quote.name),
+    name: displayName(
+      symbol,
+      assetType,
+      localizedNameFromQuote(quote, locale),
+      locale,
+    ),
     statusTime: [sessionOpen ? labels.sessionOpen : labels.sessionClosed, time]
       .filter(Boolean)
       .join(" "),
@@ -508,9 +517,9 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     );
   };
 
-  const captureScreenshot = () => {
+  const captureScreenshot = (mode: ChartCaptureMode = "download") => {
     const chart = chartRef.current;
-    if (!chart) return;
+    if (!chart) return Promise.resolve("failed" as const);
     const currentQuote = quoteRef?.current;
     const currentLabels = quoteHeaderLabelsRef.current;
     const screenshotQuote =
@@ -524,7 +533,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
             liveSession,
           )
         : undefined;
-    void captureAndDownloadChart({
+    return captureChartAction(mode, {
       chart,
       labels: tipLabelsRef.current,
       resolution,
@@ -535,7 +544,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       brand: brandRef.current,
       tagline: taglineRef.current,
       logoSrc: logoSrcRef.current,
-      filename: `${symbol || "chart"}-${resolution || "D"}.png`,
+      filename: chartScreenshotFilename(symbol || "chart"),
       quote: screenshotQuote,
     });
   };

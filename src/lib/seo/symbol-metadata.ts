@@ -9,7 +9,7 @@ import {
 } from "@/i18n/config";
 import { cachedFetch } from "@/lib/cache";
 import { getDailyCandles, getQuote } from "@/lib/market";
-import { displayName } from "@/lib/market-names";
+import { displayName, localizedNameFromQuote } from "@/lib/market-names";
 import { ogImages } from "@/lib/seo/og-image";
 import { siteOrigin } from "@/lib/seo/site-url";
 import {
@@ -190,8 +190,8 @@ function seoSymbolName(
   assetType: AssetType,
   quote: Quote | null,
 ): string {
-  const fromQuote = quote?.name?.trim() || "";
-  const seeded = displayName(symbol, assetType);
+  const fromQuote = localizedNameFromQuote(quote, locale) || "";
+  const seeded = displayName(symbol, assetType, undefined, locale);
   const wantCjk =
     locale === "zh-CN" ||
     locale === "zh-TW" ||
@@ -199,8 +199,17 @@ function seoSymbolName(
     locale === "ko";
 
   if (wantCjk) {
+    // zh UI: prefer localized seed (e.g. NVDA → 英伟达) over English vendor names.
+    if (
+      (locale === "zh-CN" || locale === "zh-TW") &&
+      seeded &&
+      seeded !== symbol
+    ) {
+      return seeded;
+    }
+    if (fromQuote && hasCjk(fromQuote)) return fromQuote;
+    if (seeded && seeded !== symbol) return seeded;
     if (fromQuote) return fromQuote;
-    if (seeded) return seeded;
     return symbol;
   }
 

@@ -4,31 +4,70 @@ import {
   hasLongbridgeCreds,
 } from "@/lib/market/providers/longbridge-client";
 import { normalizeSymbol, toLongbridgeSymbol } from "@/lib/market/symbols";
+import { preferChineseNames } from "@/lib/market-names";
 import type { AssetType } from "@/lib/types";
 
 const NAME_TTL_MS = 24 * 60 * 60 * 1000;
 
-function pickName(
-  info: { nameCn?: string; nameEn?: string; nameHk?: string },
+/** Raw Longbridge staticInfo name fields (all locales). */
+export type StaticNameBundle = {
+  nameCn?: string;
+  nameEn?: string;
+  nameHk?: string;
+};
+
+function trimOrUndef(v: unknown): string | undefined {
+  if (typeof v !== "string") return undefined;
+  const t = v.trim();
+  return t || undefined;
+}
+
+function bundleFromInfo(info: {
+  nameCn?: string;
+  nameEn?: string;
+  nameHk?: string;
+}): StaticNameBundle {
+  return {
+    ...(trimOrUndef(info.nameCn) ? { nameCn: trimOrUndef(info.nameCn) } : {}),
+    ...(trimOrUndef(info.nameEn) ? { nameEn: trimOrUndef(info.nameEn) } : {}),
+    ...(trimOrUndef(info.nameHk) ? { nameHk: trimOrUndef(info.nameHk) } : {}),
+  };
+}
+
+/**
+ * Pick a single display name from upstream bundle.
+ * US: zh → nameCn, en → nameEn; HK/CN keep market-native preference with locale overlay.
+ */
+export function pickLocalizedStaticName(
+  info: StaticNameBundle,
   assetType: AssetType,
+  locale?: string | null,
 ): string | undefined {
   const cn = info.nameCn?.trim();
   const en = info.nameEn?.trim();
   const hk = info.nameHk?.trim();
-  if (assetType === "cn") return cn || en || undefined;
-  if (assetType === "hk") return hk || cn || en || undefined;
-  return en || cn || hk || undefined;
+  const zh = preferChineseNames(locale);
+
+  if (assetType === "cn") {
+    return zh ? cn || en || undefined : en || cn || undefined;
+  }
+  if (assetType === "hk") {
+    if (zh) return cn || hk || en || undefined;
+    return en || hk || cn || undefined;
+  }
+  // US / other equity
+  return zh ? cn || en || hk || undefined : en || cn || hk || undefined;
 }
 
 function nameCacheKey(lbSym: string): string {
-  return `lb:static-name:v1:${lbSym}`;
+  return `lb:static-name:v2:${lbSym}`;
 }
 
-/** Resolve display names via Longbridge staticInfo (long-lived cache). */
-export async function resolveLongbridgeNames(
+/** Resolve name bundles via Longbridge staticInfo (long-lived cache). */
+export async function resolveLongbridgeNameBundles(
   items: { symbol: string; assetType: AssetType }[],
-): Promise<Map<string, string>> {
-  const out = new Map<string, string>();
+): Promise<Map<string, StaticNameBundle>> {
+  const out = new Map<string, StaticNameBundle>();
   if (!items.length || !hasLongbridgeCreds()) return out;
 
   const byLb = new Map<string, { normalized: string; assetType: AssetType }>();
@@ -42,9 +81,12 @@ export async function resolveLongbridgeNames(
 
   const missing: string[] = [];
   for (const [lbSym, meta] of byLb) {
-    const cached = await getCached<string>(nameCacheKey(lbSym));
-    if (cached) out.set(meta.normalized, cached);
-    else missing.push(lbSym);
+    const cached = await getCached<StaticNameBundle>(nameCacheKey(lbSym));
+    if (cached && (cached.nameCn || cached.nameEn || cached.nameHk)) {
+      out.set(meta.normalized, cached);
+    } else {
+      missing.push(lbSym);
+    }
   }
   if (!missing.length) return out;
 
@@ -54,10 +96,10 @@ export async function resolveLongbridgeNames(
     for (const info of rows ?? []) {
       const meta = byLb.get(info.symbol);
       if (!meta) continue;
-      const name = pickName(info, meta.assetType);
-      if (!name) continue;
-      out.set(meta.normalized, name);
-      await setCached(nameCacheKey(info.symbol), name, NAME_TTL_MS);
+      const bundle = bundleFromInfo(info);
+      if (!bundle.nameCn && !bundle.nameEn && !bundle.nameHk) continue;
+      out.set(meta.normalized, bundle);
+      await setCached(nameCacheKey(info.symbol), bundle, NAME_TTL_MS);
     }
   } catch {
     /* names optional — quotes still work without them */
@@ -66,10 +108,29 @@ export async function resolveLongbridgeNames(
   return out;
 }
 
+/** @deprecated Prefer resolveLongbridgeNameBundles + pickLocalizedStaticName. */
+export async function resolveLongbridgeNames(
+  items: { symbol: string; assetType: AssetType }[],
+  locale?: string | null,
+): Promise<Map<string, string>> {
+  const bundles = await resolveLongbridgeNameBundles(items);
+  const out = new Map<string, string>();
+  for (const item of items) {
+    if (item.assetType === "crypto") continue;
+    const normalized = normalizeSymbol(item.symbol, item.assetType);
+    const bundle = bundles.get(normalized);
+    if (!bundle) continue;
+    const name = pickLocalizedStaticName(bundle, item.assetType, locale);
+    if (name) out.set(normalized, name);
+  }
+  return out;
+}
+
 export async function resolveLongbridgeName(
   symbol: string,
   assetType: AssetType,
+  locale?: string | null,
 ): Promise<string | undefined> {
-  const map = await resolveLongbridgeNames([{ symbol, assetType }]);
+  const map = await resolveLongbridgeNames([{ symbol, assetType }], locale);
   return map.get(normalizeSymbol(symbol, assetType));
 }
