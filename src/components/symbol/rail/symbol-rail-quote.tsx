@@ -1,8 +1,8 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { ChangePct, PriceText } from "@/components/market/price";
-import { displayName } from "@/lib/market-names";
+import { displayName, localizedNameFromQuote } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
 type Props = {
@@ -14,6 +14,7 @@ type Props = {
 /** Right-rail quote head — Longbridge-style dense identity block. */
 export function SymbolRailQuote({ symbol, assetType, quote }: Props) {
   const t = useTranslations("symbol");
+  const locale = useLocale();
 
   return (
     <div className="border-b border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas)] px-2 py-2">
@@ -23,7 +24,12 @@ export function SymbolRailQuote({ symbol, assetType, quote }: Props) {
             {symbol}
           </div>
           <p className="mt-1 truncate text-[11px] leading-none tracking-[-0.08px] text-[var(--aw-ink-muted-48,var(--muted))]">
-            {displayName(symbol, assetType, quote?.name) || t("profile")}
+            {displayName(
+              symbol,
+              assetType,
+              localizedNameFromQuote(quote, locale),
+              locale,
+            ) || t("profile")}
           </p>
         </div>
         <div className="shrink-0 text-right">

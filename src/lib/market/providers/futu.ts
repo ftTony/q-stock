@@ -76,9 +76,22 @@ function toDateYmd(unixSec: number): string {
   return new Date(unixSec * 1000).toISOString().slice(0, 10);
 }
 
-function displayName(snap: SnapshotRow): string | undefined {
-  const n = (snap.sc_name || snap.name || snap.tc_name || "").trim();
-  return n || undefined;
+function futuNameFields(snap: SnapshotRow): {
+  name?: string;
+  nameZh?: string;
+  nameEn?: string;
+} {
+  const sc = (snap.sc_name || "").trim();
+  const en = (snap.name || "").trim();
+  const tc = (snap.tc_name || "").trim();
+  const nameZh = sc || tc || undefined;
+  const nameEn = en || undefined;
+  const name = en || sc || tc || undefined;
+  return {
+    ...(name ? { name } : {}),
+    ...(nameZh ? { nameZh } : {}),
+    ...(nameEn ? { nameEn } : {}),
+  };
 }
 
 function mapFutuSessionQuote(
@@ -115,7 +128,7 @@ function mapFutuSnapshot(
   const ask = Number(snap.ask_price ?? 0);
   const bidSize = Number(snap.bid_vol ?? 0);
   const askSize = Number(snap.ask_vol ?? 0);
-  const name = displayName(snap);
+  const nameFields = futuNameFields(snap);
 
   const preMarket =
     assetType === "stock"
@@ -179,7 +192,7 @@ function mapFutuSnapshot(
     ...(ask > 0 ? { ask } : {}),
     ...(bidSize > 0 ? { bidSize } : {}),
     ...(askSize > 0 ? { askSize } : {}),
-    ...(name ? { name } : {}),
+    ...nameFields,
     ...(preMarket ? { preMarket } : {}),
     ...(postMarket ? { postMarket } : {}),
     ...(overnight ? { overnight } : {}),

@@ -13,7 +13,27 @@ import {
   applyActiveExtendedPrice,
   mapLbExtendedFields,
 } from "@/lib/market/providers/longbridge-quote-map";
-import { resolveLongbridgeNames } from "@/lib/market/providers/longbridge-static-names";
+import {
+  pickLocalizedStaticName,
+  resolveLongbridgeNameBundles,
+  type StaticNameBundle,
+} from "@/lib/market/providers/longbridge-static-names";
+
+function quoteNameFields(bundle: StaticNameBundle | undefined, assetType: AssetType) {
+  if (!bundle) return {};
+  const nameZh =
+    bundle.nameCn?.trim() ||
+    (assetType === "hk" ? bundle.nameHk?.trim() : undefined) ||
+    undefined;
+  const nameEn = bundle.nameEn?.trim() || undefined;
+  // Legacy `name`: English-first for US, market-native for HK/CN (compat).
+  const name = pickLocalizedStaticName(bundle, assetType, "en") || nameZh;
+  return {
+    ...(name ? { name } : {}),
+    ...(nameZh ? { nameZh } : {}),
+    ...(nameEn ? { nameEn } : {}),
+  };
+}
 
 export {
   getLongbridgeFilings,
@@ -51,9 +71,9 @@ export const longbridgeProvider: MarketDataProvider = {
     try {
       return await cachedFetch(key, 15_000, async () => {
         const ctx = await getQuoteCtx();
-        const [rows, names] = await Promise.all([
+        const [rows, nameBundles] = await Promise.all([
           ctx.quote([lbSym]),
-          resolveLongbridgeNames([{ symbol: normalized, assetType }]),
+          resolveLongbridgeNameBundles([{ symbol: normalized, assetType }]),
         ]);
         const q = rows[0];
         if (!q) {
@@ -67,7 +87,7 @@ export const longbridgeProvider: MarketDataProvider = {
         const turnover = dec(
           (q as { turnover?: { toNumber(): number } | null }).turnover,
         );
-        const name = names.get(normalized);
+        const nameFields = quoteNameFields(nameBundles.get(normalized), assetType);
         const extended = mapLbExtendedFields(q);
         let bid: number | undefined;
         let ask: number | undefined;
@@ -107,7 +127,7 @@ export const longbridgeProvider: MarketDataProvider = {
           ...(ask != null ? { ask } : {}),
           ...(bidSize != null ? { bidSize } : {}),
           ...(askSize != null ? { askSize } : {}),
-          ...(name ? { name } : {}),
+          ...nameFields,
           ...(extended.preMarket ? { preMarket: extended.preMarket } : {}),
           ...(extended.postMarket ? { postMarket: extended.postMarket } : {}),
           ...(extended.overnight ? { overnight: extended.overnight } : {}),
@@ -142,9 +162,9 @@ export const longbridgeProvider: MarketDataProvider = {
         }),
       );
       const lbKeys = [...map.keys()];
-      const [rows, names] = await Promise.all([
+      const [rows, nameBundles] = await Promise.all([
         ctx.quote(lbKeys),
-        resolveLongbridgeNames(
+        resolveLongbridgeNameBundles(
           equityItems.map((i) => ({
             symbol: normalizeSymbol(i.symbol, i.assetType),
             assetType: i.assetType,
@@ -162,7 +182,10 @@ export const longbridgeProvider: MarketDataProvider = {
         const turnover = dec(
           (q as { turnover?: { toNumber(): number } | null }).turnover,
         );
-        const name = names.get(meta.normalized);
+        const nameFields = quoteNameFields(
+          nameBundles.get(meta.normalized),
+          meta.assetType,
+        );
         const extended = mapLbExtendedFields(q);
         const base = {
           symbol: meta.normalized,
@@ -177,7 +200,7 @@ export const longbridgeProvider: MarketDataProvider = {
           timestamp: Math.floor((q.timestamp?.getTime?.() ?? Date.now()) / 1000),
           ...(volume > 0 ? { volume } : {}),
           ...(turnover > 0 ? { turnover } : {}),
-          ...(name ? { name } : {}),
+          ...nameFields,
           ...(extended.preMarket ? { preMarket: extended.preMarket } : {}),
           ...(extended.postMarket ? { postMarket: extended.postMarket } : {}),
           ...(extended.overnight ? { overnight: extended.overnight } : {}),

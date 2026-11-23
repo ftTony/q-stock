@@ -57,8 +57,12 @@ export interface Quote {
   ask?: number;
   bidSize?: number;
   askSize?: number;
-  /** Display name from rank API when available. */
+  /** Display name from provider (often English for US). Prefer nameZh/nameEn by locale. */
   name?: string;
+  /** Simplified Chinese display name when provider supplies it (e.g. Longbridge nameCn). */
+  nameZh?: string;
+  /** English display name when provider supplies it. */
+  nameEn?: string;
   /** US pre-market (when broker provides it). */
   preMarket?: ExtendedSessionQuote;
   /** US after-hours. */
