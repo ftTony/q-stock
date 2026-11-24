@@ -78,6 +78,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
   });
   const [rangeTo, setRangeTo] = useState(() => isoDate(new Date()));
   const [activeId, setActiveId] = useState<string | null>(replayIdParam);
+  const [replayDrawerOpenKey, setReplayDrawerOpenKey] = useState(0);
   const [toastMsg, setToastMsg] = useState<string | null>(null);
   const [toastTone, setToastTone] = useState<ToastTone>("neutral");
   const [toastKey, setToastKey] = useState(0);
@@ -144,6 +145,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
 
   function selectReplay(r: Replay) {
     setActiveId(r.id);
+    setReplayDrawerOpenKey((k) => k + 1);
     router.replace(`/strategies/${strategyId}?replayId=${r.id}`);
   }
 
@@ -262,6 +264,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
       const replay = data.replay as Replay | undefined;
       if (replay?.id) {
         setActiveId(replay.id);
+        setReplayDrawerOpenKey((k) => k + 1);
         router.replace(`/strategies/${strategyId}?replayId=${replay.id}`);
       }
     } catch (err) {
@@ -359,6 +362,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
           onRangeToChange={setRangeTo}
           onStartReplay={(e) => void startReplay(e)}
           onSelectReplay={selectReplay}
+          replayDrawerOpenKey={replayDrawerOpenKey}
           onQuota={(next) => {
             qc.setQueryData(
               queryKeys.strategies.replays(strategyId),

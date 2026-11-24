@@ -26,17 +26,18 @@ export type ReplayDrawerItem = {
   strategyId?: string | null;
 };
 
-function fmtPct(n?: number | null) {
-  if (n == null || !Number.isFinite(n)) return "—";
-  const s = `${n.toFixed(2)}%`;
-  return n > 0 ? `+${s}` : s;
-}
-
+/**
+ * Detail drawer for a selected replay. Opened from the recent-list row —
+ * no duplicate summary trigger card in the aside.
+ */
 export function StrategyReplayResultDrawer({
   replay,
+  openKey = 0,
   onShareChange,
 }: {
   replay: ReplayDrawerItem | null;
+  /** Bumped on each list select so re-clicking the same row reopens. */
+  openKey?: number;
   onShareChange?: (token: string | null) => void;
 }) {
   const t = useTranslations("strategies");
@@ -46,14 +47,12 @@ export function StrategyReplayResultDrawer({
   useEffect(() => {
     if (replay?.id) setOpen(true);
     setDraftReady(false);
-  }, [replay?.id]);
+  }, [replay?.id, openKey]);
 
   if (!replay) return null;
   const item = replay;
 
-  const ret = item.result?.totalReturnPct;
   const done = item.status === "done";
-  const failed = item.status === "failed";
   const assetType = (item.assetType ?? "stock") as AssetType;
   const canDraft =
     done &&
@@ -82,94 +81,55 @@ export function StrategyReplayResultDrawer({
   }
 
   return (
-    <>
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-between rounded-none border border-[var(--border)] bg-[var(--panel)] px-3 py-2.5 text-left transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))]"
-      >
-        <span className="min-w-0">
-          <span className="block text-[13px] font-medium text-[var(--foreground)]">
-            {t("replayResult")}
-            <span className="ml-2 font-medium tabular-nums">{replay.symbol}</span>
-          </span>
-          <span className="mt-0.5 block text-[12px] text-[var(--muted)]">
-            {t(statusKey)}
-            {done ? (
-              <>
-                <span className="mx-1.5 text-[var(--border)]">·</span>
-                <span
-                  className={
-                    (ret ?? 0) >= 0 ? "text-[var(--up)]" : "text-[var(--down)]"
-                  }
+    <SideDrawer
+      open={open}
+      onClose={() => setOpen(false)}
+      title={t("replayResult")}
+      titleAside={`${replay.symbol} · ${t(statusKey)}`}
+      widthClassName="w-full max-w-[min(100vw,36rem)] sm:max-w-[36rem]"
+    >
+      <div className="space-y-3 px-4 py-4 sm:px-5">
+        <StrategyReplayPanel
+          status={replay.status}
+          error={replay.error}
+          result={replay.result}
+        />
+        {canDraft ? (
+          <div className="rounded-none border border-[var(--border)] bg-[var(--panel)] px-3 py-3">
+            <p className="text-[12px] leading-relaxed text-[var(--muted)]">
+              {t("paperDraftHint")}
+            </p>
+            <div className="mt-2 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                className="qt-btn qt-btn-primary h-8 px-3 text-[12px]"
+                onClick={handlePaperDraft}
+              >
+                {t("paperDraftCta")}
+              </button>
+              {draftReady ? (
+                <Link
+                  href={`/symbol/${assetType}/${encodeURIComponent(replay.symbol)}`}
+                  className="qt-btn qt-btn-ghost h-8 px-3 text-[12px] text-[var(--brand-text)]"
                 >
-                  {fmtPct(ret)}
-                </span>
-              </>
-            ) : null}
-            {failed && replay.error ? (
-              <>
-                <span className="mx-1.5 text-[var(--border)]">·</span>
-                <span className="text-[var(--down)]">{replay.error}</span>
-              </>
-            ) : null}
-          </span>
-        </span>
-        <span className="ml-2 shrink-0 text-[12px] text-[var(--brand-text)]">
-          {t("labOpenDrawer")}
-        </span>
-      </button>
-
-      <SideDrawer
-        open={open}
-        onClose={() => setOpen(false)}
-        title={t("replayResult")}
-        titleAside={`${replay.symbol} · ${t(statusKey)}`}
-        widthClassName="w-full max-w-[min(100vw,36rem)] sm:max-w-[36rem]"
-      >
-        <div className="space-y-3 px-4 py-4 sm:px-5">
-          <StrategyReplayPanel
-            status={replay.status}
-            error={replay.error}
-            result={replay.result}
-          />
-          {canDraft ? (
-            <div className="rounded-none border border-[var(--border)] bg-[var(--panel)] px-3 py-3">
-              <p className="text-[12px] leading-relaxed text-[var(--muted)]">
-                {t("paperDraftHint")}
-              </p>
-              <div className="mt-2 flex flex-wrap items-center gap-2">
-                <button
-                  type="button"
-                  className="qt-btn qt-btn-primary h-8 px-3 text-[12px]"
-                  onClick={handlePaperDraft}
-                >
-                  {t("paperDraftCta")}
-                </button>
-                {draftReady ? (
-                  <Link
-                    href={`/symbol/${assetType}/${encodeURIComponent(replay.symbol)}`}
-                    className="qt-btn qt-btn-ghost h-8 px-3 text-[12px] text-[var(--brand-text)]"
-                  >
-                    {t("paperDraftOpen")}
-                  </Link>
-                ) : null}
-              </div>
-              <p className="mt-2 text-[11px] text-[var(--muted)]">
-                {t("paperDraftNote")}
-              </p>
+                  {t("paperDraftOpen")}
+                </Link>
+              ) : null}
             </div>
-          ) : null}
-          {onShareChange ? (
-            <StrategyReplayActions
-              replayId={replay.id}
-              status={replay.status}
-              shareToken={replay.shareToken ?? null}
-              onShareChange={onShareChange}
-            />
-          ) : null}
-        </div>
-      </SideDrawer>
-    </>
+            <p className="mt-2 text-[11px] text-[var(--muted)]">
+              {t("paperDraftNote")}
+            </p>
+          </div>
+        ) : null}
+        {onShareChange ? (
+          <StrategyReplayActions
+            replayId={replay.id}
+            status={replay.status}
+            shareToken={replay.shareToken ?? null}
+            onShareChange={onShareChange}
+          />
+        ) : null}
+      </div>
+    </SideDrawer>
   );
 }

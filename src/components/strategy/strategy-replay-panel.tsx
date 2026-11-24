@@ -108,8 +108,25 @@ export function StrategyReplayPanel({
 
   if (status === "pending" || status === "running") {
     return (
-      <div className="rounded-none border border-[var(--border)] bg-[var(--panel)] px-4 py-8 text-center text-sm text-[var(--muted)]">
-        {t("replayRunning")} · {status}
+      <div className="relative overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel)]">
+        <div
+          className="absolute inset-y-0 left-0 w-0.5 bg-[var(--brand)]"
+          aria-hidden
+        />
+        <div className="px-3 py-3 pl-3.5">
+          <p className="text-[13px] font-medium text-[var(--foreground)]">
+            {t("replayRunning")}
+          </p>
+          <p className="mt-0.5 text-[12px] leading-snug text-[var(--muted)]">
+            {t("replayRunningHint")}
+          </p>
+        </div>
+        <div
+          className="h-0.5 overflow-hidden bg-[var(--border)]"
+          aria-hidden
+        >
+          <div className="qt-indeterminate-bar" />
+        </div>
       </div>
     );
   }

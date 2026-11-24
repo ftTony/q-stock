@@ -43,6 +43,8 @@ type Props = {
   onSelectReplay: (replay: Replay) => void;
   onQuota: (next: Quota) => void;
   onShareChange?: (token: string | null) => void;
+  /** Bumped when a list row is selected so the result drawer reopens. */
+  replayDrawerOpenKey?: number;
 };
 
 /** Right-rail replay form + recent list for strategy detail. */
@@ -66,6 +68,7 @@ export function StrategyDetailReplayAside({
   onSelectReplay,
   onQuota,
   onShareChange,
+  replayDrawerOpenKey = 0,
 }: Props) {
   const t = useTranslations("strategies");
 
@@ -214,7 +217,7 @@ export function StrategyDetailReplayAside({
                       }`}
                     >
                       {typeof ret === "number"
-                        ? `${ret > 0 ? "+" : ""}${ret.toFixed(1)}%`
+                        ? `${ret > 0 ? "+" : ""}${ret.toFixed(2)}%`
                         : "—"}
                     </span>
                   </button>
@@ -226,15 +229,14 @@ export function StrategyDetailReplayAside({
       ) : null}
 
       {active ? (
-        <div className="mt-3 border-t border-[var(--border)] pt-3">
-          <StrategyReplayResultDrawer
-            replay={{
-              ...active,
-              strategyId,
-            }}
-            onShareChange={onShareChange}
-          />
-        </div>
+        <StrategyReplayResultDrawer
+          replay={{
+            ...active,
+            strategyId,
+          }}
+          openKey={replayDrawerOpenKey}
+          onShareChange={onShareChange}
+        />
       ) : null}
     </section>
   );
