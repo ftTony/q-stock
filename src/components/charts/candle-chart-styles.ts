@@ -46,8 +46,14 @@ export function readChartExportBg(): string {
 /** Map product chart type → klinecharts candle.type. */
 export function toKlineCandleType(
   type: ChartCandleType,
-): "area" | "candle_solid" {
-  return type === "area" ? "area" : "candle_solid";
+): "area" | "candle_solid" | "candle_up_stroke" | "ohlc" {
+  if (type === "ohlc") return "ohlc";
+  // Line / baseline use area engine; baseline fill is a custom overlay.
+  if (type === "area" || type === "line" || type === "baseline") return "area";
+  // 空心阳线：阳线描边、阴线实心（klinecharts candle_up_stroke）.
+  if (type === "candle_stroke") return "candle_up_stroke";
+  // 实心阳线 / Heikin-Ashi.
+  return "candle_solid";
 }
 
 /** @deprecated Prefer resolveCandleType + toKlineCandleType */
@@ -97,6 +103,10 @@ export function buildChartStyles(
   const tipOffsetTop = 8;
   // Area tip pulse only while the venue is in regular session (crypto = always).
   const live = Boolean(opts?.liveSession);
+  const resolvedType =
+    opts?.chartType ?? resolveCandleType({}, resolution);
+  // Line + baseline: hide mountain fill (baseline paints its own bands).
+  const lineOnly = resolvedType === "line" || resolvedType === "baseline";
 
   const tipLegend = (
     title: string,
@@ -115,9 +125,7 @@ export function buildChartStyles(
       vertical: { color: c.grid },
     },
     candle: {
-      type: toKlineCandleType(
-        opts?.chartType ?? resolveCandleType({}, resolution),
-      ),
+      type: toKlineCandleType(resolvedType),
       bar: {
         upColor: c.up,
         downColor: c.down,
@@ -132,9 +140,11 @@ export function buildChartStyles(
       area: {
         // Default lineSize is 2 — thin it so intraday/area traces read clean.
         lineSize: 1,
+        // Pure line: keep close path, drop mountain fill.
+        ...(lineOnly ? { backgroundColor: "rgba(0,0,0,0)" } : {}),
         point: {
-          show: live,
-          animation: live,
+          show: live && !lineOnly,
+          animation: live && !lineOnly,
           animationDuration: 1000,
         },
       },
