@@ -67,6 +67,22 @@ export function ChartTypeOhlcIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
+/** Column / histogram glyph — solid bodies, no wicks. */
+export function ChartTypeColumnIcon({ className = "h-4 w-4" }: IconProps) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 16 16"
+      fill="currentColor"
+      aria-hidden
+    >
+      <rect x="2.5" y="7" width="2.4" height="6" rx="0.3" />
+      <rect x="6.8" y="3.5" width="2.4" height="9.5" rx="0.3" />
+      <rect x="11.1" y="5.5" width="2.4" height="7.5" rx="0.3" />
+    </svg>
+  );
+}
+
 /** Close-price line glyph. */
 export function ChartTypeLineIcon({ className = "h-4 w-4" }: IconProps) {
   return (
@@ -143,6 +159,8 @@ export function ChartTypeIcon({
       return <ChartTypeCandleStrokeIcon className={className} />;
     case "ohlc":
       return <ChartTypeOhlcIcon className={className} />;
+    case "column":
+      return <ChartTypeColumnIcon className={className} />;
     case "line":
       return <ChartTypeLineIcon className={className} />;
     case "heikin":

@@ -351,6 +351,8 @@
     "chartTypeCandleStrokeShort": "中空",
     "chartTypeOhlc": "Bars",
     "chartTypeOhlcShort": "Bars",
+    "chartTypeColumn": "棒グラフ",
+    "chartTypeColumnShort": "棒",
     "chartTypeLine": "Line",
     "chartTypeLineShort": "Line",
     "chartTypeHeikin": "平均足",

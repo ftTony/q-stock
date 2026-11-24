@@ -351,6 +351,8 @@
     "chartTypeCandleStrokeShort": "중공",
     "chartTypeOhlc": "Bars",
     "chartTypeOhlcShort": "Bars",
+    "chartTypeColumn": "막대",
+    "chartTypeColumnShort": "막대",
     "chartTypeLine": "Line",
     "chartTypeLineShort": "Line",
     "chartTypeHeikin": "하이킨 아시",

@@ -6,6 +6,7 @@ export type ChartCandleType =
   | "candle"
   | "candle_stroke"
   | "ohlc"
+  | "column"
   | "line"
   | "heikin"
   | "area";
@@ -28,6 +29,7 @@ const CHART_TYPES = new Set<ChartCandleType>([
   "candle",
   "candle_stroke",
   "ohlc",
+  "column",
   "line",
   "heikin",
   "area",

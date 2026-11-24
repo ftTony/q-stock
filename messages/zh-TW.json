@@ -383,6 +383,8 @@
     "chartTypeCandleStrokeShort": "空心陽",
     "chartTypeOhlc": "美國線",
     "chartTypeOhlcShort": "美國線",
+    "chartTypeColumn": "柱狀圖",
+    "chartTypeColumnShort": "柱狀",
     "chartTypeLine": "折線",
     "chartTypeLineShort": "折線",
     "chartTypeHeikin": "平均K線",

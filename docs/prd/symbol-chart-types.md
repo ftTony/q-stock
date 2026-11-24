@@ -4,7 +4,7 @@
 |---|---|
 | 产品 | 钱力股 / Q-Stock |
 | 范围 | `/symbol/...` 主图（KLineChart） |
-| 状态 | **P0 已落地**；P1 已落地 `candle`/`candle_stroke`/`ohlc`/`line`/`heikin`/`area`；P2 `baseline` **不做**（与面积线过近，已撤销 A 切片） |
+| 状态 | **P0 已落地**；P1 已落地 `candle`/`candle_stroke`/`ohlc`/`column`/`line`/`heikin`/`area`；P2 `baseline` **不做**（与面积线过近，已撤销 A 切片） |
 | 相关 | [个股交易台 UI](./symbol-trading-ui.md) · [金融图表技术](../financial-chart-tech.md) · [策略方向](../strategy-backtest-direction.md) |
 
 ---

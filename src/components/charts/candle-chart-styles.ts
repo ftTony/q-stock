@@ -52,7 +52,7 @@ export function toKlineCandleType(
   if (type === "area" || type === "line") return "area";
   // 空心阳线：阳线描边、阴线实心（klinecharts candle_up_stroke）.
   if (type === "candle_stroke") return "candle_up_stroke";
-  // 实心阳线 / Heikin-Ashi.
+  // 柱状图 / 实心阳线 / Heikin：实心实体（柱状图再藏影线）.
   return "candle_solid";
 }
 
@@ -106,6 +106,9 @@ export function buildChartStyles(
   const resolvedType =
     opts?.chartType ?? resolveCandleType({}, resolution);
   const lineOnly = resolvedType === "line";
+  // No native column type — solid body with invisible wicks.
+  const columnOnly = resolvedType === "column";
+  const wickColor = columnOnly ? "rgba(0,0,0,0)" : undefined;
 
   const tipLegend = (
     title: string,
@@ -132,9 +135,9 @@ export function buildChartStyles(
         upBorderColor: c.up,
         downBorderColor: c.down,
         noChangeBorderColor: c.muted,
-        upWickColor: c.up,
-        downWickColor: c.down,
-        noChangeWickColor: c.muted,
+        upWickColor: wickColor ?? c.up,
+        downWickColor: wickColor ?? c.down,
+        noChangeWickColor: wickColor ?? c.muted,
       },
       area: {
         // Default lineSize is 2 — thin it so intraday/area traces read clean.

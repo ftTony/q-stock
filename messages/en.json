@@ -369,6 +369,8 @@
     "chartTypeCandleStrokeShort": "Hollow",
     "chartTypeOhlc": "Bars",
     "chartTypeOhlcShort": "Bars",
+    "chartTypeColumn": "Columns",
+    "chartTypeColumnShort": "Columns",
     "chartTypeLine": "Line",
     "chartTypeLineShort": "Line",
     "chartTypeHeikin": "Heikin Ashi",
