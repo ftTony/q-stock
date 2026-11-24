@@ -22,7 +22,15 @@ describe("resolveCandleType", () => {
     expect(resolveCandleType({ chartType: "ohlc" }, "T")).toBe("ohlc");
     expect(resolveCandleType({ chartType: "line" }, "D")).toBe("line");
     expect(resolveCandleType({ chartType: "heikin" }, "T")).toBe("heikin");
-    expect(resolveCandleType({ chartType: "baseline" }, "D")).toBe("baseline");
+  });
+
+  it("ignores removed baseline preference", () => {
+    expect(
+      resolveCandleType(
+        { chartType: "baseline" as never },
+        "D",
+      ),
+    ).toBe("candle");
   });
 });
 
@@ -33,24 +41,23 @@ describe("toKlineCandleType", () => {
     expect(toKlineCandleType("ohlc")).toBe("ohlc");
     expect(toKlineCandleType("line")).toBe("area");
     expect(toKlineCandleType("heikin")).toBe("candle_solid");
-    expect(toKlineCandleType("baseline")).toBe("area");
     expect(toKlineCandleType("area")).toBe("area");
   });
 });
 
 describe("CHART_TYPE_OPTIONS", () => {
-  it("lists solid → hollow → ohlc → line → heikin → baseline → area", () => {
+  it("lists solid → hollow → ohlc → line → heikin → area (no baseline)", () => {
     expect(CHART_TYPE_OPTIONS).toEqual([
       "candle",
       "candle_stroke",
       "ohlc",
       "line",
       "heikin",
-      "baseline",
       "area",
     ]);
     for (const type of CHART_TYPE_OPTIONS) {
       expect(isChartCandleType(type)).toBe(true);
     }
+    expect(isChartCandleType("baseline")).toBe(false);
   });
 });

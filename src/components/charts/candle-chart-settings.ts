@@ -8,7 +8,6 @@ export type ChartCandleType =
   | "ohlc"
   | "line"
   | "heikin"
-  | "baseline"
   | "area";
 
 export type ChartUiSettings = {
@@ -31,7 +30,6 @@ const CHART_TYPES = new Set<ChartCandleType>([
   "ohlc",
   "line",
   "heikin",
-  "baseline",
   "area",
 ]);
 

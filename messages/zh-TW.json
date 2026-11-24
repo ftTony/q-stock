@@ -387,8 +387,6 @@
     "chartTypeLineShort": "折線",
     "chartTypeHeikin": "平均K線",
     "chartTypeHeikinShort": "平均K",
-    "chartTypeBaseline": "基準線",
-    "chartTypeBaselineShort": "基準",
     "chartTypeArea": "面積圖",
     "chartTypeAreaShort": "面積",
     "chartSettingsColors": "漲跌色",

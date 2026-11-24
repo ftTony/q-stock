@@ -48,8 +48,8 @@ export function toKlineCandleType(
   type: ChartCandleType,
 ): "area" | "candle_solid" | "candle_up_stroke" | "ohlc" {
   if (type === "ohlc") return "ohlc";
-  // Line / baseline use area engine; baseline fill is a custom overlay.
-  if (type === "area" || type === "line" || type === "baseline") return "area";
+  // Line uses area engine with transparent fill.
+  if (type === "area" || type === "line") return "area";
   // 空心阳线：阳线描边、阴线实心（klinecharts candle_up_stroke）.
   if (type === "candle_stroke") return "candle_up_stroke";
   // 实心阳线 / Heikin-Ashi.
@@ -105,8 +105,7 @@ export function buildChartStyles(
   const live = Boolean(opts?.liveSession);
   const resolvedType =
     opts?.chartType ?? resolveCandleType({}, resolution);
-  // Line + baseline: hide mountain fill (baseline paints its own bands).
-  const lineOnly = resolvedType === "line" || resolvedType === "baseline";
+  const lineOnly = resolvedType === "line";
 
   const tipLegend = (
     title: string,

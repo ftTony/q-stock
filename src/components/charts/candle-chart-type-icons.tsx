@@ -106,43 +106,6 @@ export function ChartTypeHeikinIcon({ className = "h-4 w-4" }: IconProps) {
   );
 }
 
-/** Baseline — close path with mid reference line. */
-export function ChartTypeBaselineIcon({ className = "h-4 w-4" }: IconProps) {
-  return (
-    <svg
-      className={className}
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden
-    >
-      <path
-        d="M2 8h12"
-        stroke="currentColor"
-        strokeWidth="1"
-        strokeDasharray="2 1.5"
-        opacity="0.7"
-      />
-      <path
-        d="M2 11.5 5 7.5 8 9.5 11 4.5 14 7"
-        stroke="currentColor"
-        strokeWidth="1.25"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M2 11.5 5 7.5 8 8 8 8H2z"
-        fill="currentColor"
-        opacity="0.22"
-      />
-      <path
-        d="M8 8 11 4.5 14 7V8H8z"
-        fill="currentColor"
-        opacity="0.12"
-      />
-    </svg>
-  );
-}
-
 /** Area / mountain trend glyph. */
 export function ChartTypeAreaIcon({ className = "h-4 w-4" }: IconProps) {
   return (
@@ -184,8 +147,6 @@ export function ChartTypeIcon({
       return <ChartTypeLineIcon className={className} />;
     case "heikin":
       return <ChartTypeHeikinIcon className={className} />;
-    case "baseline":
-      return <ChartTypeBaselineIcon className={className} />;
     case "area":
       return <ChartTypeAreaIcon className={className} />;
     case "candle":

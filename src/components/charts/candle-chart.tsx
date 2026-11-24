@@ -17,11 +17,6 @@ import {
   type IndicatorFlags,
 } from "@/components/charts/candle-chart-overlays";
 import { syncCandleIndicators } from "@/components/charts/candle-chart-indicators";
-import {
-  ensureBaselineOverlay,
-  resolveBaselinePrice,
-  syncBaselineOverlay,
-} from "@/components/charts/candle-chart-baseline";
 import { createCandleGetBars } from "@/components/charts/candle-chart-data-loader";
 import {
   applyFillParentChartLayout,
@@ -193,7 +188,6 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       if (disposed || !containerRef.current) return;
       kcRef.current = KC;
       ensurePaperFillOverlay(KC.registerOverlay);
-      ensureBaselineOverlay(KC.registerOverlay);
       const chart = KC.init(containerRef.current, {
         styles: buildChartStyles(tipLabelsRef.current, resolution, {
           liveSession: isAssetSessionOpen(assetType),
@@ -302,26 +296,6 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps -- only data-shape toggles
   }, [dataShapeKey, ready]);
-
-  // Baseline overlay: close path + prevClose band (A-slice).
-  useEffect(() => {
-    const chart = chartRef.current;
-    if (!chart || !ready) return;
-    syncBaselineOverlay(chart, {
-      enabled: chartType === "baseline",
-      bars,
-      baselinePrice: resolveBaselinePrice(quoteRef?.current),
-    });
-  }, [
-    ready,
-    chartType,
-    bars,
-    hasBars,
-    changeColorScheme,
-    resolvedTheme,
-    liveSession,
-    quoteRef,
-  ]);
 
   const tradeMarkersKey = useMemo(
     () =>

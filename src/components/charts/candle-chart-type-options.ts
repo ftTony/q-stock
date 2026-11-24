@@ -1,8 +1,8 @@
 import type { ChartCandleType } from "@/components/charts/candle-chart-settings";
 
 /**
- * Ordered list — solid candle → hollow yang → OHLC → line → heikin →
- * baseline → area.
+ * Ordered list — solid candle → hollow yang → OHLC → line → heikin → area.
+ * Baseline removed: too close to area for the current menu.
  */
 export const CHART_TYPE_OPTIONS: ChartCandleType[] = [
   "candle",
@@ -10,7 +10,6 @@ export const CHART_TYPE_OPTIONS: ChartCandleType[] = [
   "ohlc",
   "line",
   "heikin",
-  "baseline",
   "area",
 ];
 
@@ -27,6 +26,5 @@ export const CHART_TYPE_LABEL_KEY: Record<
   ohlc: { full: "chartTypeOhlc", short: "chartTypeOhlcShort" },
   line: { full: "chartTypeLine", short: "chartTypeLineShort" },
   heikin: { full: "chartTypeHeikin", short: "chartTypeHeikinShort" },
-  baseline: { full: "chartTypeBaseline", short: "chartTypeBaselineShort" },
   area: { full: "chartTypeArea", short: "chartTypeAreaShort" },
 };

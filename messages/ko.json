@@ -355,8 +355,6 @@
     "chartTypeLineShort": "Line",
     "chartTypeHeikin": "하이킨 아시",
     "chartTypeHeikinShort": "하이킨",
-    "chartTypeBaseline": "기준선",
-    "chartTypeBaselineShort": "기준",
     "chartTypeArea": "Area",
     "chartTypeAreaShort": "Area",
     "chartSettingsColors": "Up / down colors",
