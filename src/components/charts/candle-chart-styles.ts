@@ -59,7 +59,7 @@ export function toKlineCandleType(
 /** @deprecated Prefer resolveCandleType + toKlineCandleType */
 export function candleTypeFromResolution(
   resolution: string,
-): "area" | "candle_solid" {
+): ReturnType<typeof toKlineCandleType> {
   return toKlineCandleType(resolveCandleType({}, resolution));
 }
 

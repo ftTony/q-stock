@@ -289,7 +289,7 @@ async function fillMissingQuotesFromLongbridge(
           prev_close_price: prev > 0 ? prev : existing.prev_close_price,
           volume: Number.isFinite(volume) ? volume : existing.volume,
           turnover: turnover > 0 ? turnover : existing.turnover,
-          name: existing.name || String(q.name || ""),
+          name: existing.name || "",
         });
       }
     }
