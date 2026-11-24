@@ -165,9 +165,9 @@ export function StrategyReplayActions({
         </SubmitButton>
       </div>
       {ai ? (
-        <div className="space-y-2 rounded-sm border border-[var(--border)] bg-[var(--panel)] p-3 text-[12px] leading-relaxed">
+        <div className="space-y-2 rounded-none border border-[var(--border)] bg-[var(--panel)] p-3 text-[12px] leading-relaxed">
           <section
-            className={`rounded-sm border-l-2 px-2.5 py-2 ${SECTION_TONE.summary}`}
+            className={`rounded-none border-l-2 px-2.5 py-2 ${SECTION_TONE.summary}`}
           >
             <div className={`text-[11px] font-medium ${SECTION_LABEL.summary}`}>
               {t("aiReviewTitle")}
@@ -226,7 +226,7 @@ function Section({
   if (!items?.length) return null;
   return (
     <section
-      className={`rounded-sm border-l-2 px-2.5 py-2 ${SECTION_TONE[tone]}`}
+      className={`rounded-none border-l-2 px-2.5 py-2 ${SECTION_TONE[tone]}`}
     >
       <div className={`text-[11px] font-medium ${SECTION_LABEL[tone]}`}>
         {title}

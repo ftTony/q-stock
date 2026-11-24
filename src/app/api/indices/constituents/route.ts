@@ -1,11 +1,14 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
-import { getFutuConstituentsPage } from "@/lib/market/providers/futu-constituents";
+import {
+  getFutuConstituentsPage,
+  peekCachedConstituentsPage,
+} from "@/lib/market/providers/futu-constituents";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import { parseAssetType } from "@/lib/types";
 
-/** Two upstream calls (screen + snapshot) per page; hard ceiling keeps the tab responsive. */
-const PROVIDER_TIMEOUT_MS = 12_000;
+/** Plate/screen + snapshot + optional LB fill; hard ceiling for 1GB hosts. */
+const PROVIDER_TIMEOUT_MS = 18_000;
 
 function withTimeout<T>(promise: Promise<T>, ms: number, label: string) {
   return new Promise<T>((resolve, reject) => {
@@ -50,12 +53,28 @@ export async function GET(req: Request) {
           nextKey: page.nextKey,
           hasMore: page.hasMore,
           source: page.source,
+          ...(page.degraded ? { degraded: true } : {}),
         });
       } catch (err) {
         console.warn(
           "[indices/constituents] provider failed:",
           err instanceof Error ? err.message : err,
         );
+        // Prefer a warm first-page cache over a hard empty 502.
+        if (!nextKey.trim()) {
+          const stale = await peekCachedConstituentsPage(symbol, assetType);
+          if (stale?.constituents?.length) {
+            return NextResponse.json({
+              constituents: stale.constituents,
+              total: stale.total,
+              nextKey: stale.nextKey,
+              hasMore: stale.hasMore,
+              source: stale.source,
+              degraded: true,
+              error: err instanceof Error ? err.message : "Constituents failed",
+            });
+          }
+        }
         return NextResponse.json(
           {
             constituents: [],

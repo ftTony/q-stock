@@ -86,7 +86,7 @@ export function StrategyReplayResultDrawer({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="flex w-full items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2.5 text-left transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))]"
+        className="flex w-full items-center justify-between rounded-none border border-[var(--border)] bg-[var(--panel)] px-3 py-2.5 text-left transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))]"
       >
         <span className="min-w-0">
           <span className="block text-[13px] font-medium text-[var(--foreground)]">
@@ -134,7 +134,7 @@ export function StrategyReplayResultDrawer({
             result={replay.result}
           />
           {canDraft ? (
-            <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-3">
+            <div className="rounded-none border border-[var(--border)] bg-[var(--panel)] px-3 py-3">
               <p className="text-[12px] leading-relaxed text-[var(--muted)]">
                 {t("paperDraftHint")}
               </p>

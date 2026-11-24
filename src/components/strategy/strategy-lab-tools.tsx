@@ -291,8 +291,8 @@ export function StrategyLabTools({
         onClick={() => setOpen(true)}
         className={
           compact
-            ? "flex w-full items-center justify-between rounded-md border border-dashed border-[var(--border)] bg-[var(--surface-2)]/30 px-2.5 py-2 text-left transition hover:border-[var(--brand)] hover:bg-[var(--brand-soft)]/40"
-            : "flex w-full items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--panel)] px-3 py-2.5 text-left transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))]"
+            ? "flex w-full items-center justify-between rounded-none border border-dashed border-[var(--border)] bg-[var(--surface-2)]/30 px-2.5 py-2 text-left transition hover:border-[var(--brand)] hover:bg-[var(--brand-soft)]/40"
+            : "flex w-full items-center justify-between rounded-none border border-[var(--border)] bg-[var(--panel)] px-3 py-2.5 text-left transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))]"
         }
       >
         <div className="min-w-0">

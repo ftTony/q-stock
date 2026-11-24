@@ -31,7 +31,13 @@ import {
   StrategyLabCardGridSkeleton,
   StrategyLabHistorySkeleton,
 } from "@/components/strategy/strategy-lab-skeletons";
+import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { TopToast, type ToastTone } from "@/components/ui/top-toast";
+import {
+  LAB_SIDEBAR_PRIMARY_BTN,
+  StrategiesLabGuestRail,
+} from "@/components/strategy/strategies-lab-guest-rail";
 import {
   useStrategiesLabStore,
   type StrategiesLabTab,
@@ -72,7 +78,6 @@ function formatDate(iso?: string) {
 
 export function StrategiesLab() {
   const t = useTranslations("strategies");
-  const tNav = useTranslations("nav");
   const locale = useLocale();
   const { data: session, status } = useSession();
   const router = useRouter();
@@ -80,9 +85,17 @@ export function StrategiesLab() {
   const query = useStrategiesLabStore((s) => s.query);
   const setTab = useStrategiesLabStore((s) => s.setTab);
   const setQuery = useStrategiesLabStore((s) => s.setQuery);
-  const [error, setError] = useState<string | null>(null);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastTone, setToastTone] = useState<ToastTone>("neutral");
+  const [toastKey, setToastKey] = useState(0);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const cardPageSize = useLabCardPageSize();
+
+  function showToast(message: string, tone: ToastTone = "neutral") {
+    setToastTone(tone);
+    setToastMsg(message);
+    setToastKey((k) => k + 1);
+  }
 
   const listQuery = useStrategiesList(locale);
   const replaysQuery = useStrategyReplays(
@@ -115,8 +128,10 @@ export function StrategiesLab() {
   }, [templates, query, locale]);
 
   async function copyTemplate(id: string) {
-    if (!session?.user) return;
-    setError(null);
+    if (!session?.user) {
+      setTab("mine");
+      return;
+    }
     try {
       const data = await copyMutation.mutateAsync(id);
       setTab("mine");
@@ -124,17 +139,18 @@ export function StrategiesLab() {
         router.push(`/strategies/${data.strategy.id}`);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("copyFailed"));
+      showToast(
+        err instanceof Error ? err.message : t("copyFailed"),
+        "error",
+      );
     }
   }
 
   async function createBlank() {
     if (!session?.user) {
-      setError(t("loginHint"));
-      setTab("templates");
+      setTab("mine");
       return;
     }
-    setError(null);
     try {
       const data = await createMutation.mutateAsync({
         name: t("blankStrategyName"),
@@ -147,7 +163,10 @@ export function StrategiesLab() {
         setTab("mine");
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("createFailed"));
+      showToast(
+        err instanceof Error ? err.message : t("createFailed"),
+        "error",
+      );
     }
   }
 
@@ -158,12 +177,14 @@ export function StrategiesLab() {
   async function confirmRemoveMine() {
     if (!pendingDeleteId) return;
     const id = pendingDeleteId;
-    setError(null);
     try {
       await deleteMutation.mutateAsync(id);
       setPendingDeleteId(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : t("deleteFailed"));
+      showToast(
+        err instanceof Error ? err.message : t("deleteFailed"),
+        "error",
+      );
     }
   }
 
@@ -180,19 +201,17 @@ export function StrategiesLab() {
   return (
     <div className="flex h-full max-lg:border-t max-lg:border-[var(--border)] lg:gap-3 lg:overflow-hidden">
       {/* Height follows the lab viewport, not the right column’s content. */}
-      <aside className="hidden h-full w-[260px] shrink-0 overflow-hidden bg-[var(--panel)] lg:flex lg:flex-col lg:rounded-lg lg:border lg:border-[var(--border)]">
+      <aside className="hidden h-full w-[260px] shrink-0 overflow-hidden bg-[var(--panel)] lg:flex lg:flex-col lg:rounded-none lg:border lg:border-[var(--border)]">
         <div className="flex shrink-0 items-center justify-between border-b border-[var(--border)] px-3 py-2.5">
           <span className="text-[12px] font-medium">{t("mine")}</span>
           <span className="rounded-full bg-[var(--brand-soft)] px-1.5 text-[10px] tabular-nums text-[var(--brand-text)]">
             {mine.length}
           </span>
         </div>
-        <div className="max-h-[36%] min-h-0 shrink-0 overflow-y-auto p-1.5">
-          {!session?.user ? (
-            <p className="px-2 py-4 text-[11px] leading-relaxed text-[var(--muted)]">
-              {t("loginHint")}
-            </p>
-          ) : (
+        {!session?.user ? (
+          <StrategiesLabGuestRail />
+        ) : (
+          <div className="max-h-[36%] min-h-0 shrink-0 overflow-y-auto p-1.5">
             <PaginatedList
               items={mine}
               pageSize={PAGE_SIDEBAR}
@@ -218,7 +237,7 @@ export function StrategiesLab() {
               renderItem={(s) => (
                 <li
                   key={s.id}
-                  className="group flex items-stretch rounded-md hover:bg-[var(--surface-2)]"
+                  className="group flex items-stretch rounded-none hover:bg-[var(--surface-2)]"
                 >
                   <Link
                     href={`/strategies/${s.id}`}
@@ -263,14 +282,14 @@ export function StrategiesLab() {
                 </li>
               )}
             />
-          )}
-        </div>
-        <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden border-t border-[var(--border)] p-2">
+          </div>
+        )}
+        <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden border-t border-[var(--border)] px-2 pb-2 pt-3">
           <button
             type="button"
             disabled={creating}
             onClick={() => void createBlank()}
-            className="qt-btn qt-btn-primary h-8 w-full shrink-0 text-[12px] disabled:opacity-60"
+            className={`${LAB_SIDEBAR_PRIMARY_BTN} disabled:opacity-60`}
           >
             + {t("newStrategy")}
           </button>
@@ -278,7 +297,7 @@ export function StrategiesLab() {
         </div>
       </aside>
 
-      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--panel)] lg:rounded-lg lg:border lg:border-[var(--border)]">
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--panel)] lg:rounded-none lg:border lg:border-[var(--border)]">
         <div className="flex shrink-0 flex-col gap-2 border-b border-[var(--border)] px-3 pt-1 sm:flex-row sm:items-center sm:justify-between sm:px-4">
           <div className="flex flex-wrap items-center gap-0.5">
             {(
@@ -320,12 +339,6 @@ export function StrategiesLab() {
         <p className="shrink-0 px-3 pt-2.5 text-[11px] leading-relaxed text-[var(--muted)] sm:px-4 sm:text-[12px]">
           {t("disclaimer")}
         </p>
-
-        {error ? (
-          <p className="shrink-0 px-3 text-sm text-[var(--danger)] sm:px-4">
-            {error}
-          </p>
-        ) : null}
 
         <div className="flex min-h-0 flex-1 flex-col px-3 pb-3 pt-2.5 sm:px-4 sm:pb-4">
           {tab === "templates" ? (
@@ -387,18 +400,14 @@ export function StrategiesLab() {
             status === "loading" || listLoading ? (
               <StrategyLabCardGridSkeleton count={cardPageSize} />
             ) : !session?.user ? (
-              <StrategyLabEmpty
-                art="auth"
-                label={t("loginHint")}
-                action={
-                  <Link
-                    href="/login"
-                    className="qt-btn qt-btn-primary h-8 px-3.5 text-[12px]"
-                  >
-                    {tNav("login")}
-                  </Link>
-                }
-              />
+              <div className="flex min-h-0 flex-1 flex-col items-center justify-center">
+                <AuthLoginGate
+                  compact
+                  title={t("loginTitle")}
+                  body={t("loginBody")}
+                  hint=""
+                />
+              </div>
             ) : (
               <PaginatedList
                 items={mine}
@@ -438,18 +447,14 @@ export function StrategiesLab() {
             status === "loading" ? (
               <StrategyLabHistorySkeleton />
             ) : !session?.user ? (
-              <StrategyLabEmpty
-                art="auth"
-                label={t("loginHint")}
-                action={
-                  <Link
-                    href="/login"
-                    className="qt-btn qt-btn-primary h-8 px-3.5 text-[12px]"
-                  >
-                    {tNav("login")}
-                  </Link>
-                }
-              />
+              <div className="flex min-h-0 flex-1 flex-col items-center justify-center">
+                <AuthLoginGate
+                  compact
+                  title={t("loginTitle")}
+                  body={t("loginBody")}
+                  hint=""
+                />
+              </div>
             ) : replaysQuery.isLoading ? (
               <StrategyLabHistorySkeleton />
             ) : replays.length === 0 ? (
@@ -489,6 +494,13 @@ export function StrategiesLab() {
           ) : null}
         </div>
       </div>
+
+      <TopToast
+        key={toastKey}
+        message={toastMsg}
+        tone={toastTone}
+        onDismiss={() => setToastMsg(null)}
+      />
 
       <ConfirmDialog
         open={pendingDeleteId != null}

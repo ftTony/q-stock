@@ -37,13 +37,13 @@ export function StrategyDetailHeader({
 
   return (
     <>
-      <section className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+      <section className="overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel)]">
         <form
           onSubmit={onSave}
           className="flex flex-wrap items-start justify-between gap-3 px-4 py-3 sm:px-5"
         >
           <div className="min-w-0 flex-1 space-y-1.5">
-            <span className="inline-flex rounded-md border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[11px] font-medium text-[var(--muted)]">
+            <span className="inline-flex rounded-none border border-[var(--border)] bg-[var(--surface-2)] px-2 py-0.5 text-[11px] font-medium text-[var(--muted)]">
               {isTemplate ? t("templates") : t("mine")}
             </span>
             <button

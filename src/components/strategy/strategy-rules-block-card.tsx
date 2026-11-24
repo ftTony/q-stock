@@ -36,7 +36,7 @@ export function StrategyRulesBlockCard({
 }) {
   return (
     <div
-      className="group relative w-[240px] shrink-0 rounded-md border border-[var(--border)] bg-[var(--panel)] shadow-sm transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))] hover:shadow-md sm:w-[260px]"
+      className="group relative w-[240px] shrink-0 rounded-none border border-[var(--border)] bg-[var(--panel)] shadow-sm transition hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))] hover:shadow-md sm:w-[260px]"
       draggable={Boolean(draggable && !disabled)}
       onDragStart={(e) => {
         if (disabled || !draggable) return;
@@ -50,7 +50,7 @@ export function StrategyRulesBlockCard({
       }}
     >
       <div
-        className={`absolute inset-y-0 left-0 w-1 rounded-l-md ${toneBar[tone]}`}
+        className={`absolute inset-y-0 left-0 w-1 rounded-none ${toneBar[tone]}`}
       />
       <button
         type="button"

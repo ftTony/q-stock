@@ -4,6 +4,7 @@ import { Suspense, use } from "react";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/routing";
 import { StrategyDetail } from "@/components/strategy/strategy-detail";
+import { StrategyDetailSkeleton } from "@/components/strategy/strategy-lab-skeletons";
 
 function DetailBody({ id }: { id: string }) {
   return <StrategyDetail strategyId={id} />;
@@ -29,7 +30,7 @@ export default function StrategyDetailPage({
         <span className="text-[var(--muted)]">/</span>
         <span className="text-[var(--muted)]">{t("detailTitle")}</span>
       </div>
-      <Suspense fallback={<p className="text-sm text-[var(--muted)]">{t("loading")}</p>}>
+      <Suspense fallback={<StrategyDetailSkeleton />}>
         <DetailBody id={id} />
       </Suspense>
     </div>

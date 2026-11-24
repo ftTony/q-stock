@@ -12,10 +12,17 @@ type Props = {
   onDismiss?: () => void;
 };
 
+/**
+ * App toast — terminal 直角 + hairline，跟 wb-shell / qt 面板语言一致。
+ * 左色条区分语气；浅底用 brand/danger soft，避免白胶囊 + 大圆角消费感。
+ */
 const toneClass: Record<ToastTone, string> = {
-  success: "border-[var(--up)]/40 bg-[var(--panel)] text-[var(--up)]",
-  error: "border-[var(--down)]/40 bg-[var(--panel)] text-[var(--down)]",
-  neutral: "border-[var(--border)] bg-[var(--panel)] text-[var(--foreground)]",
+  success:
+    "border-[var(--border)] border-l-[var(--brand)] bg-[color-mix(in_srgb,var(--brand)_10%,var(--panel))] text-[var(--foreground)]",
+  error:
+    "border-[var(--border)] border-l-[var(--danger)] bg-[color-mix(in_srgb,var(--danger)_10%,var(--panel))] text-[var(--foreground)]",
+  neutral:
+    "border-[var(--border)] border-l-[var(--brand)] bg-[color-mix(in_srgb,var(--brand)_8%,var(--panel))] text-[var(--foreground)]",
 };
 
 export function TopToast({
@@ -53,7 +60,7 @@ export function TopToast({
       aria-live="polite"
     >
       <div
-        className={`pointer-events-auto max-w-[min(92vw,22rem)] animate-[qtFade_0.25s_ease] rounded-xl border px-4 py-2.5 text-center text-sm font-medium shadow-lg backdrop-blur-xl ${toneClass[tone]}`}
+        className={`pointer-events-auto max-w-[min(92vw,22rem)] animate-[qtFade_0.25s_ease] rounded-none border border-l-2 px-3.5 py-2.5 text-center text-[13px] font-medium leading-snug shadow-[0_1px_0_rgba(15,23,42,0.04)] ${toneClass[tone]}`}
       >
         {message}
       </div>

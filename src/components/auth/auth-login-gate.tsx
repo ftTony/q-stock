@@ -11,14 +11,22 @@ import {
 
 export { AUTH_LOGIN_CTA_COMPACT, AUTH_LOGIN_CTA_DEFAULT };
 
-function AuthLoginArt({ compact }: { compact?: boolean }) {
+/** Shared login mark — symbol docks / lab sidebar guest rails. */
+export function AuthLoginArt({
+  compact,
+  className,
+}: {
+  compact?: boolean;
+  className?: string;
+}) {
   return (
     <svg
       viewBox="0 0 160 120"
       className={
-        compact
+        className ??
+        (compact
           ? "h-16 w-auto text-[var(--brand)]"
-          : "h-28 w-auto text-[var(--brand)]"
+          : "h-28 w-auto text-[var(--brand)]")
       }
       aria-hidden
     >

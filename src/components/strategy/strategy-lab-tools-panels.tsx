@@ -21,7 +21,7 @@ export function LabChip({
       type="button"
       disabled={disabled}
       onClick={onClick}
-      className={`rounded border px-2.5 py-1.5 text-[12px] transition ${
+      className={`rounded-none border px-2.5 py-1.5 text-[12px] transition ${
         active
           ? "border-[var(--brand)] bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]"
           : "border-[var(--border)] bg-[var(--panel)] text-[var(--muted)] hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))] hover:text-[var(--foreground)]"
@@ -68,7 +68,7 @@ export function LabComparePanel({
   return (
     <div className="space-y-3">
       <div className="grid gap-2 sm:grid-cols-[1fr_auto_1fr] sm:items-stretch">
-        <div className="rounded-md border border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-2.5">
+        <div className="rounded-none border border-[var(--border)] bg-[var(--surface-2)]/40 px-3 py-2.5">
           <p className="text-[12px] text-[var(--muted)]">{leftLabel}</p>
           <p className="mt-1 truncate text-[14px] font-medium text-[var(--foreground)]">
             {strategyName || thisLabel}
@@ -77,7 +77,7 @@ export function LabComparePanel({
         <div className="flex items-center justify-center px-1 text-[12px] text-[var(--muted)]">
           vs
         </div>
-        <div className="rounded-md border border-[var(--border)] px-3 py-2.5">
+        <div className="rounded-none border border-[var(--border)] px-3 py-2.5">
           <p className="text-[12px] text-[var(--muted)]">{rightLabel}</p>
           <p className="mt-1 truncate text-[14px] font-medium text-[var(--foreground)]">
             {otherName}
@@ -88,7 +88,7 @@ export function LabComparePanel({
       <div>
         <p className="mb-1.5 text-[13px] text-[var(--muted)]">{pickLabel}</p>
         {strategies.length ? (
-          <ul className="max-h-48 divide-y divide-[var(--border)] overflow-y-auto rounded-md border border-[var(--border)] qt-scroll">
+          <ul className="max-h-48 divide-y divide-[var(--border)] overflow-y-auto rounded-none border border-[var(--border)] qt-scroll">
             {strategies.map((s) => {
               const on = otherId === s.id;
               return (
@@ -271,7 +271,7 @@ export function LabBasketPanel({
           {symbols.map((s) => (
             <span
               key={s}
-              className="inline-flex items-center gap-1 rounded border border-[var(--border)] bg-[var(--surface-2)]/40 px-2.5 py-1 text-[12px] tabular-nums"
+              className="inline-flex items-center gap-1 rounded-none border border-[var(--border)] bg-[var(--surface-2)]/40 px-2.5 py-1 text-[12px] tabular-nums"
             >
               {s}
               <button

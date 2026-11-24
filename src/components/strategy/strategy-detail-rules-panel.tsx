@@ -38,14 +38,14 @@ export function StrategyDetailRulesPanel({
   );
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3">
+    <section className="flex min-h-0 flex-1 flex-col rounded-none border border-[var(--border)] bg-[var(--panel)] p-3">
       <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
         <div className="flex flex-wrap items-center gap-2">
           <h2 className="text-[14px] font-medium">{t("rules")}</h2>
-          <div className="inline-flex rounded-md border border-[var(--border)] p-0.5 text-[13px]">
+          <div className="inline-flex rounded-none border border-[var(--border)] p-0.5 text-[13px]">
             <button
               type="button"
-              className={`rounded px-2.5 py-1 ${
+              className={`rounded-none px-2.5 py-1 ${
                 mode === "blocks"
                   ? "bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]"
                   : "text-[var(--muted)] hover:text-[var(--foreground)]"
@@ -56,7 +56,7 @@ export function StrategyDetailRulesPanel({
             </button>
             <button
               type="button"
-              className={`rounded px-2.5 py-1 ${
+              className={`rounded-none px-2.5 py-1 ${
                 mode === "code"
                   ? "bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]"
                   : "text-[var(--muted)] hover:text-[var(--foreground)]"
@@ -67,10 +67,10 @@ export function StrategyDetailRulesPanel({
             </button>
           </div>
           {mode === "code" ? (
-            <div className="inline-flex rounded-md border border-[var(--border)] p-0.5 text-[13px]">
+            <div className="inline-flex rounded-none border border-[var(--border)] p-0.5 text-[13px]">
               <button
                 type="button"
-                className={`rounded px-2.5 py-1 ${
+                className={`rounded-none px-2.5 py-1 ${
                   codeFormat === "python"
                     ? "bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]"
                     : "text-[var(--muted)] hover:text-[var(--foreground)]"
@@ -81,7 +81,7 @@ export function StrategyDetailRulesPanel({
               </button>
               <button
                 type="button"
-                className={`rounded px-2.5 py-1 ${
+                className={`rounded-none px-2.5 py-1 ${
                   codeFormat === "json"
                     ? "bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]"
                     : "text-[var(--muted)] hover:text-[var(--foreground)]"
@@ -113,7 +113,7 @@ export function StrategyDetailRulesPanel({
           )
         ) : codeFormat === "python" ? (
           <div className="flex min-h-0 flex-1 flex-col gap-1.5">
-            <pre className="qt-scroll min-h-[min(68dvh,640px)] flex-1 overflow-auto rounded-md border border-[var(--border)] bg-[var(--surface-2)]/30 p-2.5 font-mono text-[11px] leading-relaxed text-[var(--foreground)]">
+            <pre className="qt-scroll min-h-[min(68dvh,640px)] flex-1 overflow-auto rounded-none border border-[var(--border)] bg-[var(--surface-2)]/30 p-2.5 font-mono text-[11px] leading-relaxed text-[var(--foreground)]">
               {python || t("rulesInvalid")}
             </pre>
             {python ? (
@@ -141,7 +141,7 @@ export function StrategyDetailRulesPanel({
             spellCheck={false}
           />
         ) : (
-          <pre className="qt-scroll min-h-[min(68dvh,640px)] flex-1 overflow-auto rounded-md border border-[var(--border)] bg-[var(--surface-2)]/30 p-2.5 font-mono text-[11px] leading-relaxed">
+          <pre className="qt-scroll min-h-[min(68dvh,640px)] flex-1 overflow-auto rounded-none border border-[var(--border)] bg-[var(--surface-2)]/30 p-2.5 font-mono text-[11px] leading-relaxed">
             {rulesJson}
           </pre>
         )}

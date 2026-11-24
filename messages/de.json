@@ -2502,7 +2502,9 @@
     "paperDraftCta": "Generate paper draft",
     "paperDraftHint": "Prefill a limit paper order from the latest replay fill. Nothing is submitted automatically.",
     "paperDraftOpen": "Open symbol ticket",
-    "paperDraftNote": "Drafts are for process practice. Check rules, size, and invalidation before submit."
+    "paperDraftNote": "Drafts are for process practice. Check rules, size, and invalidation before submit.",
+    "loginTitle": "Sign in to copy templates and save strategies.",
+    "loginBody": "Browse the library first; sign in to save your own strategies and run replays."
   },
   "symbolShare": {
     "title": "Share",
