@@ -9,8 +9,6 @@ import {
   useRef,
   useState,
 } from "react";
-import { useLocale, useTranslations } from "next-intl";
-import { useTheme } from "next-themes";
 import type { OhlcvBar } from "@/lib/types";
 import { usePreference } from "@/components/providers/preference-provider";
 import type { DrawingTool } from "@/components/charts/chart-drawing-icons";
@@ -19,6 +17,7 @@ import {
   type IndicatorFlags,
 } from "@/components/charts/candle-chart-overlays";
 import { syncCandleIndicators } from "@/components/charts/candle-chart-indicators";
+import { createCandleGetBars } from "@/components/charts/candle-chart-data-loader";
 import {
   applyFillParentChartLayout,
   buildChartStyles,
@@ -26,8 +25,6 @@ import {
   candleChartShellClass,
   FILL_PARENT_CHART_LAYOUT,
   periodFromResolution,
-  toKLineData,
-  type TipLabels,
 } from "@/components/charts/candle-chart-styles";
 import {
   resolveCandleType,
@@ -37,20 +34,22 @@ import {
   captureChartAction,
   chartScreenshotFilename,
   type ChartCaptureMode,
-  type ScreenshotQuoteInfo,
 } from "@/components/charts/candle-chart-screenshot";
+import {
+  buildScreenshotQuote,
+  type QuoteHeaderLabels,
+} from "@/components/charts/candle-chart-screenshot-quote";
 import {
   ensurePaperFillOverlay,
   syncTradeMarkers,
   USER_DRAWINGS_GROUP,
   type ChartTradeMarker,
 } from "@/components/charts/candle-chart-trade-markers";
+import { useCandleChartBrand } from "@/components/charts/use-candle-chart-brand";
 import { isAssetSessionOpen } from "@/lib/market/session";
-import { formatDate, formatNumber, formatTime } from "@/lib/format-number";
-import { displayName, localizedNameFromQuote } from "@/lib/market-names";
 import type { AssetType, Quote } from "@/lib/types";
 
-export type { DrawingTool, IndicatorFlags, ChartTradeMarker };
+export type { DrawingTool, IndicatorFlags, ChartTradeMarker, QuoteHeaderLabels };
 
 export type CandleChartHandle = {
   toggleFullscreen: () => void;
@@ -62,76 +61,6 @@ export type CandleChartHandle = {
 
 type KLineChartsModule = typeof import("klinecharts");
 type ChartInstance = NonNullable<ReturnType<KLineChartsModule["init"]>>;
-
-export type QuoteHeaderLabels = {
-  sessionOpen: string;
-  sessionClosed: string;
-  open: string;
-  high: string;
-  low: string;
-  prevClose: string;
-  volume: string;
-  turnover: string;
-};
-
-function compactAmount(v: number | undefined, locale: string): string {
-  if (v == null || Number.isNaN(v)) return "-";
-  const abs = Math.abs(v);
-  const unit = (divisor: number, suffix: string) =>
-    `${formatNumber(v / divisor, { locale, maximumFractionDigits: 2 })}${suffix}`;
-  if (locale.startsWith("zh")) {
-    if (abs >= 1e8) return unit(1e8, "亿");
-    if (abs >= 1e4) return unit(1e4, "万");
-  }
-  if (abs >= 1e9) return unit(1e9, "B");
-  if (abs >= 1e6) return unit(1e6, "M");
-  if (abs >= 1e3) return unit(1e3, "K");
-  return formatNumber(v, { locale, maximumFractionDigits: 2 });
-}
-
-/** Build the pre-formatted quote block rendered into the exported PNG. */
-function buildScreenshotQuote(
-  quote: Quote,
-  symbol: string,
-  assetType: AssetType,
-  locale: string,
-  labels: QuoteHeaderLabels,
-  sessionOpen: boolean,
-): ScreenshotQuoteInfo {
-  const fmt = (v: number) =>
-    formatNumber(v, { locale, maximumFractionDigits: 6 });
-  const up = quote.change >= 0;
-  const changeText = `${up ? "+" : ""}${fmt(quote.change)}`;
-  const pctText = `${quote.percentChange >= 0 ? "+" : ""}${quote.percentChange.toFixed(2)}%`;
-  // Quote timestamps from providers are seconds, not milliseconds.
-  const time = quote.timestamp
-    ? `${formatDate(quote.timestamp * 1000, { locale })} ${formatTime(quote.timestamp * 1000, { locale, assetType })}`
-    : "";
-  return {
-    symbol,
-    name: displayName(
-      symbol,
-      assetType,
-      localizedNameFromQuote(quote, locale),
-      locale,
-    ),
-    statusTime: [sessionOpen ? labels.sessionOpen : labels.sessionClosed, time]
-      .filter(Boolean)
-      .join(" "),
-    price: fmt(quote.price),
-    change: changeText,
-    percentChange: pctText,
-    trend: up ? "up" : "down",
-    stats: [
-      { label: labels.high, value: fmt(quote.high) },
-      { label: labels.open, value: fmt(quote.open) },
-      { label: labels.volume, value: compactAmount(quote.volume, locale) },
-      { label: labels.low, value: fmt(quote.low) },
-      { label: labels.prevClose, value: fmt(quote.previousClose) },
-      { label: labels.turnover, value: compactAmount(quote.turnover, locale) },
-    ],
-  };
-}
 
 type CandleChartProps = {
   bars: OhlcvBar[];
@@ -195,6 +124,8 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     ref,
   ) {
   const chartType = resolveCandleType(chartSettings, resolution);
+  /** Heikin rewrites OHLCV — toggling it must reload bars, not only setStyles. */
+  const dataShapeKey = chartType === "heikin" ? "heikin" : "raw";
   const shellRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<ChartInstance | null>(null);
@@ -210,47 +141,23 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
   const [fullscreen, setFullscreen] = useState(false);
   const chartSettingsRef = useRef(chartSettings);
   chartSettingsRef.current = chartSettings;
+  const chartTypeRef = useRef(chartType);
+  chartTypeRef.current = chartType;
   const showDrawingToolsRef = useRef(showDrawingTools);
   showDrawingToolsRef.current = showDrawingTools;
   const [liveSession, setLiveSession] = useState(() =>
     isAssetSessionOpen(assetType),
   );
   const { changeColorScheme } = usePreference();
-  const { resolvedTheme } = useTheme();
-  const locale = useLocale();
-  const t = useTranslations("symbol");
-  const tApp = useTranslations("app");
-  const domainRef = useRef(tApp("domain"));
-  domainRef.current = tApp("domain");
-  /** Corner mark follows locale (`app.name`: 钱力股 / 錢力股 / Qianli Gu / …). */
-  const brandRef = useRef(tApp("name"));
-  brandRef.current = tApp("name");
-  const taglineRef = useRef(tApp("tagline"));
-  taglineRef.current = tApp("tagline");
-  const logoSrcRef = useRef("/logo-light.png?v=2");
-  // logo-en carries a dark square backdrop (light-theme only); on a dark
-  // footer use the transparent mark so it stays legible on any background.
-  logoSrcRef.current =
-    resolvedTheme === "dark"
-      ? "/logo-light.png?v=2"
-      : locale.startsWith("zh")
-        ? "/logo-cn.png?v=2"
-        : locale.startsWith("en")
-          ? "/logo-en.png?v=2"
-          : "/logo-light.png?v=2";
-  const tipLabels = useMemo<TipLabels>(
-    () => ({
-      time: t("time"),
-      open: t("open"),
-      high: t("high"),
-      low: t("low"),
-      close: t("close"),
-      volume: t("volume"),
-    }),
-    [t],
-  );
-  const tipLabelsRef = useRef<TipLabels>(tipLabels);
-  tipLabelsRef.current = tipLabels;
+  const {
+    locale,
+    resolvedTheme,
+    domainRef,
+    brandRef,
+    taglineRef,
+    logoSrcRef,
+    tipLabelsRef,
+  } = useCandleChartBrand();
   const quoteHeaderLabelsRef = useRef(quoteHeaderLabels);
   quoteHeaderLabelsRef.current = quoteHeaderLabels;
 
@@ -296,41 +203,12 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       if (fillParent) applyFillParentChartLayout(chart);
 
       chart.setDataLoader({
-        getBars: async ({ type, timestamp, callback }) => {
-          // KLineChart v10: forward = older (left), backward = newer (right)
-          if (type === "init" || type === "update") {
-            const list = toKLineData(barsRef.current);
-            callback(list, {
-              forward: hasMoreRef.current && list.length > 0,
-              backward: false,
-            });
-            return;
-          }
-          if (type === "forward") {
-            const oldestSec = timestamp
-              ? Math.floor(timestamp / 1000)
-              : barsRef.current[0]?.time;
-            if (!oldestSec || !onLoadMoreRef.current) {
-              callback([], { forward: false });
-              return;
-            }
-            try {
-              const older = await onLoadMoreRef.current(oldestSec);
-              const chunk = Array.isArray(older) ? older : [];
-              callback(toKLineData(chunk), {
-                forward: chunk.length > 0 && hasMoreRef.current,
-              });
-            } catch {
-              callback([], { forward: false });
-            }
-            return;
-          }
-          if (type === "backward") {
-            callback([], { backward: false });
-            return;
-          }
-          callback([]);
-        },
+        getBars: createCandleGetBars({
+          barsRef,
+          hasMoreRef,
+          onLoadMoreRef,
+          chartTypeRef,
+        }),
       });
 
       chart.setSymbol({
@@ -405,6 +283,20 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     showDrawingTools,
   ]);
 
+  // Heikin rewrites bar OHLC — reload via setPeriod when entering/leaving it.
+  useEffect(() => {
+    const chart = chartRef.current;
+    if (!chart || !ready) return;
+    chart.setPeriod(periodFromResolution(resolution));
+    syncTradeMarkers(
+      chart,
+      chartSettingsRef.current.showTradeMarkers
+        ? tradeMarkersRef.current
+        : [],
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- only data-shape toggles
+  }, [dataShapeKey, ready]);
+
   const tradeMarkersKey = useMemo(
     () =>
       tradeMarkers
@@ -475,21 +367,15 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       chartRef.current?.resize();
       raf2 = requestAnimationFrame(() => chartRef.current?.resize());
     });
-    return () => {
-      cancelAnimationFrame(raf1);
-      cancelAnimationFrame(raf2);
-    };
+    return () => { cancelAnimationFrame(raf1); cancelAnimationFrame(raf2); };
   }, [ready, resetKey]);
 
   const toggleFullscreen = async () => {
     const shell = shellRef.current;
     if (!shell) return;
     try {
-      if (document.fullscreenElement) {
-        await document.exitFullscreen();
-      } else {
-        await shell.requestFullscreen();
-      }
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await shell.requestFullscreen();
     } catch {
       /* browser may block without gesture / support */
     }
@@ -497,11 +383,9 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
 
   const startDrawing = (tool: DrawingTool) => {
     setDrawingTool(tool);
-    if (tool === "none") return;
-    chartRef.current?.createOverlay({
-      name: tool,
-      groupId: USER_DRAWINGS_GROUP,
-    });
+    if (tool !== "none") {
+      chartRef.current?.createOverlay({ name: tool, groupId: USER_DRAWINGS_GROUP });
+    }
   };
 
   const clearDrawings = () => {
@@ -511,9 +395,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
     setDrawingTool("none");
     syncTradeMarkers(
       chart,
-      chartSettingsRef.current.showTradeMarkers
-        ? tradeMarkersRef.current
-        : [],
+      chartSettingsRef.current.showTradeMarkers ? tradeMarkersRef.current : [],
     );
   };
 

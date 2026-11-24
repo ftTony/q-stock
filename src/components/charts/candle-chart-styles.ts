@@ -46,14 +46,20 @@ export function readChartExportBg(): string {
 /** Map product chart type → klinecharts candle.type. */
 export function toKlineCandleType(
   type: ChartCandleType,
-): "area" | "candle_solid" {
-  return type === "area" ? "area" : "candle_solid";
+): "area" | "candle_solid" | "candle_up_stroke" | "ohlc" {
+  if (type === "ohlc") return "ohlc";
+  // Line uses area engine with transparent fill.
+  if (type === "area" || type === "line") return "area";
+  // 空心阳线：阳线描边、阴线实心（klinecharts candle_up_stroke）.
+  if (type === "candle_stroke") return "candle_up_stroke";
+  // 柱状图 / 实心阳线 / Heikin：实心实体（柱状图再藏影线）.
+  return "candle_solid";
 }
 
 /** @deprecated Prefer resolveCandleType + toKlineCandleType */
 export function candleTypeFromResolution(
   resolution: string,
-): "area" | "candle_solid" {
+): ReturnType<typeof toKlineCandleType> {
   return toKlineCandleType(resolveCandleType({}, resolution));
 }
 
@@ -97,6 +103,12 @@ export function buildChartStyles(
   const tipOffsetTop = 8;
   // Area tip pulse only while the venue is in regular session (crypto = always).
   const live = Boolean(opts?.liveSession);
+  const resolvedType =
+    opts?.chartType ?? resolveCandleType({}, resolution);
+  const lineOnly = resolvedType === "line";
+  // No native column type — solid body with invisible wicks.
+  const columnOnly = resolvedType === "column";
+  const wickColor = columnOnly ? "rgba(0,0,0,0)" : undefined;
 
   const tipLegend = (
     title: string,
@@ -115,9 +127,7 @@ export function buildChartStyles(
       vertical: { color: c.grid },
     },
     candle: {
-      type: toKlineCandleType(
-        opts?.chartType ?? resolveCandleType({}, resolution),
-      ),
+      type: toKlineCandleType(resolvedType),
       bar: {
         upColor: c.up,
         downColor: c.down,
@@ -125,16 +135,18 @@ export function buildChartStyles(
         upBorderColor: c.up,
         downBorderColor: c.down,
         noChangeBorderColor: c.muted,
-        upWickColor: c.up,
-        downWickColor: c.down,
-        noChangeWickColor: c.muted,
+        upWickColor: wickColor ?? c.up,
+        downWickColor: wickColor ?? c.down,
+        noChangeWickColor: wickColor ?? c.muted,
       },
       area: {
         // Default lineSize is 2 — thin it so intraday/area traces read clean.
         lineSize: 1,
+        // Pure line: keep close path, drop mountain fill.
+        ...(lineOnly ? { backgroundColor: "rgba(0,0,0,0)" } : {}),
         point: {
-          show: live,
-          animation: live,
+          show: live && !lineOnly,
+          animation: live && !lineOnly,
           animationDuration: 1000,
         },
       },

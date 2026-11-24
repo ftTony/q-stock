@@ -9,19 +9,25 @@ import type {
   IndexConstituentsPage,
 } from "@/lib/market/providers/longbridge-constituents";
 import { getIndexConstituents } from "@/lib/market/providers/longbridge-constituents";
-import { normalizeSymbol } from "@/lib/market/symbols";
+import { normalizeSymbol, toLongbridgeSymbol } from "@/lib/market/symbols";
 import type { AssetType } from "@/lib/types";
 
 /**
- * Full constituents list via Futu stock-screen (cursor pagination) enriched
- * with Futu quote snapshots (PE/PB/dividend/OHLC/bid-ask...).
+ * Index constituents via Futu, enriched with quote snapshots.
  *
- * Longbridge `constituent` only returns 20 rows, so it is kept as a fallback
- * for when Futu BYOK credentials are unavailable.
+ * - HK: stock-screen INDEX_ID filter (true constituents).
+ * - CN: plate-stock on the index plate code (SH.000001 / SZ.399001 / …).
+ *   Market-wide stock-screen is wrong for A-share indices and often yields
+ *   empty rows when CN snapshot rights are missing on the OpenAPI key.
+ * - US: stock-screen market filter (best-effort; Futu has no INDEX_ID).
+ *
+ * Longbridge `constituent` (≤20 rows) is the no-Futu fallback. When Futu
+ * snapshots come back empty for a page, Longbridge quotes fill prices.
  */
 
 const PAGE_SIZE = 50;
 const SNAPSHOT_CHUNK = 400;
+const LB_QUOTE_CHUNK = 100;
 
 type ScreenItem = {
   code?: string;
@@ -35,36 +41,47 @@ type SnapRow = {
   name?: string;
   sc_name?: string;
   tc_name?: string;
-  last_price?: number;
-  prev_close_price?: number;
-  open_price?: number;
-  high_price?: number;
-  low_price?: number;
-  volume?: number;
-  turnover?: number;
-  turnover_rate?: number;
-  amplitude?: number;
-  volume_ratio?: number;
-  pe_ttm_ratio?: number;
-  pb_ratio?: number;
-  dividend_ttm?: number;
-  dividend_ratio_ttm?: number;
-  earning_per_share?: number;
-  total_market_val?: number;
-  circular_market_val?: number;
-  bid_price?: number;
-  ask_price?: number;
-  bid_vol?: number;
-  ask_vol?: number;
-  close_price_5min?: number;
+  last_price?: number | string;
+  prev_close_price?: number | string;
+  open_price?: number | string;
+  high_price?: number | string;
+  low_price?: number | string;
+  volume?: number | string;
+  turnover?: number | string;
+  turnover_rate?: number | string;
+  amplitude?: number | string;
+  volume_ratio?: number | string;
+  pe_ttm_ratio?: number | string;
+  pb_ratio?: number | string;
+  dividend_ttm?: number | string;
+  dividend_ratio_ttm?: number | string;
+  earning_per_share?: number | string;
+  total_market_val?: number | string;
+  circular_market_val?: number | string;
+  bid_price?: number | string;
+  ask_price?: number | string;
+  bid_vol?: number | string;
+  ask_vol?: number | string;
+  close_price_5min?: number | string;
 };
 
-function finite(v: number | null | undefined): number | undefined {
-  return typeof v === "number" && Number.isFinite(v) ? v : undefined;
+type PlateStockRow = {
+  code?: string;
+  name?: string;
+  stock_name?: string;
+  sc_name?: string;
+  tc_name?: string;
+  stock_type?: string;
+};
+
+function finite(v: number | string | null | undefined): number | undefined {
+  if (v == null || v === "") return undefined;
+  const n = typeof v === "number" ? v : Number(v);
+  return Number.isFinite(n) ? n : undefined;
 }
 
 /** Ignore Futu's zero placeholders for optional fundamental fields. */
-function positive(v: number | null | undefined): number | undefined {
+function positive(v: number | string | null | undefined): number | undefined {
   const n = finite(v);
   return n != null && n > 0 ? n : undefined;
 }
@@ -88,8 +105,7 @@ function screenQuery(symbol: string, assetType: AssetType) {
       };
     }
   }
-  // US/CN index constituents are not exposed by Futu's INDEX_ID filter;
-  // the page then covers the full underlying market, sorted by day change.
+  // US (and non-plate CN fallback): full market sorted by day change.
   const market = assetType === "hk" ? 1 : assetType === "cn" ? 3 : 2;
   return {
     screen_queries: [
@@ -107,6 +123,96 @@ function screenQuery(symbol: string, assetType: AssetType) {
         },
       },
     ],
+  };
+}
+
+function cnPlateCode(symbol: string): string | null {
+  const futuIndex = INDEX_FUTU[symbol.toUpperCase().trim()];
+  if (!futuIndex) return null;
+  if (futuIndex.startsWith("SH.") || futuIndex.startsWith("SZ.")) return futuIndex;
+  return null;
+}
+
+async function fetchPlatePage(
+  plateCode: string,
+  cursor: string,
+): Promise<{
+  items: ScreenItem[];
+  nextKey: string | null;
+  hasMore: boolean;
+  total: number;
+}> {
+  const result = await futuRequest<{ stock_list?: PlateStockRow[] }>(
+    "GET",
+    "/api/v1.0/quote/plate-stock",
+    {
+      query: {
+        plate_code: plateCode,
+        limit: PAGE_SIZE,
+        ...(cursor ? { next_key: cursor } : {}),
+      },
+    },
+  );
+  const items: ScreenItem[] = (result.data?.stock_list ?? [])
+    .filter((row) => {
+      if (!row.code) return false;
+      const t = (row.stock_type || "STOCK").toUpperCase();
+      return t === "STOCK" || t === "EQTY" || t === "";
+    })
+    .map((row) => ({
+      code: row.code,
+      name: row.sc_name || row.stock_name || row.name,
+      sc_name: row.sc_name,
+      tc_name: row.tc_name,
+    }));
+  const nextKey =
+    result.hasMore && result.nextKey && result.nextKey !== "-1"
+      ? result.nextKey
+      : null;
+  return {
+    items,
+    nextKey,
+    hasMore: Boolean(nextKey),
+    total: result.total ?? items.length,
+  };
+}
+
+async function fetchScreenPage(
+  symbol: string,
+  assetType: AssetType,
+  cursor: string,
+): Promise<{
+  items: ScreenItem[];
+  nextKey: string | null;
+  hasMore: boolean;
+  total: number;
+}> {
+  const query = screenQuery(symbol, assetType);
+  const result = await futuRequest<{ items?: ScreenItem[] }>(
+    "POST",
+    "/api/v1.0/quote/stock-screen",
+    {
+      body: {
+        limit: PAGE_SIZE,
+        ...query,
+        ...(cursor ? { next_key: cursor } : {}),
+        sort: {
+          direction: 2,
+          cumulative_property: { name: 3102, days: 1 },
+        },
+      },
+    },
+  );
+  const items = result.data?.items ?? [];
+  const nextKey =
+    result.hasMore && result.nextKey && result.nextKey !== "-1"
+      ? result.nextKey
+      : null;
+  return {
+    items,
+    nextKey,
+    hasMore: Boolean(nextKey),
+    total: result.total ?? items.length,
   };
 }
 
@@ -132,6 +238,67 @@ async function fetchSnapshots(codes: string[]): Promise<Map<string, SnapRow>> {
     }
   }
   return byCode;
+}
+
+/**
+ * Fill missing last_price via Longbridge when Futu CN/US snapshot rights
+ * are absent (prod symptom: screen/plate total > 0, mapped rows all null).
+ */
+async function fillMissingQuotesFromLongbridge(
+  codes: string[],
+  snaps: Map<string, SnapRow>,
+  assetType: AssetType,
+): Promise<void> {
+  const missing = codes.filter((code) => {
+    if (!code) return false;
+    return !(positive(snaps.get(code)?.last_price) ?? 0);
+  });
+  if (!missing.length) return;
+
+  try {
+    const { dec, getQuoteCtx, hasLongbridgeCreds } = await import(
+      "@/lib/market/providers/longbridge-client"
+    );
+    if (!hasLongbridgeCreds()) return;
+    const ctx = await getQuoteCtx();
+    const bareByLb = new Map<string, string>();
+    for (const code of missing) {
+      const bare = normalizeSymbol(code, assetType);
+      const lbSym = toLongbridgeSymbol(bare, assetType);
+      bareByLb.set(lbSym, code);
+    }
+    const lbKeys = [...bareByLb.keys()];
+    for (let i = 0; i < lbKeys.length; i += LB_QUOTE_CHUNK) {
+      const chunk = lbKeys.slice(i, i + LB_QUOTE_CHUNK);
+      const rows = await ctx.quote(chunk);
+      for (const q of rows ?? []) {
+        const futuCode = bareByLb.get(String(q.symbol || ""));
+        if (!futuCode) continue;
+        const last = dec(q.lastDone);
+        if (!(last > 0)) continue;
+        const prev = dec(q.prevClose);
+        const volume = Number(q.volume ?? 0);
+        const turnover = dec(
+          (q as { turnover?: { toNumber(): number } | number | string | null })
+            .turnover,
+        );
+        const existing = snaps.get(futuCode) ?? { code: futuCode };
+        snaps.set(futuCode, {
+          ...existing,
+          last_price: last,
+          prev_close_price: prev > 0 ? prev : existing.prev_close_price,
+          volume: Number.isFinite(volume) ? volume : existing.volume,
+          turnover: turnover > 0 ? turnover : existing.turnover,
+          name: existing.name || "",
+        });
+      }
+    }
+  } catch (err) {
+    console.warn(
+      "[futu-constituents] longbridge quote fill failed:",
+      err instanceof Error ? err.message : err,
+    );
+  }
 }
 
 function mapRow(
@@ -206,39 +373,36 @@ export async function getFutuConstituentsPage(
   }
 
   const cursor = nextKey?.trim() || "";
+  const plate = assetType === "cn" ? cnPlateCode(upper) : null;
+
   const load = async (): Promise<IndexConstituentsPage> => {
-    const query = screenQuery(upper, assetType);
-    const result = await futuRequest<{ items?: ScreenItem[] }>(
-      "POST",
-      "/api/v1.0/quote/stock-screen",
-      {
-        body: {
-          limit: PAGE_SIZE,
-          ...query,
-          ...(cursor ? { next_key: cursor } : {}),
-          sort: {
-            direction: 2,
-            cumulative_property: { name: 3102, days: 1 },
-          },
-        },
-      },
-    );
-    const items = result.data?.items ?? [];
-    const snaps = await fetchSnapshots(
-      items.map((item) => String(item.code || "")),
-    );
-    const constituents = items
+    const page = plate
+      ? await fetchPlatePage(plate, cursor)
+      : await fetchScreenPage(upper, assetType, cursor);
+
+    const codes = page.items.map((item) => String(item.code || ""));
+    const snaps = await fetchSnapshots(codes);
+    // Prod often has plate/screen codes but no CN snapshot rights on the key.
+    await fillMissingQuotesFromLongbridge(codes, snaps, assetType);
+
+    const constituents = page.items
       .map((item) => mapRow(item, snaps.get(String(item.code || "")), assetType))
       .filter((row): row is IndexConstituent => row != null);
+
+    // Avoid advancing an empty cursor when the upstream page had members
+    // but every row failed enrichment (would look like endless blank pages).
+    const nextKeyOut =
+      constituents.length === 0 && page.items.length > 0 ? null : page.nextKey;
+
     return {
       constituents,
-      nextKey: result.hasMore ? (result.nextKey ?? null) : null,
-      hasMore: Boolean(result.hasMore && result.nextKey),
-      total: result.total ?? constituents.length,
+      nextKey: nextKeyOut,
+      hasMore: Boolean(nextKeyOut),
+      total: page.total,
       source: "futu",
     };
   };
 
   if (cursor) return load();
-  return cachedFetch(`futu:constituents:v1:${upper}:${assetType}`, 30_000, load);
+  return cachedFetch(`futu:constituents:v2:${upper}:${assetType}`, 30_000, load);
 }

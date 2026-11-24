@@ -2,7 +2,14 @@
 
 const STORAGE_KEY = "qstock.chartSettings.v1";
 
-export type ChartCandleType = "candle" | "area";
+export type ChartCandleType =
+  | "candle"
+  | "candle_stroke"
+  | "ohlc"
+  | "column"
+  | "line"
+  | "heikin"
+  | "area";
 
 export type ChartUiSettings = {
   /** Show paper buy/sell markers on the candle pane. */
@@ -18,8 +25,18 @@ const DEFAULTS: ChartUiSettings = {
   showTradeMarkers: true,
 };
 
+const CHART_TYPES = new Set<ChartCandleType>([
+  "candle",
+  "candle_stroke",
+  "ohlc",
+  "column",
+  "line",
+  "heikin",
+  "area",
+]);
+
 export function isChartCandleType(v: unknown): v is ChartCandleType {
-  return v === "candle" || v === "area";
+  return typeof v === "string" && CHART_TYPES.has(v as ChartCandleType);
 }
 
 /** Effective type for KLine styles. */
