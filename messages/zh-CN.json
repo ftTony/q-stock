@@ -2366,7 +2366,8 @@
     "equityCurve": "权益曲线",
     "vsBuyHold": "对照买入持有",
     "tradeList": "成交明细",
-    "replayRunning": "回放排队中",
+    "replayRunning": "回放进行中",
+    "replayRunningHint": "权益与成交就绪后可复盘",
     "tagTrend": "趋势跟踪",
     "tagRisk": "风险控制",
     "tagDiscipline": "纪律",
@@ -2521,7 +2522,9 @@
     "paperDraftCta": "生成模拟单草稿",
     "paperDraftHint": "用回放里最近一笔成交预填限价模拟单；不会自动提交。",
     "paperDraftOpen": "打开个股下单",
-    "paperDraftNote": "草稿仅作过程练习。请核对规则、仓位与失效条件后再提交。"
+    "paperDraftNote": "草稿仅作过程练习。请核对规则、仓位与失效条件后再提交。",
+    "loginTitle": "登录后可复制模板并保存策略。",
+    "loginBody": "先从模板库理解规则逻辑；登录后可保存为我的策略并运行回放。"
   },
   "symbolShare": {
     "title": "分享",

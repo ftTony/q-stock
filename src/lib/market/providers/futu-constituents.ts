@@ -1,4 +1,4 @@
-import { cachedFetch } from "@/lib/cache";
+import { getCached, setCached } from "@/lib/cache";
 import { INDEX_FUTU, isMarketIndexSymbol } from "@/lib/market/indices";
 import {
   futuRequest,
@@ -11,6 +11,28 @@ import type {
 import { getIndexConstituents } from "@/lib/market/providers/longbridge-constituents";
 import { normalizeSymbol, toLongbridgeSymbol } from "@/lib/market/symbols";
 import type { AssetType } from "@/lib/types";
+
+const FIRST_PAGE_TTL_MS = 30_000;
+
+/** First-page cache key (v3: never store empty enrich failures). */
+export function constituentsCacheKey(
+  symbol: string,
+  assetType: AssetType,
+): string {
+  return `futu:constituents:v3:${symbol.toUpperCase().trim()}:${assetType}`;
+}
+
+/** Peek a previously successful first page (for timeout / soft fallback). */
+export async function peekCachedConstituentsPage(
+  symbol: string,
+  assetType: AssetType,
+): Promise<IndexConstituentsPage | null> {
+  const hit = await getCached<IndexConstituentsPage>(
+    constituentsCacheKey(symbol, assetType),
+  );
+  if (!hit || !hit.constituents?.length) return null;
+  return hit;
+}
 
 /**
  * Index constituents via Futu, enriched with quote snapshots.
@@ -374,6 +396,7 @@ export async function getFutuConstituentsPage(
 
   const cursor = nextKey?.trim() || "";
   const plate = assetType === "cn" ? cnPlateCode(upper) : null;
+  const cacheKey = constituentsCacheKey(upper, assetType);
 
   const load = async (): Promise<IndexConstituentsPage> => {
     const page = plate
@@ -400,9 +423,27 @@ export async function getFutuConstituentsPage(
       hasMore: Boolean(nextKeyOut),
       total: page.total,
       source: "futu",
+      ...(constituents.length === 0 && page.items.length > 0
+        ? { degraded: true }
+        : {}),
     };
   };
 
   if (cursor) return load();
-  return cachedFetch(`futu:constituents:v2:${upper}:${assetType}`, 30_000, load);
+
+  const cached = await peekCachedConstituentsPage(upper, assetType);
+  if (cached) return cached;
+
+  const fresh = await load();
+  if (fresh.constituents.length > 0) {
+    await setCached(cacheKey, fresh, FIRST_PAGE_TTL_MS);
+    return fresh;
+  }
+
+  // Names present but every row failed quote enrich — never cache empty.
+  const stale = await peekCachedConstituentsPage(upper, assetType);
+  if (stale) {
+    return { ...stale, degraded: true };
+  }
+  return fresh;
 }

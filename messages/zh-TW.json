@@ -2351,7 +2351,8 @@
     "equityCurve": "权益曲线",
     "vsBuyHold": "对照买入持有",
     "tradeList": "成交明细",
-    "replayRunning": "回放排队中",
+    "replayRunning": "回放進行中",
+    "replayRunningHint": "權益與成交就緒後可復盤",
     "tagTrend": "趨勢跟蹤",
     "tagRisk": "風險控制",
     "tagDiscipline": "紀律",
@@ -2506,7 +2507,9 @@
     "paperDraftCta": "Generate paper draft",
     "paperDraftHint": "Prefill a limit paper order from the latest replay fill. Nothing is submitted automatically.",
     "paperDraftOpen": "Open symbol ticket",
-    "paperDraftNote": "Drafts are for process practice. Check rules, size, and invalidation before submit."
+    "paperDraftNote": "Drafts are for process practice. Check rules, size, and invalidation before submit.",
+    "loginTitle": "登入後可複製模板並儲存策略。",
+    "loginBody": "先從模板庫理解規則邏輯；登入後可儲存為我的策略並執行回放。"
   },
   "symbolShare": {
     "title": "分享",

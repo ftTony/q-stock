@@ -7,6 +7,7 @@ import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { TopToast, type ToastTone } from "@/components/ui/top-toast";
 import {
   StrategyDetailRulesPanel,
   type RulesMode,
@@ -14,6 +15,7 @@ import {
 import { StrategyDetailReplayAside } from "@/components/strategy/strategy-detail-replay-aside";
 import { type ReplayResultView } from "@/components/strategy/strategy-replay-panel";
 import { StrategyDetailHeader } from "@/components/strategy/strategy-detail-header";
+import { StrategyDetailSkeleton } from "@/components/strategy/strategy-lab-skeletons";
 import { replayErrorMessage } from "@/lib/strategy/replay-errors";
 import {
   strategyRulesSchema,
@@ -76,10 +78,19 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
   });
   const [rangeTo, setRangeTo] = useState(() => isoDate(new Date()));
   const [activeId, setActiveId] = useState<string | null>(replayIdParam);
-  const [msg, setMsg] = useState<string | null>(null);
+  const [replayDrawerOpenKey, setReplayDrawerOpenKey] = useState(0);
+  const [toastMsg, setToastMsg] = useState<string | null>(null);
+  const [toastTone, setToastTone] = useState<ToastTone>("neutral");
+  const [toastKey, setToastKey] = useState(0);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [rulesMode, setRulesMode] = useState<RulesMode>("blocks");
   const [rules, setRules] = useState<StrategyRules | null>(null);
+
+  function showToast(message: string, tone: ToastTone = "neutral") {
+    setToastTone(tone);
+    setToastMsg(message);
+    setToastKey((k) => k + 1);
+  }
 
   const replaysQuery = useStrategyReplayList(strategyId, signedIn);
   const activeQuery = useStrategyReplayDetail(strategyId, activeId, {
@@ -134,6 +145,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
 
   function selectReplay(r: Replay) {
     setActiveId(r.id);
+    setReplayDrawerOpenKey((k) => k + 1);
     router.replace(`/strategies/${strategyId}?replayId=${r.id}`);
   }
 
@@ -159,25 +171,23 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
         const parsed = JSON.parse(rulesJson) as unknown;
         const checked = strategyRulesSchema.safeParse(parsed);
         if (!checked.success) {
-          setMsg(t("rulesInvalid"));
+          showToast(t("rulesInvalid"), "error");
           return;
         }
         applyRules(checked.data);
       } catch {
-        setMsg(t("rulesInvalid"));
+        showToast(t("rulesInvalid"), "error");
         return;
       }
     } else if (rules) {
       setRulesJson(JSON.stringify(rules, null, 2));
     }
     setRulesMode(mode);
-    setMsg(null);
   }
 
   async function save(e: FormEvent) {
     e.preventDefault();
     if (!canEdit) return;
-    setMsg(null);
     try {
       let nextRules: StrategyRules;
       // Prefer structured rules from blocks / Python preview; JSON textarea
@@ -191,36 +201,36 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
           } else if (rules) {
             const fromBlocks = strategyRulesSchema.safeParse(rules);
             if (!fromBlocks.success) {
-              setMsg(t("rulesInvalid"));
+              showToast(t("rulesInvalid"), "error");
               return;
             }
             nextRules = fromBlocks.data;
           } else {
-            setMsg(t("rulesInvalid"));
+            showToast(t("rulesInvalid"), "error");
             return;
           }
         } catch {
           if (rules) {
             const fromBlocks = strategyRulesSchema.safeParse(rules);
             if (!fromBlocks.success) {
-              setMsg(t("rulesInvalid"));
+              showToast(t("rulesInvalid"), "error");
               return;
             }
             nextRules = fromBlocks.data;
           } else {
-            setMsg(t("rulesInvalid"));
+            showToast(t("rulesInvalid"), "error");
             return;
           }
         }
       } else if (rules) {
         const checked = strategyRulesSchema.safeParse(rules);
         if (!checked.success) {
-          setMsg(t("rulesInvalid"));
+          showToast(t("rulesInvalid"), "error");
           return;
         }
         nextRules = checked.data;
       } else {
-        setMsg(t("rulesInvalid"));
+        showToast(t("rulesInvalid"), "error");
         return;
       }
       await updateMut.mutateAsync({
@@ -229,19 +239,21 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
         rules: nextRules,
       });
       applyRules(nextRules);
-      setMsg(t("saved"));
+      showToast(t("saved"), "success");
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : t("saveFailed"));
+      showToast(
+        err instanceof Error ? err.message : t("saveFailed"),
+        "error",
+      );
     }
   }
 
   async function startReplay(e: FormEvent) {
     e.preventDefault();
     if (!session?.user) {
-      setMsg(t("loginHint"));
+      showToast(t("loginHint"), "neutral");
       return;
     }
-    setMsg(null);
     try {
       const data = await startReplayMut.mutateAsync({
         symbol,
@@ -252,14 +264,16 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
       const replay = data.replay as Replay | undefined;
       if (replay?.id) {
         setActiveId(replay.id);
+        setReplayDrawerOpenKey((k) => k + 1);
         router.replace(`/strategies/${strategyId}?replayId=${replay.id}`);
       }
     } catch (err) {
-      setMsg(
+      showToast(
         replayErrorMessage(
           { error: err instanceof Error ? err.message : undefined },
           t,
         ),
+        "error",
       );
     }
   }
@@ -271,19 +285,21 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
 
   async function confirmRemoveStrategy() {
     if (!canEdit) return;
-    setMsg(null);
     try {
       await deleteMut.mutateAsync(strategyId);
       setDeleteOpen(false);
       setTab("mine");
       router.push("/strategies");
     } catch (err) {
-      setMsg(err instanceof Error ? err.message : t("deleteFailed"));
+      showToast(
+        err instanceof Error ? err.message : t("deleteFailed"),
+        "error",
+      );
     }
   }
 
   if (detailQuery.isLoading) {
-    return <p className="text-sm text-[var(--muted)]">{t("loading")}</p>;
+    return <StrategyDetailSkeleton />;
   }
 
   if (!strategy) {
@@ -317,10 +333,6 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
         onDelete={requestRemoveStrategy}
       />
 
-      {msg ? (
-        <p className="text-[12px] text-[var(--muted)]">{msg}</p>
-      ) : null}
-
       <div className="grid min-h-0 flex-1 gap-3 lg:grid-cols-[minmax(0,1fr)_280px] lg:items-stretch">
         <StrategyDetailRulesPanel
           canEdit={canEdit}
@@ -350,6 +362,7 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
           onRangeToChange={setRangeTo}
           onStartReplay={(e) => void startReplay(e)}
           onSelectReplay={selectReplay}
+          replayDrawerOpenKey={replayDrawerOpenKey}
           onQuota={(next) => {
             qc.setQueryData(
               queryKeys.strategies.replays(strategyId),
@@ -364,6 +377,13 @@ export function StrategyDetail({ strategyId }: { strategyId: string }) {
           }
         />
       </div>
+
+      <TopToast
+        key={toastKey}
+        message={toastMsg}
+        tone={toastTone}
+        onDismiss={() => setToastMsg(null)}
+      />
 
       <ConfirmDialog
         open={deleteOpen}

@@ -52,6 +52,8 @@ export type IndexConstituentsPage = {
   hasMore: boolean;
   total: number;
   source: "futu" | "longbridge";
+  /** True when serving stale cache or enrich failed soft-empty. */
+  degraded?: boolean;
 };
 
 type LbModule = typeof import("longbridge");

@@ -545,6 +545,31 @@ th.qt-col-drop-target {
   }
 }
 
+/* Indeterminate hairline for in-flight lab/replay status strips. */
+@keyframes qtIndeterminate {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(320%);
+  }
+}
+
+.qt-indeterminate-bar {
+  width: 36%;
+  height: 100%;
+  background: var(--brand);
+  animation: qtIndeterminate 1.15s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .qt-indeterminate-bar {
+    animation: none;
+    width: 100%;
+    opacity: 0.55;
+  }
+}
+
 @keyframes qtMarquee {
   from {
     transform: translateX(0);

@@ -217,7 +217,7 @@ function StrategyRulesFlowCanvas({ value, disabled, onChange }: Props) {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
-      <div className="relative min-h-[min(68dvh,640px)] flex-1 overflow-hidden rounded-md border border-[var(--border)] bg-[var(--surface-2)]/25">
+      <div className="relative min-h-[min(68dvh,640px)] flex-1 overflow-hidden rounded-none border border-[var(--border)] bg-[var(--surface-2)]/25">
         <ReactFlow
           nodes={nodes}
           edges={edges}

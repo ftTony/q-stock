@@ -3,6 +3,7 @@
 import type { FormEvent } from "react";
 import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
+import { QtDatePicker } from "@/components/ui/qt-date-picker";
 import { QtSelect } from "@/components/ui/qt-select";
 import { SymbolSearchField } from "@/components/ui/symbol-search-field";
 import { StrategyLabTools } from "@/components/strategy/strategy-lab-tools";
@@ -42,6 +43,8 @@ type Props = {
   onSelectReplay: (replay: Replay) => void;
   onQuota: (next: Quota) => void;
   onShareChange?: (token: string | null) => void;
+  /** Bumped when a list row is selected so the result drawer reopens. */
+  replayDrawerOpenKey?: number;
 };
 
 /** Right-rail replay form + recent list for strategy detail. */
@@ -65,11 +68,12 @@ export function StrategyDetailReplayAside({
   onSelectReplay,
   onQuota,
   onShareChange,
+  replayDrawerOpenKey = 0,
 }: Props) {
   const t = useTranslations("strategies");
 
   return (
-    <section className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3 lg:max-h-[calc(100dvh-10rem)] lg:overflow-y-auto">
+    <section className="rounded-none border border-[var(--border)] bg-[var(--panel)] p-3 lg:max-h-[calc(100dvh-10rem)] lg:overflow-y-auto">
       <div className="mb-2 flex items-center justify-between gap-2">
         <h2 className="text-[13px] font-medium">{t("replay")}</h2>
         {quota ? (
@@ -114,24 +118,24 @@ export function StrategyDetailReplayAside({
             <label className="mb-1 block text-[10px] text-[var(--muted)]">
               {t("from")}
             </label>
-            <input
-              type="date"
-              className="qt-input h-8 w-full px-1.5 text-[12px]"
+            <QtDatePicker
               value={rangeFrom}
-              onChange={(e) => onRangeFromChange(e.target.value)}
-              required
+              max={rangeTo || undefined}
+              onChange={onRangeFromChange}
+              ariaLabel={t("from")}
+              triggerClassName="h-8 px-1.5 text-[12px]"
             />
           </div>
           <div>
             <label className="mb-1 block text-[10px] text-[var(--muted)]">
               {t("to")}
             </label>
-            <input
-              type="date"
-              className="qt-input h-8 w-full px-1.5 text-[12px]"
+            <QtDatePicker
               value={rangeTo}
-              onChange={(e) => onRangeToChange(e.target.value)}
-              required
+              min={rangeFrom || undefined}
+              onChange={onRangeToChange}
+              ariaLabel={t("to")}
+              triggerClassName="h-8 px-1.5 text-[12px]"
             />
           </div>
         </div>
@@ -166,7 +170,7 @@ export function StrategyDetailReplayAside({
           <p className="mb-1.5 text-[12px] text-[var(--muted)]">
             {t("recentReplays")}
           </p>
-          <ul className="overflow-hidden rounded-md border border-[var(--border)] divide-y divide-[var(--border)]">
+          <ul className="overflow-hidden rounded-none border border-[var(--border)] divide-y divide-[var(--border)]">
             {replays.slice(0, 5).map((r) => {
               const on = active?.id === r.id;
               const statusKey =
@@ -213,7 +217,7 @@ export function StrategyDetailReplayAside({
                       }`}
                     >
                       {typeof ret === "number"
-                        ? `${ret > 0 ? "+" : ""}${ret.toFixed(1)}%`
+                        ? `${ret > 0 ? "+" : ""}${ret.toFixed(2)}%`
                         : "—"}
                     </span>
                   </button>
@@ -225,15 +229,14 @@ export function StrategyDetailReplayAside({
       ) : null}
 
       {active ? (
-        <div className="mt-3 border-t border-[var(--border)] pt-3">
-          <StrategyReplayResultDrawer
-            replay={{
-              ...active,
-              strategyId,
-            }}
-            onShareChange={onShareChange}
-          />
-        </div>
+        <StrategyReplayResultDrawer
+          replay={{
+            ...active,
+            strategyId,
+          }}
+          openKey={replayDrawerOpenKey}
+          onShareChange={onShareChange}
+        />
       ) : null}
     </section>
   );

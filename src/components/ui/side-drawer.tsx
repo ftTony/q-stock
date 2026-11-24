@@ -129,7 +129,7 @@ export function SideDrawer(props: {
         aria-modal="true"
         aria-label={props.title}
         style={panelStyle}
-        className={`absolute ${yClass} ${sidePos} flex ${width} flex-col ${sideBorder} bg-[var(--panel)] pb-[env(safe-area-inset-bottom,0px)] shadow-2xl transition-transform duration-300 ease-out ${
+        className={`qt-portal-shell absolute ${yClass} ${sidePos} flex ${width} flex-col ${sideBorder} bg-[var(--panel)] pb-[env(safe-area-inset-bottom,0px)] shadow-2xl transition-transform duration-300 ease-out ${
           useEdgeTransform
             ? ""
             : props.open

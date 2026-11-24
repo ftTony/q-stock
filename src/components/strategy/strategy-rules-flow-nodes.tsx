@@ -45,14 +45,14 @@ export function StrategyBlockFlowNode({
   const tone = data.tone === "add" ? "entry" : data.tone;
   return (
     <div
-      className={`relative w-[240px] rounded-md border bg-[var(--panel)] shadow-sm sm:w-[260px] ${
+      className={`relative w-[240px] rounded-none border bg-[var(--panel)] shadow-sm sm:w-[260px] ${
         selected
           ? "border-[var(--brand)] shadow-md"
           : "border-[var(--border)]"
       }`}
     >
       <div
-        className={`absolute inset-y-0 left-0 w-1 rounded-l-md ${toneBar[tone]}`}
+        className={`absolute inset-y-0 left-0 w-1 rounded-none ${toneBar[tone]}`}
       />
       <Port type="target" position={Position.Left} />
       <Port type="source" position={Position.Right} />
@@ -88,7 +88,7 @@ export function StrategyAddFlowNode({
 }: NodeProps<AddFlowNode>) {
   return (
     <div
-      className={`flex h-[72px] w-[120px] items-center justify-center rounded-md border border-dashed bg-[var(--panel)]/70 px-2 text-[12px] text-[var(--brand-text)] ${
+      className={`flex h-[72px] w-[120px] items-center justify-center rounded-none border border-dashed bg-[var(--panel)]/70 px-2 text-[12px] text-[var(--brand-text)] ${
         selected ? "border-[var(--brand)]" : "border-[var(--border)]"
       }`}
     >

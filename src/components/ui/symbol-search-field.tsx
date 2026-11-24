@@ -113,7 +113,7 @@ export function SymbolSearchField({
         <ul
           id={listId}
           role="listbox"
-          className="absolute left-0 right-0 z-30 mt-1 max-h-56 overflow-auto rounded-xl border border-[var(--border)] bg-[var(--panel)] shadow-xl"
+          className="absolute left-0 right-0 z-30 mt-1 max-h-56 overflow-auto rounded-none border border-[var(--border)] bg-[var(--panel)] shadow-[0_8px_24px_rgba(15,23,42,0.08)]"
         >
           {searching && results.length === 0 && (
             <li className="px-3 py-2.5 text-xs text-[var(--muted)]">…</li>

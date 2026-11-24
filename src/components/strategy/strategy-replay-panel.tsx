@@ -108,15 +108,32 @@ export function StrategyReplayPanel({
 
   if (status === "pending" || status === "running") {
     return (
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] px-4 py-8 text-center text-sm text-[var(--muted)]">
-        {t("replayRunning")} · {status}
+      <div className="relative overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel)]">
+        <div
+          className="absolute inset-y-0 left-0 w-0.5 bg-[var(--brand)]"
+          aria-hidden
+        />
+        <div className="px-3 py-3 pl-3.5">
+          <p className="text-[13px] font-medium text-[var(--foreground)]">
+            {t("replayRunning")}
+          </p>
+          <p className="mt-0.5 text-[12px] leading-snug text-[var(--muted)]">
+            {t("replayRunningHint")}
+          </p>
+        </div>
+        <div
+          className="h-0.5 overflow-hidden bg-[var(--border)]"
+          aria-hidden
+        >
+          <div className="qt-indeterminate-bar" />
+        </div>
       </div>
     );
   }
 
   if (status === "failed") {
     return (
-      <div className="rounded-lg border border-[var(--down)]/30 bg-[var(--panel)] px-4 py-6 text-sm text-[var(--down)]">
+      <div className="rounded-none border border-[var(--down)]/30 bg-[var(--panel)] px-4 py-6 text-sm text-[var(--down)]">
         {error || t("replayFailed")}
       </div>
     );
@@ -129,7 +146,7 @@ export function StrategyReplayPanel({
 
   return (
     <div className="space-y-3">
-      <div className="rounded-lg border border-[var(--border)] bg-[var(--panel)] p-3">
+      <div className="rounded-none border border-[var(--border)] bg-[var(--panel)] p-3">
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-[13px] font-medium">{t("equityCurve")}</h3>
           <span className="text-[10px] text-[var(--muted)]">
@@ -144,12 +161,12 @@ export function StrategyReplayPanel({
         ) : (
           <p className="py-8 text-center text-xs text-[var(--muted)]">—</p>
         )}
-        <p className="mt-2 rounded-md bg-[var(--brand-soft)] px-2.5 py-1.5 text-[11px] text-[var(--brand-text)]">
+        <p className="mt-2 rounded-none bg-[var(--brand-soft)] px-2.5 py-1.5 text-[11px] text-[var(--brand-text)]">
           {t("maxDd")}: {fmtPct(dd)}
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+      <div className="overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel)]">
         <div className="grid grid-cols-2 sm:grid-cols-3">
           <Metric
             label={t("return")}
@@ -200,7 +217,7 @@ export function StrategyReplayPanel({
       ) : null}
 
       {result.trades && result.trades.length > 0 ? (
-        <div className="overflow-hidden rounded-lg border border-[var(--border)] bg-[var(--panel)]">
+        <div className="overflow-hidden rounded-none border border-[var(--border)] bg-[var(--panel)]">
           <div className="border-b border-[var(--border)] px-3 py-2.5 text-[14px] font-medium">
             {t("tradeList")}
             <span className="ml-2 text-[13px] font-normal text-[var(--muted)]">
@@ -248,7 +265,7 @@ export function StrategyReplayPanel({
         </div>
       ) : null}
 
-      <p className="rounded-md border border-[color-mix(in_srgb,#ca8a04_35%,var(--border))] bg-[color-mix(in_srgb,#ca8a04_8%,var(--panel))] px-3 py-2 text-[11px] leading-relaxed text-[var(--muted)]">
+      <p className="rounded-none border border-[color-mix(in_srgb,#ca8a04_35%,var(--border))] bg-[color-mix(in_srgb,#ca8a04_8%,var(--panel))] px-3 py-2 text-[11px] leading-relaxed text-[var(--muted)]">
         {t("disclaimer")}
       </p>
     </div>

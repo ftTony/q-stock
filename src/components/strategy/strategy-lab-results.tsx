@@ -144,7 +144,7 @@ export function StrategyLabResults({
   return (
     <>
       {compare && compare.length >= 2 ? (
-        <div className="space-y-3 rounded-md border border-[var(--border)] p-3">
+        <div className="space-y-3 rounded-none border border-[var(--border)] p-3">
           <DualEquity
             a={compare[0]!.equityCurve.map((p) => p.equity)}
             b={compare[1]!.equityCurve.map((p) => p.equity)}
@@ -184,7 +184,7 @@ export function StrategyLabResults({
       ) : null}
 
       {grid ? (
-        <div className="overflow-hidden rounded-md border border-[var(--border)]">
+        <div className="overflow-hidden rounded-none border border-[var(--border)]">
           <table className="w-full text-left text-[13px]">
             <thead className="text-[12px] text-[var(--muted)]">
               <tr>
@@ -223,7 +223,7 @@ export function StrategyLabResults({
       ) : null}
 
       {basket ? (
-        <div className="overflow-hidden rounded-md border border-[var(--border)]">
+        <div className="overflow-hidden rounded-none border border-[var(--border)]">
           <table className="w-full text-left text-[13px]">
             <thead className="text-[12px] text-[var(--muted)]">
               <tr>
