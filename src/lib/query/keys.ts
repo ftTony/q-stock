@@ -37,6 +37,12 @@ export const queryKeys = {
     indices: (assetType: string) => ["market", "indices", assetType] as const,
     industryRanks: (assetType: string) =>
       ["market", "industry-ranks", assetType] as const,
+    industryQuotes: (assetType: string, industryId: string, symbolsKey: string) =>
+      ["market", "industry-quotes", assetType, industryId, symbolsKey] as const,
+    industryCalc: (assetType: string, industryId: string, symbolsKey: string) =>
+      ["market", "industry-calc", "v2", assetType, industryId, symbolsKey] as const,
+    industryStocks: (assetType: string, industryId: string) =>
+      ["market", "industry-stocks", assetType, industryId] as const,
   },
   symbol: {
     quote: (assetType: string, symbol: string) =>

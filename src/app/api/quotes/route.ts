@@ -41,6 +41,22 @@ export async function GET(req: Request) {
         return NextResponse.json({ quotes });
       }
 
+      // Small batch for analysis / peer tables (cap keeps 1GB hosts safe).
+      const symbolsParam = searchParams.get("symbols");
+      if (symbolsParam) {
+        const list = symbolsParam
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean)
+          .slice(0, 24)
+          .map((s) => ({ symbol: s, assetType }));
+        if (!list.length) {
+          return NextResponse.json({ error: "symbols required" }, { status: 400 });
+        }
+        const quotes = await getQuotes(list);
+        return NextResponse.json({ quotes });
+      }
+
       if (!symbol) {
         return NextResponse.json({ error: "symbol required" }, { status: 400 });
       }

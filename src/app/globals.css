@@ -475,12 +475,10 @@ a.qt-btn-ghost:hover,
   background: transparent;
 }
 
-/* Horizontal scrollbar is drawn by the component over scrollable columns only. */
-.qt-scroll-hide-x {
-  scrollbar-width: none;
-}
-
+/* Hide native horizontal bar; vertical keeps `.qt-scroll` thin style.
+   Components draw `.qt-h-thumb` over the scrollable (non-frozen) region. */
 .qt-scroll-hide-x::-webkit-scrollbar:horizontal {
+  height: 0;
   display: none;
 }
 
@@ -510,7 +508,12 @@ a.qt-btn-ghost:hover,
 /* Instant column guide line while hovering a resize handle. Driven by direct
    DOM class toggling so it appears in the same frame as the header CSS line. */
 .qt-resize-hover-line {
-  box-shadow: inset -1px 0 0 var(--aw-primary, var(--brand-text));
+  box-shadow: inset -2px 0 0 var(--aw-primary, var(--brand-text));
+}
+
+/* Trailing ops pin: keep the cue inside the cell so panel overflow won't clip it. */
+[data-resize-col="actions"].qt-resize-hover-line {
+  box-shadow: inset -3px 0 0 var(--aw-primary, var(--brand-text));
 }
 
 /* Column reorder (Pointer Events, no DnD library). Feedback is applied via

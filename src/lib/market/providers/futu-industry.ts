@@ -167,11 +167,11 @@ export async function getFutuIndustryHeatmap(
         const { data: stockData } = await futuRequest<{
           stock_list?: StockRow[];
         }>("GET", "/api/v1.0/quote/plate-stock", {
-          query: { plate_code: row.plate.code!, limit: 8 },
+          query: { plate_code: row.plate.code!, limit: 24 },
         });
         return {
           plateCode: row.plate.code!,
-          stocks: (stockData.stock_list ?? []).slice(0, 8),
+          stocks: (stockData.stock_list ?? []).slice(0, 24),
         };
       } catch {
         return { plateCode: row.plate.code!, stocks: [] as StockRow[] };

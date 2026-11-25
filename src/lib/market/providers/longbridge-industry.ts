@@ -11,6 +11,8 @@ export type IndustryStock = {
   name: string;
   price: number;
   percentChange: number;
+  /** Market cap when the industry feed supplies it. */
+  marketCap?: number;
 };
 
 export type IndustryHeatCell = {
@@ -66,11 +68,13 @@ function mapStock(raw: RawStock, assetType: AssetType): IndustryStock | null {
   const cid = String(raw.counter_id || "").trim();
   if (!name || !cid) return null;
   const price = Number(raw.last_done);
+  const cap = Number(raw.market_cap);
   return {
     symbol: counterToSymbol(cid, assetType),
     name,
     price: Number.isFinite(price) ? price : 0,
     percentChange: toPercent(raw.chg),
+    marketCap: Number.isFinite(cap) && cap > 0 ? cap : undefined,
   };
 }
 
@@ -94,7 +98,7 @@ function mapCell(
   const stocks = (raw.stocks ?? [])
     .map((s) => mapStock(s, assetType))
     .filter((s): s is IndustryStock => s != null)
-    .slice(0, 12);
+    .slice(0, 48);
   return {
     id,
     name,
