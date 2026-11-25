@@ -18,6 +18,7 @@ const V1_FULL_PREFIXES = [
   "/api/market",
   "/api/ranks",
   "/api/industry-ranks",
+  "/api/industries",
   "/api/indices",
   "/api/ipo",
   "/api/earnings",
@@ -76,10 +77,6 @@ export function toV1Path(url: string): string {
     return url.replace(/^\/api/, "/api/v1");
   }
   if (isNextOnlyBillingPath(pathOnly)) {
-    return url;
-  }
-  // Next still owns calc enrich; only bare /api/quotes goes to FastAPI.
-  if (pathOnly === "/api/quotes/calc" || pathOnly.startsWith("/api/quotes/calc?")) {
     return url;
   }
   for (const prefix of V1_FULL_PREFIXES) {

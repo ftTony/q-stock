@@ -154,14 +154,14 @@ async def _auth_headers(
     }
 
 
-async def futu_request(
+async def _futu_raw(
     method: str,
     path: str,
     *,
     query: dict[str, Any] | None = None,
     body: Any | None = None,
     store: dict[str, Any] | None = None,
-) -> Any:
+) -> dict[str, Any]:
     creds = _resolve_creds(store)
     if not creds:
         raise RuntimeError("Futu credentials not configured")
@@ -188,14 +188,45 @@ async def futu_request(
     if not res.is_success:
         raise RuntimeError(f"Futu HTTP {res.status_code}: {res.text[:200]}")
 
-    json = res.json()
-    ret = json.get("ret_code", json.get("code"))
+    payload = res.json()
+    ret = payload.get("ret_code", payload.get("code"))
     if ret is not None and ret != 0:
         if ret == -12006:
             await _sync_server_time(force=True)
         raise RuntimeError(
-            f"Futu {ret}: {json.get('ret_msg') or json.get('message') or 'request failed'}"
+            f"Futu {ret}: {payload.get('ret_msg') or payload.get('message') or 'request failed'}"
         )
-    if "data" not in json:
+    if "data" not in payload:
         raise RuntimeError("Futu empty response")
-    return json["data"]
+    return payload
+
+
+async def futu_request(
+    method: str,
+    path: str,
+    *,
+    query: dict[str, Any] | None = None,
+    body: Any | None = None,
+    store: dict[str, Any] | None = None,
+) -> Any:
+    payload = await _futu_raw(method, path, query=query, body=body, store=store)
+    return payload["data"]
+
+
+async def futu_request_page(
+    method: str,
+    path: str,
+    *,
+    query: dict[str, Any] | None = None,
+    body: Any | None = None,
+    store: dict[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Like futu_request, plus pagination fields from the envelope."""
+    payload = await _futu_raw(method, path, query=query, body=body, store=store)
+    pagination = payload.get("pagination") or {}
+    return {
+        "data": payload["data"],
+        "hasMore": bool(pagination.get("has_more")),
+        "nextKey": pagination.get("next_key"),
+        "total": pagination.get("total"),
+    }

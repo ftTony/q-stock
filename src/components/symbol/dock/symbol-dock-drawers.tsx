@@ -5,7 +5,7 @@ import {
   TradePanel,
   SymbolPaperRiskBar,
 } from "@/components/symbol/page/symbol-page-dynamics";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import {

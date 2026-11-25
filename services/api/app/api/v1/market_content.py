@@ -7,9 +7,15 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import enforce_rate_limit, get_optional_user
 from app.core.db import get_db
+from app.core.errors import AppError
 from app.models.user import User
 from app.services.market import content as content_svc
 from app.services.market.context import market_store_for_user
+from app.services.market.futu_industry_stocks import (
+    get_futu_industry_stocks_page,
+    looks_like_futu_plate_code,
+)
+from app.services.market.industry import resolve_industry_heatmap
 
 router = APIRouter(dependencies=[Depends(enforce_rate_limit)])
 
@@ -53,6 +59,69 @@ async def industry_ranks(
     return await content_svc.resolve_industry_ranks(
         _parse_asset(assetType), limit, store=store
     )
+
+
+@router.get("/industries/stocks")
+async def industry_stocks(
+    industryId: str | None = None,
+    assetType: str | None = None,
+    nextKey: str = "",
+    loaded: int = Query(default=0, ge=0, le=500),
+    db: AsyncSession = Depends(get_db),
+    user: User | None = Depends(get_optional_user),
+) -> dict:
+    """Paginated industry members for the analysis table."""
+    industry_id = (industryId or "").strip()
+    asset_type = _parse_asset(assetType)
+    if not industry_id:
+        raise AppError("industryId required", code="VALIDATION_ERROR", status_code=400)
+    if asset_type not in {"stock", "hk", "cn"}:
+        raise AppError("unsupported market", code="VALIDATION_ERROR", status_code=400)
+
+    store = await market_store_for_user(db, user)
+    try:
+        if looks_like_futu_plate_code(industry_id):
+            return await get_futu_industry_stocks_page(
+                industry_id,
+                asset_type,
+                nextKey or "",
+                loaded,
+                store=store,
+            )
+        # Longbridge chart embed: one-shot page (no cursor).
+        if nextKey or loaded > 0:
+            return {
+                "stocks": [],
+                "nextKey": None,
+                "hasMore": False,
+                "total": loaded,
+                "source": "seed",
+            }
+        heatmap = await resolve_industry_heatmap(asset_type, 40, store=store)
+        cell = next(
+            (
+                i
+                for i in (heatmap.get("industries") or [])
+                if i.get("id") == industry_id
+            ),
+            None,
+        )
+        stocks = (cell or {}).get("stocks") or []
+        return {
+            "stocks": stocks,
+            "nextKey": None,
+            "hasMore": False,
+            "total": len(stocks),
+            "source": "seed",
+        }
+    except AppError:
+        raise
+    except Exception as exc:  # noqa: BLE001
+        raise AppError(
+            str(exc) or "Failed",
+            code="UPSTREAM",
+            status_code=502,
+        ) from exc
 
 
 @router.get("/indices")

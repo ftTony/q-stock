@@ -10,7 +10,7 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { useSession } from "next-auth/react";
+import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/routing";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
