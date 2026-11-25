@@ -505,13 +505,12 @@ a.qt-btn-ghost:hover,
   cursor: grabbing;
 }
 
-/* Instant column guide line while hovering a resize handle. Driven by direct
-   DOM class toggling so it appears in the same frame as the header CSS line. */
+/* Column resize hover guide — one inset line on th/td (same box edge).
+   Do not also paint the handle's inner span or head/body will kink. */
 .qt-resize-hover-line {
   box-shadow: inset -2px 0 0 var(--aw-primary, var(--brand-text));
 }
 
-/* Trailing ops pin: keep the cue inside the cell so panel overflow won't clip it. */
 [data-resize-col="actions"].qt-resize-hover-line {
   box-shadow: inset -3px 0 0 var(--aw-primary, var(--brand-text));
 }

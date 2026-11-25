@@ -71,36 +71,37 @@ function mapRows(
   snaps: Map<string, SnapRow>,
   assetType: AssetType,
 ): IndustryStock[] {
-  return rows
-    .map((r) => {
-      const code = r.code?.trim();
-      if (!code) return null;
-      const t = (r.stock_type || "STOCK").toUpperCase();
-      if (t && t !== "STOCK" && t !== "EQTY") return null;
-      const bare = code.replace(/^(US|HK|SH|SZ|BJ)\./i, "");
-      const snap = snaps.get(code);
-      const last = Number(snap?.last_price ?? 0);
-      const prev = Number(snap?.prev_close_price ?? 0);
-      const cap = Number(snap?.total_market_val ?? 0);
-      const symbol =
-        assetType === "cn"
-          ? normalizeSymbol(code, "cn")
-          : normalizeSymbol(bare, assetType);
-      return {
-        symbol,
-        name: (
-          r.sc_name ||
-          snap?.sc_name ||
-          r.stock_name ||
-          snap?.name ||
-          bare
-        ).trim(),
-        price: Number.isFinite(last) ? last : 0,
-        percentChange: pctChange(last, prev),
-        marketCap: Number.isFinite(cap) && cap > 0 ? cap : undefined,
-      } satisfies IndustryStock;
-    })
-    .filter((x): x is IndustryStock => x != null);
+  const out: IndustryStock[] = [];
+  for (const r of rows) {
+    const code = r.code?.trim();
+    if (!code) continue;
+    const t = (r.stock_type || "STOCK").toUpperCase();
+    if (t && t !== "STOCK" && t !== "EQTY") continue;
+    const bare = code.replace(/^(US|HK|SH|SZ|BJ)\./i, "");
+    const snap = snaps.get(code);
+    const last = Number(snap?.last_price ?? 0);
+    const prev = Number(snap?.prev_close_price ?? 0);
+    const cap = Number(snap?.total_market_val ?? 0);
+    const symbol =
+      assetType === "cn"
+        ? normalizeSymbol(code, "cn")
+        : normalizeSymbol(bare, assetType);
+    const row: IndustryStock = {
+      symbol,
+      name: (
+        r.sc_name ||
+        snap?.sc_name ||
+        r.stock_name ||
+        snap?.name ||
+        bare
+      ).trim(),
+      price: Number.isFinite(last) ? last : 0,
+      percentChange: pctChange(last, prev),
+    };
+    if (Number.isFinite(cap) && cap > 0) row.marketCap = cap;
+    out.push(row);
+  }
+  return out;
 }
 
 /**

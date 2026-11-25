@@ -61,8 +61,8 @@ export async function GET(req: Request) {
           source: "seed",
         });
       }
-      const industries = await getIndustryHeatmap(assetType, 40);
-      const cell = industries.find((i) => i.id === industryId);
+      const heatmap = await getIndustryHeatmap(assetType, 40);
+      const cell = heatmap.industries.find((i) => i.id === industryId);
       const stocks = cell?.stocks ?? [];
       return NextResponse.json({
         stocks,

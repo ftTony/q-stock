@@ -30,14 +30,21 @@ type Shared = {
   selected: boolean;
   /** Cross-pane hover — CSS group-hover cannot span three tables. */
   hovered: boolean;
+  /** Column id whose resize handle is hovered (survives row remount). */
+  resizeHoverCol: string | null;
   loading: boolean;
   basketCount: number;
   onToggleBasket: (item: AnalysisBasketItem) => boolean;
   onHoverChange: (key: string | null) => void;
 };
 
+function resizeLineClass(colId: string, resizeHoverCol: string | null) {
+  return resizeHoverCol === colId ? " qt-resize-hover-line" : "";
+}
+
+/** No overflow-x clip — inset box-shadow must share the same cell edge as th. */
 const tdBase =
-  "box-border h-[41px] max-h-[41px] overflow-hidden border-b border-[var(--border)]/70 px-2 align-middle";
+  "box-border h-[41px] max-h-[41px] overflow-y-clip border-b border-[var(--border)]/70 px-2 align-middle";
 
 /** Same selected / hover fill on left, mid, and right panes. */
 function cellBg(selected: boolean, hovered: boolean) {
@@ -61,6 +68,7 @@ export const AnalysisRankLeftRow = memo(function AnalysisRankLeftRow({
   pin,
   selected,
   hovered,
+  resizeHoverCol,
   loading,
   basketCount,
   measureRef,
@@ -109,7 +117,7 @@ export const AnalysisRankLeftRow = memo(function AnalysisRankLeftRow({
       <td
         data-pin-col="symbol"
         data-resize-col="symbol"
-        className={`${tdBase} ${bg}`}
+        className={`${tdBase} ${bg}${resizeLineClass("symbol", resizeHoverCol)}`}
         style={{ width: symW, minWidth: symW, height: ANALYSIS_RANK_ROW_H }}
       >
         <Link
@@ -123,7 +131,7 @@ export const AnalysisRankLeftRow = memo(function AnalysisRankLeftRow({
       <td
         data-pin-col="name"
         data-resize-col="name"
-        className={`${tdBase} ${bg}`}
+        className={`${tdBase} ${bg}${resizeLineClass("name", resizeHoverCol)}`}
         style={{ width: nameW, minWidth: nameW, height: ANALYSIS_RANK_ROW_H }}
       >
         <span
@@ -143,6 +151,7 @@ export const AnalysisRankMidRow = memo(function AnalysisRankMidRow({
   order,
   selected,
   hovered,
+  resizeHoverCol,
   loading,
   basketCount,
   onToggleBasket,
@@ -168,7 +177,7 @@ export const AnalysisRankMidRow = memo(function AnalysisRankMidRow({
         <td
           key={id}
           data-resize-col={id}
-          className={`${tdBase} whitespace-nowrap text-right text-[13px] leading-none tabular-nums ${bg}`}
+          className={`${tdBase} whitespace-nowrap text-right text-[13px] leading-none tabular-nums ${bg}${resizeLineClass(id, resizeHoverCol)}`}
           style={{
             width: `var(--cw-${id})`,
             height: ANALYSIS_RANK_ROW_H,
@@ -186,6 +195,7 @@ export const AnalysisRankRightRow = memo(function AnalysisRankRightRow({
   pin,
   selected,
   hovered,
+  resizeHoverCol,
   isWatched,
   canWatch,
   loading,
@@ -224,7 +234,7 @@ export const AnalysisRankRightRow = memo(function AnalysisRankRightRow({
       <td
         data-pin-col="actions"
         data-resize-col="actions"
-        className={`${tdBase} ${bg}`}
+        className={`${tdBase} ${bg}${resizeLineClass("actions", resizeHoverCol)}`}
         style={{ width: actW, minWidth: actW, height: ANALYSIS_RANK_ROW_H }}
       >
         <div

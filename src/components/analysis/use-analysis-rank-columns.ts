@@ -60,23 +60,14 @@ export function useAnalysisRankColumns() {
   const rightBodyTableRef = useRef<HTMLTableElement | null>(null);
   const ghostRef = useRef<HTMLDivElement | null>(null);
   const justDraggedRef = useRef(false);
-  const hoverLineColRef = useRef<string | null>(null);
   const resizeActiveRef = useRef(false);
+  /** Survives row remounts — do not paint via classList on td. */
+  const [resizeHoverCol, setResizeHoverCol] = useState<string | null>(null);
 
   function midTables(): HTMLTableElement[] {
     return [headTableRef.current, tableRef.current].filter(
       (t): t is HTMLTableElement => t != null,
     );
-  }
-
-  function resizeTargets(): Element[] {
-    return [
-      ...midTables(),
-      leftHeadTableRef.current,
-      leftBodyTableRef.current,
-      rightHeadTableRef.current,
-      rightBodyTableRef.current,
-    ].filter((t): t is HTMLTableElement => t != null);
   }
 
   const order = layout.order;
@@ -122,26 +113,9 @@ export function useAnalysisRankColumns() {
     setSortDir("desc");
   }
 
-  const applyResizeHover = (colId: string | null) => {
-    const targets = resizeTargets();
-    if (!targets.length) return;
-    if (hoverLineColRef.current) {
-      const prev = hoverLineColRef.current;
-      for (const table of targets) {
-        table
-          .querySelectorAll(`[data-resize-col="${prev}"]`)
-          .forEach((el) => el.classList.remove("qt-resize-hover-line"));
-      }
-    }
-    hoverLineColRef.current = colId;
-    if (colId) {
-      for (const table of targets) {
-        table
-          .querySelectorAll(`[data-resize-col="${colId}"]`)
-          .forEach((el) => el.classList.add("qt-resize-hover-line"));
-      }
-    }
-  };
+  const applyResizeHover = useCallback((colId: string | null) => {
+    setResizeHoverCol(colId);
+  }, []);
 
   const resizeRef = useRef<MidResize | PinResize | null>(null);
   const pendingWidthRef = useRef<number | null>(null);
@@ -490,5 +464,6 @@ export function useAnalysisRankColumns() {
     startResize,
     startPinResize,
     applyResizeHover,
+    resizeHoverCol,
   };
 }

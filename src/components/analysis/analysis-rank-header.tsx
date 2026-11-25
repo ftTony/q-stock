@@ -18,6 +18,7 @@ const midClipX =
 const thClass =
   "border-b border-[var(--border)] bg-[var(--panel)] px-2 py-2 font-medium";
 
+/** Hit target only — column guide is painted on th/td via qt-resize-hover-line. */
 function PinResizeHandle({
   id,
   cols,
@@ -38,12 +39,10 @@ function PinResizeHandle({
       onPointerEnter={() => cols.applyResizeHover(id)}
       onPointerLeave={() => cols.applyResizeHover(null)}
       onClick={(e) => e.stopPropagation()}
-      className={`absolute top-0 z-20 h-full w-3 cursor-col-resize touch-none hover:[&>span]:bg-[var(--aw-primary,var(--brand-text))] ${
+      className={`absolute top-0 z-20 h-full w-3 cursor-col-resize touch-none ${
         insetEnd ? "right-0.5" : "right-0"
       }`}
-    >
-      <span className="pointer-events-none absolute right-0 top-0 h-full w-0.5 bg-transparent" />
-    </span>
+    />
   );
 }
 
@@ -91,7 +90,9 @@ export function AnalysisRankHeader({
               <th
                 data-pin-col="symbol"
                 data-resize-col="symbol"
-                className={`${thClass} relative`}
+                className={`${thClass} relative${
+                  cols.resizeHoverCol === "symbol" ? " qt-resize-hover-line" : ""
+                }`}
                 style={{ width: symW }}
               >
                 {t("colCode")}
@@ -100,7 +101,9 @@ export function AnalysisRankHeader({
               <th
                 data-pin-col="name"
                 data-resize-col="name"
-                className={`${thClass} relative`}
+                className={`${thClass} relative${
+                  cols.resizeHoverCol === "name" ? " qt-resize-hover-line" : ""
+                }`}
                 style={{ width: nameW }}
               >
                 {t("colName")}
@@ -136,7 +139,9 @@ export function AnalysisRankHeader({
                     data-col-id={id}
                     data-resize-col={id}
                     onPointerDown={(e) => cols.startColDrag(e, id, label)}
-                    className={`${thClass} relative cursor-grab touch-none whitespace-nowrap text-right`}
+                    className={`${thClass} relative cursor-grab touch-none whitespace-nowrap text-right${
+                      cols.resizeHoverCol === id ? " qt-resize-hover-line" : ""
+                    }`}
                     style={{ width: `var(--cw-${id})` }}
                   >
                     <button
@@ -157,10 +162,8 @@ export function AnalysisRankHeader({
                       onPointerEnter={() => cols.applyResizeHover(id)}
                       onPointerLeave={() => cols.applyResizeHover(null)}
                       onClick={(e) => e.stopPropagation()}
-                      className="absolute right-0 top-0 z-10 h-full w-2 cursor-col-resize touch-none hover:[&>span]:bg-[var(--aw-primary,var(--brand-text))]"
-                    >
-                      <span className="pointer-events-none absolute right-0 top-0 h-full w-px bg-transparent" />
-                    </span>
+                      className="absolute right-0 top-0 z-10 h-full w-2 cursor-col-resize touch-none"
+                    />
                   </th>
                 );
               })}
@@ -186,7 +189,9 @@ export function AnalysisRankHeader({
               <th
                 data-pin-col="actions"
                 data-resize-col="actions"
-                className={`${thClass} relative text-right`}
+                className={`${thClass} relative text-right${
+                  cols.resizeHoverCol === "actions" ? " qt-resize-hover-line" : ""
+                }`}
                 style={{ width: actW }}
               >
                 {/*
@@ -209,10 +214,8 @@ export function AnalysisRankHeader({
                     }}
                     onPointerLeave={() => cols.applyResizeHover(null)}
                     onClick={(e) => e.stopPropagation()}
-                    className="absolute left-0 top-0 z-20 h-full w-2.5 cursor-col-resize touch-none hover:[&>span]:bg-[var(--aw-primary,var(--brand-text))]"
-                  >
-                    <span className="pointer-events-none absolute left-0 top-0 h-full w-px bg-transparent" />
-                  </span>
+                    className="absolute left-0 top-0 z-20 h-full w-2.5 cursor-col-resize touch-none"
+                  />
                 ) : null}
                 {tMarket("actions")}
                 <PinResizeHandle id="actions" cols={cols} insetEnd />

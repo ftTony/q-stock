@@ -267,6 +267,7 @@ export function AnalysisRankTable({
                       pin={cols.pinWidths}
                       selected={basketKeys.has(key)}
                       hovered={hoveredKey === key}
+                      resizeHoverCol={cols.resizeHoverCol}
                       loading={loading}
                       basketCount={basketCount}
                       onToggleBasket={onToggleBasket}
@@ -318,6 +319,7 @@ export function AnalysisRankTable({
                       order={cols.order}
                       selected={basketKeys.has(key)}
                       hovered={hoveredKey === key}
+                      resizeHoverCol={cols.resizeHoverCol}
                       loading={loading}
                       basketCount={basketCount}
                       onToggleBasket={onToggleBasket}
@@ -367,6 +369,7 @@ export function AnalysisRankTable({
                       pin={cols.pinWidths}
                       selected={basketKeys.has(key)}
                       hovered={hoveredKey === key}
+                      resizeHoverCol={cols.resizeHoverCol}
                       isWatched={watched.has(
                         `${item.assetType}:${item.symbol}`,
                       )}
