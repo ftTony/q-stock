@@ -13,6 +13,7 @@ import {
   ANALYSIS_PIN_CHECK_W,
   ANALYSIS_PIN_DEFAULT_WIDTHS,
   clampPinWidth,
+  defaultAnalysisColLayout,
   loadAnalysisColLayout,
   saveAnalysisColLayout,
   type AnalysisColId,
@@ -42,7 +43,9 @@ type PinResize = {
  * Drag/resize paint via DOM so React is not thrashing mid-gesture.
  */
 export function useAnalysisRankColumns() {
-  const [layout, setLayout] = useState<AnalysisColLayout>(loadAnalysisColLayout);
+  // Defaults on first paint (SSR + hydrate); localStorage applied after mount.
+  const [layout, setLayout] = useState<AnalysisColLayout>(defaultAnalysisColLayout);
+  const [layoutReady, setLayoutReady] = useState(false);
   const [sortKey, setSortKey] = useState<AnalysisColId>("percentChange");
   const [sortDir, setSortDir] = useState<AnalysisSortDir>("desc");
   const [resizingToken, setResizingToken] = useState(0);
@@ -100,8 +103,14 @@ export function useAnalysisRankColumns() {
   );
 
   useEffect(() => {
+    setLayout(loadAnalysisColLayout());
+    setLayoutReady(true);
+  }, []);
+
+  useEffect(() => {
+    if (!layoutReady) return;
     saveAnalysisColLayout(layout);
-  }, [layout]);
+  }, [layout, layoutReady]);
 
   function toggleSort(key: AnalysisColId) {
     if (justDraggedRef.current || resizeActiveRef.current) return;

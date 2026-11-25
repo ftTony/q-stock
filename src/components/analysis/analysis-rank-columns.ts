@@ -133,12 +133,17 @@ function clampPinWidth(id: AnalysisPinId, n: number) {
   return Math.max(88, Math.min(200, Math.round(n)));
 }
 
-export function loadAnalysisColLayout(): AnalysisColLayout {
-  const fallback: AnalysisColLayout = {
-    order: ANALYSIS_COL_DEFAULT_ORDER,
+/** SSR-safe defaults — never read localStorage during render. */
+export function defaultAnalysisColLayout(): AnalysisColLayout {
+  return {
+    order: [...ANALYSIS_COL_DEFAULT_ORDER],
     widths: { ...ANALYSIS_COL_DEFAULT_WIDTHS },
     pins: { ...ANALYSIS_PIN_DEFAULT_WIDTHS },
   };
+}
+
+export function loadAnalysisColLayout(): AnalysisColLayout {
+  const fallback = defaultAnalysisColLayout();
   if (typeof window === "undefined") return fallback;
   try {
     // Prefer v4; fall back to v3 so mid widths migrate.
