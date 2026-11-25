@@ -32,6 +32,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
   const isMarkets = pathname === "/markets" || pathname.startsWith("/markets/");
   const isSymbol = pathname.startsWith("/symbol");
   const isStrategies = pathname.startsWith("/strategies");
+  const isAnalysis = pathname.startsWith("/analysis");
   /** Fluid pages: H5 full-bleed; desktop keeps prior side gutters. */
   const isFluidMain =
     isMarkets ||
@@ -39,7 +40,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
     pathname.startsWith("/review") ||
     pathname.startsWith("/portfolio") ||
     isStrategies ||
-    pathname.startsWith("/analysis") ||
+    isAnalysis ||
     pathname.startsWith("/symbol") ||
     pathname.startsWith("/multi-chart") ||
     pathname.startsWith("/alerts") ||
@@ -63,7 +64,9 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
         className={
           isSymbol
             ? "wb-shell flex h-dvh overflow-hidden bg-[var(--symbol-shell-bg)] lg:flex"
-            : "wb-shell min-h-dvh lg:flex"
+            : isAnalysis
+              ? "wb-shell flex h-dvh overflow-hidden lg:flex"
+              : "wb-shell min-h-dvh lg:flex"
         }
         style={{ ["--sidebar-w" as string]: `${sidebarWidth}px` }}
       >
@@ -78,7 +81,9 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
         className={
           isSymbol
             ? "flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--symbol-shell-bg)]"
-            : "flex min-h-dvh min-w-0 flex-1 flex-col bg-[var(--background)]"
+            : isAnalysis
+              ? "flex h-dvh min-h-0 min-w-0 flex-1 flex-col overflow-hidden bg-[var(--background)]"
+              : "flex min-h-dvh min-w-0 flex-1 flex-col bg-[var(--background)]"
         }
       >
         {/*
@@ -143,9 +148,12 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
                 : "flex min-h-0 flex-1 flex-col overflow-hidden pb-[env(safe-area-inset-bottom,0px)]"
               : isFluidMain
                 ? // pb-24 only under lg — matches MobileAppTabBar `lg:hidden` (CSS wins over JS).
-                  `min-w-0 flex-1 flex-col overflow-x-clip pb-24 lg:pb-6 ${
-                    isStrategies ? "py-0 lg:py-3" : "py-0 lg:py-5"
-                  }`
+                  // Analysis: no page scroll; rank table owns vertical scroll + load-more.
+                  isAnalysis
+                    ? "flex min-h-0 flex-1 flex-col overflow-hidden py-0 pb-24 lg:pb-3 lg:pt-3"
+                    : `min-w-0 flex-1 flex-col overflow-x-clip pb-24 lg:pb-6 ${
+                        isStrategies ? "py-0 lg:py-3" : "py-0 lg:py-5"
+                      }`
                 : "min-w-0 flex-1 overflow-x-clip py-5 pb-24 sm:py-6 lg:pb-6"
           }
         >

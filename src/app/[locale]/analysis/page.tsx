@@ -35,13 +35,14 @@ export default async function AnalysisPage({ params }: Props) {
   });
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <ScopedMessages namespaces={["ai", "analysis", "symbol", "multiChart"]}>
-        <div className="space-y-4 animate-[qtFade_0.45s_ease]">
+    <ScopedMessages namespaces={["ai", "analysis", "symbol", "multiChart"]}>
+      <div className="flex h-full min-h-0 flex-1 flex-col gap-3 overflow-hidden animate-[qtFade_0.45s_ease]">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+        {/* Crawlable copy stays in DOM; hidden so the board owns the viewport. */}
+        <div className="sr-only">
           <AnalysisSeoIntro
             title={tNav("analysis")}
             intro={t("seoIntro")}
@@ -49,9 +50,9 @@ export default async function AnalysisPage({ params }: Props) {
             steps={steps}
             disclaimer={t("seoDisclaimer")}
           />
-          <AnalysisPageClient initialIndustries={[]} />
         </div>
-      </ScopedMessages>
-    </>
+        <AnalysisPageClient initialIndustries={[]} />
+      </div>
+    </ScopedMessages>
   );
 }

@@ -12,8 +12,8 @@ type Props = {
   selectedId: string | null;
   loading: boolean;
   onSelect: (id: string) => void;
-  /** Compact select for small screens */
-  variant?: "sidebar" | "select";
+  /** sidebar list | mobile select | top horizontal strip */
+  variant?: "sidebar" | "select" | "strip";
 };
 
 export function AnalysisIndustryPicker({
@@ -86,6 +86,93 @@ export function AnalysisIndustryPicker({
           ))}
         </select>
       </label>
+    );
+  }
+
+  if (variant === "strip") {
+    const canPrev = page > 0;
+    const canNext = page < pageCount - 1;
+    return (
+      <div className="flex shrink-0 items-center gap-1 border-b border-[var(--border)] px-2 py-2">
+        <div className="flex min-w-0 flex-1 flex-nowrap gap-1 overflow-hidden">
+          {loading && industries.length === 0
+            ? Array.from({ length: 8 }).map((_, i) => (
+                <div
+                  key={`sk-${i}`}
+                  className="h-8 w-28 animate-pulse rounded-none bg-[var(--surface-2)]"
+                />
+              ))
+            : pageItems.map((ind) => {
+                const active = ind.id === selectedId;
+                return (
+                  <button
+                    key={ind.id}
+                    type="button"
+                    onClick={() => onSelect(ind.id)}
+                    className={`inline-flex h-8 items-center gap-2 rounded-none border px-2.5 text-left transition ${
+                      active
+                        ? "border-[var(--brand)] bg-[var(--brand-soft)] text-[var(--brand-text)]"
+                        : "border-[var(--border)] bg-[var(--panel)] text-[var(--foreground)] hover:border-[color-mix(in_srgb,var(--brand)_35%,var(--border))] hover:bg-[var(--surface-2)]/50"
+                    }`}
+                  >
+                    <span
+                      className={`max-w-[9rem] truncate text-[12px] leading-none ${
+                        active ? "font-semibold" : "font-medium"
+                      }`}
+                    >
+                      {ind.name}
+                    </span>
+                    <span className="shrink-0 text-[12px] leading-none tabular-nums">
+                      <ChangePct value={ind.percentChange} />
+                    </span>
+                  </button>
+                );
+              })}
+          {!loading && industries.length === 0 ? (
+            <span className="px-2 py-1 text-[12px] text-[var(--muted)]">
+              {t("industryEmpty")}
+            </span>
+          ) : null}
+        </div>
+        <div className="flex shrink-0 items-center gap-1 pt-0.5">
+          <button
+            type="button"
+            aria-label={tCommon("prevPage")}
+            disabled={!canPrev}
+            onClick={() => setPage((p) => Math.max(0, p - 1))}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-none bg-[var(--surface-2)] text-[var(--foreground)] transition hover:bg-[var(--sidebar-hover)] disabled:cursor-default disabled:opacity-35"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-3.5 w-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              aria-hidden
+            >
+              <path d="m15 18-6-6 6-6" />
+            </svg>
+          </button>
+          <button
+            type="button"
+            aria-label={tCommon("nextPage")}
+            disabled={!canNext}
+            onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
+            className="inline-flex h-7 w-7 items-center justify-center rounded-none bg-[var(--surface-2)] text-[var(--foreground)] transition hover:bg-[var(--sidebar-hover)] disabled:cursor-default disabled:opacity-35"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              className="h-3.5 w-3.5"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              aria-hidden
+            >
+              <path d="m9 18 6-6-6-6" />
+            </svg>
+          </button>
+        </div>
+      </div>
     );
   }
 

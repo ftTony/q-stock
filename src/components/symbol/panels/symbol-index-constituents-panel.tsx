@@ -1064,9 +1064,18 @@ export function SymbolIndexConstituentsPanel({
           <div className="p-4">
             <PanelSkeleton rows={8} label={tCommon("loading")} />
           </div>
-        ) : isError && !rows.length ? (
-          <div className="flex min-h-[180px] items-center justify-center px-4 text-center text-[13px] text-[var(--muted)]">
-            {query.isError ? t("constituentsError") : t("constituentsEmpty")}
+        ) : !rows.length ? (
+          <div className="flex min-h-[180px] flex-col items-center justify-center gap-2 px-4 text-center text-[13px] text-[var(--muted)]">
+            <p>{isError ? t("constituentsError") : t("constituentsEmpty")}</p>
+            {isError || total > 0 ? (
+              <button
+                type="button"
+                className="rounded-none border border-[var(--border)] px-2.5 py-1 text-[12px] text-[var(--foreground)] hover:bg-[var(--sidebar-hover)]"
+                onClick={() => void query.refetch()}
+              >
+                {tCommon("retry")}
+              </button>
+            ) : null}
           </div>
         ) : (
           <table

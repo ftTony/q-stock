@@ -78,6 +78,10 @@ export function toV1Path(url: string): string {
   if (isNextOnlyBillingPath(pathOnly)) {
     return url;
   }
+  // Next still owns calc enrich; only bare /api/quotes goes to FastAPI.
+  if (pathOnly === "/api/quotes/calc" || pathOnly.startsWith("/api/quotes/calc?")) {
+    return url;
+  }
   for (const prefix of V1_FULL_PREFIXES) {
     if (pathOnly === prefix || pathOnly.startsWith(`${prefix}/`)) {
       return url.replace(/^\/api/, "/api/v1");
