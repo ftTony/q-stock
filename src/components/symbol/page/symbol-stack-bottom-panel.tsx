@@ -54,6 +54,7 @@ type Props = {
   onOpenPlan: () => void;
   onOpenSymbolReview?: (orderId?: string | null) => void;
   onOpenAi: () => void;
+  onOpenTrade?: () => void;
   tab: StackBottomTab;
   onTabChange: (tab: StackBottomTab) => void;
   onNewsFeedTabChange: (tab: NewsFeedTab) => void;
@@ -152,6 +153,7 @@ export function SymbolStackBottomPanel({
   onOpenPlan,
   onOpenSymbolReview,
   onOpenAi,
+  onOpenTrade,
   tab,
   onTabChange,
   onNewsFeedTabChange,
@@ -184,7 +186,6 @@ export function SymbolStackBottomPanel({
   const tCommon = useTranslations("common");
   const tComments = useTranslations("comments");
   const tTrading = useTranslations("trading");
-  const tRail = useTranslations("symbolRail");
   const tEarn = useTranslations("earnings");
   const { data: session, status: authStatus } = useSession();
   const tradeAuthed = authStatus === "authenticated" && Boolean(session?.user);
@@ -221,33 +222,6 @@ export function SymbolStackBottomPanel({
     active === "news" || active === "press" || kept.includes("news");
   const mountTrade = active === "trade" || kept.includes("trade");
   const mountAi = active === "ai" || kept.includes("ai");
-
-  const ruleFooter = boundRuleName ? (
-    <div className="flex items-center justify-between gap-2">
-      <span className="min-w-0 truncate text-[12px] leading-snug text-[var(--muted)]">
-        {tRail("orderRuleTag")}
-        <span className="mx-1 text-[var(--border)]"></span>
-        <span className="font-medium text-[var(--foreground)]">
-          {boundRuleName}
-        </span>
-      </span>
-      <button
-        type="button"
-        className="aw-text-link shrink-0 text-[12px] leading-none"
-        onClick={onOpenPlan}
-      >
-        {tRail("orderChangeRule")}
-      </button>
-    </div>
-  ) : (
-    <button
-      type="button"
-      className="text-left text-[12px] leading-snug text-[var(--aw-primary)] hover:underline"
-      onClick={onOpenPlan}
-    >
-      {tRail("orderSuggestRule")}
-    </button>
-  );
 
   return (
     <div
@@ -358,6 +332,7 @@ export function SymbolStackBottomPanel({
           onOpenPlan={onOpenPlan}
           onOpenSymbolReview={onOpenSymbolReview}
           onOpenAi={onOpenAi}
+          onOpenTrade={onOpenTrade}
           onNewsFeedTabChange={onNewsFeedTabChange}
           news={news}
           press={press}
@@ -385,7 +360,6 @@ export function SymbolStackBottomPanel({
           officers={officers}
           tradeAuthed={tradeAuthed}
           authStatus={authStatus}
-          ruleFooter={ruleFooter}
           loadingLabel={tCommon("loading")}
           degradedLabel={tCommon("degraded")}
           errorLabel={tCommon("error")}

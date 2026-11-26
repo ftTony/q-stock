@@ -39,6 +39,13 @@ class PlaceOrderBody(BaseModel):
     riskSnapshot: dict | None = None
 
 
+class ModifyOrderBody(BaseModel):
+    id: str = Field(min_length=1)
+    qty: float
+    limitPrice: float | None = None
+    stopPrice: float | None = None
+
+
 class PatchRiskBody(BaseModel):
     maxPositionPctPerSymbol: float | None = Field(default=None, ge=1, le=100)
     maxGrossExposurePct: float | None = Field(default=None, ge=1, le=200)
@@ -132,6 +139,25 @@ async def place_order(
         invalidation_note=body.invalidationNote,
         strategy_id=body.strategyId,
         risk_snapshot=body.riskSnapshot,
+    )
+    return {"order": trading_svc.serialize_order(order)}
+
+
+@router.patch("/orders")
+async def modify_order(
+    body: ModifyOrderBody,
+    db: AsyncSession = Depends(get_db),
+    user: User = Depends(require_user),
+) -> dict:
+    if not (body.qty > 0):
+        raise AppError("Invalid input", code="VALIDATION_ERROR", status_code=400)
+    order = await trading_svc.modify_order(
+        db,
+        user_id=user.id,
+        order_id=body.id,
+        qty=body.qty,
+        limit_price=body.limitPrice,
+        stop_price=body.stopPrice,
     )
     return {"order": trading_svc.serialize_order(order)}
 

@@ -267,3 +267,132 @@ export async function cancelOrder(userId: string, orderId: string) {
     data: { status: "cancelled" },
   });
 }
+
+export type ModifyOrderInput = {
+  userId: string;
+  orderId: string;
+  qty: number;
+  limitPrice?: number | null;
+  stopPrice?: number | null;
+};
+
+/** Amend pending paper order qty / trigger price (type & side unchanged). */
+export async function modifyOrder(input: ModifyOrderInput) {
+  const order = await prisma.paperOrder.findFirst({
+    where: { id: input.orderId, userId: input.userId },
+  });
+  if (!order) {
+    throw new TradingError("Order not found", "NOT_FOUND");
+  }
+  if (order.status !== "pending") {
+    throw new TradingError("Only pending orders can be modified", "NOT_PENDING");
+  }
+
+  const qty = input.qty;
+  if (!(qty > 0) || !Number.isFinite(qty)) {
+    throw new TradingError("Invalid quantity", "INVALID_QTY");
+  }
+
+  let limitPrice = order.limitPrice != null ? Number(order.limitPrice) : null;
+  let stopPrice = order.stopPrice != null ? Number(order.stopPrice) : null;
+
+  if (order.type === "limit") {
+    const next = input.limitPrice;
+    if (!(next != null && next > 0)) {
+      throw new TradingError("limitPrice required", "INVALID_LIMIT");
+    }
+    limitPrice = next;
+  }
+  if (order.type === "stop") {
+    const next = input.stopPrice;
+    if (!(next != null && next > 0)) {
+      throw new TradingError("stopPrice required", "INVALID_STOP");
+    }
+    stopPrice = next;
+  }
+
+  await assertPaperRisk({
+    userId: input.userId,
+    symbol: order.symbol,
+    assetType: order.assetType,
+    side: order.side,
+    qty,
+    type: order.type,
+    limitPrice,
+    stopPrice,
+  });
+
+  const updated = await prisma.$transaction(async (tx) => {
+    if (order.side === "buy") {
+      const account = await tx.paperAccount.findUniqueOrThrow({
+        where: { userId: input.userId },
+      });
+      const cash = Number(account.cashBalance);
+      const reserve =
+        order.type === "limit"
+          ? Number(limitPrice)
+          : order.type === "stop"
+            ? Number(stopPrice)
+            : 0;
+      if (reserve > 0 && cash + 1e-8 < qty * reserve) {
+        throw new TradingError("Insufficient cash", "INSUFFICIENT_CASH");
+      }
+    } else {
+      const pos = await tx.paperPosition.findUnique({
+        where: {
+          userId_symbol_assetType: {
+            userId: input.userId,
+            symbol: order.symbol,
+            assetType: order.assetType,
+          },
+        },
+      });
+      const held = pos ? Number(pos.qty) : 0;
+      const pendingSells = await tx.paperOrder.findMany({
+        where: {
+          userId: input.userId,
+          symbol: order.symbol,
+          assetType: order.assetType,
+          side: "sell",
+          status: "pending",
+          NOT: { id: order.id },
+        },
+      });
+      const reserved = pendingSells.reduce((s, o) => s + Number(o.qty), 0);
+      if (held - reserved + 1e-8 < qty) {
+        throw new TradingError("Insufficient position", "INSUFFICIENT_POSITION");
+      }
+    }
+
+    return tx.paperOrder.update({
+      where: { id: order.id },
+      data: {
+        qty,
+        limitPrice: order.type === "limit" ? limitPrice : null,
+        stopPrice: order.type === "stop" ? stopPrice : null,
+      },
+    });
+  });
+
+  try {
+    const quote = await getQuote(order.symbol, order.assetType);
+    const price = quote.price;
+    if (
+      price > 0 &&
+      shouldTriggerPending({
+        type: order.type,
+        side: order.side,
+        price,
+        limitPrice,
+        stopPrice,
+      })
+    ) {
+      const filled = await fillPendingOrder(updated.id, price);
+      if (filled) return filled;
+    }
+  } catch (err) {
+    if (err instanceof TradingError) throw err;
+  }
+
+  return updated;
+}

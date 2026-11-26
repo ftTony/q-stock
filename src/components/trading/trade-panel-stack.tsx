@@ -3,11 +3,14 @@
 import type { ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { SubmitButton } from "@/components/ui/submit-button";
-import { TradeAiLinks } from "@/components/trading/trade-ai-links";
-import { TradeCalmFields } from "@/components/trading/trade-calm-fields";
 import { TradeOpenOrders } from "@/components/trading/trade-open-orders";
 import { TradeOrderFields } from "@/components/trading/trade-order-fields";
-import type { EmotionTagId } from "@/components/symbol/plan/symbol-emotion-check";
+import { TradeTicketBrackets } from "@/components/trading/trade-ticket-brackets";
+import {
+  TradeTicketQty,
+  type QtyMode,
+} from "@/components/trading/trade-ticket-qty";
+import { formatNumber } from "@/lib/format-number";
 
 type Side = "buy" | "sell";
 type OrderType = "market" | "limit" | "stop";
@@ -22,6 +25,7 @@ type Order = {
 };
 
 type Props = {
+  symbol: string;
   loading: boolean;
   positionLine: ReactNode;
   resultBanner: ReactNode;
@@ -39,34 +43,35 @@ type Props = {
   bid: number | null;
   ask: number | null;
   lastPrice: number | null;
-  invalidationPrice: string;
-  onInvalidationPrice: (v: string) => void;
-  strategies: Array<{ id: string; name: string }>;
-  strategyId: string;
-  strategyName: string | null;
-  planStrategyId?: string;
-  onStrategyId: (id: string) => void;
-  onOpenPlan?: () => void;
-  onOpenCalm?: () => void;
-  onOpenAi?: () => void;
-  equity: number | null;
-  qtyNum: number;
-  estimatePrice: number;
+  qtyMode: QtyMode;
+  onQtyMode: (m: QtyMode) => void;
+  qtyInput: string;
+  onQtyInput: (v: string) => void;
+  shares: number;
+  estimateNotional: number;
+  equityPct: number;
+  maxSharesByMargin: number;
+  currencyPrefix: string;
+  stopLoss: string;
+  onStopLoss: (v: string) => void;
+  takeProfit: string;
+  onTakeProfit: (v: string) => void;
+  onApplyStopPct: (pct: number) => void;
+  onApplyTakePct: (pct: number) => void;
   estimateLabel: string;
   submitLabel: string;
   submitClass: string;
   busy: boolean;
   canSubmit: boolean;
-  emotionTags: EmotionTagId[];
-  onEmotionTags: (tags: EmotionTagId[]) => void;
-  symbol: string;
-  assetType: string;
   orders: Order[];
   onCancelOrder: (id: string) => void;
 };
 
-/** Desktop stack bottom only: calm/orders left, ticket right. */
+/**
+ * Stack trade right column — full-width ticket (account lives on the left rail).
+ */
 export function TradePanelStackLayout({
+  symbol,
   loading,
   positionLine,
   resultBanner,
@@ -84,77 +89,58 @@ export function TradePanelStackLayout({
   bid,
   ask,
   lastPrice,
-  invalidationPrice,
-  onInvalidationPrice,
-  strategies,
-  strategyId,
-  strategyName,
-  planStrategyId = "",
-  onStrategyId,
-  onOpenPlan,
-  onOpenCalm,
-  onOpenAi,
-  equity,
-  qtyNum,
-  estimatePrice,
+  qtyMode,
+  onQtyMode,
+  qtyInput,
+  onQtyInput,
+  shares,
+  estimateNotional,
+  equityPct,
+  maxSharesByMargin,
+  currencyPrefix,
+  stopLoss,
+  onStopLoss,
+  takeProfit,
+  onTakeProfit,
+  onApplyStopPct,
+  onApplyTakePct,
   estimateLabel,
   submitLabel,
   submitClass,
   busy,
   canSubmit,
-  emotionTags,
-  onEmotionTags,
-  symbol,
-  assetType,
   orders,
   onCancelOrder,
 }: Props) {
   const t = useTranslations("trading");
+  const px =
+    lastPrice != null
+      ? formatNumber(lastPrice, {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 4,
+        })
+      : "—";
 
   return (
-    <div className="aw-trade-stack-split flex min-h-0 flex-1 overflow-hidden">
-      <div className="aw-trade-stack-side aw-trade-stack-pad aw-dock-scroll flex min-h-0 min-w-0 flex-1 flex-col gap-2 overflow-y-auto overscroll-contain py-2">
-        <TradeCalmFields
-          invalidationPrice={invalidationPrice}
-          onInvalidationPrice={onInvalidationPrice}
-          strategies={strategies}
-          strategyId={strategyId}
-          strategyName={strategyName}
-          planStrategyId={planStrategyId}
-          onStrategyId={onStrategyId}
-          onOpenPlan={onOpenPlan}
-          equity={equity}
-          qty={qtyNum}
-          entry={estimatePrice}
-          stop={
-            orderType === "stop"
-              ? Number(stopPrice) || null
-              : Number(invalidationPrice) || null
-          }
-          symbol={symbol}
-          assetType={assetType}
-          emotionTags={emotionTags}
-          onEmotionTags={onEmotionTags}
-        />
-        <TradeAiLinks onOpenCalm={onOpenCalm} onOpenAi={onOpenAi} />
-        <TradeOpenOrders
-          orders={orders}
-          busy={busy}
-          onCancel={onCancelOrder}
-        />
-      </div>
-
-      <div
-        className="aw-trade-stack-divider shrink-0 self-stretch"
-        aria-hidden
-      />
-
-      <div className="aw-trade-stack-ticket flex min-h-0 min-w-0 flex-1 flex-col">
-        <div className="aw-trade-stack-pad aw-dock-scroll min-h-0 flex-1 space-y-2 overflow-y-auto overscroll-contain py-2">
+    <div className="aw-trade-stack-ticket flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="aw-trade-stack-pad aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain py-3">
+        <div className="mx-auto w-full max-w-[26rem] space-y-3.5">
           {loading ? <p className="aw-caption">{t("loading")}</p> : null}
           {resultBanner}
+
+          <header className="flex items-baseline justify-between gap-3 border-b border-[var(--aw-hairline,var(--border))] pb-2.5">
+            <span className="truncate text-[16px] font-semibold tracking-wide text-[var(--foreground)]">
+              {symbol}
+            </span>
+            <span className="text-[16px] font-semibold tabular-nums tracking-tight text-[var(--foreground)]">
+              {px}
+            </span>
+          </header>
+
           {positionLine}
+
           <TradeOrderFields
+            broker
             side={side}
             onSide={onSide}
             orderType={orderType}
@@ -168,29 +154,56 @@ export function TradePanelStackLayout({
             bid={bid}
             ask={ask}
             lastPrice={lastPrice}
-            compact
+          />
+          <TradeTicketQty
+            mode={qtyMode}
+            onMode={onQtyMode}
+            value={qtyInput}
+            onValue={onQtyInput}
+            shares={shares}
+            estimateNotional={estimateNotional}
+            equityPct={equityPct}
+            maxSharesByMargin={maxSharesByMargin}
+            currencyPrefix={currencyPrefix}
+          />
+          <TradeTicketBrackets
+            side={side}
+            stopLoss={stopLoss}
+            onStopLoss={onStopLoss}
+            takeProfit={takeProfit}
+            onTakeProfit={onTakeProfit}
+            onApplyStopPct={onApplyStopPct}
+            onApplyTakePct={onApplyTakePct}
           />
           {draftBanner}
-        </div>
-        <div className="aw-trade-stack-pad aw-trade-stack-submit-bar shrink-0 border-t border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas,var(--panel))] pb-1.5 pt-1">
-          <div className="mb-1 flex items-baseline justify-between gap-2">
-            <span className="aw-metric-label">
-              {t("estimate")}
-              <span className="ml-1.5 font-normal text-[var(--muted)]">
-                · {t("paperBadge")}
+
+          <div className="space-y-2 border-t border-[var(--aw-hairline,var(--border))] pt-3">
+            <div className="flex items-baseline justify-between gap-2">
+              <span className="text-[11px] text-[var(--muted)]">
+                {t("estimate")}
+                <span className="mx-1 opacity-40">·</span>
+                {t("paperBadge")}
               </span>
-            </span>
-            <span className="aw-metric-value text-[13px]">{estimateLabel}</span>
+              <span className="text-[15px] font-semibold tabular-nums tracking-tight text-[var(--foreground)]">
+                {estimateLabel}
+              </span>
+            </div>
+            <SubmitButton
+              type="submit"
+              loading={busy}
+              loadingLabel={t("loading")}
+              disabled={!canSubmit}
+              className={`aw-trade-stack-submit ${submitClass}`}
+            >
+              {submitLabel}
+            </SubmitButton>
           </div>
-          <SubmitButton
-            type="submit"
-            loading={busy}
-            loadingLabel={t("loading")}
-            disabled={!canSubmit}
-            className={`aw-trade-stack-submit ${submitClass}`}
-          >
-            {submitLabel}
-          </SubmitButton>
+
+          <TradeOpenOrders
+            orders={orders}
+            busy={busy}
+            onCancel={onCancelOrder}
+          />
         </div>
       </div>
     </div>

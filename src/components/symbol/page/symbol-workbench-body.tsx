@@ -1,6 +1,7 @@
 "use client";
 
 import type { CSSProperties, FormEvent, ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import {
   SymbolDesktopRail,
   SymbolSideIconRail,
@@ -59,6 +60,8 @@ type Props = {
   stackKey: number;
   newsFeedTab: "news" | "press";
   openTrade: () => void;
+  /** Desk CTA / plan go-order → ticket dock. */
+  openOrderTicket: () => void;
   openPlan: () => void;
   openSymbolReview: (orderId?: string | null) => void;
   onSideSelect: (id: SideIconId) => void;
@@ -96,6 +99,7 @@ export function SymbolWorkbenchBody({
   stackKey,
   newsFeedTab,
   openTrade,
+  openOrderTicket,
   openPlan,
   openSymbolReview,
   onSideSelect,
@@ -124,6 +128,7 @@ export function SymbolWorkbenchBody({
         p.setAiOpen(true);
         p.closeDock();
       }}
+      onOpenTrade={openOrderTicket}
       tab={stackTab}
       onTabChange={setStackTab}
       onNewsFeedTabChange={(tab) => s.setTab(tab)}
@@ -229,6 +234,7 @@ export function SymbolWorkbenchBody({
             stackKey={stackKey}
             newsFeedTab={newsFeedTab}
             openTrade={openTrade}
+            openOrderTicket={openOrderTicket}
             openPlan={openPlan}
             onSideSelect={onSideSelect}
             onToggleWatchlist={onToggleWatchlist}
@@ -267,6 +273,7 @@ type MainGridProps = {
   stackKey: number;
   newsFeedTab: "news" | "press";
   openTrade: () => void;
+  openOrderTicket: () => void;
   openPlan: () => void;
   onSideSelect: (id: SideIconId) => void;
   onToggleWatchlist: () => void;
@@ -297,6 +304,7 @@ function SymbolWorkbenchMainGrid({
   marketCap,
   setStackTab,
   openTrade,
+  openOrderTicket,
   openPlan,
   onSideSelect,
   onToggleWatchlist,
@@ -305,6 +313,7 @@ function SymbolWorkbenchMainGrid({
   stackBelow,
   embedChartToolbar,
 }: MainGridProps) {
+  const tTrading = useTranslations("trading");
   return (
     <>
         <div className="shrink-0">
@@ -314,7 +323,8 @@ function SymbolWorkbenchMainGrid({
             quote={s.quote}
             boundRuleName={p.boundRuleName}
             onOpenPlan={openPlan}
-            onOpenTrade={openTrade}
+            onOpenTrade={openOrderTicket}
+            tradeButtonLabel={tTrading("deskOpenTicket")}
             feedStatus={feedStatus}
             tabs={isDesktop && !embedChartToolbar ? desktopQuoteTabs : undefined}
             tab={isDesktop && !embedChartToolbar ? panelTab : undefined}
@@ -375,7 +385,7 @@ function SymbolWorkbenchMainGrid({
                           marketCap={marketCap}
                           segment={p.mobileSegment}
                           onSegmentChange={p.onMobileSegment}
-                          onOpenTrade={openTrade}
+                          onOpenTrade={openOrderTicket}
                           focusPlanToken={p.planFocusKey}
                           focusReviewToken={p.reviewFocusKey}
                           highlightOrderId={p.highlightOrderId}
@@ -421,7 +431,7 @@ function SymbolWorkbenchMainGrid({
               focusReviewToken={p.reviewFocusKey}
               highlightOrderId={p.highlightOrderId}
               onBoundStrategyChange={p.onBoundStrategyChange}
-              onRequestOrder={openTrade}
+              onRequestOrder={openOrderTicket}
               dragging={rail.dragging}
               onResizeStart={rail.onResizeStart}
               onResizeKeyNudge={rail.nudgeWidth}

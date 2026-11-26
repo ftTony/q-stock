@@ -171,15 +171,26 @@ export function SymbolPageClient({
     isDesktop,
   ]);
 
+  /** Trading desk — side dock desk view, or stack bottom「交易」tab. */
   const openTrade = useCallback(() => {
+    p.setAiOpen(false);
+    p.setMobilePlanOpen(false);
+    p.setSeoOpen(false);
     if (isStack) {
-      p.setAiOpen(false);
       p.closeDock();
       setStackTab("trade");
       return;
     }
     p.openTrade();
   }, [isStack, p]);
+
+  /** Order ticket surface (desk CTA / plan「去下单」). */
+  const openOrderTicket = useCallback(() => {
+    p.setAiOpen(false);
+    p.setMobilePlanOpen(false);
+    p.setSeoOpen(false);
+    p.openOrderTicket();
+  }, [p]);
 
   /** Plan / review always use the right rail (side + stack). */
   const openPlan = useCallback(() => {
@@ -331,6 +342,7 @@ export function SymbolPageClient({
           stackKey={stackKey}
           newsFeedTab={newsFeedTab}
           openTrade={openTrade}
+          openOrderTicket={openOrderTicket}
           openPlan={openPlan}
           openSymbolReview={openSymbolReview}
           onSideSelect={onSideSelect}
@@ -353,8 +365,17 @@ export function SymbolPageClient({
           isDesktop={isDesktop}
           isStack={isStack}
           dockReady={p.dockReady}
-          dock={isStack ? null : p.dock}
+          dock={
+            isStack
+              ? p.dock === "trade"
+                ? "trade"
+                : null
+              : p.dock
+          }
           onCloseDock={p.closeDock}
+          tradeDockView={isStack ? "ticket" : p.tradeDockView}
+          onTradeDockViewChange={p.setTradeDockView}
+          tradeTicketOnly={isStack}
           symbol={symbol}
           assetType={assetType}
           isIndex={isIndex}
@@ -410,7 +431,10 @@ export function SymbolPageClient({
           focusPlanToken={p.planFocusKey}
           focusReviewToken={p.reviewFocusKey}
           highlightOrderId={p.highlightOrderId}
-          onRequestOrder={openTrade}
+          onRequestOrder={openOrderTicket}
+          inWatchlist={s.inWatchlist}
+          watchBusy={s.watchBusy}
+          onToggleWatchlist={onToggleWatchlist}
           aiReady={p.aiReady}
           aiOpen={isStack ? false : p.aiOpen}
           onAiOpenChange={(open) => {

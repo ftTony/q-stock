@@ -4,10 +4,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { fetchJson } from "@/lib/query/fetch-json";
 import { queryKeys } from "@/lib/query/keys";
 
+/** Paper account / book — short stale keeps dock snappy without refetch storms. */
+const TRADING_STALE_MS = 15_000;
+
 export function useTradingAccount(enabled = true) {
   return useQuery({
     queryKey: queryKeys.trading.account,
     enabled,
+    staleTime: TRADING_STALE_MS,
     queryFn: () => fetchJson("/api/trading/account"),
   });
 }
@@ -19,6 +23,7 @@ export function useTradingPositions(
   return useQuery({
     queryKey: [...queryKeys.trading.positions, quotes] as const,
     enabled: opts?.enabled ?? true,
+    staleTime: TRADING_STALE_MS,
     queryFn: () =>
       fetchJson(
         `/api/trading/positions${quotes ? "?quotes=1" : ""}`,
@@ -50,6 +55,7 @@ export function useTradingOrders(
       assetType ?? "",
     ] as const,
     enabled: opts?.enabled ?? true,
+    staleTime: TRADING_STALE_MS,
     queryFn: () =>
       fetchJson(qs ? `/api/trading/orders?${qs}` : "/api/trading/orders"),
   });
@@ -59,6 +65,7 @@ export function usePaperRiskSettings(enabled = true) {
   return useQuery({
     queryKey: queryKeys.trading.risk,
     enabled,
+    staleTime: 60_000,
     queryFn: () => fetchJson("/api/trading/risk-settings"),
   });
 }
@@ -99,6 +106,26 @@ export function useCancelOrder() {
     mutationFn: (id: string) =>
       fetchJson(`/api/trading/orders?id=${encodeURIComponent(id)}`, {
         method: "DELETE",
+      }),
+    onSuccess: async () => {
+      await qc.invalidateQueries({ queryKey: queryKeys.trading.all });
+    },
+  });
+}
+
+export function useModifyOrder() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: {
+      id: string;
+      qty: number;
+      limitPrice?: number | null;
+      stopPrice?: number | null;
+    }) =>
+      fetchJson("/api/trading/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       }),
     onSuccess: async () => {
       await qc.invalidateQueries({ queryKey: queryKeys.trading.all });

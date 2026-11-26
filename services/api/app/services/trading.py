@@ -294,6 +294,110 @@ async def cancel_order(db: AsyncSession, user_id: str, order_id: str) -> PaperOr
     return order
 
 
+async def modify_order(
+    db: AsyncSession,
+    *,
+    user_id: str,
+    order_id: str,
+    qty: float,
+    limit_price: float | None = None,
+    stop_price: float | None = None,
+) -> PaperOrder:
+    """Amend pending paper order qty / trigger price (type & side unchanged)."""
+    order = await db.get(PaperOrder, order_id)
+    if not order or order.userId != user_id:
+        raise AppError("Order not found", code="NOT_FOUND", status_code=404)
+    if order.status != "pending":
+        raise AppError(
+            "Only pending orders can be modified",
+            code="NOT_PENDING",
+            status_code=400,
+        )
+
+    if not (qty > 0):
+        raise AppError("Invalid quantity", code="INVALID_QTY", status_code=400)
+    q = _dec(qty) or Decimal("0")
+
+    next_limit = float(order.limitPrice) if order.limitPrice is not None else None
+    next_stop = float(order.stopPrice) if order.stopPrice is not None else None
+
+    if order.type == "limit":
+        if not (limit_price is not None and limit_price > 0):
+            raise AppError("limitPrice required", code="INVALID_LIMIT", status_code=400)
+        next_limit = limit_price
+    if order.type == "stop":
+        if not (stop_price is not None and stop_price > 0):
+            raise AppError("stopPrice required", code="INVALID_STOP", status_code=400)
+        next_stop = stop_price
+
+    if order.side == "buy":
+        account = await ensure_account(db, user_id)
+        cash = float(account.cashBalance)
+        reserve = (
+            float(next_limit or 0)
+            if order.type == "limit"
+            else float(next_stop or 0)
+            if order.type == "stop"
+            else 0.0
+        )
+        if reserve > 0 and cash + 1e-8 < qty * reserve:
+            raise AppError("Insufficient cash", code="INSUFFICIENT_CASH", status_code=400)
+    else:
+        res = await db.execute(
+            select(PaperPosition).where(
+                PaperPosition.userId == user_id,
+                PaperPosition.symbol == order.symbol,
+                PaperPosition.assetType == order.assetType,
+            )
+        )
+        pos = res.scalar_one_or_none()
+        held = float(pos.qty) if pos else 0.0
+        pending = await db.execute(
+            select(PaperOrder).where(
+                PaperOrder.userId == user_id,
+                PaperOrder.symbol == order.symbol,
+                PaperOrder.assetType == order.assetType,
+                PaperOrder.side == "sell",
+                PaperOrder.status == "pending",
+                PaperOrder.id != order.id,
+            )
+        )
+        reserved = sum(float(o.qty) for o in pending.scalars())
+        if held - reserved + 1e-8 < qty:
+            raise AppError(
+                "Insufficient position",
+                code="INSUFFICIENT_POSITION",
+                status_code=400,
+            )
+
+    order.qty = q
+    order.limitPrice = _dec(next_limit) if order.type == "limit" else None
+    order.stopPrice = _dec(next_stop) if order.type == "stop" else None
+    order.updatedAt = datetime.now(timezone.utc)
+    await db.commit()
+    await db.refresh(order)
+
+    try:
+        quote = await get_quote(order.symbol, order.assetType)
+        price = float(quote.get("price") or 0)
+        if price > 0 and should_trigger_pending(
+            order_type=order.type,
+            side=order.side,
+            price=price,
+            limit_price=next_limit,
+            stop_price=next_stop,
+        ):
+            filled = await fill_pending_order(db, order.id, price)
+            if filled:
+                return filled
+    except AppError:
+        raise
+    except Exception:  # noqa: BLE001 — quote miss should not fail amend
+        pass
+
+    return order
+
+
 async def get_or_create_risk(db: AsyncSession, user_id: str) -> PaperRiskSettings:
     settings = await db.get(PaperRiskSettings, user_id)
     if settings:

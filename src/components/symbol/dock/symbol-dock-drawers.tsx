@@ -1,17 +1,10 @@
 "use client";
 
-import { Suspense, type FormEvent } from "react";
-import {
-  TradePanel,
-  SymbolPaperRiskBar,
-} from "@/components/symbol/page/symbol-page-dynamics";
+import { type FormEvent } from "react";
 import { useSession } from "@/lib/auth/react";
 import { useTranslations } from "next-intl";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
-import {
-  InlineLoading,
-  PanelSkeleton,
-} from "@/components/ui/panel-skeleton";
+import { InlineLoading } from "@/components/ui/panel-skeleton";
 import { SideDrawer } from "@/components/ui/side-drawer";
 import type { AssetType } from "@/lib/types";
 import type {
@@ -24,12 +17,19 @@ import {
   SymbolDockNewsPanel,
   type NewsFeedTab,
 } from "@/components/symbol/dock/symbol-dock-news-panel";
+import { SymbolDockTradeBody } from "@/components/symbol/dock/symbol-dock-trade-body";
 import type { SideIconId } from "@/components/symbol/rail/symbol-side-icon-rail";
 import "../styles/apple-workbench.css";
+
+type TradeDockView = "desk" | "ticket";
 
 type Props = {
   dock: Exclude<SideIconId, "ai"> | null;
   onClose: () => void;
+  tradeDockView?: TradeDockView;
+  onTradeDockViewChange?: (v: TradeDockView) => void;
+  /** Stack: bottom strip is the desk — dock never mounts desk again. */
+  tradeTicketOnly?: boolean;
   symbol: string;
   assetType: AssetType;
   lastPrice: number | null;
@@ -74,6 +74,9 @@ type Props = {
 export function SymbolDockDrawers({
   dock,
   onClose,
+  tradeDockView = "desk",
+  onTradeDockViewChange,
+  tradeTicketOnly = false,
   symbol,
   assetType,
   lastPrice,
@@ -109,56 +112,34 @@ export function SymbolDockDrawers({
   degradedLabel,
   errorLabel,
   loadingLabel,
-  edgeOffsetPx = 44,
+  edgeOffsetPx = 48,
   topOffsetPx = 0,
 }: Props) {
   const t = useTranslations("symbol");
-  const tRail = useTranslations("symbolRail");
   const tTrading = useTranslations("trading");
   const { data: session, status: authStatus } = useSession();
   const tradeAuthed = authStatus === "authenticated" && Boolean(session?.user);
 
+  const tradeIsTicket = tradeTicketOnly || tradeDockView === "ticket";
+
   const title =
     dock === "trade"
-      ? t("tradeDock")
+      ? tradeIsTicket
+        ? tTrading("deskTicketTitle")
+        : tTrading("deskTabsLabel")
       : dock === "news"
         ? t("newsPress")
         : dock === "comments"
           ? t("comments")
           : "";
 
-  const ruleFooter = strategyName ? (
-    <div className="flex items-center justify-between gap-2">
-      <span className="min-w-0 truncate text-[12px] leading-snug text-[var(--muted)]">
-        {tRail("orderRuleTag")}
-        <span className="mx-1 text-[var(--border)]"></span>
-        <span className="font-medium text-[var(--foreground)]">
-          {strategyName}
-        </span>
-      </span>
-      <button
-        type="button"
-        className="aw-text-link shrink-0 text-[12px] leading-none"
-        onClick={() => {
-          onClose();
-          onOpenPlan();
-        }}
-      >
-        {tRail("orderChangeRule")}
-      </button>
-    </div>
-  ) : (
-    <button
-      type="button"
-      className="text-left text-[12px] leading-snug text-[var(--aw-primary)] hover:underline"
-      onClick={() => {
-        onClose();
-        onOpenPlan();
-      }}
-    >
-      {tRail("orderSuggestRule")}
-    </button>
-  );
+  // H5: full-bleed; desktop: compact strip (no split rail in the dock).
+  const widthClassName =
+    dock === "trade"
+      ? "w-full max-w-none lg:max-w-[26rem]"
+      : dock === "news" || dock === "comments"
+        ? "w-full max-w-none lg:max-w-[28rem]"
+        : undefined;
 
   return (
     <SideDrawer
@@ -166,6 +147,7 @@ export function SymbolDockDrawers({
       onClose={onClose}
       title={title}
       className="aw aw-dock-drawer"
+      widthClassName={widthClassName}
       edgeOffsetPx={edgeOffsetPx}
       topOffsetPx={topOffsetPx}
     >
@@ -185,46 +167,34 @@ export function SymbolDockDrawers({
               />
             </div>
           ) : (
-            <>
-              <SymbolPaperRiskBar
-                symbol={symbol}
-                assetType={assetType}
-                lastPrice={lastPrice}
-                footer={ruleFooter}
-              />
-              <Suspense
-                fallback={
-                  <div className="min-h-0 flex-1 p-4">
-                    <PanelSkeleton rows={5} label={loadingLabel} />
-                  </div>
-                }
-              >
-                <TradePanel
-                  symbol={symbol}
-                  assetType={assetType}
-                  lastPrice={lastPrice}
-                  percentChange={percentChange}
-                  quoteName={quoteName}
-                  bid={bid}
-                  ask={ask}
-                  onOpenAi={onOpenAi}
-                  onOpenPlan={() => {
-                    onClose();
-                    onOpenPlan();
-                  }}
-                  onOpenSymbolReview={
-                    onOpenSymbolReview
-                      ? (orderId) => {
-                        onClose();
-                        onOpenSymbolReview(orderId);
-                      }
-                      : undefined
-                  }
-                  strategyId={strategyId ?? ""}
-                  strategyName={strategyName}
-                />
-              </Suspense>
-            </>
+            <SymbolDockTradeBody
+              view={tradeIsTicket ? "ticket" : "desk"}
+              onViewChange={(v) => onTradeDockViewChange?.(v)}
+              ticketOnly={tradeTicketOnly}
+              symbol={symbol}
+              assetType={assetType}
+              lastPrice={lastPrice}
+              percentChange={percentChange}
+              quoteName={quoteName}
+              bid={bid}
+              ask={ask}
+              strategyId={strategyId}
+              strategyName={strategyName}
+              onOpenAi={onOpenAi}
+              onOpenPlan={() => {
+                onClose();
+                onOpenPlan();
+              }}
+              onOpenSymbolReview={
+                onOpenSymbolReview
+                  ? (orderId) => {
+                      onClose();
+                      onOpenSymbolReview(orderId);
+                    }
+                  : undefined
+              }
+              loadingLabel={loadingLabel}
+            />
           )}
         </div>
       ) : null}
