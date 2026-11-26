@@ -5,7 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "@/lib/auth/react";
 import { useLocale, useTranslations } from "next-intl";
 import { type IndicatorFlags } from "@/components/charts/candle-chart";
-import type { SymbolTab } from "@/components/symbol/tabs/symbol-tabs-panel";
 import { useSymbolCandles } from "@/components/symbol/hooks/use-symbol-candles";
 import {
   buildSymbolTabs,
@@ -31,6 +30,7 @@ import {
 } from "@/hooks/use-quote-socket";
 import { getUsMarketPhase } from "@/lib/market/session";
 import { queryKeys } from "@/lib/query/keys";
+import { useSymbolWorkbenchStore } from "@/stores/symbol-workbench-store";
 import type { ServerMessage } from "@/lib/market/stream/protocol";
 import type {
   AssetType,
@@ -68,6 +68,12 @@ export function useSymbolPage(
   const tComments = useTranslations("comments");
   const tAlerts = useTranslations("alerts");
   const tEarnings = useTranslations("earnings");
+  const tab = useSymbolWorkbenchStore((state) =>
+    state.identity.symbol === symbol && state.identity.assetType === assetType
+      ? state.tab
+      : "chart",
+  );
+  const setTab = useSymbolWorkbenchStore((state) => state.setTab);
   const { data: session } = useSession();
   const qc = useQueryClient();
 
@@ -82,7 +88,6 @@ export function useSymbolPage(
   const candles = useSymbolCandles(symbol, assetType, resolution, {
     initialBars: opts?.initialBars,
   });
-  const [tab, setTab] = useState<SymbolTab>("chart");
   const tabData = useSymbolTabData({
     symbol,
     assetType,
@@ -282,7 +287,7 @@ export function useSymbolPage(
     );
     setAlertMsg(null);
     setTab("chart");
-  }, [symbol, assetType, initialQuote]);
+  }, [symbol, assetType, initialQuote, setTab]);
 
   useEffect(() => {
     if (!quote?.price || !(quote.price > 0)) return;
@@ -300,7 +305,7 @@ export function useSymbolPage(
   useEffect(() => {
     const next = fallbackSymbolTab(tabs, tab);
     if (next !== tab) setTab(next);
-  }, [assetType, isIndex, tab, tabs]);
+  }, [assetType, isIndex, setTab, tab, tabs]);
 
   const loadQuote = useCallback(async () => {
     await quoteQuery.refetch();

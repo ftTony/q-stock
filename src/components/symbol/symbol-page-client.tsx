@@ -8,7 +8,6 @@ import { SymbolWorkbenchBody } from "@/components/symbol/page/symbol-workbench-b
 import {
   SymbolNavPendingProvider,
 } from "@/components/symbol/page/symbol-nav-pending";
-import type { StackBottomTab } from "@/components/symbol/page/symbol-stack-bottom-panel";
 import {
   candleResolutionLabels,
   panelTabFor,
@@ -31,6 +30,7 @@ import { isMarketIndexSymbol } from "@/lib/market/indices";
 import type { SymbolSeoCopy } from "@/lib/seo/symbol-metadata";
 import type { AssetType, OhlcvBar, Quote } from "@/lib/types";
 import type { QuoteHeaderLabels } from "@/components/charts/candle-chart";
+import { useSymbolWorkbenchStore } from "@/stores/symbol-workbench-store";
 import "./styles/apple-workbench.css";
 import "./styles/apple-quote-chrome.css";
 
@@ -60,8 +60,33 @@ export function SymbolPageClient({
   const isStack = isDesktop && layout.prefs.layoutMode === "stack";
   const rail = useRailResize();
   const watch = useWatchlistResize();
-  const [stackTab, setStackTab] = useState<StackBottomTab>("news");
+  const stackTab = useSymbolWorkbenchStore((state) => state.stackTab);
+  const setStackTab = useSymbolWorkbenchStore((state) => state.setStackTab);
+  const setAiOverlayOpen = useSymbolWorkbenchStore(
+    (state) => state.onAiOpenChange,
+  );
+  const newsFeedTab = useSymbolWorkbenchStore((state) => state.newsFeedTab);
+  const identity = useSymbolWorkbenchStore((state) => state.identity);
+  const setIdentity = useSymbolWorkbenchStore((state) => state.setIdentity);
+  const resetForIdentity = useSymbolWorkbenchStore(
+    (state) => state.resetForIdentity,
+  );
+  const identityRef = useRef(identity);
   const [stackKey, setStackKey] = useState(0);
+
+  useLayoutEffect(() => {
+    const previous = identityRef.current;
+    const next = { symbol, assetType };
+    if (previous.symbol === "") {
+      setIdentity(next);
+    } else if (
+      previous.symbol !== symbol ||
+      previous.assetType !== assetType
+    ) {
+      resetForIdentity(next);
+    }
+    identityRef.current = next;
+  }, [assetType, resetForIdentity, setIdentity, symbol]);
 
   useLayoutEffect(() => {
     if (!layout.ready || !isDesktop) return;
@@ -99,22 +124,6 @@ export function SymbolPageClient({
     prefetchPress: isStack && stackTab === "news",
   });
 
-  /**
-   * Stack bottom: sync data tabs when user selects them.
-   * Default "news" uses idle prefetchNews instead of immediate setTab (chart first).
-   */
-  useEffect(() => {
-    if (!isStack) return;
-    if (stackTab === "press" || stackTab === "comments") {
-      s.setTab(stackTab);
-      return;
-    }
-    if (stackTab === "earnings" || stackTab === "profile") {
-      s.setTab("fundamentals");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- s.setTab stable; avoid s identity churn
-  }, [isStack, stackTab, symbol]);
-
   const desktopQuoteTabs = useMemo(() => {
     if (isStack) return s.tabs.filter((x) => x.id === "chart");
     return s.tabs.filter((x) => x.id !== "news" && x.id !== "press");
@@ -133,8 +142,6 @@ export function SymbolPageClient({
     assetType,
     isDesktop,
     setRailOpen,
-    setTab: s.setTab,
-    tab: s.tab,
     mobileMoreTabs,
   });
 
@@ -169,32 +176,16 @@ export function SymbolPageClient({
     watch.setOpen,
     rail.setOpen,
     isDesktop,
+    setStackTab,
   ]);
-
-  /** Trading desk — side dock desk view, or stack bottom「交易」tab. */
-  const openTrade = useCallback(() => {
-    p.setAiOpen(false);
-    p.setMobilePlanOpen(false);
-    p.setSeoOpen(false);
-    if (isStack) {
-      p.closeDock();
-      setStackTab("trade");
-      return;
-    }
-    p.openTrade();
-  }, [isStack, p]);
 
   /** Order ticket surface (desk CTA / plan「去下单」). */
   const openOrderTicket = useCallback(() => {
-    p.setAiOpen(false);
-    p.setMobilePlanOpen(false);
-    p.setSeoOpen(false);
     p.openOrderTicket();
   }, [p]);
 
   /** Plan / review always use the right rail (side + stack). */
   const openPlan = useCallback(() => {
-    p.setAiOpen(false);
     p.closeDock();
     p.openPlan();
   }, [p]);
@@ -220,7 +211,7 @@ export function SymbolPageClient({
       else if (id === "comments") setStackTab("comments");
       else if (id === "ai") setStackTab("ai");
     },
-    [isStack, p],
+    [isStack, p, setStackTab],
   );
 
   const marketCap = useMemo(() => {
@@ -231,7 +222,6 @@ export function SymbolPageClient({
 
   const panelTab = isStack ? "chart" : panelTabFor(isDesktop, s.tab);
   const resolutionLabels = useMemo(() => candleResolutionLabels(s.t), [s.t]);
-  const newsFeedTab = s.tab === "press" ? "press" : "news";
   const chartEnabled = !isDesktop || layout.prefs.modules.chart;
 
   const onToggleWatchlist = useCallback(() => {
@@ -341,19 +331,13 @@ export function SymbolPageClient({
           setStackTab={setStackTab}
           stackKey={stackKey}
           newsFeedTab={newsFeedTab}
-          openTrade={openTrade}
           openOrderTicket={openOrderTicket}
           openPlan={openPlan}
           openSymbolReview={openSymbolReview}
           onSideSelect={onSideSelect}
           onToggleWatchlist={onToggleWatchlist}
           aboutLabel={seoCopy.aboutLabel}
-          onOpenAbout={() => {
-            p.setAiOpen(false);
-            p.setDock(null);
-            p.setMobilePlanOpen(false);
-            p.setSeoOpen(true);
-          }}
+          onOpenAbout={() => p.setSeoOpen(true)}
           resizing={
             rail.dragging ||
             watch.dragging ||
@@ -394,11 +378,8 @@ export function SymbolPageClient({
               return;
             }
             p.setAiOpen(true);
-            p.setDock(null);
-            p.setMobilePlanOpen(false);
           }}
           onOpenPlan={() => {
-            p.setDock(null);
             openPlan();
           }}
           onOpenSymbolReview={openSymbolReview}
@@ -437,18 +418,7 @@ export function SymbolPageClient({
           onToggleWatchlist={onToggleWatchlist}
           aiReady={p.aiReady}
           aiOpen={isStack ? false : p.aiOpen}
-          onAiOpenChange={(open) => {
-            if (isStack) {
-              if (open) setStackTab("ai");
-              return;
-            }
-            p.setAiOpen(open);
-            if (open) {
-              p.setDock(null);
-              p.setMobilePlanOpen(false);
-              p.setSeoOpen(false);
-            }
-          }}
+          onAiOpenChange={(open) => setAiOverlayOpen(open, isStack)}
           seoOpen={p.seoOpen}
           onSeoOpenChange={p.setSeoOpen}
           seoCopy={seoCopy}
