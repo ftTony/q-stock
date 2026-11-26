@@ -52,6 +52,7 @@ build-timing-log.txt
 # vercel
 .vercel
 .cursor
+.worktrees/
 # typescript
 *.tsbuildinfo
 next-env.d.ts
