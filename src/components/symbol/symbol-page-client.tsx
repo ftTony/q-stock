@@ -60,6 +60,17 @@ export function SymbolPageClient({
   const isStack = isDesktop && layout.prefs.layoutMode === "stack";
   const rail = useRailResize();
   const watch = useWatchlistResize();
+  const { setModule: setLayoutModule, resetLayout, setLayoutMode } = layout;
+  const {
+    open: railOpen,
+    setOpen: setRailOpenState,
+    resetWidth: resetRailWidth,
+  } = rail;
+  const {
+    open: watchOpen,
+    setOpen: setWatchOpenState,
+    resetWidth: resetWatchWidth,
+  } = watch;
   const stackTab = useSymbolWorkbenchStore((state) => state.stackTab);
   const setStackTab = useSymbolWorkbenchStore((state) => state.setStackTab);
   const setAiOverlayOpen = useSymbolWorkbenchStore(
@@ -97,20 +108,20 @@ export function SymbolPageClient({
 
   const setWatchOpen = useCallback(
     (next: boolean | ((v: boolean) => boolean)) => {
-      const value = typeof next === "function" ? next(watch.open) : next;
-      if (value !== watch.open) watch.setOpen(value);
-      layout.setModule("watchlist", value);
+      const value = typeof next === "function" ? next(watchOpen) : next;
+      if (value !== watchOpen) setWatchOpenState(value);
+      setLayoutModule("watchlist", value);
     },
-    [watch.open, watch.setOpen, layout.setModule],
+    [watchOpen, setWatchOpenState, setLayoutModule],
   );
 
   const setRailOpen = useCallback(
     (next: boolean | ((v: boolean) => boolean)) => {
-      const value = typeof next === "function" ? next(rail.open) : next;
-      if (value !== rail.open) rail.setOpen(value);
-      layout.setModule("rail", value);
+      const value = typeof next === "function" ? next(railOpen) : next;
+      if (value !== railOpen) setRailOpenState(value);
+      setLayoutModule("rail", value);
     },
-    [rail.open, rail.setOpen, layout.setModule],
+    [railOpen, setRailOpenState, setLayoutModule],
   );
 
   const s = useSymbolPage(symbol, assetType, isIndex, initialQuote, {
@@ -144,74 +155,66 @@ export function SymbolPageClient({
     setRailOpen,
     mobileMoreTabs,
   });
+  const {
+    dock,
+    closeDock,
+    openPlan,
+    openOrderTicket,
+    openReview,
+    onSideSelect: selectSide,
+    setAiOpen,
+  } = p;
 
   useEffect(() => {
     if (layout.prefs.modules.newsDock) return;
-    if (p.dock === "news") p.closeDock();
-  }, [layout.prefs.modules.newsDock, p.dock, p.closeDock]);
+    if (dock === "news") closeDock();
+  }, [layout.prefs.modules.newsDock, dock, closeDock]);
 
   const onModuleChange = useCallback(
     (key: LayoutModuleKey, value: boolean) => {
-      layout.setModule(key, value);
-      if (key === "watchlist") watch.setOpen(value);
-      if (key === "rail") rail.setOpen(value);
-      if (key === "newsDock" && !value && p.dock === "news") p.closeDock();
+      setLayoutModule(key, value);
+      if (key === "watchlist") setWatchOpenState(value);
+      if (key === "rail") setRailOpenState(value);
+      if (key === "newsDock" && !value && dock === "news") closeDock();
     },
-    [layout.setModule, watch.setOpen, rail.setOpen, p.dock, p.closeDock],
+    [setLayoutModule, setWatchOpenState, setRailOpenState, dock, closeDock],
   );
 
   const onResetLayout = useCallback(() => {
-    layout.resetLayout();
-    watch.resetWidth();
-    rail.resetWidth();
+    resetLayout();
+    resetWatchWidth();
+    resetRailWidth();
     clearStackBottomHeight();
     setStackKey((k) => k + 1);
     setStackTab("news");
-    watch.setOpen(false);
-    if (isDesktop) rail.setOpen(true);
+    setWatchOpenState(false);
+    if (isDesktop) setRailOpenState(true);
   }, [
-    layout.resetLayout,
-    watch.resetWidth,
-    rail.resetWidth,
-    watch.setOpen,
-    rail.setOpen,
+    resetLayout,
+    resetWatchWidth,
+    resetRailWidth,
+    setWatchOpenState,
+    setRailOpenState,
     isDesktop,
     setStackTab,
   ]);
 
-  /** Order ticket surface (desk CTA / plan「去下单」). */
-  const openOrderTicket = useCallback(() => {
-    p.openOrderTicket();
-  }, [p]);
-
-  /** Plan / review always use the right rail (side + stack). */
-  const openPlan = useCallback(() => {
-    p.closeDock();
-    p.openPlan();
-  }, [p]);
-
-  const openSymbolReview = useCallback(
-    (orderId?: string | null) => {
-      p.closeDock();
-      p.openReview(orderId);
-    },
-    [p],
-  );
+  const openSymbolReview = openReview;
 
   const onSideSelect = useCallback(
     (id: SideIconId) => {
       if (!isStack) {
-        p.onSideSelect(id);
+        selectSide(id);
         return;
       }
-      p.setAiOpen(false);
-      p.closeDock();
+      setAiOpen(false);
+      closeDock();
       if (id === "trade") setStackTab("trade");
       else if (id === "news") setStackTab("news");
       else if (id === "comments") setStackTab("comments");
       else if (id === "ai") setStackTab("ai");
     },
-    [isStack, p, setStackTab],
+    [isStack, selectSide, setAiOpen, closeDock, setStackTab],
   );
 
   const marketCap = useMemo(() => {
@@ -224,9 +227,7 @@ export function SymbolPageClient({
   const resolutionLabels = useMemo(() => candleResolutionLabels(s.t), [s.t]);
   const chartEnabled = !isDesktop || layout.prefs.modules.chart;
 
-  const onToggleWatchlist = useCallback(() => {
-    void s.toggleWatchlist();
-  }, [s.toggleWatchlist]);
+  const onToggleWatchlist = s.toggleWatchlist;
 
   // Live quote ticks must not re-render the memoized chart tree. Keep the
   // latest quote in a stable ref (only the screenshot reads it on demand).
@@ -307,7 +308,7 @@ export function SymbolPageClient({
           isDesktop={isDesktop}
           isStack={isStack}
           layoutPrefs={layout.prefs}
-          onLayoutModeChange={layout.setLayoutMode}
+          onLayoutModeChange={setLayoutMode}
           onModuleChange={onModuleChange}
           onResetLayout={onResetLayout}
           s={s}
@@ -379,12 +380,10 @@ export function SymbolPageClient({
             }
             p.setAiOpen(true);
           }}
-          onOpenPlan={() => {
-            openPlan();
-          }}
+          onOpenPlan={openPlan}
           onOpenSymbolReview={openSymbolReview}
           newsFeedTab={newsFeedTab}
-          onNewsFeedTabChange={(tab) => s.setTab(tab)}
+          onNewsFeedTabChange={s.setTab}
           news={s.news}
           press={s.press}
           comments={s.comments}
