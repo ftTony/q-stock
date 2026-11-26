@@ -14,8 +14,9 @@ function money(n: number) {
 }
 
 const td = "py-2 pr-3 text-[12px] tabular-nums text-[var(--foreground)]";
+const tdSide = "py-2 pr-3 text-[12px] font-medium tabular-nums";
 const inputCls =
-  "qt-input h-7 w-full min-w-[4.5rem] px-2 text-[12px] tabular-nums";
+  "qt-input h-7 w-[5.25rem] max-w-full shrink-0 px-1.5 text-[12px] tabular-nums";
 
 type AmendDraft = {
   qty: string;
@@ -116,7 +117,13 @@ export function TradeDeskPendingRow({
             {order.symbol}
           </Link>
         </td>
-        <td className={td}>{t(order.side)}</td>
+        <td
+          className={`${tdSide} ${
+            order.side === "buy" ? "!text-[var(--up)]" : "!text-[var(--down)]"
+          }`}
+        >
+          {t(order.side)}
+        </td>
         <td className={td}>{t(order.type)}</td>
         <td className={td}>
           {editing ? (

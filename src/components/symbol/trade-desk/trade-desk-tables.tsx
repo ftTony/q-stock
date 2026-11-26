@@ -44,6 +44,13 @@ function Empty({
 const th =
   "pb-2 pr-3 text-left text-[11px] font-medium text-[var(--muted)]";
 const td = "py-2 pr-3 text-[12px] tabular-nums text-[var(--foreground)]";
+/** No default ink — color comes from sideTone (must beat `td` foreground). */
+const tdSide = "py-2 pr-3 text-[12px] font-medium tabular-nums";
+
+/** Buy/sell follow user 涨跌色 (--up / --down). */
+function sideTone(side: "buy" | "sell") {
+  return side === "buy" ? "!text-[var(--up)]" : "!text-[var(--down)]";
+}
 
 export function TradeDeskPositions({
   positions,
@@ -177,14 +184,17 @@ export function TradeDeskOrders({
                 />
               );
             }
+            // Filled → show execution price; pending → show limit/stop trigger.
             const px =
-              o.limitPrice != null
-                ? `$${money(o.limitPrice)}`
-                : o.stopPrice != null
-                  ? `stop $${money(o.stopPrice)}`
-                  : o.filledPrice != null
-                    ? `$${money(o.filledPrice)}`
-                    : "—";
+              o.status === "filled" && o.filledPrice != null
+                ? `$${money(o.filledPrice)}`
+                : o.limitPrice != null
+                  ? `$${money(o.limitPrice)}`
+                  : o.stopPrice != null
+                    ? `stop $${money(o.stopPrice)}`
+                    : o.filledPrice != null
+                      ? `$${money(o.filledPrice)}`
+                      : "—";
             const statusKey =
               o.status === "pending" ||
               o.status === "filled" ||
@@ -205,7 +215,7 @@ export function TradeDeskOrders({
                     {o.symbol}
                   </Link>
                 </td>
-                <td className={td}>{t(o.side)}</td>
+                <td className={`${tdSide} ${sideTone(o.side)}`}>{t(o.side)}</td>
                 <td className={td}>{t(o.type)}</td>
                 <td className={td}>{o.qty}</td>
                 <td className={td}>{px}</td>
@@ -269,7 +279,7 @@ export function TradeDeskFills({
                   {o.symbol}
                 </Link>
               </td>
-              <td className={td}>{t(o.side)}</td>
+              <td className={`${tdSide} ${sideTone(o.side)}`}>{t(o.side)}</td>
               <td className={td}>{o.qty}</td>
               <td className={td}>
                 {o.filledPrice != null ? `$${money(o.filledPrice)}` : "—"}
