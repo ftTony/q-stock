@@ -845,6 +845,13 @@ html.aw-rail-resizing {
   font-size: 13px;
 }
 
+/* Clearance for fixed mobile trade bar (trade + icon row + safe-area). */
+@media (max-width: 1023px) {
+  .aw-mobile-below-chart {
+    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* Nested under「更多」— soft chips (child of segment, not a 2nd underline row) */
 .aw-mobile-more-chip:hover {
   color: var(--aw-ink, var(--foreground));

@@ -321,16 +321,19 @@ export function SymbolQuoteBar({
             </button>
           ) : null}
           {ruleBtn}
+          {/* Desktop only — H5 uses SymbolMobileTradeBar (aw-btn-pill beats Tailwind `hidden`). */}
           {onOpenTrade ? (
-            <button
-              type="button"
-              onClick={onOpenTrade}
-              className="aw-btn-pill"
-              title={tradeButtonLabel ?? t("tradeDock")}
-              data-tour="rail-order"
-            >
-              {tradeButtonLabel ?? t("tradeDock")}
-            </button>
+            <div className="hidden lg:contents">
+              <button
+                type="button"
+                onClick={onOpenTrade}
+                className="aw-btn-pill"
+                title={tradeButtonLabel ?? t("tradeDock")}
+                data-tour="rail-order"
+              >
+                {tradeButtonLabel ?? t("tradeDock")}
+              </button>
+            </div>
           ) : null}
           <div className="hidden lg:contents">
             <SymbolShareMenu

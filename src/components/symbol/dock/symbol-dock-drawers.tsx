@@ -133,12 +133,12 @@ export function SymbolDockDrawers({
           ? t("comments")
           : "";
 
-  // Column desk + ticket share a compact strip (no split rail in the dock).
+  // H5: full-bleed; desktop: compact strip (no split rail in the dock).
   const widthClassName =
     dock === "trade"
-      ? "w-full max-w-[min(100vw,26rem)] sm:max-w-[26rem]"
+      ? "w-full max-w-none lg:max-w-[26rem]"
       : dock === "news" || dock === "comments"
-        ? "w-full max-w-[min(100vw,28rem)] sm:max-w-[28rem]"
+        ? "w-full max-w-none lg:max-w-[28rem]"
         : undefined;
 
   return (

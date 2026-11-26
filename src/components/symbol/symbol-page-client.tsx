@@ -432,6 +432,9 @@ export function SymbolPageClient({
           focusReviewToken={p.reviewFocusKey}
           highlightOrderId={p.highlightOrderId}
           onRequestOrder={openOrderTicket}
+          inWatchlist={s.inWatchlist}
+          watchBusy={s.watchBusy}
+          onToggleWatchlist={onToggleWatchlist}
           aiReady={p.aiReady}
           aiOpen={isStack ? false : p.aiOpen}
           onAiOpenChange={(open) => {
