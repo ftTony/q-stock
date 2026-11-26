@@ -149,6 +149,7 @@ type SymbolWorkbenchState = {
   setNewsFeedTab: (tab: "news" | "press") => void;
   setMobileSegment: (segment: MobileSegment) => void;
   setAiOpen: (open: boolean) => void;
+  onAiOpenChange: (open: boolean, isStack: boolean) => void;
   setSeoOpen: (open: boolean) => void;
   setDock: (dock: DockId | null) => void;
   setTradeDockView: (view: TradeDockView) => void;
@@ -272,6 +273,13 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
         ? { dock: null, seoOpen: false, mobilePlanOpen: false, aiReady: true }
         : {}),
     }),
+  onAiOpenChange: (open, isStack) => {
+    if (isStack) {
+      if (open) get().setStackTab("ai");
+      return;
+    }
+    get().setAiOpen(open);
+  },
   setSeoOpen: (open) =>
     set({
       seoOpen: open,
@@ -416,7 +424,14 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
         if (id === "trade" && state.tradeDockView === "ticket") {
           return { tradeDockView: "desk" as TradeDockView };
         }
-        return { dock: null };
+        return {
+          dock: null,
+          ...(state.tab === "news" ||
+          state.tab === "press" ||
+          state.tab === "comments"
+            ? { tab: "chart" as SymbolTab, newsFeedTab: "news" as const }
+            : {}),
+        };
       }
       return {
         aiOpen: false,

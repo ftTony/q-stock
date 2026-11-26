@@ -62,6 +62,9 @@ export function SymbolPageClient({
   const watch = useWatchlistResize();
   const stackTab = useSymbolWorkbenchStore((state) => state.stackTab);
   const setStackTab = useSymbolWorkbenchStore((state) => state.setStackTab);
+  const setAiOverlayOpen = useSymbolWorkbenchStore(
+    (state) => state.onAiOpenChange,
+  );
   const newsFeedTab = useSymbolWorkbenchStore((state) => state.newsFeedTab);
   const identity = useSymbolWorkbenchStore((state) => state.identity);
   const setIdentity = useSymbolWorkbenchStore((state) => state.setIdentity);
@@ -415,18 +418,7 @@ export function SymbolPageClient({
           onToggleWatchlist={onToggleWatchlist}
           aiReady={p.aiReady}
           aiOpen={isStack ? false : p.aiOpen}
-          onAiOpenChange={(open) => {
-            if (isStack) {
-              if (open) setStackTab("ai");
-              return;
-            }
-            p.setAiOpen(open);
-            if (open) {
-              p.setDock(null);
-              p.setMobilePlanOpen(false);
-              p.setSeoOpen(false);
-            }
-          }}
+          onAiOpenChange={(open) => setAiOverlayOpen(open, isStack)}
           seoOpen={p.seoOpen}
           onSeoOpenChange={p.setSeoOpen}
           seoCopy={seoCopy}

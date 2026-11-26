@@ -132,6 +132,41 @@ describe("symbol workbench store", () => {
     });
   });
 
+  test("AI overlay changes open one mutually exclusive surface", () => {
+    const store = useSymbolWorkbenchStore.getState();
+    store.setDock("trade");
+    store.onAiOpenChange(true, false);
+
+    expect(useSymbolWorkbenchStore.getState()).toMatchObject({
+      aiOpen: true,
+      aiReady: true,
+      dock: null,
+      seoOpen: false,
+      mobilePlanOpen: false,
+    });
+
+    useSymbolWorkbenchStore.getState().setAiOpen(false);
+    useSymbolWorkbenchStore.getState().onAiOpenChange(true, true);
+    expect(useSymbolWorkbenchStore.getState()).toMatchObject({
+      aiOpen: false,
+      stackTab: "ai",
+    });
+  });
+
+  test("closing the active news dock returns navigation to the chart", () => {
+    const store = useSymbolWorkbenchStore.getState();
+    store.setDock("comments");
+    store.setTab("comments");
+
+    useSymbolWorkbenchStore.getState().onSideSelect("comments");
+
+    expect(useSymbolWorkbenchStore.getState()).toMatchObject({
+      dock: null,
+      tab: "chart",
+      newsFeedTab: "news",
+    });
+  });
+
   test("hydrateLayout restores the persisted layout and modules", () => {
       storage.set(
         SYMBOL_LAYOUT_KEY,
