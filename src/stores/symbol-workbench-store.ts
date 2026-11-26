@@ -15,8 +15,111 @@ export type SymbolIdentity = {
 export type DockId = Exclude<SideIconId, "ai">;
 export type TradeDockView = "desk" | "ticket";
 
+export type LayoutMode = "side" | "stack";
+
+export type SymbolLayoutModules = {
+  watchlist: boolean;
+  rail: boolean;
+  chart: boolean;
+  newsDock: boolean;
+};
+
+export type SymbolLayoutPrefs = {
+  layoutMode: LayoutMode;
+  modules: SymbolLayoutModules;
+};
+
+export type LayoutModuleKey = keyof SymbolLayoutModules;
+
+export const SYMBOL_LAYOUT_KEY = "qstock.symbolLayout.v2";
+
+export const DEFAULT_SYMBOL_LAYOUT: SymbolLayoutPrefs = {
+  layoutMode: "side",
+  modules: {
+    watchlist: false,
+    rail: true,
+    chart: true,
+    newsDock: true,
+  },
+};
+
+function isLayoutMode(value: unknown): value is LayoutMode {
+  return value === "side" || value === "stack";
+}
+
+function readLegacyOpen(key: string, fallback: boolean): boolean {
+  try {
+    const raw = window.localStorage.getItem(key);
+    return raw === null ? fallback : raw !== "0";
+  } catch {
+    return fallback;
+  }
+}
+
+function readLayoutPrefs(): SymbolLayoutPrefs {
+  if (typeof window === "undefined") return DEFAULT_SYMBOL_LAYOUT;
+  try {
+    const raw = window.localStorage.getItem(SYMBOL_LAYOUT_KEY);
+    if (!raw) {
+      return {
+        ...DEFAULT_SYMBOL_LAYOUT,
+        modules: {
+          ...DEFAULT_SYMBOL_LAYOUT.modules,
+          watchlist: readLegacyOpen(
+            "qstock.symbolWatchlistOpen.v1",
+            DEFAULT_SYMBOL_LAYOUT.modules.watchlist,
+          ),
+          rail: readLegacyOpen(
+            "qstock.symbolRailOpen.v1",
+            DEFAULT_SYMBOL_LAYOUT.modules.rail,
+          ),
+        },
+      };
+    }
+
+    const parsed = JSON.parse(raw) as Partial<SymbolLayoutPrefs>;
+    const modules: Partial<SymbolLayoutModules> = parsed.modules ?? {};
+    return {
+      layoutMode: isLayoutMode(parsed.layoutMode)
+        ? parsed.layoutMode
+        : DEFAULT_SYMBOL_LAYOUT.layoutMode,
+      modules: {
+        watchlist:
+          typeof modules.watchlist === "boolean"
+            ? modules.watchlist
+            : DEFAULT_SYMBOL_LAYOUT.modules.watchlist,
+        rail:
+          typeof modules.rail === "boolean"
+            ? modules.rail
+            : DEFAULT_SYMBOL_LAYOUT.modules.rail,
+        chart:
+          typeof modules.chart === "boolean"
+            ? modules.chart
+            : DEFAULT_SYMBOL_LAYOUT.modules.chart,
+        newsDock:
+          typeof modules.newsDock === "boolean"
+            ? modules.newsDock
+            : DEFAULT_SYMBOL_LAYOUT.modules.newsDock,
+      },
+    };
+  } catch {
+    return DEFAULT_SYMBOL_LAYOUT;
+  }
+}
+
+function writeLayoutPrefs(prefs: SymbolLayoutPrefs): void {
+  try {
+    window.localStorage.setItem(SYMBOL_LAYOUT_KEY, JSON.stringify(prefs));
+  } catch {
+    // Storage may be unavailable in private browsing or after quota exhaustion.
+  }
+}
+
 type SymbolWorkbenchState = {
   identity: SymbolIdentity;
+  layoutMode: LayoutMode;
+  modules: SymbolLayoutModules;
+  layoutReady: boolean;
   tab: SymbolTab;
   stackTab: StackBottomTab;
   newsFeedTab: "news" | "press";
@@ -37,6 +140,10 @@ type SymbolWorkbenchState = {
 
   setIdentity: (identity: SymbolIdentity) => void;
   resetForIdentity: (identity: SymbolIdentity) => void;
+  hydrateLayout: () => void;
+  setLayoutMode: (layoutMode: LayoutMode) => void;
+  setLayoutModule: (key: LayoutModuleKey, value: boolean) => void;
+  resetLayout: () => void;
   setTab: (tab: SymbolTab) => void;
   setStackTab: (tab: StackBottomTab) => void;
   setNewsFeedTab: (tab: "news" | "press") => void;
@@ -78,6 +185,8 @@ const initialIdentity: SymbolIdentity = {
 
 export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) => ({
   identity: initialIdentity,
+  ...DEFAULT_SYMBOL_LAYOUT,
+  layoutReady: false,
   tab: "chart",
   stackTab: "news",
   newsFeedTab: "news",
@@ -115,6 +224,29 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
       reviewFocusKey: 0,
       highlightOrderId: null,
     }),
+  hydrateLayout: () => {
+    const prefs = readLayoutPrefs();
+    set({ ...prefs, layoutReady: true });
+  },
+  setLayoutMode: (layoutMode) => {
+    const state = get();
+    const prefs = { layoutMode, modules: state.modules };
+    writeLayoutPrefs(prefs);
+    set({ layoutMode });
+  },
+  setLayoutModule: (key, value) => {
+    const state = get();
+    const prefs = {
+      layoutMode: state.layoutMode,
+      modules: { ...state.modules, [key]: value },
+    };
+    writeLayoutPrefs(prefs);
+    set({ modules: prefs.modules });
+  },
+  resetLayout: () => {
+    writeLayoutPrefs(DEFAULT_SYMBOL_LAYOUT);
+    set(DEFAULT_SYMBOL_LAYOUT);
+  },
   setTab: (tab) => set({ tab }),
   setStackTab: (stackTab) =>
     set({
