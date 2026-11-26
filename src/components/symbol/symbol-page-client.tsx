@@ -63,7 +63,27 @@ export function SymbolPageClient({
   const stackTab = useSymbolWorkbenchStore((state) => state.stackTab);
   const setStackTab = useSymbolWorkbenchStore((state) => state.setStackTab);
   const newsFeedTab = useSymbolWorkbenchStore((state) => state.newsFeedTab);
+  const identity = useSymbolWorkbenchStore((state) => state.identity);
+  const setIdentity = useSymbolWorkbenchStore((state) => state.setIdentity);
+  const resetForIdentity = useSymbolWorkbenchStore(
+    (state) => state.resetForIdentity,
+  );
+  const identityRef = useRef(identity);
   const [stackKey, setStackKey] = useState(0);
+
+  useLayoutEffect(() => {
+    const previous = identityRef.current;
+    const next = { symbol, assetType };
+    if (previous.symbol === "") {
+      setIdentity(next);
+    } else if (
+      previous.symbol !== symbol ||
+      previous.assetType !== assetType
+    ) {
+      resetForIdentity(next);
+    }
+    identityRef.current = next;
+  }, [assetType, resetForIdentity, setIdentity, symbol]);
 
   useLayoutEffect(() => {
     if (!layout.ready || !isDesktop) return;
@@ -119,8 +139,6 @@ export function SymbolPageClient({
     assetType,
     isDesktop,
     setRailOpen,
-    setTab: s.setTab,
-    tab: s.tab,
     mobileMoreTabs,
   });
 

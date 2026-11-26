@@ -68,7 +68,11 @@ export function useSymbolPage(
   const tComments = useTranslations("comments");
   const tAlerts = useTranslations("alerts");
   const tEarnings = useTranslations("earnings");
-  const tab = useSymbolWorkbenchStore((state) => state.tab);
+  const tab = useSymbolWorkbenchStore((state) =>
+    state.identity.symbol === symbol && state.identity.assetType === assetType
+      ? state.tab
+      : "chart",
+  );
   const setTab = useSymbolWorkbenchStore((state) => state.setTab);
   const { data: session } = useSession();
   const qc = useQueryClient();

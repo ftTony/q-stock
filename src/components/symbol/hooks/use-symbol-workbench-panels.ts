@@ -12,8 +12,6 @@ type Opts = {
   assetType: AssetType;
   isDesktop: boolean;
   setRailOpen: (next: boolean | ((v: boolean) => boolean)) => void;
-  setTab: (tab: SymbolTab) => void;
-  tab: SymbolTab;
   mobileMoreTabs: { id: SymbolTab }[];
 };
 
@@ -23,11 +21,8 @@ export function useSymbolWorkbenchPanels({
   assetType,
   isDesktop,
   setRailOpen,
-  setTab,
-  tab,
   mobileMoreTabs,
 }: Opts) {
-  const identity = useSymbolWorkbenchStore((state) => state.identity);
   const aiOpen = useSymbolWorkbenchStore((state) => state.aiOpen);
   const seoOpen = useSymbolWorkbenchStore((state) => state.seoOpen);
   const dock = useSymbolWorkbenchStore((state) => state.dock);
@@ -70,9 +65,6 @@ export function useSymbolWorkbenchPanels({
   const setBoundStrategy = useSymbolWorkbenchStore(
     (state) => state.setBoundStrategy,
   );
-  const resetForIdentity = useSymbolWorkbenchStore(
-    (state) => state.resetForIdentity,
-  );
   const storeOpenPlan = useSymbolWorkbenchStore((state) => state.openPlan);
   const storeOpenTrade = useSymbolWorkbenchStore((state) => state.openTrade);
   const storeOpenOrderTicket = useSymbolWorkbenchStore(
@@ -97,12 +89,6 @@ export function useSymbolWorkbenchPanels({
   const warmMobilePlan = useSymbolWorkbenchStore(
     (state) => state.warmMobilePlan,
   );
-
-  useEffect(() => {
-    if (identity.symbol !== symbol || identity.assetType !== assetType) {
-      resetForIdentity({ symbol, assetType });
-    }
-  }, [assetType, identity.assetType, identity.symbol, resetForIdentity, symbol]);
 
   useEffect(() => {
     try {
@@ -172,8 +158,7 @@ export function useSymbolWorkbenchPanels({
 
   const openPlan = useCallback(() => {
     storeOpenPlan(isDesktop, (open) => setRailOpen(open));
-    if (!isDesktop) setTab("chart");
-  }, [isDesktop, setRailOpen, setTab, storeOpenPlan]);
+  }, [isDesktop, setRailOpen, storeOpenPlan]);
 
   const openTrade = useCallback(() => {
     storeOpenTrade();
@@ -190,30 +175,19 @@ export function useSymbolWorkbenchPanels({
   const openReview = useCallback(
     (orderId?: string | null) => {
       storeOpenReview(orderId, isDesktop, (open) => setRailOpen(open));
-      if (!isDesktop) setTab("chart");
     },
-    [isDesktop, setRailOpen, setTab, storeOpenReview],
+    [isDesktop, setRailOpen, storeOpenReview],
   );
 
   const onMobileSegment = useCallback(
-    (segment: MobileSegment) => {
-      storeOnMobileSegment(segment, mobileMoreTabs);
-      if (segment === "more") {
-        const first = mobileMoreTabs[0]?.id;
-        if (first) setTab(first);
-      } else {
-        setTab("chart");
-      }
-    },
-    [mobileMoreTabs, setTab, storeOnMobileSegment],
+    (segment: MobileSegment) =>
+      storeOnMobileSegment(segment, mobileMoreTabs),
+    [mobileMoreTabs, storeOnMobileSegment],
   );
 
   const onMoreTabChange = useCallback(
-    (id: SymbolTab) => {
-      storeOnMoreTabChange(id);
-      setTab(id);
-    },
-    [setTab, storeOnMoreTabChange],
+    (id: SymbolTab) => storeOnMoreTabChange(id),
+    [storeOnMoreTabChange],
   );
 
   const onBoundStrategyChange = useCallback(
@@ -222,32 +196,8 @@ export function useSymbolWorkbenchPanels({
     [setBoundStrategy],
   );
 
-  const closeDock = useCallback(() => {
-    storeCloseDock();
-    if (tab === "news" || tab === "press" || tab === "comments") {
-      setTab("chart");
-    }
-  }, [setTab, storeCloseDock, tab]);
-
-  const onSideSelect = useCallback(
-    (id: SideIconId) => {
-      storeOnSideSelect(id);
-      if (id === "ai") return;
-      if (dock === id) {
-        if (id === "trade" && tradeDockView === "ticket") return;
-        if (tab === "news" || tab === "press" || tab === "comments") {
-          setTab("chart");
-        }
-        return;
-      }
-      if (id === "news") setTab("news");
-      else if (id === "comments") setTab("comments");
-      else if (tab === "news" || tab === "press" || tab === "comments") {
-        setTab("chart");
-      }
-    },
-    [dock, setTab, storeOnSideSelect, tab, tradeDockView],
-  );
+  const closeDock = storeCloseDock;
+  const onSideSelect = storeOnSideSelect;
 
   const sideIcon: SideIconId | null = useMemo(
     () =>
