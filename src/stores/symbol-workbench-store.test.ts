@@ -206,4 +206,39 @@ describe("symbol workbench store", () => {
         DEFAULT_SYMBOL_LAYOUT,
       );
   });
+
+  test("navigation keeps stack tab, page tab, and news feed in sync", () => {
+    const store = useSymbolWorkbenchStore.getState();
+    store.setStackTab("earnings");
+    expect(useSymbolWorkbenchStore.getState()).toMatchObject({
+      stackTab: "earnings",
+      tab: "fundamentals",
+    });
+
+    useSymbolWorkbenchStore.getState().setStackTab("press");
+    expect(useSymbolWorkbenchStore.getState()).toMatchObject({
+      stackTab: "press",
+      tab: "press",
+      newsFeedTab: "press",
+    });
+
+    useSymbolWorkbenchStore.getState().setStackTab("profile");
+    expect(useSymbolWorkbenchStore.getState()).toMatchObject({
+      stackTab: "profile",
+      tab: "fundamentals",
+    });
+
+    useSymbolWorkbenchStore.getState().setDock("news");
+    useSymbolWorkbenchStore.getState().setTab("news");
+    expect(useSymbolWorkbenchStore.getState()).toMatchObject({
+      dock: "news",
+      tab: "news",
+      newsFeedTab: "news",
+    });
+    useSymbolWorkbenchStore.getState().closeDock();
+    expect(useSymbolWorkbenchStore.getState()).toMatchObject({
+      dock: null,
+      tab: "chart",
+    });
+  });
 });

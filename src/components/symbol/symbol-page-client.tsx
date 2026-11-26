@@ -8,7 +8,6 @@ import { SymbolWorkbenchBody } from "@/components/symbol/page/symbol-workbench-b
 import {
   SymbolNavPendingProvider,
 } from "@/components/symbol/page/symbol-nav-pending";
-import type { StackBottomTab } from "@/components/symbol/page/symbol-stack-bottom-panel";
 import {
   candleResolutionLabels,
   panelTabFor,
@@ -31,6 +30,7 @@ import { isMarketIndexSymbol } from "@/lib/market/indices";
 import type { SymbolSeoCopy } from "@/lib/seo/symbol-metadata";
 import type { AssetType, OhlcvBar, Quote } from "@/lib/types";
 import type { QuoteHeaderLabels } from "@/components/charts/candle-chart";
+import { useSymbolWorkbenchStore } from "@/stores/symbol-workbench-store";
 import "./styles/apple-workbench.css";
 import "./styles/apple-quote-chrome.css";
 
@@ -60,7 +60,9 @@ export function SymbolPageClient({
   const isStack = isDesktop && layout.prefs.layoutMode === "stack";
   const rail = useRailResize();
   const watch = useWatchlistResize();
-  const [stackTab, setStackTab] = useState<StackBottomTab>("news");
+  const stackTab = useSymbolWorkbenchStore((state) => state.stackTab);
+  const setStackTab = useSymbolWorkbenchStore((state) => state.setStackTab);
+  const newsFeedTab = useSymbolWorkbenchStore((state) => state.newsFeedTab);
   const [stackKey, setStackKey] = useState(0);
 
   useLayoutEffect(() => {
@@ -98,22 +100,6 @@ export function SymbolPageClient({
     prefetchNews: isStack && stackTab === "news",
     prefetchPress: isStack && stackTab === "news",
   });
-
-  /**
-   * Stack bottom: sync data tabs when user selects them.
-   * Default "news" uses idle prefetchNews instead of immediate setTab (chart first).
-   */
-  useEffect(() => {
-    if (!isStack) return;
-    if (stackTab === "press" || stackTab === "comments") {
-      s.setTab(stackTab);
-      return;
-    }
-    if (stackTab === "earnings" || stackTab === "profile") {
-      s.setTab("fundamentals");
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- s.setTab stable; avoid s identity churn
-  }, [isStack, stackTab, symbol]);
 
   const desktopQuoteTabs = useMemo(() => {
     if (isStack) return s.tabs.filter((x) => x.id === "chart");
@@ -169,6 +155,7 @@ export function SymbolPageClient({
     watch.setOpen,
     rail.setOpen,
     isDesktop,
+    setStackTab,
   ]);
 
   /** Order ticket surface (desk CTA / plan「去下单」). */
@@ -203,7 +190,7 @@ export function SymbolPageClient({
       else if (id === "comments") setStackTab("comments");
       else if (id === "ai") setStackTab("ai");
     },
-    [isStack, p],
+    [isStack, p, setStackTab],
   );
 
   const marketCap = useMemo(() => {
@@ -214,7 +201,6 @@ export function SymbolPageClient({
 
   const panelTab = isStack ? "chart" : panelTabFor(isDesktop, s.tab);
   const resolutionLabels = useMemo(() => candleResolutionLabels(s.t), [s.t]);
-  const newsFeedTab = s.tab === "press" ? "press" : "news";
   const chartEnabled = !isDesktop || layout.prefs.modules.chart;
 
   const onToggleWatchlist = useCallback(() => {

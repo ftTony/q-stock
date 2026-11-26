@@ -247,10 +247,15 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
     writeLayoutPrefs(DEFAULT_SYMBOL_LAYOUT);
     set(DEFAULT_SYMBOL_LAYOUT);
   },
-  setTab: (tab) => set({ tab }),
+  setTab: (tab) =>
+    set({
+      tab,
+      newsFeedTab: tab === "press" ? "press" : "news",
+    }),
   setStackTab: (stackTab) =>
     set({
       stackTab,
+      newsFeedTab: stackTab === "press" ? "press" : "news",
       ...(stackTab === "press" ||
       stackTab === "comments"
         ? { tab: stackTab as SymbolTab }
@@ -299,7 +304,13 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
       seoOpen: false,
       mobilePlanOpen: false,
       planFocusKey: state.planFocusKey + 1,
-      ...(isDesktop ? {} : { mobileSegment: "plan" as MobileSegment, tab: "chart" as SymbolTab }),
+      ...(isDesktop
+        ? {}
+        : {
+            mobileSegment: "plan" as MobileSegment,
+            tab: "chart" as SymbolTab,
+            newsFeedTab: "news" as const,
+          }),
     }));
     if (isDesktop) setRailOpen(true);
   },
@@ -338,7 +349,13 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
       mobilePlanOpen: false,
       highlightOrderId: orderId ?? null,
       reviewFocusKey: state.reviewFocusKey + 1,
-      ...(isDesktop ? {} : { mobileSegment: "review" as MobileSegment, tab: "chart" as SymbolTab }),
+      ...(isDesktop
+        ? {}
+        : {
+            mobileSegment: "review" as MobileSegment,
+            tab: "chart" as SymbolTab,
+            newsFeedTab: "news" as const,
+          }),
     }));
     if (isDesktop) setRailOpen(true);
   },
@@ -347,7 +364,7 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
     set({
       dock: null,
       ...(tab === "news" || tab === "press" || tab === "comments"
-        ? { tab: "chart" as SymbolTab }
+        ? { tab: "chart" as SymbolTab, newsFeedTab: "news" as const }
         : {}),
     });
   },
@@ -359,9 +376,13 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
       mobileSegment,
       ...(mobileSegment === "more"
         ? mobileMoreTabs[0]
-          ? { tab: mobileMoreTabs[0].id }
+          ? {
+              tab: mobileMoreTabs[0].id,
+              newsFeedTab:
+                mobileMoreTabs[0].id === "press" ? "press" as const : "news" as const,
+            }
           : {}
-        : { tab: "chart" as SymbolTab }),
+        : { tab: "chart" as SymbolTab, newsFeedTab: "news" as const }),
     }),
   onMoreTabChange: (tab) =>
     set({
@@ -369,8 +390,16 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
       mobilePlanOpen: false,
       dock: null,
       ...(tab === "chart"
-        ? { mobileSegment: "plan" as MobileSegment, tab: "chart" as SymbolTab }
-        : { mobileSegment: "more" as MobileSegment, tab }),
+        ? {
+            mobileSegment: "plan" as MobileSegment,
+            tab: "chart" as SymbolTab,
+            newsFeedTab: "news" as const,
+          }
+        : {
+            mobileSegment: "more" as MobileSegment,
+            tab,
+            newsFeedTab: tab === "press" ? "press" as const : "news" as const,
+          }),
     }),
   onSideSelect: (id) =>
     set((state) => {
@@ -396,15 +425,28 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
         dock: id,
         dockReady: true,
         ...(id === "trade"
-          ? { tradeDockView: "desk" as TradeDockView, tab: "chart" as SymbolTab }
+          ? {
+              tradeDockView: "desk" as TradeDockView,
+              tab: "chart" as SymbolTab,
+              newsFeedTab: "news" as const,
+            }
           : id === "news"
-            ? { tab: "news" as SymbolTab }
+            ? {
+                tab: "news" as SymbolTab,
+                newsFeedTab: "news" as const,
+              }
             : id === "comments"
-              ? { tab: "comments" as SymbolTab }
+              ? {
+                  tab: "comments" as SymbolTab,
+                  newsFeedTab: "news" as const,
+                }
               : state.tab === "news" ||
                   state.tab === "press" ||
                   state.tab === "comments"
-                ? { tab: "chart" as SymbolTab }
+                ? {
+                    tab: "chart" as SymbolTab,
+                    newsFeedTab: "news" as const,
+                  }
                 : {}),
       };
     }),
