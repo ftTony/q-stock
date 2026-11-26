@@ -31,6 +31,10 @@ export function useSymbolWorkbenchPanels({
   const [seoOpen, setSeoOpen] = useState(false);
   const [dock, setDock] = useState<DockId | null>(null);
   const [dockReady, setDockReady] = useState(false);
+  /** Trade dock: desk (持仓/订单) first; ticket = 下单票面. */
+  const [tradeDockView, setTradeDockView] = useState<"desk" | "ticket">(
+    "desk",
+  );
   const [aiReady, setAiReady] = useState(false);
   const [boundRuleName, setBoundRuleName] = useState<string | null>(null);
   const [boundStrategyId, setBoundStrategyId] = useState<string | null>(null);
@@ -78,6 +82,25 @@ export function useSymbolWorkbenchPanels({
     if (dock) setDockReady(true);
   }, [dock]);
 
+  // Desktop: warm trade/news dock host so first「打开下单面板」is not a no-op.
+  useEffect(() => {
+    if (!isDesktop || dockReady) return;
+    let idleId: number | undefined;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+    const warm = () => setDockReady(true);
+    if (typeof window !== "undefined" && "requestIdleCallback" in window) {
+      idleId = window.requestIdleCallback(warm, { timeout: 3000 });
+    } else {
+      timeoutId = setTimeout(warm, 1500);
+    }
+    return () => {
+      if (idleId != null && "cancelIdleCallback" in window) {
+        window.cancelIdleCallback(idleId);
+      }
+      if (timeoutId != null) clearTimeout(timeoutId);
+    };
+  }, [isDesktop, dockReady]);
+
   useEffect(() => {
     if (aiOpen) setAiReady(true);
   }, [aiOpen]);
@@ -117,10 +140,30 @@ export function useSymbolWorkbenchPanels({
     }
   }, [isDesktop, setRailOpen, setTab]);
 
+  /** Primary「交易」entry — order ticket first. */
   const openTrade = useCallback(() => {
     setAiOpen(false);
     setSeoOpen(false);
     setMobilePlanOpen(false);
+    setTradeDockView("ticket");
+    setDock("trade");
+  }, []);
+
+  /** Same ticket surface (desk CTA / plan「去交易」). */
+  const openOrderTicket = useCallback(() => {
+    setAiOpen(false);
+    setSeoOpen(false);
+    setMobilePlanOpen(false);
+    setTradeDockView("ticket");
+    setDock("trade");
+  }, []);
+
+  /** Trading desk (持仓/订单) inside the trade dock. */
+  const openTradeDesk = useCallback(() => {
+    setAiOpen(false);
+    setSeoOpen(false);
+    setMobilePlanOpen(false);
+    setTradeDockView("desk");
     setDock("trade");
   }, []);
 
@@ -203,12 +246,19 @@ export function useSymbolWorkbenchPanels({
         return;
       }
       if (dock === id) {
+        // Ticket open + click「交易」→ switch to 交易台, don't just close.
+        if (id === "trade" && tradeDockView === "ticket") {
+          setTradeDockView("desk");
+          return;
+        }
         closeDock();
         return;
       }
       setAiOpen(false);
       setSeoOpen(false);
       setMobilePlanOpen(false);
+      // Side icon「交易」= 交易台 (desk). Ticket is opened from quote / desk CTA.
+      if (id === "trade") setTradeDockView("desk");
       setDock(id);
       if (id === "news") setTab("news");
       else if (id === "comments") setTab("comments");
@@ -216,10 +266,15 @@ export function useSymbolWorkbenchPanels({
         setTab("chart");
       }
     },
-    [aiOpen, closeDock, dock, setTab, tab],
+    [aiOpen, closeDock, dock, setTab, tab, tradeDockView],
   );
 
-  const sideIcon: SideIconId | null = aiOpen ? "ai" : dock;
+  // Ticket dock is not the side-rail「交易台」surface — leave icon unselected.
+  const sideIcon: SideIconId | null = aiOpen
+    ? "ai"
+    : dock === "trade" && tradeDockView === "ticket"
+      ? null
+      : dock;
 
   return {
     aiOpen,
@@ -242,6 +297,10 @@ export function useSymbolWorkbenchPanels({
     sideIcon,
     openPlan,
     openTrade,
+    openOrderTicket,
+    openTradeDesk,
+    tradeDockView,
+    setTradeDockView,
     openReview,
     onMobileSegment,
     onMoreTabChange,

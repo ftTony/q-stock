@@ -6,6 +6,7 @@ import { ensureAccount } from "@/lib/trading/account";
 import { TradingError } from "@/lib/trading/execute";
 import {
   cancelOrder,
+  modifyOrder,
   placeOrder,
   serializeOrder,
 } from "@/lib/trading/orders";
@@ -99,6 +100,46 @@ export async function POST(req: Request) {
     }
     console.error("placeOrder", err);
     return NextResponse.json({ error: "Order failed" }, { status: 500 });
+  }
+}
+
+const modifySchema = z.object({
+  id: z.string().min(1),
+  qty: z.number().positive(),
+  limitPrice: z.number().positive().optional().nullable(),
+  stopPrice: z.number().positive().optional().nullable(),
+});
+
+export async function PATCH(req: Request) {
+  const session = await auth();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const parsed = modifySchema.safeParse(await req.json());
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Invalid input" }, { status: 400 });
+  }
+
+  try {
+    const order = await modifyOrder({
+      userId: session.user.id,
+      orderId: parsed.data.id,
+      qty: parsed.data.qty,
+      limitPrice: parsed.data.limitPrice,
+      stopPrice: parsed.data.stopPrice,
+    });
+    return NextResponse.json({ order: serializeOrder(order) });
+  } catch (err) {
+    if (err instanceof TradingError) {
+      const status = err.code === "NOT_FOUND" ? 404 : 400;
+      return NextResponse.json(
+        { error: err.message, code: err.code },
+        { status },
+      );
+    }
+    console.error("modifyOrder", err);
+    return NextResponse.json({ error: "Modify failed" }, { status: 500 });
   }
 }
 

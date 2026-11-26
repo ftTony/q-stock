@@ -20,23 +20,25 @@ type Props = {
   showNews?: boolean;
 };
 
-const SW = 1.7;
+const SW = 1.75;
+/** Shared glyph box so every icon reads the same optical width. */
+const glyph = "h-5 w-5 shrink-0";
 
 /** Trade — chart in square. */
 function IconTrade({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
       <rect
-        x="4.5"
-        y="4.5"
-        width="15"
-        height="15"
+        x="5"
+        y="5"
+        width="14"
+        height="14"
         rx="2"
         stroke="currentColor"
         strokeWidth={SW}
       />
       <path
-        d="M7.5 14.5l3-3.2 2.2 2.2 3.8-4.5"
+        d="M8 15l2.8-3 2 2L16.5 9"
         stroke="currentColor"
         strokeWidth={SW}
         strokeLinecap="round"
@@ -46,18 +48,18 @@ function IconTrade({ className }: { className?: string }) {
   );
 }
 
-/** News — document. */
+/** News — document (centered in 24 box). */
 function IconNews({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
-        d="M7 4.75h8.25L17.25 7v12.25A1 1 0 0 1 16.25 20.25h-8.5A1 1 0 0 1 6.75 19.25v-13.5A1 1 0 0 1 7.75 4.75"
+        d="M7.5 5h7.5l2.5 2.5V19a1 1 0 0 1-1 1h-9a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"
         stroke="currentColor"
         strokeWidth={SW}
         strokeLinejoin="round"
       />
       <path
-        d="M15.25 4.75V7h2M9 11h6M9 14.25h6M9 17.5h3.5"
+        d="M15 5v2.5h2.5M9.5 11h5M9.5 14h5M9.5 17h3"
         stroke="currentColor"
         strokeWidth={SW}
         strokeLinecap="round"
@@ -67,57 +69,50 @@ function IconNews({ className }: { className?: string }) {
   );
 }
 
-/** Comments — speech bubbles. */
+/** Comments — single bubble (same footprint as others). */
 function IconComments({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
-        d="M5.5 6.5h9.2A2.3 2.3 0 0 1 17 8.8v4.2a2.3 2.3 0 0 1-2.3 2.3H10.2L7 18v-2.7H5.5A2.3 2.3 0 0 1 3.2 13V8.8A2.3 2.3 0 0 1 5.5 6.5z"
+        d="M6.5 6.5h11A2 2 0 0 1 19.5 8.5v6a2 2 0 0 1-2 2H12l-3.5 3v-3H6.5a2 2 0 0 1-2-2v-6a2 2 0 0 1 2-2z"
         stroke="currentColor"
         strokeWidth={SW}
         strokeLinejoin="round"
-      />
-      <path
-        d="M17.2 9.2h1.3A2.3 2.3 0 0 1 20.8 11.5v3.6a2.3 2.3 0 0 1-2.3 2.3h-1.2L15.8 20v-2.6"
-        stroke="currentColor"
-        strokeWidth={SW}
-        strokeLinejoin="round"
-        strokeLinecap="round"
       />
     </svg>
   );
 }
 
-/** AI — robot assistant (not chat bubble). */
+/** AI — robot head, centered. */
 function IconAi({ className }: { className?: string }) {
   return (
     <svg className={className} viewBox="0 0 24 24" fill="none" aria-hidden>
       <path
-        d="M12 3.2v2.2"
+        d="M12 3.5v2"
         stroke="currentColor"
         strokeWidth={SW}
         strokeLinecap="round"
       />
-      <circle cx="12" cy="2.4" r="1" fill="currentColor" />
+      <circle cx="12" cy="2.75" r="0.9" fill="currentColor" />
       <rect
-        x="5"
+        x="5.5"
         y="6.5"
-        width="14"
-        height="10"
-        rx="3"
+        width="13"
+        height="9.5"
+        rx="2.5"
         stroke="currentColor"
         strokeWidth={SW}
       />
-      <circle cx="9.2" cy="11.2" r="1.15" fill="currentColor" />
-      <circle cx="14.8" cy="11.2" r="1.15" fill="currentColor" />
+      <circle cx="9.25" cy="11" r="1.1" fill="currentColor" />
+      <circle cx="14.75" cy="11" r="1.1" fill="currentColor" />
       <path
-        d="M9.4 14.2h5.2M3.8 11h1.4M18.8 11h1.4"
+        d="M9.5 14h5"
         stroke="currentColor"
         strokeWidth={SW}
         strokeLinecap="round"
       />
       <path
-        d="M9 16.5v2a1.7 1.7 0 0 0 1.7 1.7h2.6A1.7 1.7 0 0 0 15 18.5v-2"
+        d="M9.25 16v1.75A1.5 1.5 0 0 0 10.75 19.25h2.5A1.5 1.5 0 0 0 14.75 17.75V16"
         stroke="currentColor"
         strokeWidth={SW}
         strokeLinejoin="round"
@@ -170,11 +165,10 @@ export function SymbolSideIconRail({
             data-rail-toggle="true"
             className="aw-side-icon-btn hidden lg:inline-flex"
           >
-            {/* Open → arrow right (collapse panel); closed → arrow left (expand). */}
             {railOpen ? (
-              <IconRailCollapse className="h-6 w-6" />
+              <IconRailCollapse className={glyph} />
             ) : (
-              <IconRailExpand className="h-6 w-6" />
+              <IconRailExpand className={glyph} />
             )}
           </button>
           <span aria-hidden className="aw-side-icon-rule hidden lg:block" />
@@ -198,7 +192,7 @@ export function SymbolSideIconRail({
               onClick={() => onSelect(item.id)}
               className="aw-side-icon-btn"
             >
-              <Icon className="h-6 w-6" />
+              <Icon className={glyph} />
             </button>
           </div>
         );

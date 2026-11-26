@@ -41,7 +41,7 @@ export function AiChartReadHeaderActions(props: {
         loading={chart.busy}
         showElapsed={(s) => tAi("elapsed", { seconds: s })}
         onClick={() => void chart.run()}
-        className="aw-ai-pearl-btn"
+        className="aw-ai-chip-btn"
       >
         {chart.data ? t("rerun") : t("run")}
       </SubmitButton>

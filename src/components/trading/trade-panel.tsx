@@ -18,12 +18,19 @@ import {
 import { formatNumber } from "@/lib/format-number";
 import { consumePaperDraft } from "@/lib/trading/paper-draft-storage";
 import { tradingErrorMessage } from "@/lib/trading/order-error-message";
-import { summarizeOrderRisk } from "@/lib/trading/risk-math";
 import type { EmotionTagId } from "@/components/symbol/plan/symbol-emotion-check";
-import { TradePanelDefaultLayout } from "@/components/trading/trade-panel-default";
-import { TradePanelStackLayout } from "@/components/trading/trade-panel-stack";
-import { TradeSubmitResult } from "@/components/trading/trade-submit-result";
+import {
+  TradePanelDraftBanner,
+  TradePanelPositionLine,
+  TradePanelResultBanner,
+} from "@/components/trading/trade-panel-banners";
+import { TradePanelFormBody } from "@/components/trading/trade-panel-form-body";
+import {
+  buildPlaceOrderBody,
+  tradeSubmitClass,
+} from "@/components/trading/trade-ticket-submit";
 import { useTradeOrderStrategy } from "@/components/trading/use-trade-order-strategy";
+import { useTradeTicketQty } from "@/components/trading/use-trade-ticket-qty";
 import type { AssetType } from "@/lib/types";
 
 type Side = "buy" | "sell";
@@ -102,7 +109,7 @@ export function TradePanel({
   const searchParams = useSearchParams();
   const mounted = useMounted();
   const [side, setSide] = useState<Side>("buy");
-  const [orderType, setOrderType] = useState<OrderType>("limit");
+  const [orderType, setOrderType] = useState<OrderType>("market");
   const [qty, setQty] = useState("1");
   const [limitPrice, setLimitPrice] = useState("");
   const [stopPrice, setStopPrice] = useState("");
@@ -225,6 +232,8 @@ export function TradePanel({
     }
     if (effectiveDraft.qtyHint != null && effectiveDraft.qtyHint > 0) {
       setQty(String(effectiveDraft.qtyHint));
+      setQtyMode("shares");
+      setQtyInput(String(effectiveDraft.qtyHint));
     }
     if (effectiveDraft.invalidationNote) {
       const m = effectiveDraft.invalidationNote.match(/(\d+(\.\d+)?)/);
@@ -232,14 +241,49 @@ export function TradePanel({
     }
   }, [effectiveDraft]);
 
-  const qtyNum = Number(qty) || 0;
   const estimatePrice = useMemo(() => {
     if (orderType === "limit") return Number(limitPrice) || lastPrice || 0;
     if (orderType === "stop") return Number(stopPrice) || lastPrice || 0;
     return lastPrice || 0;
   }, [orderType, limitPrice, stopPrice, lastPrice]);
 
-  const estimate = qtyNum > 0 && estimatePrice > 0 ? qtyNum * estimatePrice : 0;
+  const equityNum = account?.cashBalance ?? 0;
+  const ticket = useTradeTicketQty({
+    estimatePrice,
+    equity: equityNum,
+    side,
+    stack,
+    qty,
+  });
+  const {
+    qtyMode,
+    setQtyMode,
+    qtyInput,
+    setQtyInput,
+    stopLoss,
+    setStopLoss,
+    takeProfit,
+    setTakeProfit,
+    confirmBefore,
+    setConfirmBefore,
+    emergencyStop,
+    setEmergencyStop,
+    shares,
+    qtyNum,
+    estimate,
+    maxSharesByMargin,
+    equityPct,
+    applyStopPct,
+    applyTakePct,
+  } = ticket;
+  const floatingPnl =
+    position && lastPrice != null && position.avgCost > 0
+      ? (lastPrice - position.avgCost) * position.qty
+      : 0;
+  const marginUsed =
+    position && lastPrice != null
+      ? Math.abs(position.qty) * (position.avgCost || lastPrice)
+      : 0;
 
   function showToast(text: string, tone: ToastTone) {
     setMsgTone(tone);
@@ -256,38 +300,41 @@ export function TradePanel({
       showToast(t("loginRequired"), "neutral");
       return;
     }
+    if (emergencyStop) {
+      showToast(t("emergencyStopActive"), "neutral");
+      return;
+    }
+    if (!(qtyNum > 0)) {
+      showToast(t("errInvalidQty"), "neutral");
+      return;
+    }
+    if (confirmBefore) {
+      const ok = window.confirm(
+        t("confirmOrderPrompt", {
+          side: side === "buy" ? t("buy") : t("sell"),
+          qty: String(qtyNum),
+          symbol,
+        }),
+      );
+      if (!ok) return;
+    }
     try {
-      const stopForRisk =
-        orderType === "stop"
-          ? Number(stopPrice)
-          : Number(invalidationPrice) || null;
-      const risk = summarizeOrderRisk({
-        equity: account?.cashBalance ?? 0,
-        qty: qtyNum,
-        entry: estimatePrice,
-        stop: stopForRisk,
-      });
-      const body: Record<string, unknown> = {
+      const body = buildPlaceOrderBody({
         symbol,
         assetType,
         side,
-        type: orderType,
-        qty: qtyNum,
+        orderType,
+        qtyNum,
+        estimatePrice,
+        equity: account?.cashBalance ?? 0,
         emotionTags,
-        invalidationNote: invalidationPrice
-          ? `invalidation=${invalidationPrice}`
-          : null,
-        strategyId: orderStrategyId || null,
-        riskSnapshot: {
-          equity: account?.cashBalance ?? null,
-          notional: risk.notional,
-          riskAmount: risk.riskAmount,
-          riskPct: risk.riskPct,
-          positionPct: risk.positionPct,
-        },
-      };
-      if (orderType === "limit") body.limitPrice = Number(limitPrice);
-      if (orderType === "stop") body.stopPrice = Number(stopPrice);
+        orderStrategyId,
+        limitPrice,
+        stopPrice,
+        stopLoss,
+        takeProfit,
+        invalidationPrice,
+      });
 
       const data = (await placeOrder.mutateAsync(body)) as {
         order?: { id?: string; status?: string };
@@ -316,72 +363,48 @@ export function TradePanel({
   }
 
   if (!mounted || status === "loading") {
-    return (
-      <div className="p-4 text-sm text-[var(--muted)]">{t("loading")}</div>
-    );
+    return <div className="p-4 text-sm text-[var(--muted)]">{t("loading")}</div>;
   }
-
   if (!session?.user) {
     return (
       <div className="flex min-h-[16rem] flex-1 flex-col items-center justify-center px-4 py-8">
-        <AuthLoginGate
-          compact
-          title={t("loginTitle")}
-          body={t("loginBody")}
-          hint={t("loginHint")}
-        />
+        <AuthLoginGate compact title={t("loginTitle")} body={t("loginBody")} hint={t("loginHint")} />
       </div>
     );
   }
 
-  const submitH = stack ? "h-8 min-h-8" : "h-9";
-  const submitRadius = stack ? "!rounded-none" : "!rounded-[8px]";
-  const submitText = stack ? "!text-[12px]" : "!text-[13px]";
-  const submitClass =
-    side === "buy"
-      ? `${submitH} w-full ${submitRadius} !border !border-[color-mix(in_srgb,var(--up)_28%,var(--aw-hairline,var(--border)))] !bg-[color-mix(in_srgb,var(--up)_14%,var(--aw-canvas,#fff))] ${submitText} !font-semibold !text-[var(--up)] hover:!bg-[color-mix(in_srgb,var(--up)_22%,var(--aw-canvas,#fff))] hover:!opacity-100`
-      : `${submitH} w-full ${submitRadius} !border !border-[color-mix(in_srgb,var(--down)_28%,var(--aw-hairline,var(--border)))] !bg-[color-mix(in_srgb,var(--down)_14%,var(--aw-canvas,#fff))] ${submitText} !font-semibold !text-[var(--down)] hover:!bg-[color-mix(in_srgb,var(--down)_22%,var(--aw-canvas,#fff))] hover:!opacity-100`;
-
-  const positionLine =
-    position && position.qty > 0 ? (
-      <p className="text-[12px] tabular-nums text-[var(--muted)]">
-        {t("position")}: {position.qty}
-        {position.avgCost != null
-          ? ` · ${t("avgCost")} $${fmtMoney(position.avgCost)}`
-          : ""}
-      </p>
-    ) : null;
-
-  const resultBanner = submitResult ? (
-    <TradeSubmitResult
+  const submitClass = tradeSubmitClass(side, stack);
+  const typeKey =
+    orderType === "market" ? "marketShort" : orderType === "limit" ? "limitShort" : "stopShort";
+  const brokerSubmitLabel = t("submitTicket", {
+    side: side === "buy" ? t("buy") : t("sell"),
+    qty: formatNumber(qtyNum, { maximumFractionDigits: 4 }),
+    symbol,
+    type: t(typeKey),
+  });
+  const positionLine = (
+    <TradePanelPositionLine qty={position?.qty ?? 0} avgCost={position?.avgCost ?? null} fmtMoney={fmtMoney} />
+  );
+  const resultBanner = (
+    <TradePanelResultBanner
       kind={submitResult}
+      orderId={submitOrderId}
       onDismiss={() => {
         setSubmitResult(null);
         setSubmitOrderId(null);
       }}
-      onViewSymbolReview={
-        onOpenSymbolReview
-          ? () => onOpenSymbolReview(submitOrderId)
-          : undefined
-      }
+      onOpenSymbolReview={onOpenSymbolReview}
     />
-  ) : null;
-
-  const draftBanner = effectiveDraft ? (
-    <div className="flex items-center justify-between gap-2 border-t border-[var(--aw-hairline,var(--border))] pt-2 text-[12px] text-[var(--brand-text)]">
-      <span>{t("aiDraftBanner")}</span>
-      <button
-        type="button"
-        className="underline"
-        onClick={() => {
-          setStoredDraft(null);
-          onDismissAiDraft?.();
-        }}
-      >
-        {t("aiDraftUndo")}
-      </button>
-    </div>
-  ) : null;
+  );
+  const draftBanner = (
+    <TradePanelDraftBanner
+      visible={Boolean(effectiveDraft)}
+      onClear={() => {
+        setStoredDraft(null);
+        onDismissAiDraft?.();
+      }}
+    />
+  );
 
   return (
     <form
@@ -395,103 +418,76 @@ export function TradePanel({
         tone={msgTone}
         onDismiss={() => setMsg(null)}
       />
-      {stack ? (
-        <TradePanelStackLayout
-          loading={loading}
-          positionLine={positionLine}
-          resultBanner={resultBanner}
-          draftBanner={draftBanner}
-          side={side}
-          onSide={setSide}
-          orderType={orderType}
-          onOrderType={setOrderType}
-          qty={qty}
-          onQty={setQty}
-          limitPrice={limitPrice}
-          onLimitPrice={setLimitPrice}
-          stopPrice={stopPrice}
-          onStopPrice={setStopPrice}
-          bid={bid}
-          ask={ask}
-          lastPrice={lastPrice}
-          invalidationPrice={invalidationPrice}
-          onInvalidationPrice={setInvalidationPrice}
-          strategies={strategies}
-          strategyId={orderStrategyId}
-          strategyName={strategyDisplayName}
-          planStrategyId={planStrategyId}
-          onStrategyId={setOrderStrategy}
-          onOpenPlan={onOpenPlan}
-          onOpenCalm={onOpenCalm}
-          onOpenAi={onOpenAi}
-          equity={account?.cashBalance ?? null}
-          qtyNum={qtyNum}
-          estimatePrice={estimatePrice}
-          estimateLabel={`$${fmtMoney(estimate)}`}
-          submitLabel={side === "buy" ? t("submitBuy") : t("submitSell")}
-          submitClass={submitClass}
-          busy={busy}
-          canSubmit={qtyNum > 0}
-          emotionTags={emotionTags}
-          onEmotionTags={setEmotionTags}
-          symbol={symbol}
-          assetType={assetType}
-          orders={orders}
-          onCancelOrder={(id) => void cancel(id)}
-        />
-      ) : (
-        <TradePanelDefaultLayout
-          symbol={symbol}
-          assetType={assetType}
-          quoteName={quoteName}
-          lastPrice={lastPrice}
-          percentChange={percentChange}
-          loading={loading}
-          loadingLabel={t("loading")}
-          resultBanner={resultBanner}
-          positionLine={positionLine}
-          draftBanner={draftBanner}
-          side={side}
-          onSide={setSide}
-          orderType={orderType}
-          onOrderType={setOrderType}
-          qty={qty}
-          onQty={setQty}
-          limitPrice={limitPrice}
-          onLimitPrice={setLimitPrice}
-          stopPrice={stopPrice}
-          onStopPrice={setStopPrice}
-          bid={bid}
-          ask={ask}
-          invalidationPrice={invalidationPrice}
-          onInvalidationPrice={setInvalidationPrice}
-          strategies={strategies}
-          strategyId={orderStrategyId}
-          strategyName={strategyDisplayName}
-          planStrategyId={planStrategyId}
-          onStrategyId={setOrderStrategy}
-          onOpenPlan={onOpenPlan}
-          onOpenCalm={onOpenCalm}
-          onOpenAi={onOpenAi}
-          equity={account?.cashBalance ?? null}
-          qtyNum={qtyNum}
-          estimatePrice={estimatePrice}
-          stopForRisk={
-            orderType === "stop"
-              ? Number(stopPrice) || null
-              : Number(invalidationPrice) || null
-          }
-          estimateLabel={`$${fmtMoney(estimate)}`}
-          estimateCaption={t("estimate")}
-          submitLabel={side === "buy" ? t("submitBuy") : t("submitSell")}
-          submitClass={submitClass}
-          busy={busy}
-          emotionTags={emotionTags}
-          onEmotionTags={setEmotionTags}
-          orders={orders}
-          onCancelOrder={(id) => void cancel(id)}
-        />
-      )}
+      <TradePanelFormBody
+        stack={stack}
+        symbol={symbol}
+        assetType={assetType}
+        quoteName={quoteName}
+        lastPrice={lastPrice}
+        percentChange={percentChange}
+        bid={bid}
+        ask={ask}
+        loading={loading}
+        loadingLabel={t("loading")}
+        resultBanner={resultBanner}
+        positionLine={positionLine}
+        draftBanner={draftBanner}
+        side={side}
+        onSide={setSide}
+        orderType={orderType}
+        onOrderType={setOrderType}
+        qty={qty}
+        onQty={setQty}
+        limitPrice={limitPrice}
+        onLimitPrice={setLimitPrice}
+        stopPrice={stopPrice}
+        onStopPrice={setStopPrice}
+        invalidationPrice={invalidationPrice}
+        onInvalidationPrice={setInvalidationPrice}
+        strategies={strategies}
+        orderStrategyId={orderStrategyId}
+        strategyDisplayName={strategyDisplayName}
+        planStrategyId={planStrategyId}
+        onStrategyId={setOrderStrategy}
+        onOpenPlan={onOpenPlan}
+        onOpenCalm={onOpenCalm}
+        onOpenAi={onOpenAi}
+        equityNum={equityNum}
+        cashBalance={account?.cashBalance ?? 0}
+        floatingPnl={floatingPnl}
+        marginUsed={marginUsed}
+        currency={account?.currency ?? "USD"}
+        qtyMode={qtyMode}
+        onQtyMode={setQtyMode}
+        qtyInput={qtyInput}
+        onQtyInput={setQtyInput}
+        shares={shares}
+        estimate={estimate}
+        equityPct={equityPct}
+        maxSharesByMargin={maxSharesByMargin}
+        stopLoss={stopLoss}
+        onStopLoss={setStopLoss}
+        takeProfit={takeProfit}
+        onTakeProfit={setTakeProfit}
+        onApplyStopPct={applyStopPct}
+        onApplyTakePct={applyTakePct}
+        confirmBefore={confirmBefore}
+        onConfirmBefore={setConfirmBefore}
+        emergencyStop={emergencyStop}
+        onEmergencyStop={setEmergencyStop}
+        qtyNum={qtyNum}
+        estimatePrice={estimatePrice}
+        estimateLabel={`$${fmtMoney(estimate)}`}
+        estimateCaption={t("estimate")}
+        stackSubmitLabel={side === "buy" ? t("submitBuy") : t("submitSell")}
+        brokerSubmitLabel={brokerSubmitLabel}
+        submitClass={submitClass}
+        busy={busy}
+        emotionTags={emotionTags}
+        onEmotionTags={setEmotionTags}
+        orders={orders}
+        onCancelOrder={(id) => void cancel(id)}
+      />
     </form>
   );
 }

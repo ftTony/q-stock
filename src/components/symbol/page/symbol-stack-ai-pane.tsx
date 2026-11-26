@@ -24,6 +24,7 @@ type Props = {
 /** Inline AI desk for desktop stack bottom panel (no SideDrawer). */
 export function SymbolStackAiPane({ symbol, assetType }: Props) {
   const t = useTranslations("symbol");
+  const tChat = useTranslations("aiChat");
   const mounted = useMounted();
   const { status } = useSession();
   const [view, setView] = useState<"desk" | "history">("desk");
@@ -72,7 +73,16 @@ export function SymbolStackAiPane({ symbol, assetType }: Props) {
     <div className="aw-stack-ai aw-ai-desk flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="aw-stack-ai-toolbar aw-stack-ai-pad flex h-9 shrink-0 items-center justify-between gap-2 border-b border-[var(--aw-hairline,var(--border))]">
         <AiQuotaBadge className="aw-ai-quota-inline" />
-        <AiChartReadHeaderActions chart={chart} />
+        <div className="flex shrink-0 items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setView("history")}
+            className="aw-ai-text-btn text-[12px]"
+          >
+            {tChat("history")}
+          </button>
+          <AiChartReadHeaderActions chart={chart} />
+        </div>
       </div>
       <div className="aw-ai-desk-body flex min-h-0 flex-1 flex-col overflow-hidden">
         <AiChartReadPanel
@@ -88,6 +98,7 @@ export function SymbolStackAiPane({ symbol, assetType }: Props) {
             symbol={symbol}
             assetType={assetType}
             layout="page"
+            historyInComposer={false}
             onOpenHistory={() => setView("history")}
             loadSessionId={loadSessionId}
             onLoadSessionDone={() => setLoadSessionId(null)}

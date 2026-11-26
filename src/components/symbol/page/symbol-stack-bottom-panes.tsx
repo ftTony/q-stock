@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Suspense, type FormEvent, type ReactNode } from "react";
+import { type FormEvent, type ReactNode } from "react";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
 import type { EarningsMetric } from "@/components/market/earnings-panel";
 import { SymbolDockCommentsPanel } from "@/components/symbol/dock/symbol-dock-comments-panel";
@@ -27,8 +27,6 @@ import type {
 import type { AssetType, Quote } from "@/lib/types";
 import type { StackBottomTab } from "@/components/symbol/page/symbol-stack-bottom-panel";
 import {
-  TradePanel,
-  SymbolPaperRiskBar,
   SymbolDerivativesPanel,
   SymbolIndexConstituentsPanel,
   SymbolFundamentalsPanel,
@@ -44,6 +42,21 @@ const SymbolStackAiPane = dynamic(
     loading: () => (
       <div className="p-4">
         <PanelSkeleton rows={5} />
+      </div>
+    ),
+  },
+);
+
+const SymbolTradeDesk = dynamic(
+  () =>
+    import("@/components/symbol/trade-desk/symbol-trade-desk").then((m) => ({
+      default: m.SymbolTradeDesk,
+    })),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="p-4">
+        <PanelSkeleton rows={4} />
       </div>
     ),
   },
@@ -89,6 +102,8 @@ export type StackBottomPanesProps = {
   onOpenPlan: () => void;
   onOpenSymbolReview?: (orderId?: string | null) => void;
   onOpenAi: () => void;
+  /** Open side-dock order ticket (stack desk empty CTA). */
+  onOpenTrade?: () => void;
   onNewsFeedTabChange: (tab: NewsFeedTab) => void;
   news: NewsRow[];
   press: PressRow[];
@@ -116,7 +131,6 @@ export type StackBottomPanesProps = {
   officers: CompanyOfficer[];
   tradeAuthed: boolean;
   authStatus: string;
-  ruleFooter: ReactNode;
   loadingLabel: string;
   degradedLabel: string;
   errorLabel: string;
@@ -150,6 +164,7 @@ export function SymbolStackBottomPanes({
   onOpenPlan,
   onOpenSymbolReview,
   onOpenAi,
+  onOpenTrade,
   onNewsFeedTabChange,
   news,
   press,
@@ -177,7 +192,6 @@ export function SymbolStackBottomPanes({
   officers,
   tradeAuthed,
   authStatus,
-  ruleFooter,
   loadingLabel,
   degradedLabel,
   errorLabel,
@@ -238,40 +252,12 @@ export function SymbolStackBottomPanes({
                 />
               </div>
             ) : (
-              <>
-                <SymbolPaperRiskBar
-                  symbol={symbol}
-                  assetType={assetType}
-                  lastPrice={lastPrice}
-                  footer={ruleFooter}
-                  dense
-                />
-                <Suspense
-                  fallback={
-                    <div className="min-h-0 flex-1 p-4">
-                      <PanelSkeleton rows={5} label={loadingLabel} />
-                    </div>
-                  }
-                >
-                  <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
-                    <TradePanel
-                      symbol={symbol}
-                      assetType={assetType}
-                      lastPrice={lastPrice}
-                      percentChange={percentChange}
-                      quoteName={quoteName}
-                      bid={bid}
-                      ask={ask}
-                      onOpenAi={onOpenAi}
-                      onOpenPlan={onOpenPlan}
-                      onOpenSymbolReview={onOpenSymbolReview}
-                      strategyId={boundStrategyId ?? ""}
-                      strategyName={boundRuleName}
-                      density="stack"
-                    />
-                  </div>
-                </Suspense>
-              </>
+              <SymbolTradeDesk
+                symbol={symbol}
+                assetType={assetType}
+                lastPrice={lastPrice}
+                onOpenOrder={onOpenTrade}
+              />
             )}
           </div>
         </PaneShell>

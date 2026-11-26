@@ -42,6 +42,7 @@ export function SymbolAiFab({
   topOffsetPx = 0,
 }: Props) {
   const t = useTranslations("symbol");
+  const tChat = useTranslations("aiChat");
   const { status } = useSession();
   const [innerOpen, setInnerOpen] = useState(false);
   const controlled = openProp !== undefined;
@@ -78,7 +79,16 @@ export function SymbolAiFab({
 
   const deskAuthed = view === "desk" && status === "authenticated";
   const deskTrailing = deskAuthed ? (
-    <AiChartReadHeaderActions chart={chart} />
+    <div className="flex shrink-0 items-center gap-1">
+      <button
+        type="button"
+        onClick={() => setView("history")}
+        className="aw-ai-text-btn text-[12px]"
+      >
+        {tChat("history")}
+      </button>
+      <AiChartReadHeaderActions chart={chart} />
+    </div>
   ) : null;
   const deskSubtitleAside = deskAuthed ? (
     <AiQuotaBadge className="aw-ai-quota-inline" />
@@ -108,6 +118,7 @@ export function SymbolAiFab({
         open={open}
         onClose={close}
         className="aw aw-ai-desk"
+        widthClassName="w-full max-w-[min(100vw,28rem)] sm:max-w-[28rem]"
         edgeOffsetPx={edgeOffsetPx}
         topOffsetPx={topOffsetPx}
         title={
@@ -162,6 +173,7 @@ export function SymbolAiFab({
               symbol={symbol}
               assetType={assetType}
               layout="page"
+              historyInComposer={false}
               onOpenHistory={() => setView("history")}
               loadSessionId={loadSessionId}
               onLoadSessionDone={() => setLoadSessionId(null)}

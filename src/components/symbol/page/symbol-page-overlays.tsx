@@ -27,6 +27,10 @@ type Props = {
   dockReady: boolean;
   dock: Exclude<SideIconId, "ai"> | null;
   onCloseDock: () => void;
+  tradeDockView?: "desk" | "ticket";
+  onTradeDockViewChange?: (v: "desk" | "ticket") => void;
+  /** Stack bottom is already the desk — trade dock is ticket-only. */
+  tradeTicketOnly?: boolean;
   symbol: string;
   assetType: AssetType;
   isIndex: boolean;
@@ -83,9 +87,9 @@ type Props = {
 /** Dock / plan drawer / AI — kept out of page-client for file-size. */
 export function SymbolPageOverlays(p: Props) {
   const t = useTranslations("symbol");
-  // Side layout reserves the 44px icon rail; stack has no rail — edge must be 0
-  // or drawers leave a gap that shows whatever sits under (was the plan rail).
-  const edge = p.isDesktop && !p.isStack ? 44 : 0;
+  // Side layout reserves the icon rail; stack has no rail — edge 0.
+  // Stack still opens the trade ticket dock (account desk is the bottom tab).
+  const edge = p.isDesktop && !p.isStack ? 48 : 0;
   // Desktop: drawer top = chart grid (below quote bar), same row as icon rail.
   // H5: topOffset 0 — full-screen sheet unchanged.
   const gridTop = useElementTop(p.isDesktop ? ".aw-workbench-grid" : null);
@@ -98,6 +102,9 @@ export function SymbolPageOverlays(p: Props) {
         <SymbolDockDrawers
           dock={p.dock}
           onClose={p.onCloseDock}
+          tradeDockView={p.tradeDockView}
+          onTradeDockViewChange={p.onTradeDockViewChange}
+          tradeTicketOnly={p.tradeTicketOnly}
           symbol={p.symbol}
           assetType={p.assetType}
           lastPrice={p.lastPrice}

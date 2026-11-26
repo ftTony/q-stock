@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { useSession } from "next-auth/react";
 import { useTranslations } from "next-intl";
@@ -13,6 +13,10 @@ import { queryKeys } from "@/lib/query/keys";
 import { formatNumber } from "@/lib/format-number";
 import { DEFAULT_RISK_SETTINGS } from "@/lib/trading/risk-math";
 import type { AssetType } from "@/lib/types";
+import {
+  TradeStackAccountSide,
+  TradeStackAccountStrip,
+} from "@/components/trading/trade-stack-account-side";
 
 type Pos = {
   symbol: string;
@@ -68,30 +72,30 @@ function Cell({
   );
 }
 
-export function SymbolPaperRiskBar({
-  symbol,
-  assetType,
-  lastPrice,
-  refreshKey = 0,
-  footer,
-  /** P0: default collapsed one-line summary. */
-  defaultExpanded = false,
-  /** Stack bottom: tighter chrome; footer inline when collapsed. */
-  dense = false,
-}: {
-  symbol: string;
-  assetType: AssetType;
-  lastPrice: number | null;
-  refreshKey?: number;
-  footer?: ReactNode;
-  defaultExpanded?: boolean;
-  dense?: boolean;
-}) {
-  const t = useTranslations("paperRiskBar");
+type RiskNums = {
+  cash: number;
+  equity: number;
+  gross: number;
+  exposurePct: number;
+  symbolPct: number;
+  maxPct: number;
+  nearCap: boolean;
+  positionQty: number;
+};
+
+function usePaperRiskNums(
+  symbol: string,
+  assetType: AssetType,
+  lastPrice: number | null,
+  refreshKey: number,
+): {
+  signedIn: boolean;
+  loading: boolean;
+  nums: RiskNums | null;
+} {
   const { data: session, status } = useSession();
   const qc = useQueryClient();
   const signedIn = Boolean(session?.user);
-  const [expanded, setExpanded] = useState(defaultExpanded);
 
   const accountQuery = useTradingAccount(signedIn);
   const positionsQuery = useTradingPositions({
@@ -105,18 +109,160 @@ export function SymbolPaperRiskBar({
     void qc.invalidateQueries({ queryKey: queryKeys.trading.all });
   }, [refreshKey, qc]);
 
-  if (status === "loading") return null;
-  if (!session?.user) return null;
+  const nums = useMemo((): RiskNums | null => {
+    if (status === "loading" || !session?.user) return null;
+    const cash =
+      (accountQuery.data as { account?: { cashBalance?: number } } | undefined)
+        ?.account?.cashBalance ?? null;
+    if (cash == null) return null;
 
-  const cash =
-    (accountQuery.data as { account?: { cashBalance?: number } } | undefined)
-      ?.account?.cashBalance ?? null;
-  if (cash == null) {
+    const positions =
+      ((positionsQuery.data as { positions?: Pos[] } | undefined)?.positions ??
+        []) as Pos[];
+    const maxPct =
+      (
+        riskQuery.data as
+          | { settings?: { maxPositionPctPerSymbol?: number } }
+          | undefined
+      )?.settings?.maxPositionPctPerSymbol ??
+      DEFAULT_RISK_SETTINGS.maxPositionPctPerSymbol;
+
+    const mark = lastPrice && lastPrice > 0 ? lastPrice : 0;
+    let gross = 0;
+    let symbolNotional = 0;
+    let positionQty = 0;
+    for (const pos of positions) {
+      const isSym = pos.symbol === symbol && pos.assetType === assetType;
+      let mv = pos.marketValue;
+      if (mv == null || !Number.isFinite(mv)) {
+        const px = isSym && mark > 0 ? mark : pos.price ?? pos.avgCost;
+        mv = pos.qty * px;
+      } else if (isSym && mark > 0) {
+        mv = pos.qty * mark;
+      }
+      gross += mv;
+      if (isSym) {
+        symbolNotional = mv;
+        positionQty = pos.qty;
+      }
+    }
+
+    const equity = cash + gross;
+    const symbolPct = equity > 0 ? (symbolNotional / equity) * 100 : 0;
+    const exposurePct = equity > 0 ? (gross / equity) * 100 : 0;
+    return {
+      cash,
+      equity,
+      gross,
+      exposurePct,
+      symbolPct,
+      maxPct,
+      nearCap: symbolPct >= maxPct * 0.8,
+      positionQty,
+    };
+  }, [
+    status,
+    session?.user,
+    accountQuery.data,
+    positionsQuery.data,
+    riskQuery.data,
+    symbol,
+    assetType,
+    lastPrice,
+  ]);
+
+  if (status === "loading" || !session?.user) {
+    return { signedIn: false, loading: status === "loading", nums: null };
+  }
+
+  return {
+    signedIn: true,
+    loading: nums == null && accountQuery.isLoading,
+    nums,
+  };
+}
+
+function MetricsGrid({
+  nums,
+  t,
+  showPosition,
+}: {
+  nums: RiskNums;
+  t: ReturnType<typeof useTranslations<"paperRiskBar">>;
+  showPosition: boolean;
+}) {
+  return (
+    <div className="grid grid-cols-2 gap-x-5 gap-y-2.5">
+      <Cell label={t("equity")} value={`$${money(nums.equity)}`} primary />
+      <Cell label={t("cash")} value={`$${money(nums.cash)}`} primary />
+      <Cell
+        label={t("exposure")}
+        value={`$${money(nums.gross)} (${nums.exposurePct.toFixed(2)}%)`}
+      />
+      <Cell
+        label={t("symbolPct")}
+        value={`${nums.symbolPct.toFixed(2)}%`}
+        tone={nums.nearCap ? "warn" : "ok"}
+        hint={`${t("maxSymbol")} ${nums.maxPct.toFixed(2)}%`}
+      />
+      {showPosition && nums.positionQty > 0 ? (
+        <Cell label={t("positionQty")} value={String(nums.positionQty)} />
+      ) : null}
+    </div>
+  );
+}
+
+export function SymbolPaperRiskBar({
+  symbol,
+  assetType,
+  lastPrice,
+  refreshKey = 0,
+  footer,
+  /** P0: default collapsed one-line summary. */
+  defaultExpanded = false,
+  /** Stack bottom: tighter chrome; footer inline when collapsed. */
+  dense = false,
+  /**
+   * `side` — always-open left column (stack trade).
+   * `strip` — compact top summary (side-dock desk, single column).
+   * `bar` — collapsible top strip (default).
+   */
+  variant = "bar",
+}: {
+  symbol: string;
+  assetType: AssetType;
+  lastPrice: number | null;
+  refreshKey?: number;
+  footer?: ReactNode;
+  defaultExpanded?: boolean;
+  dense?: boolean;
+  variant?: "bar" | "side" | "strip";
+}) {
+  const t = useTranslations("paperRiskBar");
+  const [expanded, setExpanded] = useState(defaultExpanded);
+  const { signedIn, nums } = usePaperRiskNums(
+    symbol,
+    assetType,
+    lastPrice,
+    refreshKey,
+  );
+
+  if (!signedIn) return null;
+
+  if (variant === "side") {
+    return <TradeStackAccountSide nums={nums} />;
+  }
+
+  if (variant === "strip") {
+    return <TradeStackAccountStrip nums={nums} />;
+  }
+
+  if (nums == null) {
     if (!footer) return null;
     return (
       <div
         className={`shrink-0 border-b border-[var(--aw-hairline,var(--border))] ${
-          dense ? "px-2.5 py-1.5" : "px-4 py-2"
+          dense ? "px-3 py-2" : "px-4 py-2"
         }`}
       >
         {footer}
@@ -124,77 +270,41 @@ export function SymbolPaperRiskBar({
     );
   }
 
-  const positions =
-    ((positionsQuery.data as { positions?: Pos[] } | undefined)?.positions ??
-      []) as Pos[];
-  const maxPct =
-    (
-      riskQuery.data as
-        | { settings?: { maxPositionPctPerSymbol?: number } }
-        | undefined
-    )?.settings?.maxPositionPctPerSymbol ??
-    DEFAULT_RISK_SETTINGS.maxPositionPctPerSymbol;
-
-  const mark = lastPrice && lastPrice > 0 ? lastPrice : 0;
-  let gross = 0;
-  let symbolNotional = 0;
-  let positionQty = 0;
-  for (const pos of positions) {
-    const isSym = pos.symbol === symbol && pos.assetType === assetType;
-    let mv = pos.marketValue;
-    if (mv == null || !Number.isFinite(mv)) {
-      const px = isSym && mark > 0 ? mark : pos.price ?? pos.avgCost;
-      mv = pos.qty * px;
-    } else if (isSym && mark > 0) {
-      mv = pos.qty * mark;
-    }
-    gross += mv;
-    if (isSym) {
-      symbolNotional = mv;
-      positionQty = pos.qty;
-    }
-  }
-
-  const equity = cash + gross;
-  const symbolPct = equity > 0 ? (symbolNotional / equity) * 100 : 0;
-  const exposurePct = equity > 0 ? (gross / equity) * 100 : 0;
-  const nearCap = symbolPct >= maxPct * 0.8;
-
   return (
     <div
       className={`shrink-0 border-b border-[var(--aw-hairline,var(--border))] ${
-        dense ? "px-2.5 py-1.5" : "px-4 py-2"
+        dense ? "px-3 py-2" : "px-4 py-2"
       }`}
     >
       <button
         type="button"
-        className="flex w-full items-baseline justify-between gap-2 text-left"
+        className="flex w-full items-baseline justify-between gap-3 text-left"
         aria-expanded={expanded}
         onClick={() => setExpanded((v) => !v)}
       >
         <span className="min-w-0 truncate text-[12px] leading-snug tabular-nums text-[var(--foreground)]">
           <span className="text-[var(--muted)]">{t("equity")}</span>
-          <span className="mx-1 font-medium">${money(equity)}</span>
+          <span className="mx-1.5 font-medium">${money(nums.equity)}</span>
           <span className="text-[var(--border)]">·</span>
-          <span className="mx-1 text-[var(--muted)]">{t("cash")}</span>
-          <span className="font-medium">${money(cash)}</span>
+          <span className="mx-1.5 text-[var(--muted)]">{t("cash")}</span>
+          <span className="font-medium">${money(nums.cash)}</span>
           {dense ? null : (
             <>
               <span className="text-[var(--border)]">·</span>
               <span
                 className={`mx-1 font-medium ${
-                  nearCap
+                  nums.nearCap
                     ? "text-[color-mix(in_srgb,#ca8a04_90%,var(--foreground))]"
                     : ""
                 }`}
               >
-                {t("symbolPct")} {symbolPct.toFixed(1)}%
+                {t("symbolPct")} {nums.symbolPct.toFixed(1)}%
               </span>
-              {positionQty > 0 ? (
+              {nums.positionQty > 0 ? (
                 <>
                   <span className="text-[var(--border)]">·</span>
                   <span className="mx-1 text-[var(--muted)]">
-                    {t("positionQty")} {positionQty}
+                    {t("positionQty")} {nums.positionQty}
                   </span>
                 </>
               ) : null}
@@ -207,30 +317,21 @@ export function SymbolPaperRiskBar({
       </button>
 
       {expanded ? (
-        <div className="mt-2.5 grid grid-cols-2 gap-x-5 gap-y-2">
-          <Cell label={t("equity")} value={`$${money(equity)}`} primary />
-          <Cell label={t("cash")} value={`$${money(cash)}`} primary />
-          <Cell
-            label={t("exposure")}
-            value={`$${money(gross)} (${exposurePct.toFixed(2)}%)`}
-          />
-          <Cell
-            label={t("symbolPct")}
-            value={`${symbolPct.toFixed(2)}%`}
-            tone={nearCap ? "warn" : "ok"}
-            hint={`${t("maxSymbol")} ${maxPct.toFixed(2)}%`}
-          />
-          {dense && positionQty > 0 ? (
-            <Cell
-              label={t("positionQty")}
-              value={String(positionQty)}
-            />
-          ) : null}
+        <div className="mt-2.5">
+          <MetricsGrid nums={nums} t={t} showPosition={dense} />
         </div>
       ) : null}
 
       {footer ? (
-        <div className={dense ? "mt-1" : "mt-2"}>{footer}</div>
+        <div
+          className={
+            dense
+              ? "mt-1.5 text-[11px] leading-snug text-[var(--muted)] [&_a]:text-[var(--aw-primary,var(--brand-text))]"
+              : "mt-2"
+          }
+        >
+          {footer}
+        </div>
       ) : null}
     </div>
   );

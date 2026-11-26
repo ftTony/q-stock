@@ -281,10 +281,10 @@ export function EmptyStateBlock({
 }) {
   return (
     <div
-      className={`flex w-full flex-1 flex-col items-center justify-center gap-2.5 px-4 text-center ${
+      className={`flex w-full flex-col items-center justify-center gap-2.5 px-4 text-center ${
         compact
-          ? "min-h-[12rem] py-8"
-          : "min-h-[min(56vh,24rem)] py-12"
+          ? "min-h-[10rem] py-6"
+          : "min-h-[min(56vh,24rem)] flex-1 py-12"
       }`}
     >
       <Art kind={art} />

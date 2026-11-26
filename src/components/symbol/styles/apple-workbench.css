@@ -142,7 +142,8 @@
  * Desktop (≥1024): dock becomes the last workbench column.
  */
 .aw-side-icon-rail {
-  --aw-side-dock-w: 44px;
+  /* 48px column → 40px hit targets sit optically centered with equal gutters. */
+  --aw-side-dock-w: 48px;
   display: none;
 }
 
@@ -173,9 +174,9 @@
 .aw-side-icon-rule {
   display: block;
   flex-shrink: 0;
-  margin: 6px 0 8px;
+  margin: 4px auto;
   height: 1px;
-  width: 20px;
+  width: 18px;
   background: var(--aw-hairline, var(--border));
 }
 
@@ -183,8 +184,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
   width: 40px;
   height: 40px;
+  margin: 0 auto;
+  padding: 0;
   border-radius: var(--radius-control, 0);
   color: var(--aw-ink-muted-80);
   background: transparent;
@@ -194,6 +198,11 @@
     opacity 0.12s ease,
     color 0.12s ease,
     background 0.12s ease;
+}
+
+.aw-side-icon-btn > svg {
+  display: block;
+  flex-shrink: 0;
 }
 
 .aw-side-icon-btn:hover {
@@ -379,14 +388,14 @@ html.aw-rail-resizing {
     right: auto;
     bottom: auto;
     z-index: auto;
-    flex: 0 0 var(--aw-side-dock-w, 44px);
-    width: var(--aw-side-dock-w, 44px);
+    flex: 0 0 var(--aw-side-dock-w, 48px);
+    width: var(--aw-side-dock-w, 48px);
     align-self: stretch;
     overflow: visible;
     flex-direction: column;
     align-items: center;
-    gap: 2px;
-    padding: 10px 0 12px;
+    gap: 4px;
+    padding: 8px 0 12px;
     border-left: 1px solid var(--aw-hairline, var(--border));
     background: var(--aw-canvas);
   }
@@ -1264,18 +1273,18 @@ html.aw-rail-resizing {
   margin-bottom: 4px;
 }
 
-/* Compact submit — stack ticket only; dock / mobile keep h-9 */
+/* Stack ticket submit — solid CTA; don't wash out buy/sell fills. */
 .aw-stack-bottom .aw-trade-stack-submit {
-  height: 32px !important;
-  min-height: 32px !important;
+  height: 40px !important;
+  min-height: 40px !important;
   padding-top: 0 !important;
   padding-bottom: 0 !important;
-  font-size: 12px !important;
+  font-size: 13px !important;
   line-height: 1 !important;
   border-radius: 0 !important;
 }
 
-/* Stack trade: ticket | calm — only under .aw-stack-bottom */
+/* Stack trade: account left (narrow) · ticket right (primary) */
 .aw-stack-bottom .aw-trade-stack-split {
   min-height: 0;
 }
@@ -1285,16 +1294,27 @@ html.aw-rail-resizing {
   background: var(--aw-hairline, var(--border));
 }
 
-.aw-stack-bottom .aw-trade-stack-ticket,
 .aw-stack-bottom .aw-trade-stack-side {
-  min-width: 0;
-  flex: 1 1 50%;
+  min-width: 11.5rem;
+  flex: 0 0 15.5rem;
+  max-width: 15.5rem;
+  background: color-mix(in srgb, var(--aw-pearl, var(--surface-2)) 55%, var(--aw-canvas, #fff));
 }
 
-/* Match tab text inset (10px); left/right columns share the same pad. */
+.aw-stack-bottom .aw-trade-stack-ticket {
+  min-width: 0;
+  flex: 1 1 auto;
+}
+
 .aw-stack-bottom .aw-trade-stack-pad {
-  padding-left: 10px;
-  padding-right: 10px;
+  padding-left: 14px;
+  padding-right: 14px;
+}
+
+/* Center ticket form in the wide right pane */
+.aw-stack-bottom .aw-trade-stack-ticket .aw-dock-scroll > div {
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .aw-stack-bottom .aw-dock-comments[data-density="stack"] .aw-dock-comments-empty svg {

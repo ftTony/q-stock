@@ -25,8 +25,10 @@ type Props = {
   quote: Quote | null;
   boundRuleName?: string | null;
   onOpenPlan?: () => void;
-  /** Open paper-trade dock (side drawer). */
+  /** Open paper-trade dock (side: desk; stack: ticket). */
   onOpenTrade?: () => void;
+  /** Override button label (stack uses「下单」). */
+  tradeButtonLabel?: string;
   /** Desktop secondary tabs in the quote strip (H5 tabs live under the chart). */
   tabs?: TabItem[];
   tab?: SymbolTab;
@@ -63,6 +65,7 @@ export function SymbolQuoteBar({
   boundRuleName = null,
   onOpenPlan,
   onOpenTrade,
+  tradeButtonLabel,
   tabs,
   tab,
   onTabChange,
@@ -323,10 +326,10 @@ export function SymbolQuoteBar({
               type="button"
               onClick={onOpenTrade}
               className="aw-btn-pill"
-              title={t("tradeDock")}
+              title={tradeButtonLabel ?? t("tradeDock")}
               data-tour="rail-order"
             >
-              {t("tradeDock")}
+              {tradeButtonLabel ?? t("tradeDock")}
             </button>
           ) : null}
           <div className="hidden lg:contents">

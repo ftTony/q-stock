@@ -206,9 +206,26 @@
     background 0.12s ease;
 }
 
-.aw-ai-chip-btn:hover {
-  color: var(--aw-ink);
-  background: var(--aw-parchment);
+/* Chart-read stays secondary next to Send (overrides qt-btn defaults). */
+.aw-ai-desk .aw-ai-chip-btn.qt-btn,
+.aw-ai-desk button.aw-ai-chip-btn {
+  background: transparent !important;
+  color: var(--aw-ink-muted-80, var(--aw-ink-muted-48)) !important;
+  border: 1px solid var(--aw-hairline, var(--border)) !important;
+  border-radius: var(--radius-control, 0) !important;
+  box-shadow: none !important;
+  font-size: 12px;
+  font-weight: 500;
+  height: 28px;
+  min-height: 28px;
+  padding: 0 10px;
+}
+
+.aw-ai-chip-btn:hover,
+.aw-ai-desk .aw-ai-chip-btn.qt-btn:hover,
+.aw-ai-desk button.aw-ai-chip-btn:hover {
+  color: var(--aw-ink) !important;
+  background: var(--aw-parchment, color-mix(in srgb, var(--foreground) 4%, transparent)) !important;
 }
 
 .aw-ai-chip-btn:active:not(:disabled) {
@@ -248,15 +265,16 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 12rem;
+  gap: 4px;
+  min-height: 0;
   height: 100%;
+  padding: 8px;
   text-align: center;
-  gap: 10px;
   color: var(--aw-ink-muted-48);
 }
 
 .aw-ai-thread-empty-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 500;
   letter-spacing: -0.08px;
   color: var(--aw-ink-muted-80);
@@ -264,8 +282,8 @@
 
 .aw-ai-thread-empty-hint {
   font-size: 12px;
-  max-width: 18rem;
-  line-height: 1.4;
+  max-width: 20rem;
+  line-height: 1.35;
   letter-spacing: -0.08px;
 }
 
@@ -428,8 +446,8 @@
     justify-content: center;
     min-height: 0;
     height: 100%;
-    padding: 8px 0;
-    gap: 8px;
+    padding: 4px 0;
+    gap: 2px;
   }
 
   .aw-stack-bottom .aw-stack-ai .aw-ai-thread-empty-title {
@@ -437,7 +455,7 @@
   }
 
   .aw-stack-bottom .aw-stack-ai .aw-ai-thread-empty-hint {
-    font-size: 12px;
+    font-size: 11px;
     max-width: 22rem;
   }
 
