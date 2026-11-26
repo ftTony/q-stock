@@ -171,30 +171,13 @@ export function SymbolPageClient({
     isDesktop,
   ]);
 
-  /** Trading desk — side dock desk view, or stack bottom「交易」tab. */
-  const openTrade = useCallback(() => {
-    p.setAiOpen(false);
-    p.setMobilePlanOpen(false);
-    p.setSeoOpen(false);
-    if (isStack) {
-      p.closeDock();
-      setStackTab("trade");
-      return;
-    }
-    p.openTrade();
-  }, [isStack, p]);
-
   /** Order ticket surface (desk CTA / plan「去下单」). */
   const openOrderTicket = useCallback(() => {
-    p.setAiOpen(false);
-    p.setMobilePlanOpen(false);
-    p.setSeoOpen(false);
     p.openOrderTicket();
   }, [p]);
 
   /** Plan / review always use the right rail (side + stack). */
   const openPlan = useCallback(() => {
-    p.setAiOpen(false);
     p.closeDock();
     p.openPlan();
   }, [p]);
@@ -341,19 +324,13 @@ export function SymbolPageClient({
           setStackTab={setStackTab}
           stackKey={stackKey}
           newsFeedTab={newsFeedTab}
-          openTrade={openTrade}
           openOrderTicket={openOrderTicket}
           openPlan={openPlan}
           openSymbolReview={openSymbolReview}
           onSideSelect={onSideSelect}
           onToggleWatchlist={onToggleWatchlist}
           aboutLabel={seoCopy.aboutLabel}
-          onOpenAbout={() => {
-            p.setAiOpen(false);
-            p.setDock(null);
-            p.setMobilePlanOpen(false);
-            p.setSeoOpen(true);
-          }}
+          onOpenAbout={() => p.setSeoOpen(true)}
           resizing={
             rail.dragging ||
             watch.dragging ||
@@ -394,11 +371,8 @@ export function SymbolPageClient({
               return;
             }
             p.setAiOpen(true);
-            p.setDock(null);
-            p.setMobilePlanOpen(false);
           }}
           onOpenPlan={() => {
-            p.setDock(null);
             openPlan();
           }}
           onOpenSymbolReview={openSymbolReview}

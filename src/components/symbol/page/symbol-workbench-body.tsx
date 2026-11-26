@@ -59,7 +59,6 @@ type Props = {
   setStackTab: (tab: StackBottomTab) => void;
   stackKey: number;
   newsFeedTab: "news" | "press";
-  openTrade: () => void;
   /** Desk CTA / plan go-order → ticket dock. */
   openOrderTicket: () => void;
   openPlan: () => void;
@@ -98,7 +97,6 @@ export function SymbolWorkbenchBody({
   setStackTab,
   stackKey,
   newsFeedTab,
-  openTrade,
   openOrderTicket,
   openPlan,
   openSymbolReview,
@@ -229,11 +227,8 @@ export function SymbolWorkbenchBody({
             chartSlot={chartSlot}
             feedStatus={feedStatus}
             marketCap={marketCap}
-            stackTab={stackTab}
-            setStackTab={setStackTab}
             stackKey={stackKey}
             newsFeedTab={newsFeedTab}
-            openTrade={openTrade}
             openOrderTicket={openOrderTicket}
             openPlan={openPlan}
             onSideSelect={onSideSelect}
@@ -268,11 +263,8 @@ type MainGridProps = {
   chartSlot: ReactNode;
   feedStatus: FeedStatusKind;
   marketCap: number | null;
-  stackTab: StackBottomTab;
-  setStackTab: (tab: StackBottomTab) => void;
   stackKey: number;
   newsFeedTab: "news" | "press";
-  openTrade: () => void;
   openOrderTicket: () => void;
   openPlan: () => void;
   onSideSelect: (id: SideIconId) => void;
@@ -302,8 +294,6 @@ function SymbolWorkbenchMainGrid({
   chartSlot,
   feedStatus,
   marketCap,
-  setStackTab,
-  openTrade,
   openOrderTicket,
   openPlan,
   onSideSelect,
