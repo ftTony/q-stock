@@ -267,6 +267,20 @@ html.aw-rail-resizing {
   max-height: var(--wb-topbar-h, 40px);
 }
 
+/* Section title only — no border/bg/padding that reads as a control. */
+.aw-watchlist-title {
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.12px;
+  color: var(--aw-ink, var(--foreground));
+}
+
 .aw-quote-bar {
   box-sizing: border-box;
   min-height: var(--wb-topbar-h, 40px);
@@ -296,7 +310,7 @@ html.aw-rail-resizing {
   border: none;
   border-radius: var(--radius-control, 0);
   background: transparent;
-  color: var(--aw-ink, var(--foreground));
+  color: var(--aw-ink-muted-48, var(--muted));
   cursor: pointer;
   text-decoration: none;
 }
@@ -304,11 +318,13 @@ html.aw-rail-resizing {
 .aw-watchlist-expand-btn {
   display: none;
   background: color-mix(in srgb, var(--aw-ink) 6%, transparent);
+  color: var(--aw-ink, var(--foreground));
 }
 
 .aw-watchlist-collapse-btn:hover,
 .aw-watchlist-expand-btn:hover {
-  background: color-mix(in srgb, var(--aw-ink) 10%, transparent);
+  background: color-mix(in srgb, var(--aw-ink) 8%, transparent);
+  color: var(--aw-ink, var(--foreground));
 }
 
 @media (min-width: 1024px) {

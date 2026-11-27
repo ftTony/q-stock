@@ -15,6 +15,11 @@ export type ChartUiSettings = {
   /** Show paper buy/sell markers on the candle pane. */
   showTradeMarkers: boolean;
   /**
+   * US intraday only: include pre / post / overnight minute bars.
+   * Off = regular session (09:30–16:00 ET).
+   */
+  includeExtendedHours: boolean;
+  /**
    * Explicit chart style. When omitted, resolve by resolution
    * (intraday timeline → area, else candle).
    */
@@ -23,6 +28,7 @@ export type ChartUiSettings = {
 
 const DEFAULTS: ChartUiSettings = {
   showTradeMarkers: true,
+  includeExtendedHours: false,
 };
 
 const CHART_TYPES = new Set<ChartCandleType>([
@@ -59,6 +65,10 @@ export function readChartUiSettings(): ChartUiSettings {
         typeof parsed.showTradeMarkers === "boolean"
           ? parsed.showTradeMarkers
           : DEFAULTS.showTradeMarkers,
+      includeExtendedHours:
+        typeof parsed.includeExtendedHours === "boolean"
+          ? parsed.includeExtendedHours
+          : DEFAULTS.includeExtendedHours,
       chartType: isChartCandleType(parsed.chartType)
         ? parsed.chartType
         : undefined,

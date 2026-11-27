@@ -87,10 +87,11 @@ export function SymbolWatchlistPaneSkeleton({
       }
     >
       <div className="aw-watchlist-head flex shrink-0 items-center justify-between gap-1 border-b border-[var(--aw-hairline,var(--border))] px-2.5">
-        <Skel className="h-3.5 w-10" />
+        {/* Match plain title — avoid chip-shaped skeleton. */}
+        <Skel className="h-3 w-8" />
         <div className="flex items-center gap-0.5">
-          <Skel className="h-6 w-6" />
-          <Skel className="h-6 w-6" />
+          <Skel className="h-5 w-5 rounded-sm" />
+          <Skel className="h-5 w-5 rounded-sm" />
         </div>
       </div>
       <div

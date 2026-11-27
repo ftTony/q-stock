@@ -14,6 +14,8 @@ import type { QuoteHeaderLabels } from "@/components/charts/candle-chart";
 type Props = {
   resolution: CandleResolution;
   onResolutionChange: (r: CandleResolution) => void;
+  includeExtendedHours: boolean;
+  onIncludeExtendedHoursChange: (v: boolean) => void;
   resolutionLabels: Record<CandleResolution, string>;
   indicatorsLabel: string;
   intradayUnavailableLabel: string;
@@ -39,6 +41,8 @@ type Props = {
 export function SymbolPageChartSlot({
   resolution,
   onResolutionChange,
+  includeExtendedHours,
+  onIncludeExtendedHoursChange,
   resolutionLabels,
   indicatorsLabel,
   intradayUnavailableLabel,
@@ -70,6 +74,8 @@ export function SymbolPageChartSlot({
       <SymbolChartSection
         resolution={resolution}
         onResolutionChange={onResolutionChange}
+        includeExtendedHours={includeExtendedHours}
+        onIncludeExtendedHoursChange={onIncludeExtendedHoursChange}
         resolutionLabels={resolutionLabels}
         indicatorsLabel={indicatorsLabel}
         intradayUnavailableLabel={intradayUnavailableLabel}
@@ -93,6 +99,8 @@ export function SymbolPageChartSlot({
     [
       resolution,
       onResolutionChange,
+      includeExtendedHours,
+      onIncludeExtendedHoursChange,
       resolutionLabels,
       indicatorsLabel,
       intradayUnavailableLabel,

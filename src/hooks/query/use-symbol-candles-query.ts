@@ -20,14 +20,52 @@ type CandlesPayload = {
   hasMore?: boolean;
 };
 
+function candlesUrl(
+  symbol: string,
+  assetType: AssetType,
+  resolution: CandleResolution,
+  extras?: { from?: number; to?: number; indicators?: boolean; extendedHours?: boolean },
+) {
+  const params = new URLSearchParams({
+    symbol,
+    assetType,
+    resolution,
+  });
+  if (extras?.from != null) params.set("from", String(extras.from));
+  if (extras?.to != null) params.set("to", String(extras.to));
+  if (extras?.indicators === false) params.set("indicators", "0");
+  if (
+    extras?.extendedHours &&
+    assetType === "stock" &&
+    isIntradayResolution(resolution)
+  ) {
+    params.set("extended", "1");
+  }
+  return `/api/candles?${params.toString()}`;
+}
+
 export function useSymbolCandlesQuery(
   symbol: string,
   assetType: AssetType,
   resolution: CandleResolution,
-  opts?: { initialBars?: OhlcvBar[] | null },
+  opts?: {
+    initialBars?: OhlcvBar[] | null;
+    /** US intraday: include pre/post/overnight bars. */
+    includeExtendedHours?: boolean;
+  },
 ) {
   const qc = useQueryClient();
-  const key = queryKeys.symbol.candles(assetType, symbol, resolution);
+  const includeExtendedHours = Boolean(
+    opts?.includeExtendedHours &&
+      assetType === "stock" &&
+      isIntradayResolution(resolution),
+  );
+  const key = queryKeys.symbol.candles(
+    assetType,
+    symbol,
+    resolution,
+    includeExtendedHours,
+  );
   const loadMoreLock = useRef(false);
   const [loadingMoreCandles, setLoadingMoreCandles] = useState(false);
   const [hasMoreCandles, setHasMoreCandles] = useState(true);
@@ -40,7 +78,9 @@ export function useSymbolCandlesQuery(
     queryKey: key,
     queryFn: async () => {
       const data = await fetchJson<CandlesPayload>(
-        `/api/candles?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&resolution=${resolution}`,
+        candlesUrl(symbol, assetType, resolution, {
+          extendedHours: includeExtendedHours,
+        }),
       );
       const next = data.bars ?? [];
       setHasMoreCandles(next.length > 0 && data.hasMore !== false);
@@ -77,7 +117,12 @@ export function useSymbolCandlesQuery(
           return [];
         }
         const data = await fetchJson<CandlesPayload>(
-          `/api/candles?symbol=${encodeURIComponent(symbol)}&assetType=${assetType}&resolution=${resolution}&from=${from}&to=${to}&indicators=0`,
+          candlesUrl(symbol, assetType, resolution, {
+            from,
+            to,
+            indicators: false,
+            extendedHours: includeExtendedHours,
+          }),
         );
         const older = data.bars ?? [];
         if (!older.length) {
@@ -110,7 +155,15 @@ export function useSymbolCandlesQuery(
         }, 400);
       }
     },
-    [symbol, assetType, resolution, hasMoreCandles, qc, key],
+    [
+      symbol,
+      assetType,
+      resolution,
+      includeExtendedHours,
+      hasMoreCandles,
+      qc,
+      key,
+    ],
   );
 
   const bars = query.data ?? [];

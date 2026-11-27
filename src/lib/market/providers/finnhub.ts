@@ -1,5 +1,6 @@
 import { cachedFetch } from "@/lib/cache";
 import { mapPoolSettled } from "@/lib/map-pool";
+import { filterUsRegularSessionBars } from "@/lib/market/session";
 import type { AssetType, OhlcvBar, Quote, SearchResult } from "@/lib/types";
 import { normalizeSymbol, toFinnhubSymbol } from "@/lib/market/symbols";
 import type { MarketDataProvider, QuoteWithSource } from "@/lib/market/types";
@@ -190,10 +191,11 @@ export const finnhubProvider: MarketDataProvider = {
     });
   },
 
-  async getIntradayCandles(symbol, assetType, from, to, interval) {
+  async getIntradayCandles(symbol, assetType, from, to, interval, opts) {
     const normalized = normalizeSymbol(symbol, assetType);
     const fh = toFinnhubSymbol(normalized, assetType);
-    const key = `fh:candle:${interval}m:${assetType}:${normalized}:${from}:${to}`;
+    const ext = opts?.extendedHours ? "all" : "reg";
+    const key = `fh:candle:${interval}m:${ext}:${assetType}:${normalized}:${from}:${to}`;
     return cachedFetch(key, 30_000, async () => {
       const path = assetType === "crypto" ? "/crypto/candle" : "/stock/candle";
       const raw = await finnhubFetch<RawCandle>(path, {
@@ -202,7 +204,10 @@ export const finnhubProvider: MarketDataProvider = {
         from,
         to,
       });
-      const bars = mapCandles(raw);
+      let bars = mapCandles(raw);
+      if (assetType === "stock" && !opts?.extendedHours) {
+        bars = filterUsRegularSessionBars(bars);
+      }
       if (!bars.length) {
         throw new MarketDataError(
           `Finnhub returned no ${interval}m candles for ${fh}`,

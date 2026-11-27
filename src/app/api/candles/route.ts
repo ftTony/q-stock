@@ -64,6 +64,10 @@ export async function GET(req: Request) {
 
       if (isIntradayResolution(resolution)) {
         const interval = resolution === "5" ? "5" : "1";
+        const extendedHours =
+          assetType === "stock" &&
+          (searchParams.get("extended") === "1" ||
+            searchParams.get("extended") === "true");
         let bars;
         try {
           bars = await getIntradayCandles(
@@ -72,6 +76,7 @@ export async function GET(req: Request) {
             from,
             to,
             interval,
+            { extendedHours },
           );
         } catch (err) {
           console.warn(

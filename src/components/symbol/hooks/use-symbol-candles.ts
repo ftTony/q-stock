@@ -8,7 +8,10 @@ export function useSymbolCandles(
   symbol: string,
   assetType: AssetType,
   resolution: CandleResolution,
-  opts?: { initialBars?: OhlcvBar[] | null },
+  opts?: {
+    initialBars?: OhlcvBar[] | null;
+    includeExtendedHours?: boolean;
+  },
 ) {
   return useSymbolCandlesQuery(symbol, assetType, resolution, opts);
 }

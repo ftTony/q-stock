@@ -252,6 +252,8 @@ export function SymbolPageClient({
     <SymbolPageChartSlot
       resolution={s.resolution}
       onResolutionChange={s.setResolution}
+      includeExtendedHours={s.includeExtendedHours}
+      onIncludeExtendedHoursChange={s.setIncludeExtendedHours}
       resolutionLabels={resolutionLabels}
       indicatorsLabel={s.t("indicators")}
       intradayUnavailableLabel={s.t("intradayUnavailable")}

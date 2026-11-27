@@ -28,6 +28,10 @@ import {
   quotePollIntervalMs,
   useQuoteChannels,
 } from "@/hooks/use-quote-socket";
+import {
+  readChartUiSettings,
+  writeChartUiSettings,
+} from "@/components/charts/candle-chart-settings";
 import { getUsMarketPhase } from "@/lib/market/session";
 import { queryKeys } from "@/lib/query/keys";
 import { useSymbolWorkbenchStore } from "@/stores/symbol-workbench-store";
@@ -85,8 +89,20 @@ export function useSymbolPage(
     rsi: false,
     macd: false,
   });
+  const [includeExtendedHours, setIncludeExtendedHoursState] = useState(
+    () => readChartUiSettings().includeExtendedHours,
+  );
+  const setIncludeExtendedHours = useCallback((next: boolean) => {
+    setIncludeExtendedHoursState(next);
+    writeChartUiSettings({
+      ...readChartUiSettings(),
+      includeExtendedHours: next,
+    });
+  }, []);
   const candles = useSymbolCandles(symbol, assetType, resolution, {
     initialBars: opts?.initialBars,
+    includeExtendedHours:
+      assetType === "stock" ? includeExtendedHours : false,
   });
   const tabData = useSymbolTabData({
     symbol,
@@ -354,6 +370,8 @@ export function useSymbolPage(
     bars: candles.bars,
     resolution,
     setResolution,
+    includeExtendedHours,
+    setIncludeExtendedHours,
     flags,
     setFlags,
     tab,
