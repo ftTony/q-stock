@@ -71,6 +71,18 @@ export function isUsRegularSessionOpen(now = new Date()): boolean {
   return minutes >= 9 * 60 + 30 && minutes < 16 * 60;
 }
 
+/** True when unix-sec bar open falls in US regular session (ET). */
+export function isUsRegularSessionBarTime(unixSec: number): boolean {
+  return isUsRegularSessionOpen(new Date(unixSec * 1000));
+}
+
+/** Drop pre/post/overnight minute bars — for vendors without a session flag. */
+export function filterUsRegularSessionBars<T extends { time: number }>(
+  bars: T[],
+): T[] {
+  return bars.filter((b) => isUsRegularSessionBarTime(b.time));
+}
+
 /** True before 16:00 America/New_York (same calendar day, any weekday). */
 export function isBeforeUsRegularClose(now = new Date()): boolean {
   const { minutes } = zonedClock(now, "America/New_York");

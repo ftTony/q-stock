@@ -237,11 +237,13 @@ export const longbridgeProvider: MarketDataProvider = {
     );
   },
 
-  async getIntradayCandles(symbol, assetType, from, to, interval) {
+  async getIntradayCandles(symbol, assetType, from, to, interval, opts) {
     // Period: Min_1=1, Min_5=4 (longbridge Node SDK enum)
     const period = interval === "5" ? 4 : 1;
+    const extended = Boolean(opts?.extendedHours) && assetType === "stock";
+    const tradeSession = extended ? "all" : "intraday";
     const normalized = normalizeSymbol(symbol, assetType);
-    const key = `lb:candle:${interval}m:${normalized}:${from}:${to}`;
+    const key = `lb:candle:${interval}m:${tradeSession}:${normalized}:${from}:${to}`;
     return cachedFetch(key, 30_000, async () => {
       const bars = await fetchLbHistoryBars(
         symbol,
@@ -249,6 +251,7 @@ export const longbridgeProvider: MarketDataProvider = {
         from,
         to,
         period,
+        tradeSession,
       );
       if (!bars.length) {
         throw new MarketDataError(

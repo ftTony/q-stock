@@ -398,12 +398,20 @@ function mapLbCandles(
     .sort((a, b) => a.time - b.time);
 }
 
+export type LbTradeSession = "intraday" | "all";
+
+/** Longbridge: 0 = regular/intraday only; 100 = pre + regular + post + overnight. */
+function lbTradeSessionCode(session: LbTradeSession): number {
+  return session === "all" ? 100 : 0;
+}
+
 export async function fetchLbHistoryBars(
   symbol: string,
   assetType: AssetType,
   from: number,
   to: number,
   period: number,
+  tradeSession: LbTradeSession = "intraday",
 ): Promise<OhlcvBar[]> {
   if (assetType === "crypto") {
     throw new MarketDataError("Longbridge crypto candles unsupported", "longbridge");
@@ -414,6 +422,7 @@ export async function fetchLbHistoryBars(
   const ctx = await getQuoteCtx();
   const start = unixToNaiveDate(lb, from);
   const end = unixToNaiveDate(lb, to);
+  const sessionCode = lbTradeSessionCode(tradeSession);
 
   try {
     const sticks = await ctx.historyCandlesticksByDate(
@@ -422,7 +431,7 @@ export async function fetchLbHistoryBars(
       0, // AdjustType.NoAdjust
       start,
       end,
-      0, // TradeSessions.Intraday
+      sessionCode,
     );
     const bars = mapLbCandles(sticks, from, to);
     if (bars.length) return bars;
@@ -439,7 +448,7 @@ export async function fetchLbHistoryBars(
   const barsPerDay =
     period === 1 ? 420 : period === 4 ? 84 : period < 14 ? 50 : 1;
   const count = Math.min(1000, daySpan * barsPerDay + 20);
-  const sticks = await ctx.candlesticks(lbSym, period, count, 0, 0);
+  const sticks = await ctx.candlesticks(lbSym, period, count, 0, sessionCode);
   const bars = mapLbCandles(sticks, from, to);
   if (!bars.length) {
     throw new MarketDataError(

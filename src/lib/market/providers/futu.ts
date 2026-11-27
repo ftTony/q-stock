@@ -5,7 +5,10 @@ import {
 } from "@/lib/market/providers/futu-http";
 import { futuSearchSymbols } from "@/lib/market/providers/futu-search";
 import { applyActiveExtendedPrice } from "@/lib/market/providers/longbridge-quote-map";
-import { getUsMarketPhase } from "@/lib/market/session";
+import {
+  filterUsRegularSessionBars,
+  getUsMarketPhase,
+} from "@/lib/market/session";
 import { normalizeSymbol, toFutuSymbol } from "@/lib/market/symbols";
 import type { MarketDataProvider, QuoteWithSource } from "@/lib/market/types";
 import { MarketDataError } from "@/lib/market/types";
@@ -305,8 +308,8 @@ export const futuProvider: MarketDataProvider = {
     return fetchKlines(symbol, assetType, from, to, 4);
   },
 
-  async getIntradayCandles(symbol, assetType, from, to, interval) {
-    // ktype: 1=1min, 6=5min
+  async getIntradayCandles(symbol, assetType, from, to, interval, opts) {
+    // ktype: 1=1min, 6=5min — Futu history has no session flag; filter ET regular.
     const bars = await fetchKlines(
       symbol,
       assetType,
@@ -319,6 +322,9 @@ export const futuProvider: MarketDataProvider = {
         `Futu returned no ${interval}m klines`,
         "futu",
       );
+    }
+    if (assetType === "stock" && !opts?.extendedHours) {
+      return filterUsRegularSessionBars(bars);
     }
     return bars;
   },

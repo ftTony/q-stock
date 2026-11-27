@@ -6,7 +6,7 @@ import {
   type Dispatch,
   type SetStateAction,
 } from "react";
-import type { Session } from "next-auth";
+import type { Session } from "@/lib/auth/react";
 import { useLoginModalOptional } from "@/components/auth/login-modal-context";
 import type { ToastTone } from "@/components/ui/top-toast";
 import type { AssetType } from "@/lib/types";

@@ -41,6 +41,7 @@ export interface MarketDataProvider {
     from: number,
     to: number,
     interval: "1" | "5",
+    opts?: { extendedHours?: boolean },
   ): Promise<OhlcvBar[]>;
   searchSymbols(q: string, assetType: AssetType): Promise<SearchResult[]>;
 }

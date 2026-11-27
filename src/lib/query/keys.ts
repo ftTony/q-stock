@@ -47,8 +47,20 @@ export const queryKeys = {
   symbol: {
     quote: (assetType: string, symbol: string) =>
       ["symbol", "quote", assetType, symbol] as const,
-    candles: (assetType: string, symbol: string, resolution: string) =>
-      ["symbol", "candles", assetType, symbol, resolution] as const,
+    candles: (
+      assetType: string,
+      symbol: string,
+      resolution: string,
+      extendedHours = false,
+    ) =>
+      [
+        "symbol",
+        "candles",
+        assetType,
+        symbol,
+        resolution,
+        extendedHours ? "ext" : "reg",
+      ] as const,
     constituents: (assetType: string, symbol: string) =>
       ["symbol", "constituents", assetType, symbol] as const,
   },

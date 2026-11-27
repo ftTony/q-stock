@@ -166,11 +166,7 @@ export function SettingsGeneralForm() {
             : "system",
         changeColorScheme: values.changeColorScheme,
       });
-      await update({
-        locale: values.locale,
-        theme: values.theme,
-        changeColorScheme: values.changeColorScheme,
-      });
+      await update();
       const tip = t("saved");
       flash("ok", tip);
       if (values.locale !== locale) {

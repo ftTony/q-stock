@@ -45,18 +45,13 @@ export function SettingsAccountNameForm() {
   async function onSubmit(values: AccountNameValues) {
     clearFlash();
     try {
-      const data = await saveSettings.mutateAsync({
+      await saveSettings.mutateAsync({
         name: values.displayName.trim() || undefined,
         locale,
         theme: theme === "light" || theme === "dark" ? theme : "system",
         changeColorScheme,
       });
-      await update({
-        name: (data.user?.name ?? values.displayName.trim()) || null,
-        locale,
-        theme,
-        changeColorScheme,
-      });
+      await update();
       flash("ok", t("saved"));
     } catch {
       flash("error", t("saveError"));

@@ -5,6 +5,7 @@ import {
   IconRailCollapse,
   IconRailExpand,
 } from "@/components/symbol/watchlist/watchlist-toggle-icons";
+import { NavIconTooltip } from "@/components/ui/nav-icon-tooltip";
 import "../styles/apple-workbench.css";
 
 export type SideIconId = "ai" | "trade" | "news" | "comments";
@@ -156,21 +157,25 @@ export function SymbolSideIconRail({
     <nav aria-label={t("sideDock")} className="aw-side-icon-rail">
       {onToggleRail ? (
         <>
-          <button
-            type="button"
-            title={railOpen ? t("railCollapse") : t("railExpand")}
-            aria-label={railOpen ? t("railCollapse") : t("railExpand")}
-            aria-pressed={railOpen}
-            onClick={onToggleRail}
-            data-rail-toggle="true"
-            className="aw-side-icon-btn hidden lg:inline-flex"
+          <NavIconTooltip
+            label={railOpen ? t("railCollapse") : t("railExpand")}
+            side="left"
           >
-            {railOpen ? (
-              <IconRailCollapse className={glyph} />
-            ) : (
-              <IconRailExpand className={glyph} />
-            )}
-          </button>
+            <button
+              type="button"
+              aria-label={railOpen ? t("railCollapse") : t("railExpand")}
+              aria-pressed={railOpen}
+              onClick={onToggleRail}
+              data-rail-toggle="true"
+              className="aw-side-icon-btn hidden lg:inline-flex"
+            >
+              {railOpen ? (
+                <IconRailCollapse className={glyph} />
+              ) : (
+                <IconRailExpand className={glyph} />
+              )}
+            </button>
+          </NavIconTooltip>
           <span aria-hidden className="aw-side-icon-rule hidden lg:block" />
         </>
       ) : null}
@@ -182,18 +187,19 @@ export function SymbolSideIconRail({
             {item.ruleBefore && showNews ? (
               <span aria-hidden className="aw-side-icon-rule" />
             ) : null}
-            <button
-              type="button"
-              title={t(item.labelKey)}
-              aria-label={t(item.labelKey)}
-              aria-pressed={selected}
-              data-active={selected}
-              data-tour={item.id === "trade" ? "rail-order" : undefined}
-              onClick={() => onSelect(item.id)}
-              className="aw-side-icon-btn"
-            >
-              <Icon className={glyph} />
-            </button>
+            <NavIconTooltip label={t(item.labelKey)} side="left">
+              <button
+                type="button"
+                aria-label={t(item.labelKey)}
+                aria-pressed={selected}
+                data-active={selected}
+                data-tour={item.id === "trade" ? "rail-order" : undefined}
+                onClick={() => onSelect(item.id)}
+                className="aw-side-icon-btn"
+              >
+                <Icon className={glyph} />
+              </button>
+            </NavIconTooltip>
           </div>
         );
       })}

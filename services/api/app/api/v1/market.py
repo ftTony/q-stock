@@ -95,6 +95,7 @@ async def candles(
     resolution: str = "D",
     from_: int | None = Query(default=None, alias="from"),
     to: int | None = None,
+    extended: bool = False,
     _user: User | None = Depends(get_optional_user),
 ) -> dict:
     asset_type = _parse_asset(assetType)
@@ -108,7 +109,14 @@ async def candles(
         frm = to_ts - 5 * 24 * 3600
     else:
         frm = to_ts - 365 * 24 * 3600
-    return await get_candles(symbol, asset_type, resolution=resolution, frm=frm, to=to_ts)
+    return await get_candles(
+        symbol,
+        asset_type,
+        resolution=resolution,
+        frm=frm,
+        to=to_ts,
+        extended_hours=extended,
+    )
 
 
 @router.get("/search")

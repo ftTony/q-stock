@@ -196,26 +196,30 @@ def _candles_sync(
     resolution: str,
     frm: int,
     to: int,
+    extended_hours: bool,
 ) -> list[dict[str, Any]]:
-    from longport.openapi import AdjustType
+    from longport.openapi import AdjustType, TradeSessions
 
     ctx = _build_quote_ctx(creds)
     normalized = normalize_symbol(symbol, asset_type)
     lb_sym = to_longbridge_symbol(normalized, asset_type)
     period = _period_for(resolution)
+    trade_sessions = TradeSessions.All if extended_hours else TradeSessions.Intraday
     start = date.fromtimestamp(frm)
     end = date.fromtimestamp(to)
     sticks = []
     try:
         sticks = ctx.history_candlesticks_by_date(
-            lb_sym, period, AdjustType.NoAdjust, start, end
+            lb_sym, period, AdjustType.NoAdjust, start, end, trade_sessions
         )
     except Exception as exc:
         log.warning("longbridge history_candlesticks_by_date failed: %s", exc)
         day_span = max(1, int((to - frm) / 86400) + 1)
         denser = 420 if resolution in {"T", "1"} else 84 if resolution == "5" else 1
         count = min(1000, day_span * denser + 20)
-        sticks = ctx.candlesticks(lb_sym, period, count, AdjustType.NoAdjust)
+        sticks = ctx.candlesticks(
+            lb_sym, period, count, AdjustType.NoAdjust, trade_sessions
+        )
     out: list[dict[str, Any]] = []
     for c in sticks or []:
         ts = getattr(c, "timestamp", None)
@@ -373,6 +377,7 @@ async def lb_candles(
     resolution: str,
     frm: int,
     to: int,
+    extended_hours: bool = False,
 ) -> list[dict[str, Any]]:
     if asset_type == "crypto":
         raise RuntimeError("Longbridge crypto candles unsupported")
@@ -383,7 +388,15 @@ async def lb_candles(
         raise RuntimeError("Longbridge credentials not configured")
     # Keep short so DNS/connect failures fail over to Futu/Finnhub quickly.
     return await _run(
-        _candles_sync, creds, symbol, asset_type, resolution, frm, to, timeout=4.0
+        _candles_sync,
+        creds,
+        symbol,
+        asset_type,
+        resolution,
+        frm,
+        to,
+        extended_hours,
+        timeout=4.0,
     )
 
 

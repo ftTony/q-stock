@@ -55,6 +55,8 @@ const PRIMARY_INDICATORS = new Set(["ma", "macd"]);
 type Props = {
   resolution: CandleResolution;
   onResolutionChange: (r: CandleResolution) => void;
+  includeExtendedHours: boolean;
+  onIncludeExtendedHoursChange: (v: boolean) => void;
   resolutionLabels: Record<CandleResolution, string>;
   indicatorsLabel: string;
   intradayUnavailableLabel: string;
@@ -79,6 +81,8 @@ type Props = {
 export const SymbolChartSection = memo(function SymbolChartSection({
   resolution,
   onResolutionChange,
+  includeExtendedHours,
+  onIncludeExtendedHoursChange,
   resolutionLabels,
   indicatorsLabel,
   intradayUnavailableLabel,
@@ -108,9 +112,9 @@ export const SymbolChartSection = memo(function SymbolChartSection({
   const [ctxMenu, setCtxMenu] = useState<ChartContextMenuState>(null);
   const [soonToast, setSoonToast] = useState<string | null>(null);
   const [toastTone, setToastTone] = useState<"neutral" | "success">("neutral");
-  const [chartSettings, setChartSettings] = useState<ChartUiSettings>({
-    showTradeMarkers: true,
-  });
+  const [chartSettings, setChartSettings] = useState<ChartUiSettings>(() =>
+    readChartUiSettings(),
+  );
 
   const onChartContextMenu = useCallback((e: ReactMouseEvent) => {
     e.preventDefault();
@@ -186,8 +190,10 @@ export const SymbolChartSection = memo(function SymbolChartSection({
     isIntradayResolution(resolution) && !loadingChart && bars.length === 0;
 
   const onChartSettingsChange = (next: ChartUiSettings) => {
-    setChartSettings(next);
-    writeChartUiSettings(next);
+    // Merge disk prefs so toolbar-owned fields (e.g. extended hours) are kept.
+    const merged = { ...readChartUiSettings(), ...next };
+    setChartSettings(merged);
+    writeChartUiSettings(merged);
   };
 
   const onChartTypeChange = (type: ChartCandleType) => {
@@ -209,6 +215,19 @@ export const SymbolChartSection = memo(function SymbolChartSection({
             {resolutionLabels[key]}
           </button>
         ))}
+        {assetType === "stock" && isIntradayResolution(resolution) ? (
+          <button
+            type="button"
+            onClick={() =>
+              onIncludeExtendedHoursChange(!includeExtendedHours)
+            }
+            data-active={includeExtendedHours || undefined}
+            className="aw-toolbar-btn shrink-0"
+            title={t("chartExtendedHoursHint")}
+          >
+            {t("chartExtendedHours")}
+          </button>
+        ) : null}
         <span
           className="mx-1 hidden h-3 w-px shrink-0 bg-[var(--border)] lg:block lg:mx-1.5"
           aria-hidden

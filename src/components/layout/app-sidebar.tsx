@@ -6,6 +6,7 @@ import { localizedPath } from "@/i18n/config";
 import { SiteLogo } from "@/components/brand/site-logo";
 import { IconSettingsGear } from "@/components/symbol/watchlist/watchlist-toggle-icons";
 import { useSettingsModalOptional } from "@/components/settings/settings-modal-context";
+import { NavIconTooltip } from "@/components/ui/nav-icon-tooltip";
 
 /** Icon-rail width (product chrome — always compact). */
 export const SIDEBAR_WIDTH_EXPANDED = 56;
@@ -99,47 +100,50 @@ function RailItem({
 
   if (onClick) {
     return (
-      <button
-        type="button"
-        title={label}
-        aria-label={label}
-        className={className}
-        {...tourProps}
-        onClick={() => {
-          onClick();
-          onNavigate?.();
-        }}
-      >
-        {icon}
-      </button>
+      <NavIconTooltip label={label} side="right">
+        <button
+          type="button"
+          aria-label={label}
+          className={className}
+          {...tourProps}
+          onClick={() => {
+            onClick();
+            onNavigate?.();
+          }}
+        >
+          {icon}
+        </button>
+      </NavIconTooltip>
     );
   }
 
   if (hard && href) {
     return (
-      <a
-        href={href}
-        title={label}
-        aria-label={label}
-        className={className}
-        {...tourProps}
-      >
-        {icon}
-      </a>
+      <NavIconTooltip label={label} side="right">
+        <a
+          href={href}
+          aria-label={label}
+          className={className}
+          {...tourProps}
+        >
+          {icon}
+        </a>
+      </NavIconTooltip>
     );
   }
 
   return (
-    <Link
-      href={href ?? "/"}
-      title={label}
-      aria-label={label}
-      onClick={onNavigate}
-      className={className}
-      {...tourProps}
-    >
-      {icon}
-    </Link>
+    <NavIconTooltip label={label} side="right">
+      <Link
+        href={href ?? "/"}
+        aria-label={label}
+        onClick={onNavigate}
+        className={className}
+        {...tourProps}
+      >
+        {icon}
+      </Link>
+    </NavIconTooltip>
   );
 }
 
