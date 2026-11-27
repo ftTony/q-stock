@@ -26,10 +26,12 @@ export type ChartUiSettings = {
   chartType?: ChartCandleType;
 };
 
-const DEFAULTS: ChartUiSettings = {
+export const DEFAULT_CHART_UI_SETTINGS: ChartUiSettings = {
   showTradeMarkers: true,
   includeExtendedHours: false,
 };
+
+const DEFAULTS = DEFAULT_CHART_UI_SETTINGS;
 
 const CHART_TYPES = new Set<ChartCandleType>([
   "candle",
@@ -47,7 +49,7 @@ export function isChartCandleType(v: unknown): v is ChartCandleType {
 
 /** Effective type for KLine styles. */
 export function resolveCandleType(
-  settings: Pick<ChartUiSettings, "chartType">,
+  settings: { chartType?: ChartCandleType | null },
   resolution: string,
 ): ChartCandleType {
   if (isChartCandleType(settings.chartType)) return settings.chartType;

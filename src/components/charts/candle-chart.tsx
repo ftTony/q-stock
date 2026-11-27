@@ -27,6 +27,7 @@ import {
   periodFromResolution,
 } from "@/components/charts/candle-chart-styles";
 import {
+  DEFAULT_CHART_UI_SETTINGS,
   resolveCandleType,
   type ChartUiSettings,
 } from "@/components/charts/candle-chart-settings";
@@ -118,7 +119,7 @@ export const CandleChart = forwardRef<CandleChartHandle, CandleChartProps>(
       hasMore = true,
       fillParent = false,
       tradeMarkers = [],
-      chartSettings = { showTradeMarkers: true },
+      chartSettings = DEFAULT_CHART_UI_SETTINGS,
       onFullscreenChange,
     },
     ref,
