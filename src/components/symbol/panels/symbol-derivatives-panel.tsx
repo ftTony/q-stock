@@ -113,7 +113,7 @@ function OptionsDerivativesBody({
 
   if (loadingMeta) {
     return (
-      <div className="min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
+      <div className="aw-deriv-skel-wrap min-h-0 flex-1 overflow-y-auto p-4 sm:p-5">
         <PanelSkeleton rows={6} />
       </div>
     );

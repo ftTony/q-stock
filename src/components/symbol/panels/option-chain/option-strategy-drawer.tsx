@@ -11,7 +11,8 @@ import type { OptionRow } from "@/lib/market/providers/longbridge-research";
 import type { AssetType } from "@/lib/types";
 import { daysToExpiry, mergeStrikes } from "./option-chain-utils";
 import type { StrikeRow } from "./option-chain-utils";
-import { calcOption } from "./option-calculator";
+import { useOptionCalc } from "./option-calculator-client";
+import type { CalcInput } from "./option-calculator";
 import {
   availableStrikes,
   buildExpiryScenarios,
@@ -228,10 +229,10 @@ export function OptionStrategyDrawerBody({
       }),
     [spot, scenarioIv, fallbackIvPct, horizonYmd, pricedLegs],
   );
-  const quoteGreeks = useMemo(
+  const quoteInput = useMemo<CalcInput | null>(
     () =>
       quoteStrike
-        ? calcOption({
+        ? {
             spot,
             strike: quoteStrike,
             ivPct: quoteRow?.iv ?? 0,
@@ -239,10 +240,11 @@ export function OptionStrategyDrawerBody({
             ratePct: DEFAULT_RATE_PCT,
             isCall: quoteKind === "call",
             model: "american",
-          })
+          }
         : null,
     [spot, quoteStrike, quoteKind, expiry, quoteRow?.iv],
   );
+  const { result: quoteGreeks } = useOptionCalc(quoteInput);
 
   const qt = (
     value: string,

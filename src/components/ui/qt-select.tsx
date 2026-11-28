@@ -35,6 +35,21 @@ type QtSelectProps = {
 
 type MenuPos = { top: number; left: number; width: number; maxHeight: number };
 
+const DESKTOP_MQ = "(min-width: 1024px)";
+
+/** Desktop layout = floating dropdown menu; below lg, selects use a bottom sheet. */
+function useDesktopLayout(): boolean {
+  const [desktop, setDesktop] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia(DESKTOP_MQ);
+    const sync = () => setDesktop(mq.matches);
+    sync();
+    mq.addEventListener("change", sync);
+    return () => mq.removeEventListener("change", sync);
+  }, []);
+  return desktop;
+}
+
 export function QtSelect({
   value,
   onChange,
@@ -47,6 +62,7 @@ export function QtSelect({
 }: QtSelectProps) {
   const [open, setOpen] = useState(false);
   const [pos, setPos] = useState<MenuPos | null>(null);
+  const desktop = useDesktopLayout();
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const menuRef = useRef<HTMLUListElement>(null);
@@ -106,11 +122,15 @@ export function QtSelect({
     }
     document.addEventListener("mousedown", onDoc);
     document.addEventListener("keydown", onKey);
+    // H5 bottom sheet locks background scroll; the desktop floating menu does not.
+    const prevOverflow = document.body.style.overflow;
+    if (!desktop) document.body.style.overflow = "hidden";
     return () => {
       document.removeEventListener("mousedown", onDoc);
       document.removeEventListener("keydown", onKey);
+      if (!desktop) document.body.style.overflow = prevOverflow;
     };
-  }, [open]);
+  }, [open, desktop]);
 
   function pick(next: string) {
     onChange(next);
@@ -128,8 +148,8 @@ export function QtSelect({
   const portalShell = qtPortalShellClass(rootRef.current);
 
   const menu =
-    mounted && open && pos
-      ? createPortal(
+    mounted && open && pos && desktop ? (
+      createPortal(
           <ul
             ref={menuRef}
             id={listId}
@@ -202,7 +222,110 @@ export function QtSelect({
           </ul>,
           document.body,
         )
-      : null;
+    ) : mounted && open && !desktop ? (
+      /* H5 bottom sheet — same pattern as EarningsPeriodPicker's sheet:
+         no hover dependency, 44px touch rows, safe-area padding. */
+      createPortal(
+        <div className="fixed inset-0 z-[80]">
+          <button
+            type="button"
+            aria-label="close"
+            tabIndex={-1}
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setOpen(false)}
+          />
+          <div
+            role="dialog"
+            aria-label={ariaLabel}
+            className="absolute inset-x-0 bottom-0 rounded-t-2xl border-t border-[var(--border)] bg-[var(--panel)] pb-[max(0.75rem,env(safe-area-inset-bottom,0px))] shadow-[0_-8px_32px_rgba(15,23,42,0.18)]"
+          >
+            <div className="flex items-center justify-between gap-2 px-4 pb-1 pt-3">
+              <span className="truncate text-[13px] font-medium text-[var(--muted)]">
+                {ariaLabel ?? selected?.label ?? ""}
+              </span>
+              <button
+                type="button"
+                onClick={() => setOpen(false)}
+                aria-label="close"
+                className="inline-flex h-8 w-8 items-center justify-center text-[var(--muted)] active:opacity-70"
+              >
+                <svg
+                  className="h-4 w-4"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2.2"
+                  strokeLinecap="round"
+                  aria-hidden
+                >
+                  <path d="M6 6l12 12M18 6L6 18" />
+                </svg>
+              </button>
+            </div>
+            <ul role="listbox" id={listId} className="px-2 pt-1">
+              {options.map((opt, index) => {
+                const active = opt.value === value;
+                const showGroup =
+                  Boolean(opt.group) &&
+                  (index === 0 || options[index - 1]?.group !== opt.group);
+                return (
+                  <li key={opt.value} role="presentation">
+                    {showGroup ? (
+                      <div
+                        className={`px-3 pb-1 text-[10px] font-semibold tracking-wide text-[var(--muted)] uppercase ${
+                          index === 0 ? "pt-1" : "pt-2.5"
+                        }`}
+                      >
+                        {opt.group}
+                      </div>
+                    ) : null}
+                    <button
+                      type="button"
+                      role="option"
+                      aria-selected={active}
+                      className={`flex h-11 w-full items-center gap-2 rounded-lg px-3 text-left text-[15px] ${
+                        active
+                          ? "bg-[var(--brand-soft)] font-medium text-[var(--brand-text)]"
+                          : "text-[var(--foreground)] active:bg-[var(--sidebar-hover,var(--surface-2))]"
+                      }`}
+                      onClick={() => pick(opt.value)}
+                    >
+                      {opt.badge ? (
+                        <span
+                          className={`inline-flex h-5 min-w-[1.75rem] shrink-0 items-center justify-center rounded border px-1 text-[10px] font-bold ${
+                            active
+                              ? "border-[var(--brand-text)] text-[var(--brand-text)]"
+                              : "border-[var(--border)] bg-[var(--surface-2)] text-[var(--muted)]"
+                          }`}
+                        >
+                          {opt.badge}
+                        </span>
+                      ) : null}
+                      <span className="min-w-0 flex-1 truncate">{opt.label}</span>
+                      {active ? (
+                        <svg
+                          className="ml-auto h-4 w-4 shrink-0"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          aria-hidden
+                        >
+                          <path d="M20 6 9 17l-5-5" />
+                        </svg>
+                      ) : null}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        </div>,
+        document.body,
+      )
+    ) : null;
 
   return (
     <div ref={rootRef} className={`relative ${className}`}>

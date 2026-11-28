@@ -133,6 +133,7 @@ export function SymbolPageClient({
     // Stack defaults to news UI without flipping page tab off chart on first paint.
     prefetchNews: isStack && stackTab === "news",
     prefetchPress: isStack && stackTab === "news",
+    isDesktop,
   });
 
   const desktopQuoteTabs = useMemo(() => {

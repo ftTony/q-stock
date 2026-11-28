@@ -32,6 +32,13 @@ const SymbolChipsPanel = dynamic(
 type Props = {
   symbol: string;
   assetType: AssetType;
+  /**
+   * H5 only: keep the below-fold depth book/tape out of the first paint.
+   * The depth hook opens 2 WS channels + 2 REST fetches + a 4s poll on mount;
+   * deferring it until near-viewport keeps the mobile critical path lean.
+   * Desktop callers omit this and keep the original eager behavior.
+   */
+  deferDepth?: boolean;
 };
 
 /** Mount below-fold Market panels after idle / first paint to avoid candle fan-out. */
@@ -59,9 +66,13 @@ function useDeferredMount(delayMs = 400) {
 function LazySection({
   children,
   rootMargin = "120px",
+  className = "border-t border-[var(--aw-hairline)] px-3 py-3",
+  placeholderClassName = "h-16",
 }: {
   children: ReactNode;
   rootMargin?: string;
+  className?: string;
+  placeholderClassName?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [visible, setVisible] = useState(false);
@@ -87,13 +98,13 @@ function LazySection({
   }, [visible, rootMargin]);
 
   return (
-    <div ref={ref} className="border-t border-[var(--aw-hairline)] px-3 py-3">
-      {visible ? children : <div className="h-16" aria-hidden />}
+    <div ref={ref} className={className}>
+      {visible ? children : <div className={placeholderClassName} aria-hidden />}
     </div>
   );
 }
 
-export function SymbolRailMarket({ symbol, assetType }: Props) {
+export function SymbolRailMarket({ symbol, assetType, deferDepth = false }: Props) {
   const showFunds =
     assetType === "stock" || assetType === "hk" || assetType === "cn";
   const showShort = assetType === "stock" || assetType === "hk";
@@ -101,9 +112,23 @@ export function SymbolRailMarket({ symbol, assetType }: Props) {
     assetType === "stock" || assetType === "hk" || assetType === "cn";
   const deferred = useDeferredMount(500);
 
+  const depth = (
+    <SymbolRailDepth mode="split" symbol={symbol} assetType={assetType} />
+  );
+
   return (
     <div className="bg-[var(--aw-canvas)]">
-      <SymbolRailDepth mode="split" symbol={symbol} assetType={assetType} />
+      {deferDepth ? (
+        <LazySection
+          rootMargin="120px"
+          className=""
+          placeholderClassName="min-h-[9rem]"
+        >
+          {depth}
+        </LazySection>
+      ) : (
+        depth
+      )}
       {deferred && showFunds ? (
         <LazySection>
           <SymbolFundsPanel symbol={symbol} assetType={assetType} />

@@ -14,6 +14,7 @@ import type { StackBottomTab } from "@/components/symbol/page/symbol-stack-botto
 import { SymbolPageTabs } from "@/components/symbol/page/symbol-page-tabs";
 import { SymbolNavPendingOverlay } from "@/components/symbol/page/symbol-nav-pending";
 import { SymbolQuoteBar } from "@/components/symbol/quote/symbol-quote-bar";
+import { SymbolMobileQuickActions } from "@/components/symbol/mobile/symbol-mobile-quick-actions";
 import { SymbolChartToolbarHostProvider } from "@/components/symbol/chart/symbol-chart-toolbar-host";
 import type { SymbolLayoutPrefs, LayoutModuleKey, LayoutMode } from "@/components/symbol/hooks/use-symbol-layout-prefs";
 import type { SideIconId } from "@/components/symbol/rail/symbol-side-icon-rail";
@@ -304,6 +305,15 @@ function SymbolWorkbenchMainGrid({
   embedChartToolbar,
 }: MainGridProps) {
   const tTrading = useTranslations("trading");
+  // H5 rhythm: tabs → quote stats → chart → below-chart panes (Futu-style).
+  // Desktop keeps the untouched quote-bar-tabs + rail layout.
+  const h5AboveSlot = !isDesktop ? (
+    <SymbolMobileQuickActions
+      segment={p.mobileSegment}
+      tabs={mobileMoreTabs}
+      onSelectSegment={p.onMobileSegment}
+    />
+  ) : null;
   return (
     <>
         <div className="shrink-0">
@@ -359,6 +369,8 @@ function SymbolWorkbenchMainGrid({
               tab={panelTab}
               chartSlot={chartSlot}
               chartPinned={!isDesktop || isStack}
+              aboveChartSlot={h5AboveSlot}
+              h5FullPageTab={!isDesktop}
               belowChartSlot={
                 isStack
                   ? stackBelow
@@ -374,15 +386,6 @@ function SymbolWorkbenchMainGrid({
                           metrics={s.earningsMetrics}
                           marketCap={marketCap}
                           segment={p.mobileSegment}
-                          onSegmentChange={p.onMobileSegment}
-                          onOpenTrade={openOrderTicket}
-                          focusPlanToken={p.planFocusKey}
-                          focusReviewToken={p.reviewFocusKey}
-                          highlightOrderId={p.highlightOrderId}
-                          onBoundStrategyChange={p.onBoundStrategyChange}
-                          panelTab={panelTab}
-                          moreTabs={mobileMoreTabs}
-                          onMoreTabChange={p.onMoreTabChange}
                         />
                       )
               }

@@ -248,7 +248,7 @@ export function SymbolPlanPanel({
   const result = replay?.status === "done" ? replay.result : null;
 
   return (
-    <div className="space-y-3 p-3">
+    <div className="aw-h5-plan-body space-y-3 p-3">
       <p className="aw-caption">{t("planSubtitle")}</p>
       {msg ? (
         <p className="text-[12px] text-[var(--muted)]" role="status">
@@ -285,7 +285,7 @@ export function SymbolPlanPanel({
             {templates.slice(0, 4).map((tpl) => (
               <li
                 key={tpl.id}
-                className="flex items-center justify-between gap-2 py-2"
+                className="aw-h5-plan-row flex items-center justify-between gap-2 py-2"
               >
                 <span className="aw-caption-strong min-w-0 truncate">
                   {tpl.name}
@@ -295,7 +295,7 @@ export function SymbolPlanPanel({
                   loading={busy}
                   loadingLabel="…"
                   onClick={() => void copyTemplate(tpl.id)}
-                  className="!h-7 shrink-0 !rounded-none !border-0 !bg-[var(--brand)] !px-2.5 !py-0 !text-[12px] !font-normal !leading-none !text-white"
+                  className="aw-h5-plan-cta !h-7 shrink-0 !rounded-none !border-0 !bg-[var(--brand)] !px-2.5 !py-0 !text-[12px] !font-normal !leading-none !text-white"
                 >
                   {t("planUseTemplate")}
                 </SubmitButton>

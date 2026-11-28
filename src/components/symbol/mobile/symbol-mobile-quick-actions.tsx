@@ -1,44 +1,40 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import type { RailTab } from "@/components/symbol/rail/symbol-order-rail";
+import type { SymbolTab } from "@/components/symbol/tabs/symbol-tabs-types";
 
-/** Under-chart primary segments. `more` reveals 新闻/基本面/衍生品. */
-export type MobileSegment = RailTab | "more";
+/**
+ * H5 top-level nav: 图表 + content pages (衍生品/新闻/基本面/…).
+ * 行情 content lives under the chart; 计划/复盘 live in the bottom-bar drawer.
+ * Desktop never renders this bar (lg:hidden).
+ */
+export type MobileSegment = SymbolTab;
 
 type Props = {
   segment: MobileSegment;
-  showMarket: boolean;
+  tabs: { id: SymbolTab; label: string }[];
   onSelectSegment: (segment: MobileSegment) => void;
 };
 
-/**
- * Single H5 segment bar under the chart (one layer of nav).
- * 交易 stays on QuoteBar — not a competing tab that owns the same pane.
- */
 export function SymbolMobileQuickActions({
   segment,
-  showMarket,
+  tabs,
   onSelectSegment,
 }: Props) {
-  const tRail = useTranslations("symbolRail");
+  const tSymbol = useTranslations("symbol");
 
   const items: { id: MobileSegment; label: string; tour?: string }[] = [
-    { id: "plan", label: tRail("plan"), tour: "rail-plan" },
-    { id: "review", label: tRail("review"), tour: "rail-review" },
+    { id: "chart", label: tSymbol("chartTab"), tour: "rail-chart" },
+    ...tabs.map((tab) => ({ id: tab.id, label: tab.label })),
   ];
-  if (showMarket) {
-    items.push({ id: "market", label: tRail("market") });
-  }
-  items.push({ id: "more", label: tRail("more") });
 
   return (
     <div
       className="aw-mobile-segment shrink-0 border-b border-[var(--aw-hairline,var(--border))] bg-[var(--aw-canvas)] lg:hidden"
       role="tablist"
-      aria-label={tRail("plan")}
+      aria-label={tSymbol("chartTab")}
     >
-      <div className="flex h-9 w-full items-stretch">
+      <div className="aw-mobile-segment-scroll qt-scroll flex h-9 w-full items-stretch overflow-x-auto">
         {items.map((item) => {
           const active = segment === item.id;
           return (
@@ -50,7 +46,7 @@ export function SymbolMobileQuickActions({
               data-active={active ? "true" : undefined}
               data-tour={item.tour}
               onClick={() => onSelectSegment(item.id)}
-              className="aw-tab aw-tab-mobile flex-1 justify-center"
+              className="aw-tab aw-tab-mobile min-w-[3.5rem] flex-1 shrink-0 justify-center whitespace-nowrap"
             >
               {item.label}
             </button>

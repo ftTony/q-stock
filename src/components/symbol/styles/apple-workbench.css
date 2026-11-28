@@ -864,7 +864,88 @@ html.aw-rail-resizing {
 /* Clearance for fixed mobile trade bar (trade + icon row + safe-area). */
 @media (max-width: 1023px) {
   .aw-mobile-below-chart {
-    padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));
+    padding-bottom: calc(4rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  /* H5 非图表 tab（新闻/基本面/衍生品…）：收紧 tab 行与首条内容之间的顶部留白。
+     仅作用于 H5 下方 slot 内的内容根 div，Web 端共用组件不受影响。 */
+  .aw-mobile-more-body > div {
+    padding-top: 4px !important;
+  }
+
+  /* H5 非图表 tab：加载骨架屏铺满整屏。
+     more-body 定高 + 子级拉伸，让骨架容器与行块占满可视高度；
+     内容比视口高时 flex:1 0 auto 不收缩，页面照常滚动。 */
+  .aw-mobile-more-body {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .aw-mobile-more-body > div {
+    flex: 1 0 auto !important;
+  }
+
+  .aw-deriv-skel-wrap {
+    flex: 1 0 auto !important;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .aw-h5-skel-fill {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 衍生品骨架：它和 footer 免责声明是 flex 兄弟，只占剩余空间，
+     不能用 min-height:100%（会把 footer 挤出视口）。撑满交给外层 flex-1，
+     内部数据行按可用空间均分。 */
+  .aw-deriv-skel-wrap > [role="status"] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* PanelSkeleton：标题组保持自然高度，数据行组撑满剩余空间；
+     行块用 flex-basis + min-height 保底，既随剩余空间撑满、也绝不塌成 0。
+     之前 height:auto 把 Tailwind h-8 清掉，导致数据行全消失。 */
+  .aw-h5-skel-fill > div:not(:first-child),
+  .aw-deriv-skel-wrap > [role="status"] > div:not(:first-child) {
+    flex: 1 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .aw-h5-skel-fill > div:not(:first-child) > .aw-skel,
+  .aw-deriv-skel-wrap > [role="status"] > div:not(:first-child) > .aw-skel {
+    flex: 1 1 32px !important;
+    min-height: 32px !important;
+  }
+
+  /* 新闻/列表骨架（ListPanelSkeleton）：每个列表项等分撑满，内部的
+     标题/摘要/来源小灰条保持各自原始高度，不被拉伸成大方块。 */
+  .aw-h5-skel-list {
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .aw-h5-skel-list > div {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  /* 财务指标/利润表：桌面是「限高 + 内层滚动」，H5 会形成嵌套滚动、
+     overscroll-contain 吞手势导致页面滚不动。H5 解除限高，纵向滚动交给
+     页面唯一滚动容器；横向拖拽/底部 mirror bar 保留。Web 端不受影响。 */
+  .aw-statement-table-root {
+    max-height: none !important;
+  }
+
+  .aw-statement-table-body {
+    overflow-y: visible !important;
   }
 }
 
@@ -1529,3 +1610,106 @@ html.aw-rail-resizing {
   color: var(--aw-primary, var(--brand-text));
 }
 } /* end ≥1024 stack bottom */
+
+/* ==========================================================================
+   H5 计划/复盘全屏页 — 移动端触控与可读性修正
+   桌面侧栏 rail 复用同一批组件，但没有 .aw-mobile-plan-drawer 这个祖先，
+   所以下面所有规则都不会命中 Web 端。这里把「桌面窄侧栏紧凑密度」抬到
+   「移动端全屏页 + 拇指操作」该有的字号 / 触控区 / 间距。
+   ========================================================================== */
+@media (max-width: 1023px) {
+  /* 抽屉 body 默认 block + overflow-y-auto，内层 RailScroll 也是
+     overflow-y-auto + overscroll-contain，双层滚动会互相吞掉触摸滚动，
+     导致内容滚不到底。改成 flex 列（与 .aw-dock-drawer 同款），把滚动
+     交给内层 RailScroll，子 tab 也能吸顶。 */
+  .aw-mobile-plan-drawer > .aw-drawer-body {
+    display: flex !important;
+    flex-direction: column;
+    overflow: hidden !important;
+    padding: 0 !important;
+  }
+
+  /* 内容铺满抽屉：抽屉底色用 canvas（白），避免 .aw 的 parchment 浅灰
+     从内容区下方露出；并让 rail 内容链撑满，底部说明靠 mt-auto 沉底。 */
+  .aw-mobile-plan-drawer,
+  .aw-mobile-plan-drawer > .aw-drawer-body {
+    background: var(--aw-canvas) !important;
+  }
+
+  .aw-mobile-plan-drawer .aw-rail-scroll,
+  .aw-mobile-plan-drawer .aw-rail-scroll > div,
+  .aw-mobile-plan-drawer .aw-rail-pane-enter {
+    min-height: 100%;
+  }
+
+  /* 标题栏与交易抽屉（.aw-dock-drawer）完全一致：白底、8px 上下 padding、
+     约 40px 高度条、16px/600 标题、28px 关闭按钮。 */
+  .aw-mobile-plan-drawer .aw-drawer-header {
+    background: var(--aw-canvas) !important;
+    align-items: center;
+    padding: 8px 16px 8px 20px !important;
+    min-height: 40px;
+  }
+
+  .aw-mobile-plan-drawer .aw-drawer-title {
+    font-size: 16px !important;
+    font-weight: 600;
+    line-height: 1.25;
+    letter-spacing: -0.25px;
+    color: var(--aw-ink);
+  }
+
+  .aw-mobile-plan-drawer .aw-drawer-close {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  /* 文字层级与交易抽屉对齐：标题 16px > 列表行 14px > 说明/标签 13px > 按钮 12px。
+     之前 caption 14px / caption-strong 15px 让「盈亏比 1:3」等列表行几乎和
+     标题一样大，层级倒挂；收回后与刚对齐的 header 密度一致。
+     颜色仍抬到 80% 灰，保留移动端可读性。 */
+  .aw-mobile-plan-drawer .aw-caption {
+    font-size: 13px !important;
+    color: var(--aw-ink-muted-80, var(--muted)) !important;
+  }
+
+  .aw-mobile-plan-drawer .aw-caption-strong {
+    font-size: 14px !important;
+  }
+
+  /* 「选用」模板按钮：保留 40px 触控高度；字号对齐 Tailwind !text-[12px]，
+     与 14px 列表行形成 14>12 的清晰层级（之前声明 13px 实际被压成 12px）。 */
+  .aw-mobile-plan-drawer .aw-h5-plan-cta {
+    height: 40px !important;
+    padding-inline: 14px !important;
+    font-size: 12px !important;
+  }
+
+  /* 研究卡字段标签 11px → 13px；输入框 12px → 16px（防 iOS Safari 聚焦缩放） */
+  .aw-mobile-plan-drawer .aw-h5-field {
+    font-size: 13px !important;
+  }
+
+  .aw-mobile-plan-drawer .aw-h5-field-input {
+    font-size: 16px !important;
+    padding: 10px 12px !important;
+    line-height: 1.5 !important;
+  }
+
+  /* 研究卡「Pro 额度 / 保存提示」11px → 13px */
+  .aw-mobile-plan-drawer .aw-h5-field-note {
+    font-size: 13px !important;
+  }
+
+  /* 面板内边距：左右收紧到 12px（内容密度高的全屏页，16px 偏宽），
+     上下保留 16px；列表行 py-2 → py-2.5 */
+  .aw-mobile-plan-drawer .aw-h5-plan-body {
+    padding-block: 16px !important;
+    padding-inline: 12px !important;
+  }
+
+  .aw-mobile-plan-drawer .aw-h5-plan-row {
+    padding-top: 10px !important;
+    padding-bottom: 10px !important;
+  }
+}

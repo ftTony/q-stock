@@ -169,7 +169,7 @@ export function SymbolQuoteBar({
           ) : null}
           <Link
             href="/markets"
-            className="inline-flex h-9 w-8 shrink-0 items-center justify-center text-[var(--muted)] lg:hidden"
+            className="relative -left-1 inline-flex h-9 w-8 shrink-0 items-center justify-center text-[var(--muted)] lg:hidden"
             aria-label={t("back")}
           >
             <svg
@@ -187,7 +187,7 @@ export function SymbolQuoteBar({
             </svg>
           </Link>
 
-          <div className="flex min-w-0 flex-1 items-baseline gap-1 overflow-hidden sm:gap-1.5 lg:w-[20rem] lg:flex-none lg:shrink-0 lg:gap-2">
+          <div className="flex min-w-0 flex-1 items-center gap-1 overflow-hidden sm:gap-1.5 lg:w-[20rem] lg:flex-none lg:shrink-0 lg:items-baseline lg:gap-2">
             <span className="aw-ticker shrink-0" title={symbol}>
               {symbol}
             </span>

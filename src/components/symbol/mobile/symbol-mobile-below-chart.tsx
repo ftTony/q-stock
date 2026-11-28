@@ -2,12 +2,8 @@
 
 import type { ReactNode } from "react";
 import type { EarningsMetric } from "@/components/market/earnings-panel";
-import {
-  SymbolMobileQuickActions,
-  type MobileSegment,
-} from "@/components/symbol/mobile/symbol-mobile-quick-actions";
-import { SymbolOrderRail } from "@/components/symbol/rail/symbol-order-rail";
-import type { RailTab } from "@/components/symbol/rail/symbol-order-rail";
+import type { MobileSegment } from "@/components/symbol/mobile/symbol-mobile-quick-actions";
+import { SymbolRailMarket } from "@/components/symbol/rail/symbol-rail-market";
 import { SymbolRailStats } from "@/components/symbol/rail/symbol-rail-stats";
 import type { AssetType, Quote } from "@/lib/types";
 
@@ -19,24 +15,15 @@ type Props = {
   metrics: EarningsMetric[];
   marketCap: number | null;
   segment: MobileSegment;
-  onSegmentChange: (segment: MobileSegment) => void;
-  onOpenTrade: () => void;
-  focusPlanToken: number;
-  focusReviewToken?: number;
-  highlightOrderId?: string | null;
-  onBoundStrategyChange: (name: string | null, id?: string | null) => void;
-  /** Only mounted while segment === more. */
-  moreStrip?: ReactNode;
+  /** Non-chart tab body: rendered as its own full page. */
   moreBody?: ReactNode;
 };
 
-function isRailTab(s: MobileSegment): s is RailTab {
-  return s === "plan" || s === "review" || s === "market";
-}
-
 /**
- * H5 under-chart: one segment bar → one scroll pane.
- * 更多 owns 新闻/基本面/衍生品; 计划/复盘/行情 never share a second tab row.
+ * H5 under-chart:
+ * - 图表 tab → quote overview (stats) + market depth/funds/short/chips.
+ * - any other tab → a standalone page (no chart, no overview).
+ * The chart itself stays mounted in SymbolTabsPanel and is only CSS-hidden.
  */
 export function SymbolMobileBelowChart({
   symbol,
@@ -46,62 +33,31 @@ export function SymbolMobileBelowChart({
   metrics,
   marketCap,
   segment,
-  onSegmentChange,
-  onOpenTrade,
-  focusPlanToken,
-  focusReviewToken = 0,
-  highlightOrderId = null,
-  onBoundStrategyChange,
-  moreStrip,
   moreBody,
 }: Props) {
-  const showMarket = assetType !== "crypto" && !isIndex;
-  const onMore = segment === "more";
+  const isChart = segment === "chart";
 
   return (
     <div className="aw-mobile-below-chart flex min-h-0 flex-1 flex-col overflow-hidden lg:hidden">
-      <SymbolMobileQuickActions
-        segment={segment}
-        showMarket={showMarket}
-        onSelectSegment={onSegmentChange}
-      />
-
-      {onMore ? moreStrip : null}
-
       <div className="aw-mobile-below-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain qt-scroll">
-        {onMore ? (
+        {isChart ? (
+          <>
+            <div className="shrink-0 border-b border-[var(--aw-hairline,var(--border))] px-3 py-2">
+              <SymbolRailStats
+                quote={quote}
+                metrics={metrics}
+                assetType={assetType}
+                marketCap={marketCap}
+                isIndex={isIndex}
+              />
+            </div>
+            <SymbolRailMarket symbol={symbol} assetType={assetType} deferDepth />
+          </>
+        ) : (
           <div className="aw-mobile-more-body [&_>div]:!min-h-0 [&_>div]:!flex-none [&_>div]:!overflow-visible">
             {moreBody}
           </div>
-        ) : isRailTab(segment) ? (
-          <>
-            {segment === "market" && showMarket ? (
-              <div className="border-b border-[var(--aw-hairline,var(--border))] px-3 py-2">
-                <SymbolRailStats
-                  quote={quote}
-                  metrics={metrics}
-                  assetType={assetType}
-                  marketCap={marketCap}
-                  isIndex={isIndex}
-                />
-              </div>
-            ) : null}
-            <SymbolOrderRail
-              symbol={symbol}
-              assetType={assetType}
-              isIndex={isIndex}
-              tab={segment}
-              onTabChange={onSegmentChange}
-              hideTabList
-              embedInScroll
-              focusPlanToken={focusPlanToken}
-              focusReviewToken={focusReviewToken}
-              highlightOrderId={highlightOrderId}
-              onBoundStrategyChange={onBoundStrategyChange}
-              onRequestOrder={onOpenTrade}
-            />
-          </>
-        ) : null}
+        )}
       </div>
     </div>
   );

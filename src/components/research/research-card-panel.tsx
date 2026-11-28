@@ -110,7 +110,7 @@ export function ResearchCardPanel({
         </h3>
         <Link
           href="/pricing"
-          className="shrink-0 text-[11px] text-[var(--brand-text)] underline"
+          className="aw-h5-field-note shrink-0 text-[11px] text-[var(--brand-text)] underline"
         >
           {t("proHint")}
         </Link>
@@ -146,7 +146,7 @@ export function ResearchCardPanel({
         {message ? (
           <p
             role="status"
-            className="text-[11px] leading-snug"
+            className="aw-h5-field-note text-[11px] leading-snug"
             style={{
               color: messageKind === "ok" ? "var(--up)" : "var(--down)",
             }}
@@ -188,14 +188,14 @@ function Field({
   placeholder: string;
 }) {
   return (
-    <label className="flex flex-col gap-0.5 text-[11px] text-[var(--muted)]">
+    <label className="aw-h5-field flex flex-col gap-0.5 text-[11px] text-[var(--muted)]">
       {label}
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}
         rows={2}
-        className="w-full resize-y rounded-md border border-[var(--border)] bg-[var(--panel)] px-2 py-1.5 text-[12px] leading-relaxed text-[var(--foreground)]"
+        className="aw-h5-field-input w-full resize-y rounded-md border border-[var(--border)] bg-[var(--panel)] px-2 py-1.5 text-[12px] leading-relaxed text-[var(--foreground)]"
       />
     </label>
   );

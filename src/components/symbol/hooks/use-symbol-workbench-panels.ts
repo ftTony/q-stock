@@ -21,7 +21,6 @@ export function useSymbolWorkbenchPanels({
   assetType,
   isDesktop,
   setRailOpen,
-  mobileMoreTabs,
 }: Opts) {
   const aiOpen = useSymbolWorkbenchStore((state) => state.aiOpen);
   const seoOpen = useSymbolWorkbenchStore((state) => state.seoOpen);
@@ -180,9 +179,8 @@ export function useSymbolWorkbenchPanels({
   );
 
   const onMobileSegment = useCallback(
-    (segment: MobileSegment) =>
-      storeOnMobileSegment(segment, mobileMoreTabs),
-    [mobileMoreTabs, storeOnMobileSegment],
+    (segment: MobileSegment) => storeOnMobileSegment(segment),
+    [storeOnMobileSegment],
   );
 
   const onMoreTabChange = useCallback(

@@ -168,10 +168,7 @@ type SymbolWorkbenchState = {
     setRailOpen: (open: boolean) => void,
   ) => void;
   closeDock: () => void;
-  onMobileSegment: (
-    segment: MobileSegment,
-    mobileMoreTabs: { id: SymbolTab }[],
-  ) => void;
+  onMobileSegment: (segment: MobileSegment) => void;
   onMoreTabChange: (id: SymbolTab) => void;
   onSideSelect: (id: SideIconId) => void;
   warmDock: () => void;
@@ -191,7 +188,7 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
   tab: "chart",
   stackTab: "news",
   newsFeedTab: "news",
-  mobileSegment: "plan",
+  mobileSegment: "chart",
   aiOpen: false,
   seoOpen: false,
   dock: null,
@@ -213,7 +210,7 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
       tab: "chart",
       stackTab: "news",
       newsFeedTab: "news",
-      mobileSegment: "plan",
+      mobileSegment: "chart",
       aiOpen: false,
       seoOpen: false,
       dock: null,
@@ -310,15 +307,12 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
       aiOpen: false,
       dock: null,
       seoOpen: false,
-      mobilePlanOpen: false,
       planFocusKey: state.planFocusKey + 1,
+      // H5: plan/review is a full-screen page from the bottom bar; do not
+      // hijack the content tab underneath it.
       ...(isDesktop
-        ? {}
-        : {
-            mobileSegment: "plan" as MobileSegment,
-            tab: "chart" as SymbolTab,
-            newsFeedTab: "news" as const,
-          }),
+        ? { mobilePlanOpen: false }
+        : { mobilePlanOpen: true, mobilePlanReady: true }),
     }));
     if (isDesktop) setRailOpen(true);
   },
@@ -354,16 +348,12 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
       aiOpen: false,
       seoOpen: false,
       dock: null,
-      mobilePlanOpen: false,
       highlightOrderId: orderId ?? null,
       reviewFocusKey: state.reviewFocusKey + 1,
+      // H5: open the shared plan/review full-screen page, focused on review.
       ...(isDesktop
-        ? {}
-        : {
-            mobileSegment: "review" as MobileSegment,
-            tab: "chart" as SymbolTab,
-            newsFeedTab: "news" as const,
-          }),
+        ? { mobilePlanOpen: false }
+        : { mobilePlanOpen: true, mobilePlanReady: true }),
     }));
     if (isDesktop) setRailOpen(true);
   },
@@ -376,38 +366,25 @@ export const useSymbolWorkbenchStore = create<SymbolWorkbenchState>((set, get) =
         : {}),
     });
   },
-  onMobileSegment: (mobileSegment, mobileMoreTabs) =>
+  onMobileSegment: (mobileSegment) =>
     set({
       aiOpen: false,
       mobilePlanOpen: false,
       dock: null,
       mobileSegment,
-      ...(mobileSegment === "more"
-        ? mobileMoreTabs[0]
-          ? {
-              tab: mobileMoreTabs[0].id,
-              newsFeedTab:
-                mobileMoreTabs[0].id === "press" ? "press" as const : "news" as const,
-            }
-          : {}
-        : { tab: "chart" as SymbolTab, newsFeedTab: "news" as const }),
+      // Every top-level segment owns its own page; chart is just one of them.
+      tab: mobileSegment as SymbolTab,
+      newsFeedTab:
+        mobileSegment === "press" ? ("press" as const) : ("news" as const),
     }),
   onMoreTabChange: (tab) =>
     set({
       aiOpen: false,
       mobilePlanOpen: false,
       dock: null,
-      ...(tab === "chart"
-        ? {
-            mobileSegment: "plan" as MobileSegment,
-            tab: "chart" as SymbolTab,
-            newsFeedTab: "news" as const,
-          }
-        : {
-            mobileSegment: "more" as MobileSegment,
-            tab,
-            newsFeedTab: tab === "press" ? "press" as const : "news" as const,
-          }),
+      mobileSegment: tab as MobileSegment,
+      tab,
+      newsFeedTab: tab === "press" ? ("press" as const) : ("news" as const),
     }),
   onSideSelect: (id) =>
     set((state) => {

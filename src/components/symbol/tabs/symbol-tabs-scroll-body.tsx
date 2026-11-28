@@ -74,6 +74,7 @@ export function SymbolTabsScrollBody({
   onClearAiToast,
   onRegenerateAi,
   aiRegenerateLabel,
+  h5Stacked = false,
 }: SymbolTabsScrollBodyProps) {
   const tAi = useTranslations("ai");
 
@@ -87,9 +88,17 @@ export function SymbolTabsScrollBody({
     >
       {tabLoading ? (
         tab === "news" || tab === "press" || tab === "comments" ? (
-          <ListPanelSkeleton rows={6} label={loadingLabel} />
+          <ListPanelSkeleton
+            rows={6}
+            label={loadingLabel}
+            className={h5Stacked ? "aw-h5-skel-list" : undefined}
+          />
         ) : (
-          <PanelSkeleton rows={5} label={loadingLabel} />
+          <PanelSkeleton
+            rows={5}
+            label={loadingLabel}
+            className={h5Stacked ? "aw-h5-skel-fill" : undefined}
+          />
         )
       ) : (
         <>
@@ -152,6 +161,7 @@ export function SymbolTabsScrollBody({
                 degraded={degraded}
                 company={company}
                 officers={officers}
+                h5Stacked={h5Stacked}
               />
             ))}
 

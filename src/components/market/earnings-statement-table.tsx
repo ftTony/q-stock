@@ -244,11 +244,11 @@ export function EarningsStatementTable({
   );
 
   return (
-    <div className="flex max-h-[min(52vh,420px)] w-full min-w-0 flex-col">
+    <div className="aw-statement-table-root flex max-h-[min(52vh,420px)] w-full min-w-0 flex-col">
       {/* Native bars hidden; Y still wheel-scrollable. X driven by bottom mirror. */}
       <div
         ref={bodyRef}
-        className={`min-h-0 w-full min-w-0 flex-1 overflow-auto overscroll-contain select-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
+        className={`aw-statement-table-body min-h-0 w-full min-w-0 flex-1 overflow-auto overscroll-contain select-none [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden ${
           dragging ? "cursor-grabbing" : "cursor-grab"
         }`}
       >

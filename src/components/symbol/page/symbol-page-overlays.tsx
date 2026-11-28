@@ -157,7 +157,6 @@ export function SymbolPageOverlays(p: Props) {
           highlightOrderId={p.highlightOrderId}
           onBoundStrategyChange={p.onBoundStrategyChange}
           onRequestOrder={p.onRequestOrder}
-          edgeOffsetPx={0}
         />
       ) : null}
 
@@ -165,6 +164,7 @@ export function SymbolPageOverlays(p: Props) {
       {!p.isDesktop ? (
         <SymbolMobileTradeBar
           onOpenTrade={p.onRequestOrder}
+          onOpenPlan={p.onOpenPlan}
           onOpenAi={p.onOpenAi}
           onToggleWatchlist={p.onToggleWatchlist ?? (() => {})}
           inWatchlist={p.inWatchlist ?? false}
