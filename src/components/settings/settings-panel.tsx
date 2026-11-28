@@ -12,6 +12,7 @@ import { AiCredentialsForm } from "@/components/settings/ai-credentials-form";
 import { BillingPanel } from "@/components/settings/billing-panel";
 import { InvitePanel } from "@/components/settings/invite-panel";
 import { PaperRiskSettingsForm } from "@/components/settings/paper-risk-settings-form";
+import { TradePasswordSettingsForm } from "@/components/settings/trade-password-settings-form";
 import { SettingsAboutPanel } from "@/components/settings/settings-about-panel";
 import { SettingsAccountNameForm } from "@/components/settings/settings-account-name-form";
 import { SettingsFeedbackPanel } from "@/components/settings/settings-feedback-panel";
@@ -98,8 +99,9 @@ export function SettingsPanel({
 
   if (section === "trading") {
     return (
-      <div className="settings-ui">
+      <div className="settings-ui space-y-5">
         <PaperRiskSettingsForm />
+        <TradePasswordSettingsForm />
       </div>
     );
   }

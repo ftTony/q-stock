@@ -56,6 +56,9 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
 
   // H5 tab bar only — never on desktop web; never on symbol (height).
   const showMobileTabBar = !isDesktop && !isSymbol;
+  // H5 symbol: the entire top chrome (logo + indices + creds prompt) is noise
+  // above the quote bar — drop the whole header. Desktop keeps its own topbar.
+  const hideH5SymbolChrome = isSymbol && !isDesktop;
 
   return (
     <SettingsModalHost>
@@ -88,9 +91,11 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
       >
         {/*
           Symbol desktop: topbar lives beside 自选 in SymbolWorkbenchTopbar
-          so Logo | 自选 | indices share one hairline. Keep shell header on H5.
-          Do not put overflow-x-hidden on this column — it breaks position:sticky.
+          so Logo | 自选 | indices share one hairline. H5 symbol drops this
+          header entirely. Do not put overflow-x-hidden on this column —
+          it breaks position:sticky.
         */}
+        {hideH5SymbolChrome ? null : (
         <header
           className={`sticky top-0 z-40 box-border flex h-[var(--wb-topbar-h,40px)] shrink-0 items-center border-b border-[var(--border)] ${
             isSymbol
@@ -139,6 +144,7 @@ export function MainAppShell({ children }: { children: React.ReactNode }) {
             </div>
           </div>
         </header>
+        )}
 
         <main
           className={

@@ -17,6 +17,7 @@ export function tradeSubmitClass(
 }
 
 export function buildPlaceOrderBody(opts: {
+  accountType: "cash" | "margin";
   symbol: string;
   assetType: string;
   side: Side;
@@ -31,6 +32,7 @@ export function buildPlaceOrderBody(opts: {
   stopLoss: string;
   takeProfit: string;
   invalidationPrice: string;
+  tradePin?: string;
 }): Record<string, unknown> {
   const stopForRisk =
     opts.orderType === "stop"
@@ -48,6 +50,7 @@ export function buildPlaceOrderBody(opts: {
     opts.takeProfit ? `takeProfit=${opts.takeProfit}` : null,
   ].filter(Boolean);
   const body: Record<string, unknown> = {
+    accountType: opts.accountType,
     symbol: opts.symbol,
     assetType: opts.assetType,
     side: opts.side,
@@ -66,5 +69,6 @@ export function buildPlaceOrderBody(opts: {
   };
   if (opts.orderType === "limit") body.limitPrice = Number(opts.limitPrice);
   if (opts.orderType === "stop") body.stopPrice = Number(opts.stopPrice);
+  if (opts.tradePin) body.tradePin = opts.tradePin;
   return body;
 }

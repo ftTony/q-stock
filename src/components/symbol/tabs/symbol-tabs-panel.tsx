@@ -39,6 +39,13 @@ type Props = {
    * Pinned fixed height; remaining height scrolls (PRD §3.4 / Futu rhythm).
    */
   chartPinned?: boolean;
+  /** H5 only: top-level tab bar sits above the pinned chart. */
+  aboveChartSlot?: ReactNode;
+  /**
+   * H5 only: non-chart tabs are standalone pages — CSS-hide the chart but keep
+   * it mounted (no kline remount). Desktop stack is never passed this flag.
+   */
+  h5FullPageTab?: boolean;
   /**
    * H5: under-chart stack. Pass a node, or a render fn to place secondary
    * (新闻/基本面/衍生品) inside the below-chart scroll.
@@ -104,6 +111,8 @@ export function SymbolTabsPanel({
   tab,
   chartSlot,
   chartPinned = false,
+  aboveChartSlot,
+  h5FullPageTab = false,
   belowChartSlot,
   degraded,
   degradedLabel,
@@ -155,9 +164,13 @@ export function SymbolTabsPanel({
   aiRegenerateLabel,
 }: Props) {
   const showSecondary = tab !== "chart";
-  // H5 pinned: height via .aw-tab-chart--pinned (clamp + dvh).
+  // H5 pinned: height via .aw-tab-chart--pinned (clamp + dvh). On a non-chart
+  // H5 tab the chart is only CSS-hidden — kept mounted, so no kline remount.
+  const h5HideChart = h5FullPageTab && showSecondary;
   const chartClass = chartPinned
-    ? "aw-tab-chart aw-tab-chart--pinned shrink-0 overflow-hidden"
+    ? `aw-tab-chart aw-tab-chart--pinned shrink-0 overflow-hidden ${
+        h5HideChart ? "hidden" : ""
+      }`
     : `aw-tab-chart min-h-0 flex-1 overflow-hidden ${
         showSecondary ? "hidden" : ""
       }`;
@@ -170,7 +183,7 @@ export function SymbolTabsPanel({
     ) : tab === "derivatives" ? (
       <div className="flex min-h-0 flex-1 flex-col">
         {tabLoading ? (
-          <div className="overflow-y-auto p-4 sm:p-5">
+          <div className="aw-deriv-skel-wrap overflow-y-auto p-4 sm:p-5">
             <PanelSkeleton rows={6} label={loadingLabel} />
           </div>
         ) : (
@@ -230,6 +243,7 @@ export function SymbolTabsPanel({
         onClearAiToast={onClearAiToast}
         onRegenerateAi={onRegenerateAi}
         aiRegenerateLabel={aiRegenerateLabel}
+        h5Stacked={h5FullPageTab}
       />
     ) : null;
 
@@ -239,11 +253,15 @@ export function SymbolTabsPanel({
         <p className="aw-caption shrink-0 px-4 pt-3 sm:px-5">{degradedLabel}</p>
       ) : null}
 
+      {chartPinned && aboveChartSlot ? (
+        <div className="shrink-0 lg:hidden">{aboveChartSlot}</div>
+      ) : null}
+
       {/* Keep chart mounted across tab switches — remounting klinecharts is costly. */}
       {chartSlot ? (
         <div
           className={chartClass}
-          aria-hidden={!chartPinned && showSecondary}
+          aria-hidden={showSecondary}
         >
           {chartSlot}
         </div>

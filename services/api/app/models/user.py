@@ -24,6 +24,8 @@ class User(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True)
     email: Mapped[str] = mapped_column(String, unique=True, nullable=False)
     passwordHash: Mapped[str | None] = mapped_column(String, nullable=True)
+    # Bcrypt hash of the 6-digit trade PIN; null means no trade password set.
+    tradePasswordHash: Mapped[str | None] = mapped_column(String, nullable=True)
     name: Mapped[str | None] = mapped_column(String, nullable=True)
     locale: Mapped[str] = mapped_column(LocaleCode, default="zh_CN")
     theme: Mapped[str] = mapped_column(ThemeMode, default="system")

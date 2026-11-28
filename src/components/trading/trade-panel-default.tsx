@@ -35,7 +35,6 @@ type Props = {
   quoteName: string | null;
   lastPrice: number | null;
   percentChange: number | null;
-  loading: boolean;
   loadingLabel: string;
   resultBanner: ReactNode;
   positionLine: ReactNode;
@@ -68,6 +67,11 @@ type Props = {
   floatingPnl: number;
   dayPnl: number;
   marginUsed: number;
+  accountType: "cash" | "margin";
+  onAccountType: (t: "cash" | "margin") => void;
+  borrowedBalance: number;
+  interestAccrued: number;
+  buyingPower: number;
   currency: string;
   qtyMode: QtyMode;
   onQtyMode: (m: QtyMode) => void;
@@ -105,7 +109,6 @@ type Props = {
 export function TradePanelDefaultLayout({
   symbol,
   lastPrice,
-  loading,
   loadingLabel,
   resultBanner,
   positionLine,
@@ -127,6 +130,11 @@ export function TradePanelDefaultLayout({
   floatingPnl,
   dayPnl,
   marginUsed,
+  accountType,
+  onAccountType,
+  borrowedBalance,
+  interestAccrued,
+  buyingPower,
   currency,
   qtyMode,
   onQtyMode,
@@ -166,14 +174,18 @@ export function TradePanelDefaultLayout({
   return (
     <div className="aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain px-4 py-2.5">
       <div className="space-y-3">
-        {loading ? <p className="aw-caption">{loadingLabel}</p> : null}
         {resultBanner}
         <TradeTicketAccount
+          accountType={accountType}
+          onAccountType={onAccountType}
           cashBalance={cashBalance}
           equity={equity ?? cashBalance}
           floatingPnl={floatingPnl}
           dayPnl={dayPnl}
           marginUsed={marginUsed}
+          borrowedBalance={borrowedBalance}
+          interestAccrued={interestAccrued}
+          buyingPower={buyingPower}
           currency={currency}
         />
         <div className="flex items-baseline justify-between gap-3">

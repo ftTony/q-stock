@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties, FormEvent, ReactNode } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   SymbolDesktopRail,
   SymbolSideIconRail,
@@ -14,6 +14,7 @@ import type { StackBottomTab } from "@/components/symbol/page/symbol-stack-botto
 import { SymbolPageTabs } from "@/components/symbol/page/symbol-page-tabs";
 import { SymbolNavPendingOverlay } from "@/components/symbol/page/symbol-nav-pending";
 import { SymbolQuoteBar } from "@/components/symbol/quote/symbol-quote-bar";
+import { SymbolMobileQuickActions } from "@/components/symbol/mobile/symbol-mobile-quick-actions";
 import { SymbolChartToolbarHostProvider } from "@/components/symbol/chart/symbol-chart-toolbar-host";
 import type { SymbolLayoutPrefs, LayoutModuleKey, LayoutMode } from "@/components/symbol/hooks/use-symbol-layout-prefs";
 import type { SideIconId } from "@/components/symbol/rail/symbol-side-icon-rail";
@@ -24,6 +25,7 @@ import type { useWatchlistResize } from "@/components/symbol/hooks/use-watchlist
 import type { FeedStatusKind } from "@/components/symbol/quote/symbol-feed-status";
 import type { SymbolTab } from "@/components/symbol/tabs/symbol-tabs-types";
 import { markPrice } from "@/lib/market/extended-hours";
+import { localizedNameFromQuote } from "@/lib/market-names";
 import type { AssetType } from "@/lib/types";
 
 type SymbolPageState = ReturnType<typeof useSymbolPage>;
@@ -106,6 +108,7 @@ export function SymbolWorkbenchBody({
   onOpenAbout,
   resizing,
 }: Props) {
+  const locale = useLocale();
   const stackBelow = isStack ? (
     <SymbolStackBottomPanel
       key={stackKey}
@@ -115,7 +118,7 @@ export function SymbolWorkbenchBody({
       quote={s.quote}
       lastPrice={markPrice(s.quote)}
       percentChange={s.quote?.percentChange ?? null}
-      quoteName={s.quote?.name ?? null}
+      quoteName={localizedNameFromQuote(s.quote, locale) ?? null}
       bid={s.quote?.bid ?? null}
       ask={s.quote?.ask ?? null}
       boundStrategyId={p.boundStrategyId}
@@ -304,6 +307,15 @@ function SymbolWorkbenchMainGrid({
   embedChartToolbar,
 }: MainGridProps) {
   const tTrading = useTranslations("trading");
+  // H5 rhythm: tabs → quote stats → chart → below-chart panes (Futu-style).
+  // Desktop keeps the untouched quote-bar-tabs + rail layout.
+  const h5AboveSlot = !isDesktop ? (
+    <SymbolMobileQuickActions
+      segment={p.mobileSegment}
+      tabs={mobileMoreTabs}
+      onSelectSegment={p.onMobileSegment}
+    />
+  ) : null;
   return (
     <>
         <div className="shrink-0">
@@ -359,6 +371,8 @@ function SymbolWorkbenchMainGrid({
               tab={panelTab}
               chartSlot={chartSlot}
               chartPinned={!isDesktop || isStack}
+              aboveChartSlot={h5AboveSlot}
+              h5FullPageTab={!isDesktop}
               belowChartSlot={
                 isStack
                   ? stackBelow
@@ -374,15 +388,6 @@ function SymbolWorkbenchMainGrid({
                           metrics={s.earningsMetrics}
                           marketCap={marketCap}
                           segment={p.mobileSegment}
-                          onSegmentChange={p.onMobileSegment}
-                          onOpenTrade={openOrderTicket}
-                          focusPlanToken={p.planFocusKey}
-                          focusReviewToken={p.reviewFocusKey}
-                          highlightOrderId={p.highlightOrderId}
-                          onBoundStrategyChange={p.onBoundStrategyChange}
-                          panelTab={panelTab}
-                          moreTabs={mobileMoreTabs}
-                          onMoreTabChange={p.onMoreTabChange}
                         />
                       )
               }

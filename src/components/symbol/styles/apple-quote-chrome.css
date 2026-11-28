@@ -92,7 +92,7 @@
    Keep `display:flex` only when visible; `.hidden` must win on other tabs
    (otherwise this rule overrides Tailwind `hidden` and the candle stays on screen). */
 .aw-tab-chart:not(.hidden),
-.aw-tab-chart--pinned {
+.aw-tab-chart--pinned:not(.hidden) {
   display: flex;
   flex-direction: column;
   min-height: 0;

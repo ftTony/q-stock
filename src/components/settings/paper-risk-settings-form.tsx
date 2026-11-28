@@ -21,6 +21,7 @@ import {
   useSavePaperRiskSettings,
 } from "@/hooks/query/use-trading";
 import { DEFAULT_RISK_SETTINGS } from "@/lib/trading/risk-math";
+import { isTradePinCancelled } from "@/components/trading/trade-pin-gate";
 import type { PaperRiskSettingsDto } from "@/lib/trading/paper-risk-settings";
 
 function Row({
@@ -130,6 +131,7 @@ export function PaperRiskSettingsForm() {
       if (data.settings) reset(data.settings);
       flash("ok", t("saved"));
     } catch (err) {
+      if (isTradePinCancelled(err)) return;
       flash("error", err instanceof Error ? err.message : t("saveFailed"));
     }
   }

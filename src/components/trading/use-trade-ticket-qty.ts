@@ -11,6 +11,8 @@ import {
 export function useTradeTicketQty(opts: {
   estimatePrice: number;
   equity: number;
+  /** Spendable buying power (cash book: cash; margin book: 2×equity − gross). */
+  buyingPower?: number;
   side: "buy" | "sell";
   stack: boolean;
   qty: string;
@@ -19,7 +21,7 @@ export function useTradeTicketQty(opts: {
   const [qtyInput, setQtyInput] = useState("1");
   const [stopLoss, setStopLoss] = useState("");
   const [takeProfit, setTakeProfit] = useState("");
-  const [confirmBefore, setConfirmBefore] = useState(false);
+  const [confirmBefore, setConfirmBefore] = useState(true);
   const [emergencyStop, setEmergencyStop] = useState(false);
 
   const shares = useMemo(
@@ -37,8 +39,9 @@ export function useTradeTicketQty(opts: {
   const qtyNum = opts.stack ? Number(opts.qty) || 0 : shares;
   const estimate =
     qtyNum > 0 && opts.estimatePrice > 0 ? qtyNum * opts.estimatePrice : 0;
+  const spendable = opts.buyingPower ?? opts.equity;
   const maxSharesByMargin =
-    opts.estimatePrice > 0 ? Math.floor(opts.equity / opts.estimatePrice) : 0;
+    opts.estimatePrice > 0 ? Math.floor(spendable / opts.estimatePrice) : 0;
   const equityPct = opts.equity > 0 ? (estimate / opts.equity) * 100 : 0;
 
   return {

@@ -37,10 +37,17 @@ export async function POST(req: Request) {
 
     return withUserMarket(userId, async () => {
       const [account, position] = await Promise.all([
-        prisma.paperAccount.findUnique({ where: { userId } }),
+        prisma.paperAccount.findFirst({
+          where: { userId, accountType: "cash" },
+        }),
         prisma.paperPosition.findUnique({
           where: {
-            userId_symbol_assetType: { userId, symbol, assetType },
+            userId_accountType_symbol_assetType: {
+              userId,
+              accountType: "cash",
+              symbol,
+              assetType,
+            },
           },
         }),
       ]);

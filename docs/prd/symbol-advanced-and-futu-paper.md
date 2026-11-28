@@ -2,7 +2,7 @@
 
 > 状态：**规划稿**（未开工实现）  
 > 范围：美股 / 港股个股增强；模拟交易迁到富途 OpenAPI `sim-trade`  
-> 约束：生产 **1GB / 1 核**；不造假行情；真券商实盘仍后置  
+> 约束：生产 **1GB / 1 核**；不造假行情；实盘按 [多角色 PRD §5.6](./multi-persona-product-prd.md) 分期（用户本人 OAuth 授权）  
 > UI 改版：[个股专业交易台 UI](./symbol-trading-ui.md)  
 > 相关：[行情与本地模拟交易现状](../market-trading-tech.md) · [L2 营销页](../product-roadmap.md) · [金融图表技术](../financial-chart-tech.md)
 
@@ -17,7 +17,7 @@
 | 筹码 | **Volume Profile**（由 OHLCV 本地估算），非 A 股券商筹码专有接口 |
 | 适用市场 | 仅 `stock`（美股）、`hk`（港股）；`cn` / `crypto` / 指数不做 |
 | 模拟交易 | 对接 **富途云端 REST 模拟交易**（`/api/v1.0/sim-trade/...`），逐步替代本地 Prisma 撮合为主路径 |
-| 实盘 | 仍不做；`BrokerGateway` 实盘接口后置 |
+| 实盘 | 模拟先行；`BrokerGateway` 实盘接口按 [多角色 PRD §5.6](./multi-persona-product-prd.md) 分期实现（用户本人 OAuth 授权 + 双步确认） |
 
 ---
 
@@ -253,7 +253,7 @@ P2  订单镜像与 AI 复盘对齐富途账户
 
 ## 5. 明确不做
 
-- 真券商实盘下单  
+- 平台主 Key 实盘下单 / 代客下单（用户本人授权实盘见 [多角色 PRD §5.6](./multi-persona-product-prd.md)）  
 - 假 Level-2 / 假成交明细  
 - A 股筹码专有分布、加密订单流  
 - Footprint / 刷单级 DOM  

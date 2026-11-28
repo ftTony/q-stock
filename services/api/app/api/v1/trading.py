@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, Request
 from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -12,6 +12,7 @@ from app.models.paper import PaperOrder, PaperPosition
 from app.models.strategy import Strategy
 from app.models.user import User
 from app.services import trading as trading_svc
+from app.services import trade_password as tp
 
 router = APIRouter(dependencies=[Depends(enforce_rate_limit)])
 
@@ -26,6 +27,7 @@ DEFAULT_RISK_SETTINGS = {
 
 
 class PlaceOrderBody(BaseModel):
+    accountType: str | None = "cash"
     symbol: str = Field(min_length=1, max_length=20)
     assetType: str
     side: str
@@ -37,6 +39,8 @@ class PlaceOrderBody(BaseModel):
     invalidationNote: str | None = None
     strategyId: str | None = None
     riskSnapshot: dict | None = None
+    # 6-digit trade PIN; required when the user has enabled a trade password.
+    tradePin: str | None = Field(default=None, pattern=r"^\d{6}$")
 
 
 class ModifyOrderBody(BaseModel):
@@ -44,6 +48,13 @@ class ModifyOrderBody(BaseModel):
     qty: float
     limitPrice: float | None = None
     stopPrice: float | None = None
+    tradePin: str | None = Field(default=None, pattern=r"^\d{6}$")
+
+
+class ResetAccountBody(BaseModel):
+    action: str = Field(pattern="^reset$")
+    accountType: str | None = None
+    tradePin: str | None = Field(default=None, pattern=r"^\d{6}$")
 
 
 class PatchRiskBody(BaseModel):
@@ -53,6 +64,7 @@ class PatchRiskBody(BaseModel):
     maxOrderNotionalPct: float | None = Field(default=None, ge=1, le=100)
     softOnly: bool | None = None
     requireEmotionCheck: bool | None = None
+    tradePin: str | None = Field(default=None, pattern=r"^\d{6}$")
 
 
 def _risk_dict(s) -> dict:
@@ -70,19 +82,32 @@ def _risk_dict(s) -> dict:
 
 @router.get("/account")
 async def get_account(
+    request: Request,
+    accountType: str | None = None,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_user),
 ) -> dict:
-    account = await trading_svc.ensure_account(db, user.id)
-    return {"account": trading_svc.serialize_account(account)}
+    requested = trading_svc._parse_account_type(accountType)
+    cash, margin = await trading_svc.ensure_accounts(db, user.id)
+    # Accrue interest lazily on the margin book (best-effort).
+    fresh_cash = await trading_svc.refresh_account_interest(db, cash)
+    fresh_margin = await trading_svc.refresh_account_interest(db, margin)
+    accounts = [trading_svc.serialize_account(fresh_cash), trading_svc.serialize_account(fresh_margin)]
+    active = fresh_margin if requested == "margin" else fresh_cash
+    return {"account": trading_svc.serialize_account(active), "accounts": accounts}
 
 
 @router.post("/account")
 async def reset_account(
+    body: ResetAccountBody,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_user),
 ) -> dict:
-    account = await trading_svc.reset_account(db, user.id)
+    # Trade password is verified server-side; never trust the client flag.
+    await tp.assert_trade_password_from_request(db, user.id, request, body.tradePin)
+    account_type = trading_svc._parse_account_type(body.accountType)
+    account = await trading_svc.reset_account(db, user.id, account_type)
     return {"account": trading_svc.serialize_account(account)}
 
 
@@ -91,11 +116,16 @@ async def list_orders(
     status: str | None = None,
     symbol: str | None = None,
     assetType: str | None = None,
+    accountType: str | None = None,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_user),
 ) -> dict:
-    await trading_svc.ensure_account(db, user.id)
-    stmt = select(PaperOrder).where(PaperOrder.userId == user.id)
+    await trading_svc.ensure_accounts(db, user.id)
+    account_type = trading_svc._parse_account_type(accountType)
+    stmt = select(PaperOrder).where(
+        PaperOrder.userId == user.id,
+        PaperOrder.accountType == account_type,
+    )
     if status:
         stmt = stmt.where(PaperOrder.status == status)
     if symbol:
@@ -118,6 +148,7 @@ async def list_orders(
 @router.post("/orders", status_code=201)
 async def place_order(
     body: PlaceOrderBody,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_user),
 ) -> dict:
@@ -125,9 +156,12 @@ async def place_order(
         raise AppError("Invalid input", code="VALIDATION_ERROR", status_code=400)
     if body.side not in {"buy", "sell"} or body.type not in {"market", "limit", "stop"}:
         raise AppError("Invalid input", code="VALIDATION_ERROR", status_code=400)
+    # Trade password is verified server-side; never trust the client flag.
+    await tp.assert_trade_password_from_request(db, user.id, request, body.tradePin)
     order = await trading_svc.place_order(
         db,
         user_id=user.id,
+        account_type=trading_svc._parse_account_type(body.accountType),
         symbol=body.symbol,
         asset_type=body.assetType,
         side=body.side,
@@ -146,11 +180,13 @@ async def place_order(
 @router.patch("/orders")
 async def modify_order(
     body: ModifyOrderBody,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_user),
 ) -> dict:
     if not (body.qty > 0):
         raise AppError("Invalid input", code="VALIDATION_ERROR", status_code=400)
+    await tp.assert_trade_password_from_request(db, user.id, request, body.tradePin)
     order = await trading_svc.modify_order(
         db,
         user_id=user.id,
@@ -164,26 +200,35 @@ async def modify_order(
 
 @router.delete("/orders")
 async def cancel_order(
+    request: Request,
     id: str = Query(...),
+    tradePin: str | None = Query(None),
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_user),
 ) -> dict:
+    await tp.assert_trade_password_from_request(db, user.id, request, tradePin)
     order = await trading_svc.cancel_order(db, user.id, id)
     return {"order": trading_svc.serialize_order(order)}
 
 
 @router.get("/positions")
 async def list_positions(
+    request: Request,
     quotes: str | None = None,
+    accountType: str | None = None,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_user),
 ) -> dict:
     from app.services.market.facade import get_quotes
 
-    await trading_svc.ensure_account(db, user.id)
+    await trading_svc.ensure_accounts(db, user.id)
+    account_type = trading_svc._parse_account_type(accountType)
     res = await db.execute(
         select(PaperPosition)
-        .where(PaperPosition.userId == user.id)
+        .where(
+            PaperPosition.userId == user.id,
+            PaperPosition.accountType == account_type,
+        )
         .order_by(PaperPosition.updatedAt.desc())
         .limit(80)
     )
@@ -215,6 +260,7 @@ async def list_positions(
         items.append(
             {
                 "id": p.id,
+                "accountType": p.accountType,
                 "symbol": p.symbol,
                 "assetType": p.assetType,
                 "qty": qty,
@@ -236,12 +282,17 @@ async def get_risk(
     user: User = Depends(require_user),
 ) -> dict:
     settings = await trading_svc.get_or_create_risk(db, user.id)
-    account = await trading_svc.ensure_account(db, user.id)
+    account = await trading_svc.ensure_account(db, user.id, "cash")
     day_pnl_pct = None
     day_start = float(account.dayStartEquity) if account.dayStartEquity is not None else None
     if day_start and day_start > 0:
         res = await db.execute(
-            select(PaperPosition).where(PaperPosition.userId == user.id).limit(80)
+            select(PaperPosition)
+            .where(
+                PaperPosition.userId == user.id,
+                PaperPosition.accountType == "cash",
+            )
+            .limit(80)
         )
         gross = sum(float(p.qty) * float(p.avgCost) for p in res.scalars())
         equity = float(account.cashBalance) + gross
@@ -259,11 +310,13 @@ async def get_risk(
 @router.patch("/risk-settings")
 async def patch_risk(
     body: PatchRiskBody,
+    request: Request,
     db: AsyncSession = Depends(get_db),
     user: User = Depends(require_user),
 ) -> dict:
+    await tp.assert_trade_password_from_request(db, user.id, request, body.tradePin)
     settings = await trading_svc.get_or_create_risk(db, user.id)
-    data = body.model_dump(exclude_unset=True)
+    data = body.model_dump(exclude_unset=True, exclude={"tradePin"})
     for k, v in data.items():
         setattr(settings, k, v)
     await db.commit()

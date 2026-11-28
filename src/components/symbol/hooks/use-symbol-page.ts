@@ -61,11 +61,13 @@ export function useSymbolPage(
     prefetchNews?: boolean;
     prefetchPress?: boolean;
     initialBars?: OhlcvBar[] | null;
+    isDesktop?: boolean;
   },
 ) {
   const prefetchEarnings = opts?.prefetchEarnings ?? false;
   const prefetchNews = opts?.prefetchNews ?? false;
   const prefetchPress = opts?.prefetchPress ?? false;
+  const isDesktop = opts?.isDesktop ?? false;
   const locale = useLocale();
   const t = useTranslations("symbol");
   const tCommon = useTranslations("common");
@@ -302,8 +304,14 @@ export function useSymbolPage(
       initialQuote?.price ? String(Number(initialQuote.price.toFixed(4))) : "",
     );
     setAlertMsg(null);
-    setTab("chart");
-  }, [symbol, assetType, initialQuote, setTab]);
+    // Desktop-only legacy reset. This effect re-runs whenever `initialQuote`'s
+    // identity changes — notably when navigating back to the same symbol from
+    // another page. On H5, resetting `tab` alone desyncs it from `mobileSegment`
+    // (which drives the top-tab highlight): you'd see "新闻" highlighted while
+    // the chart renders. H5 identity switches are already reset (both `tab` and
+    // `mobileSegment`) by resetForIdentity in symbol-page-client.
+    if (isDesktop) setTab("chart");
+  }, [symbol, assetType, initialQuote, isDesktop, setTab]);
 
   useEffect(() => {
     if (!quote?.price || !(quote.price > 0)) return;

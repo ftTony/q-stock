@@ -63,12 +63,20 @@ async def build_process_summary(
     rows = list(orders_res.all())
 
     pos_res = await db.execute(
-        select(PaperPosition).where(PaperPosition.userId == user_id).limit(POSITION_TAKE)
+        select(PaperPosition)
+        .where(
+            PaperPosition.userId == user_id,
+            PaperPosition.accountType == "cash",
+        )
+        .limit(POSITION_TAKE)
     )
     positions = list(pos_res.scalars())
 
     acct_res = await db.execute(
-        select(PaperAccount).where(PaperAccount.userId == user_id)
+        select(PaperAccount).where(
+            PaperAccount.userId == user_id,
+            PaperAccount.accountType == "cash",
+        )
     )
     account = acct_res.scalar_one_or_none()
 

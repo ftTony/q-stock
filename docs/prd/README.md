@@ -24,6 +24,7 @@
 
 | 主题 | PRD | 说明 |
 |---|---|---|
+| **多角色产品矩阵** | [multi-persona-product-prd.md](./multi-persona-product-prd.md) | **总纲 v1.2（海外市场定位）**：小白 / 交易员 / 量化团队 / 基金公司 / 投顾五类场景；含**用户授权实盘与交易数据分析专项（§5.6）**、**海外竞品/合规/实施成本（§13）**、边界冲突处理、分期与验收 |
 | 专业交易员能力边界 | [trader-capability-boundary.md](./trader-capability-boundary.md) | **金融终端演进**：T0–T4 分期、我们做 / 以后做 / 不做；需求砍伐与评审口径 |
 | 机构侧能力边界 | [institution-capability-boundary.md](./institution-capability-boundary.md) | 投教/白标/非 OMS：机构需求全景与裁剪；与 C 端分 SKU |
 | C 端付费闭环 | [c-end-billing.md](./c-end-billing.md) | Free/Pro/BYOK 权益、兑换码、Stripe、研究卡试用；与源码售卖分栏 |

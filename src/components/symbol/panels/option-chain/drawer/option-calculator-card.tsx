@@ -8,8 +8,8 @@ import {
   type ReactNode,
 } from "react";
 import { QtDatePicker } from "@/components/ui/qt-date-picker";
-import { calcOption } from "../option-calculator";
-import type { CalcModel } from "../option-calculator";
+import { useOptionCalc } from "../option-calculator-client";
+import type { CalcInput, CalcModel } from "../option-calculator";
 import {
   DEFAULT_RATE_PCT,
   FIELD_CLS,
@@ -57,9 +57,8 @@ export function OptionCalculatorCard({
 
   /*
    * The American model prices 9 binomial trees per quote (~15ms on a laptop,
-   * much more on a phone). Feed the inputs through `useDeferredValue` so
-   * dragging the date slider or typing stays responsive and the numbers catch
-   * up on the next idle pass instead of blocking every input event.
+   * much more on a phone). `useDeferredValue` keeps typing responsive while
+   * the pricer itself runs in a Worker, so neither pass blocks the UI thread.
    */
   const snapshot = useMemo(
     () => ({
@@ -73,10 +72,10 @@ export function OptionCalculatorCard({
   );
   const deferred = useDeferredValue(snapshot);
 
-  const res = useMemo(() => {
+  const input = useMemo<CalcInput | null>(() => {
     const { s, v, r } = deferred;
     if (!(s > 0) || !(v > 0)) return null;
-    return calcOption({
+    return {
       spot: s,
       strike,
       ivPct: v,
@@ -85,8 +84,12 @@ export function OptionCalculatorCard({
       ratePct: Number.isFinite(r) ? r : DEFAULT_RATE_PCT,
       isCall,
       model: deferred.model,
-    });
+    };
   }, [deferred, expiry, strike, isCall]);
+
+  // `data-option-worker` on the root exposes whether this value came from the
+  // worker ("worker") or the synchronous fallback ("sync") for diagnostics.
+  const { result: res, viaWorker } = useOptionCalc(input);
 
   const todayYmd = ymdToday();
   const maxDate = expiry || todayYmd;
@@ -142,7 +145,10 @@ export function OptionCalculatorCard({
   );
 
   return (
-    <div className="flex flex-col gap-2.5">
+    <div
+      className="flex flex-col gap-2.5"
+      data-option-worker={viaWorker ? "worker" : "sync"}
+    >
       <div className="grid grid-cols-2 gap-x-4">
         <div className="flex items-baseline justify-between gap-2">
           <span className="text-[11px] text-[var(--muted)]">{t("theoPrice")}</span>

@@ -6,7 +6,7 @@
 | 人设 | **波段 / 纪律型**个人投资者；产品形态演进为**专业金融终端**（Web 工作台），不是日内刷单壳、不是机构 OMS |
 | 用途 | 需求砍伐、评审「要不要做」、对外讲清边界；指导中长期往「金融终端产品」收敛 |
 | 状态 | **决策稿 v2**（相对 v1：从「纯学习壳」升级为「学习闭环 × 终端能力」分期；改人设须同步本文 + [product-roadmap §0](../product-roadmap.md)） |
-| 相关 | [institution-capability-boundary](./institution-capability-boundary.md) · [symbol-trading-ui](./symbol-trading-ui.md) · [multi-chart-compare](./multi-chart-compare.md) · [symbol-advanced-and-futu-paper](./symbol-advanced-and-futu-paper.md) · [risk-control](./risk-control.md) · [strategy-and-backtest](./strategy-and-backtest.md) · [review-notes](./review-notes.md) · [c-end-billing](./c-end-billing.md) · [product-status](../product-status.md) · [product-roadmap](../product-roadmap.md) |
+| 相关 | [multi-persona-product-prd](./multi-persona-product-prd.md)（多角色总纲；实盘口径见 §5.6） · [institution-capability-boundary](./institution-capability-boundary.md) · [symbol-trading-ui](./symbol-trading-ui.md) · [multi-chart-compare](./multi-chart-compare.md) · [symbol-advanced-and-futu-paper](./symbol-advanced-and-futu-paper.md) · [risk-control](./risk-control.md) · [strategy-and-backtest](./strategy-and-backtest.md) · [review-notes](./review-notes.md) · [c-end-billing](./c-end-billing.md) · [product-status](../product-status.md) · [product-roadmap](../product-roadmap.md) |
 
 ---
 
@@ -20,7 +20,7 @@
 |---|---|---|
 | 主任务 | 成交与账户资产 | **过程纪律**（计划 → 模拟 → 复盘） |
 | 行情深度 | L1→L2→逐笔默认堆满 | L1 扎实；L2/深度**分期、可付费、可关** |
-| 下单 | 默认实盘 | **默认模拟**；实盘网关明确后置 |
+| 下单 | 默认实盘 | **默认模拟**；用户本人 OAuth 授权后可选实盘（P3），见 [多角色 PRD §5.6](./multi-persona-product-prd.md) |
 | 策略 | 条件单 / 算法单为主 | **规则标签 + 回放 + 偏差**，非量化 IDE |
 | 成功标准 | 成交量、留存下单 | 两周内能反复走完闭环 |
 
@@ -41,7 +41,7 @@ T0 学习投研壳（现状骨架）
   → T1 专业终端工作台（密度 / 稳定性 / 主路径）
   → T2 行情与衍生品加深（可选付费深度）
   → T3 强用户布局与多屏
-  → T4+ 可选实盘网关 / 投教白标（尖峰二选一或后置）
+  → T4+ 用户授权实盘网关 / 投教白标（尖峰二选一或后置）
 ```
 
 | 期 | 产品含义 | 完成定义（口语） | 与路线图 |
@@ -50,13 +50,13 @@ T0 学习投研壳（现状骨架）
 | **T1** | **专业金融终端壳**：个股工作台、图表保活、期权链可用、设置/凭证稳、终端视觉一致 | 「像终端，而不像功能堆砌页」 | 切片 D + UI/性能债 |
 | **T2** | 深度行情与衍生品叙事可卖 | 未授权看不到 L2；授权后可演示；期权链不假下单 | 中期尖峰候选「L2」 |
 | **T3** | 多图/布局/快捷键服务波段对比 | 1/2/4 格稳；布局可记；不挡主闭环 | [multi-chart-compare](./multi-chart-compare.md) 增强 |
-| **T4+** | 实盘网关 **或** 投教白标（仍非 OMS） | 有独立评审；默认不同时开两条大线 | 路线图尖峰 / 后置 |
+| **T4+** | 用户授权实盘网关 **或** 投教白标（仍非 OMS） | 有独立评审 + 合规签字；默认不同时开两条大线 | [多角色 PRD §5.6](./multi-persona-product-prd.md) / 路线图尖峰 |
 
 **原则**
 
 - **先 T1 再堆深度**：没有稳的工作台，L2 只是更贵的噪声。  
 - **深度可关**：高级行情走 `/advanced-quotes` 与授权，不绑架 Free 主路径。  
-- **实盘永远显式**：任何「接券商」须单独 PRD + 合规评审，不得从模拟按钮静默升级。
+- **实盘永远显式**：任何「接券商」须用户本人 OAuth 授权 + 独立 PRD + 合规评审，不得从模拟按钮静默升级；平台不托管资金。
 
 ---
 
@@ -102,7 +102,7 @@ T0 学习投研壳（现状骨架）
 
 1. **P0（T1）**：闭环可引导走完 + 工作台稳定（图/链/浮层/设置）+ 风控 P0 + 情景→草案  
 2. **P1**：研究卡/计划可见、复盘质量、工具↔模拟互链、行情状态可感知  
-3. **P2（T2/T3）**：中期只选一个尖峰（L2 / A 股加深 / 白标），其余进「以后做」
+3. **P2（T2/T3）**：中期只选一个尖峰（**跨券商只读分析 + 合规证据** / L2 / 白标），其余进「以后做」；A 股加深已移出候选（目标市场为海外，不服务内地客户）
 
 ---
 
@@ -123,7 +123,7 @@ T0 学习投研壳（现状骨架）
 | 能力点 | 备注 |
 |---|---|
 | L2 / 高级行情付费 | 走 `/advanced-quotes`；**不**默认绑进主 Pro 叙事 |
-| A 股源加深（扶摇） | 中期尖峰候选 |
+| A 股源加深（扶摇） | **移出候选**：目标市场为海外，A 股仅作参考行情、不提供交易功能 |
 | 事件日历落到 K 线 | 财报、分红等 |
 | 单图叠加相对强弱（vs 指数） | 与分格同屏不同；另案 |
 | 期权链数据完整度提升 | 仍**不做**期权实盘下单 |
@@ -141,7 +141,7 @@ T0 学习投研壳（现状骨架）
 | 能力点 | 备注 |
 |---|---|
 | 白标 / 投教交付 | 见 [institution-capability-boundary](./institution-capability-boundary.md) |
-| 实盘券商网关 | **明确后置**；默认不做实盘下单；若做须独立 PRD + 合规 |
+| 实盘券商网关 | **分期后置（P3/P4）**；默认模拟；仅用户本人 OAuth 授权后可用，须双步确认、幂等、硬风控 + 独立合规评审；见 [多角色 PRD §5.6](./multi-persona-product-prd.md) |
 
 ---
 
@@ -149,7 +149,7 @@ T0 学习投研壳（现状骨架）
 
 | 明确砍掉 | 原因 |
 |---|---|
-| 默认实盘下单、跟单社区 | 学习纪律终端 + 合规边界 |
+| 默认实盘下单、跟单社区、平台托管资金 | 学习纪律终端 + 合规边界 |
 | 荐股信号会员、涨跌情绪标签产品化 | 与冷静投冲突 |
 | 量化 IDE、全市场扫描回测、策略商城 | 非量化平台人设 |
 | 日内专用：DOM、刷单快捷键、超低延迟竞赛 | 波段人设用不上；工程与合规成本畸高 |

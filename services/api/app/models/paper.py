@@ -18,18 +18,32 @@ from sqlalchemy.dialects.postgresql import ARRAY, JSONB
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.core.db import Base
-from app.models.enums import AssetType, OrderSide, OrderStatus, OrderType
+from app.models.enums import AccountType, AssetType, OrderSide, OrderStatus, OrderType
 
 
 class PaperAccount(Base):
     __tablename__ = "PaperAccount"
+    __table_args__ = (
+        UniqueConstraint("userId", "accountType", name="PaperAccount_userId_accountType_key"),
+    )
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     userId: Mapped[str] = mapped_column(
-        String, ForeignKey("User.id", ondelete="CASCADE"), unique=True
+        String, ForeignKey("User.id", ondelete="CASCADE")
     )
+    accountType: Mapped[str] = mapped_column(AccountType, default="cash", nullable=False)
     cashBalance: Mapped[Decimal] = mapped_column(Numeric(18, 4), nullable=False)
     currency: Mapped[str] = mapped_column(String, default="USD")
+    # Outstanding margin borrowing (margin accounts only).
+    borrowedBalance: Mapped[Decimal] = mapped_column(
+        Numeric(18, 4), default=Decimal("0"), nullable=False
+    )
+    # Accrued interest on borrowed balance (margin accounts only).
+    interestAccrued: Mapped[Decimal] = mapped_column(
+        Numeric(18, 4), default=Decimal("0"), nullable=False
+    )
+    # Last time interest was accrued.
+    interestAccruedAt: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     dayStartEquity: Mapped[Decimal | None] = mapped_column(Numeric(18, 4))
     dayStartDate: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     createdAt: Mapped[datetime] = mapped_column(
@@ -61,12 +75,17 @@ class PaperPosition(Base):
     __tablename__ = "PaperPosition"
     __table_args__ = (
         UniqueConstraint(
-            "userId", "symbol", "assetType", name="PaperPosition_userId_symbol_assetType_key"
+            "userId",
+            "accountType",
+            "symbol",
+            "assetType",
+            name="PaperPosition_userId_accountType_symbol_assetType_key",
         ),
     )
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     userId: Mapped[str] = mapped_column(String, ForeignKey("User.id", ondelete="CASCADE"))
+    accountType: Mapped[str] = mapped_column(AccountType, default="cash", nullable=False)
     symbol: Mapped[str] = mapped_column(String, nullable=False)
     assetType: Mapped[str] = mapped_column(AssetType, nullable=False)
     qty: Mapped[Decimal] = mapped_column(Numeric(18, 8), nullable=False)
@@ -84,6 +103,7 @@ class PaperOrder(Base):
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
     userId: Mapped[str] = mapped_column(String, ForeignKey("User.id", ondelete="CASCADE"))
+    accountType: Mapped[str] = mapped_column(AccountType, default="cash", nullable=False)
     symbol: Mapped[str] = mapped_column(String, nullable=False)
     assetType: Mapped[str] = mapped_column(AssetType, nullable=False)
     side: Mapped[str] = mapped_column(OrderSide, nullable=False)

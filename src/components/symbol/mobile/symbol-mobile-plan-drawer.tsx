@@ -16,11 +16,9 @@ type Props = {
   highlightOrderId?: string | null;
   onBoundStrategyChange: (name: string | null, id?: string | null) => void;
   onRequestOrder: () => void;
-  /** Leave room for fixed H5 side dock. */
-  edgeOffsetPx?: number;
 };
 
-/** H5 / tablet: plan · review · market as drawer (PRD §3.3–3.4). */
+/** H5 full-screen page: 计划 / 复盘 (market now lives under the chart). */
 export function SymbolMobilePlanDrawer({
   open,
   onClose,
@@ -32,7 +30,6 @@ export function SymbolMobilePlanDrawer({
   highlightOrderId = null,
   onBoundStrategyChange,
   onRequestOrder,
-  edgeOffsetPx = 44,
 }: Props) {
   const t = useTranslations("symbolRail");
 
@@ -40,10 +37,10 @@ export function SymbolMobilePlanDrawer({
     <SideDrawer
       open={open}
       onClose={onClose}
-      title={t("plan")}
+      title={`${t("plan")} / ${t("review")}`}
       className="aw aw-mobile-plan-drawer"
-      edgeOffsetPx={edgeOffsetPx}
-      widthClassName="w-full max-w-[min(100vw,28rem)]"
+      edgeOffsetPx={0}
+      widthClassName="w-full max-w-none"
     >
       <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <SymbolOrderRail
@@ -55,6 +52,7 @@ export function SymbolMobilePlanDrawer({
           focusReviewToken={focusReviewToken}
           highlightOrderId={highlightOrderId}
           onRequestOrder={onRequestOrder}
+          planReviewOnly
         />
       </div>
     </SideDrawer>

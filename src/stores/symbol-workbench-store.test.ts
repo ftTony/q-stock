@@ -44,7 +44,7 @@ describe("symbol workbench store", () => {
       tab: "chart",
       stackTab: "news",
       newsFeedTab: "news",
-      mobileSegment: "plan",
+      mobileSegment: "chart",
       aiOpen: false,
       seoOpen: false,
       dock: null,
@@ -104,18 +104,36 @@ describe("symbol workbench store", () => {
     expect(setRailOpen).toHaveBeenCalledWith(true);
   });
 
-  test("mobile and side rail actions update the correct navigation state", () => {
-    useSymbolWorkbenchStore
-      .getState()
-      .onMobileSegment("more", [{ id: "fundamentals" }]);
+  test("H5 plan/review entry opens the full-screen drawer without switching tab", () => {
+    const setRailOpen = vi.fn();
+    useSymbolWorkbenchStore.getState().setTab("news");
+    useSymbolWorkbenchStore.getState().openPlan(false, setRailOpen);
     expect(useSymbolWorkbenchStore.getState()).toMatchObject({
-      mobileSegment: "more",
+      mobilePlanOpen: true,
+      mobilePlanReady: true,
+      tab: "news",
+    });
+    expect(setRailOpen).not.toHaveBeenCalled();
+
+    useSymbolWorkbenchStore.getState().setMobilePlanOpen(false);
+    useSymbolWorkbenchStore.getState().openReview("O-2", false, setRailOpen);
+    expect(useSymbolWorkbenchStore.getState()).toMatchObject({
+      mobilePlanOpen: true,
+      highlightOrderId: "O-2",
+      tab: "news",
+    });
+  });
+
+  test("mobile and side rail actions update the correct navigation state", () => {
+    useSymbolWorkbenchStore.getState().onMobileSegment("fundamentals");
+    expect(useSymbolWorkbenchStore.getState()).toMatchObject({
+      mobileSegment: "fundamentals",
       tab: "fundamentals",
     });
 
     useSymbolWorkbenchStore.getState().onMoreTabChange("chart");
     expect(useSymbolWorkbenchStore.getState()).toMatchObject({
-      mobileSegment: "plan",
+      mobileSegment: "chart",
       tab: "chart",
     });
 

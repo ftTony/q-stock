@@ -38,6 +38,11 @@ type Props = {
   initialSection?: FundamentalsSection;
   /** Stack bottom: denser company rows; dock / mobile keep default. */
   density?: "default" | "stack";
+  /**
+   * H5 基本面 tab：单页纵向「公司简介 + 财报」，不显示子导航。
+   * 桌面 / stack 布局保持默认 false，走原左侧导航 + 单 section 逻辑。
+   */
+  h5Stacked?: boolean;
 };
 
 const METRIC_KEYS = new Set([
@@ -75,6 +80,7 @@ export function SymbolFundamentalsPanel({
   officers,
   initialSection,
   density = "default",
+  h5Stacked = false,
 }: Props) {
   const t = useTranslations("symbol");
   const tEarn = useTranslations("earnings");
@@ -210,6 +216,64 @@ export function SymbolFundamentalsPanel({
         ? t("fundNavCashflow")
         : tEarn("statementTitle"),
   );
+
+  // H5 基本面 tab：整页纵向「公司简介 + 财报」，不显示子导航；桌面/stack 不走这里。
+  if (h5Stacked) {
+    const sectionTitle = "aw-caption-strong mb-2 text-[13px]";
+    const balanceLabels = buildEarningsStatementLabels(
+      (key) => tEarn(key as "yoy"),
+      t("fundNavBalance"),
+    );
+    const cashflowLabels = buildEarningsStatementLabels(
+      (key) => tEarn(key as "yoy"),
+      t("fundNavCashflow"),
+    );
+    return (
+      <div className="aw-h5-fundamentals space-y-5">
+        <section aria-label={t("fundNavProfile")}>
+          <h3 className={sectionTitle}>{t("fundNavProfile")}</h3>
+          <CompanyProfilePanel
+            profile={company}
+            density="default"
+            loading={earningsLoading}
+          />
+        </section>
+
+        <section
+          aria-label={t("fundNavFinance")}
+          className="border-t border-[var(--aw-hairline,var(--border))] pt-4"
+        >
+          <h3 className={sectionTitle}>{t("fundNavFinance")}</h3>
+          <EarningsPanel
+            surprises={earnings}
+            upcoming={earningsUpcoming}
+            recent={earningsRecent}
+            metrics={earningsMetrics}
+            statement={earningsStatement}
+            degraded={degraded}
+            loading={earningsLoading}
+            view="all"
+          />
+          {earningsBalance?.rows.length ? (
+            <div className="mt-5 border-t border-[var(--aw-hairline,var(--border))] pt-4">
+              <EarningsStatementSection
+                statement={earningsBalance}
+                labels={balanceLabels}
+              />
+            </div>
+          ) : null}
+          {earningsCashflow?.rows.length ? (
+            <div className="mt-5 border-t border-[var(--aw-hairline,var(--border))] pt-4">
+              <EarningsStatementSection
+                statement={earningsCashflow}
+                labels={cashflowLabels}
+              />
+            </div>
+          ) : null}
+        </section>
+      </div>
+    );
+  }
 
   return (
     <div className="grid min-h-full grid-cols-1 gap-4 sm:grid-cols-[148px_1px_minmax(0,1fr)] sm:gap-0">

@@ -13,6 +13,7 @@ from app.api.v1 import (
     research_cards,
     review,
     strategies,
+    trade_password,
     trading,
     user,
     user_credentials,
@@ -28,6 +29,7 @@ api_router.include_router(market_advanced.router, tags=["market-advanced"])
 api_router.include_router(market_content.router, tags=["market-content"])
 api_router.include_router(watchlist.router, tags=["watchlist"])
 api_router.include_router(trading.router, prefix="/trading", tags=["trading"])
+api_router.include_router(trade_password.router, prefix="/trading", tags=["trading"])
 api_router.include_router(strategies.router, tags=["strategies"])
 api_router.include_router(user.router, tags=["user"])
 api_router.include_router(user_credentials.router, tags=["user"])

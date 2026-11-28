@@ -28,6 +28,7 @@ export const queryKeys = {
     positions: ["trading", "positions"] as const,
     orders: ["trading", "orders"] as const,
     risk: ["trading", "risk"] as const,
+    tradePassword: ["trading", "trade-password"] as const,
   },
   market: {
     boards: (assetType: string) => ["market", "boards", assetType] as const,

@@ -103,4 +103,6 @@ export type SymbolTabsScrollBodyProps = {
   onClearAiToast?: () => void;
   onRegenerateAi?: () => void;
   aiRegenerateLabel?: string;
+  /** H5: render 基本面 as stacked 公司简介 + 财报 (no sub-nav). Desktop untouched. */
+  h5Stacked?: boolean;
 };

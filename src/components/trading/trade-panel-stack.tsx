@@ -26,7 +26,6 @@ type Order = {
 
 type Props = {
   symbol: string;
-  loading: boolean;
   positionLine: ReactNode;
   resultBanner: ReactNode;
   draftBanner: ReactNode;
@@ -72,7 +71,6 @@ type Props = {
  */
 export function TradePanelStackLayout({
   symbol,
-  loading,
   positionLine,
   resultBanner,
   draftBanner,
@@ -125,7 +123,6 @@ export function TradePanelStackLayout({
     <div className="aw-trade-stack-ticket flex min-h-0 flex-1 flex-col overflow-hidden">
       <div className="aw-trade-stack-pad aw-dock-scroll min-h-0 flex-1 overflow-y-auto overscroll-contain py-3">
         <div className="mx-auto w-full max-w-[26rem] space-y-3.5">
-          {loading ? <p className="aw-caption">{t("loading")}</p> : null}
           {resultBanner}
 
           <header className="flex items-baseline justify-between gap-3 border-b border-[var(--aw-hairline,var(--border))] pb-2.5">

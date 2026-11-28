@@ -24,6 +24,7 @@ AssetType = pg_enum("stock", "hk", "crypto", "cn", name="AssetType")
 OrderSide = pg_enum("buy", "sell", name="OrderSide")
 OrderType = pg_enum("market", "limit", "stop", name="OrderType")
 OrderStatus = pg_enum("pending", "filled", "cancelled", "rejected", name="OrderStatus")
+AccountType = pg_enum("cash", "margin", name="AccountType")
 MarketCredentialProvider = pg_enum(
     "longbridge", "futu", "binance", "okx", "fuyao", name="MarketCredentialProvider"
 )

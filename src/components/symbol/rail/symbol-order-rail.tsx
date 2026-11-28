@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useCallback, useEffect, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
 import { useTranslations } from "next-intl";
 import { setBoundStrategyId } from "@/components/symbol/plan/symbol-plan-binding";
 import { SymbolRailGuide } from "@/components/symbol/rail/symbol-rail-guide";
@@ -60,6 +60,8 @@ type Props = {
   onTabChange?: (tab: RailTab) => void;
   /** Hide plan|review|market strip when parent owns navigation. */
   hideTabList?: boolean;
+  /** H5 full-screen page: only 计划 / 复盘 (行情 content lives under the chart). */
+  planReviewOnly?: boolean;
   /** Natural height for an outer scroll parent (no nested RailScroll). */
   embedInScroll?: boolean;
 };
@@ -99,9 +101,10 @@ export function SymbolOrderRail({
   onTabChange,
   hideTabList = false,
   embedInScroll = false,
+  planReviewOnly = false,
 }: Props) {
   const t = useTranslations("symbolRail");
-  const showMarket = assetType !== "crypto" && !isIndex;
+  const showMarket = !planReviewOnly && assetType !== "crypto" && !isIndex;
   const controlled = tabProp !== undefined;
   const [innerTab, setInnerTab] = useState<RailTab>(() => defaultTab());
   const tab = controlled ? tabProp : innerTab;
@@ -125,12 +128,15 @@ export function SymbolOrderRail({
     setTab("review");
   }, [focusReviewToken, setTab]);
 
+  const identityRef = useRef({ symbol, assetType });
   useEffect(() => {
+    const prev = identityRef.current;
+    if (prev.symbol === symbol && prev.assetType === assetType) return;
+    identityRef.current = { symbol, assetType };
     setStrategyId(null);
     if (!controlled) setInnerTab(defaultTab());
     onBoundStrategyChange?.(null, null);
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- reset on symbol switch only
-  }, [symbol, assetType]);
+  }, [symbol, assetType, controlled, onBoundStrategyChange]);
 
   useEffect(() => {
     if (!showMarket && tab === "market") setTab("plan");

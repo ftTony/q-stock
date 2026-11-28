@@ -30,6 +30,8 @@ export const SHELL_NAMESPACES = [
   "alerts",
   "settings",
   "paperRisk",
+  /** Settings → Trading embeds the trade-password settings form. */
+  "tradePassword",
   "auth",
   /** Settings → About embeds the full disclaimer copy. */
   "disclaimer",

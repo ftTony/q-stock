@@ -12,6 +12,8 @@ type Props = {
   tab: SymbolPageState["tab"];
   chartSlot: ReactNode;
   chartPinned: boolean;
+  aboveChartSlot?: ReactNode;
+  h5FullPageTab?: boolean;
   belowChartSlot:
     | ReactNode
     | ((ctx: { secondary: ReactNode | null }) => ReactNode)
@@ -28,6 +30,8 @@ export function SymbolPageTabs({
   tab,
   chartSlot,
   chartPinned,
+  aboveChartSlot,
+  h5FullPageTab,
   belowChartSlot,
   symbol,
   assetType,
@@ -39,6 +43,8 @@ export function SymbolPageTabs({
       tab={tab}
       chartSlot={chartSlot}
       chartPinned={chartPinned}
+      aboveChartSlot={aboveChartSlot}
+      h5FullPageTab={h5FullPageTab}
       belowChartSlot={belowChartSlot ?? undefined}
       degraded={s.degraded}
       degradedLabel={s.tCommon("degraded")}
