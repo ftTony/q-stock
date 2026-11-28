@@ -1,4 +1,5 @@
 import type {
+  AccountType,
   AssetType,
   OrderSide,
   OrderType,
@@ -9,12 +10,14 @@ import { prisma } from "@/lib/db";
 import { getQuote } from "@/lib/market";
 import { withUserMarket } from "@/lib/market/with-user-market";
 import { normalizeSymbol } from "@/lib/types";
-import { ensureAccount } from "@/lib/trading/account";
+import { accrueInterest, ensureAccount } from "@/lib/trading/account";
 import { assertPaperRisk } from "@/lib/trading/assert-paper-risk";
+import { accountMetrics } from "@/lib/trading/margin";
 import { TradingError, applyFillInTx, fillPendingOrder, shouldTriggerPending } from "@/lib/trading/execute";
 
 export type PlaceOrderInput = {
   userId: string;
+  accountType: AccountType;
   symbol: string;
   assetType: AssetType;
   side: OrderSide;
@@ -32,6 +35,7 @@ export function serializeOrder(order: PaperOrder) {
   return {
     id: order.id,
     userId: order.userId,
+    accountType: order.accountType,
     symbol: order.symbol,
     assetType: order.assetType,
     side: order.side,
@@ -50,6 +54,37 @@ export function serializeOrder(order: PaperOrder) {
     createdAt: order.createdAt,
     updatedAt: order.updatedAt,
   };
+}
+
+/** Current buying power for an account inside a transaction. */
+async function buyingPowerInTx(
+  tx: Prisma.TransactionClient,
+  userId: string,
+  accountType: AccountType,
+) {
+  const account = await tx.paperAccount.findUniqueOrThrow({
+    where: { userId_accountType: { userId, accountType } },
+  });
+  const positions = await tx.paperPosition.findMany({
+    where: { userId, accountType },
+  });
+  const gross = positions.reduce(
+    (s, p) => s + Number(p.qty) * Number(p.avgCost),
+    0,
+  );
+  const interest = await accrueInterest(
+    account.accountType,
+    Number(account.borrowedBalance),
+    Number(account.interestAccrued),
+    account.interestAccruedAt,
+  );
+  return accountMetrics({
+    accountType,
+    cash: Number(account.cashBalance),
+    gross,
+    borrowed: Number(account.borrowedBalance),
+    interest: interest.interestAccrued,
+  });
 }
 
 function orderMeta(input: PlaceOrderInput): {
@@ -91,9 +126,10 @@ async function placeOrderInner(input: PlaceOrderInput) {
     }
   }
 
-  await ensureAccount(input.userId);
+  await ensureAccount(input.userId, input.accountType);
   await assertPaperRisk({
     userId: input.userId,
+    accountType: input.accountType,
     symbol,
     assetType: input.assetType,
     side: input.side,
@@ -113,18 +149,20 @@ async function placeOrderInner(input: PlaceOrderInput) {
 
     return prisma.$transaction(async (tx) => {
       if (input.side === "buy") {
-        const account = await tx.paperAccount.findUniqueOrThrow({
-          where: { userId: input.userId },
-        });
-        const cash = Number(account.cashBalance);
-        if (cash + 1e-8 < qty * fillPrice) {
+        const { buyingPower } = await buyingPowerInTx(
+          tx,
+          input.userId,
+          input.accountType,
+        );
+        if (buyingPower + 1e-8 < qty * fillPrice) {
           throw new TradingError("Insufficient cash", "INSUFFICIENT_CASH");
         }
       } else {
         const pos = await tx.paperPosition.findUnique({
           where: {
-            userId_symbol_assetType: {
+            userId_accountType_symbol_assetType: {
               userId: input.userId,
+              accountType: input.accountType,
               symbol,
               assetType: input.assetType,
             },
@@ -139,6 +177,7 @@ async function placeOrderInner(input: PlaceOrderInput) {
       const order = await tx.paperOrder.create({
         data: {
           userId: input.userId,
+          accountType: input.accountType,
           symbol,
           assetType: input.assetType,
           side: input.side,
@@ -152,6 +191,7 @@ async function placeOrderInner(input: PlaceOrderInput) {
       return applyFillInTx(tx, {
         orderId: order.id,
         userId: input.userId,
+        accountType: input.accountType,
         symbol,
         assetType: input.assetType,
         side: input.side,
@@ -164,22 +204,24 @@ async function placeOrderInner(input: PlaceOrderInput) {
   // Limit / stop: validate then park as pending (fill immediately if already triggered)
   const order = await prisma.$transaction(async (tx) => {
     if (input.side === "buy") {
-      const account = await tx.paperAccount.findUniqueOrThrow({
-        where: { userId: input.userId },
-      });
-      const cash = Number(account.cashBalance);
+      const { buyingPower } = await buyingPowerInTx(
+        tx,
+        input.userId,
+        input.accountType,
+      );
       const reservePrice =
         input.type === "limit"
           ? Number(input.limitPrice)
           : Number(input.stopPrice);
-      if (cash + 1e-8 < qty * reservePrice) {
+      if (buyingPower + 1e-8 < qty * reservePrice) {
         throw new TradingError("Insufficient cash", "INSUFFICIENT_CASH");
       }
     } else {
       const pos = await tx.paperPosition.findUnique({
         where: {
-          userId_symbol_assetType: {
+          userId_accountType_symbol_assetType: {
             userId: input.userId,
+            accountType: input.accountType,
             symbol,
             assetType: input.assetType,
           },
@@ -189,6 +231,7 @@ async function placeOrderInner(input: PlaceOrderInput) {
       const pendingSells = await tx.paperOrder.findMany({
         where: {
           userId: input.userId,
+          accountType: input.accountType,
           symbol,
           assetType: input.assetType,
           side: "sell",
@@ -204,6 +247,7 @@ async function placeOrderInner(input: PlaceOrderInput) {
     return tx.paperOrder.create({
       data: {
         userId: input.userId,
+        accountType: input.accountType,
         symbol,
         assetType: input.assetType,
         side: input.side,
@@ -313,6 +357,7 @@ export async function modifyOrder(input: ModifyOrderInput) {
 
   await assertPaperRisk({
     userId: input.userId,
+    accountType: order.accountType,
     symbol: order.symbol,
     assetType: order.assetType,
     side: order.side,
@@ -324,24 +369,26 @@ export async function modifyOrder(input: ModifyOrderInput) {
 
   const updated = await prisma.$transaction(async (tx) => {
     if (order.side === "buy") {
-      const account = await tx.paperAccount.findUniqueOrThrow({
-        where: { userId: input.userId },
-      });
-      const cash = Number(account.cashBalance);
+      const { buyingPower } = await buyingPowerInTx(
+        tx,
+        input.userId,
+        order.accountType,
+      );
       const reserve =
         order.type === "limit"
           ? Number(limitPrice)
           : order.type === "stop"
             ? Number(stopPrice)
             : 0;
-      if (reserve > 0 && cash + 1e-8 < qty * reserve) {
+      if (reserve > 0 && buyingPower + 1e-8 < qty * reserve) {
         throw new TradingError("Insufficient cash", "INSUFFICIENT_CASH");
       }
     } else {
       const pos = await tx.paperPosition.findUnique({
         where: {
-          userId_symbol_assetType: {
+          userId_accountType_symbol_assetType: {
             userId: input.userId,
+            accountType: order.accountType,
             symbol: order.symbol,
             assetType: order.assetType,
           },
@@ -351,6 +398,7 @@ export async function modifyOrder(input: ModifyOrderInput) {
       const pendingSells = await tx.paperOrder.findMany({
         where: {
           userId: input.userId,
+          accountType: order.accountType,
           symbol: order.symbol,
           assetType: order.assetType,
           side: "sell",

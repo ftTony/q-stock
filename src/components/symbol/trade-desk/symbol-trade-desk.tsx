@@ -10,6 +10,7 @@ import {
   useTradingPositions,
 } from "@/hooks/query/use-trading";
 import type { PaperOrder, PaperPosition } from "@/components/portfolio/types";
+import { isTradePinCancelled } from "@/components/trading/trade-pin-gate";
 import { SymbolPaperRiskBar } from "@/components/symbol/plan/symbol-paper-risk-bar";
 import {
   TradeDeskFills,
@@ -91,7 +92,9 @@ export function SymbolTradeDesk({
 
   const onCancel = useCallback(
     (id: string) => {
-      void cancelOrder.mutateAsync(id);
+      void cancelOrder.mutateAsync(id).catch((err) => {
+        if (!isTradePinCancelled(err)) throw err;
+      });
     },
     [cancelOrder],
   );
@@ -103,7 +106,12 @@ export function SymbolTradeDesk({
       limitPrice?: number | null;
       stopPrice?: number | null;
     }) => {
-      await modifyOrder.mutateAsync(patch);
+      try {
+        await modifyOrder.mutateAsync(patch);
+      } catch (err) {
+        if (isTradePinCancelled(err)) return;
+        throw err;
+      }
     },
     [modifyOrder],
   );

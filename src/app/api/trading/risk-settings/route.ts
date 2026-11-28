@@ -8,6 +8,7 @@ import {
 import { DEFAULT_RISK_SETTINGS } from "@/lib/trading/risk-math";
 import { prisma } from "@/lib/db";
 import { ensureAccount, serializeAccount } from "@/lib/trading/account";
+import { assertTradePasswordFromRequest } from "@/lib/trading/trade-password";
 
 export async function GET() {
   const session = await auth();
@@ -16,14 +17,14 @@ export async function GET() {
   }
 
   const settings = await ensurePaperRiskSettings(session.user.id);
-  const account = await ensureAccount(session.user.id);
+  const account = await ensureAccount(session.user.id, "cash");
 
   let dayPnlPct: number | null = null;
   const dayStart =
     account.dayStartEquity != null ? Number(account.dayStartEquity) : null;
   if (dayStart != null && dayStart > 0) {
     const positions = await prisma.paperPosition.findMany({
-      where: { userId: session.user.id },
+      where: { userId: session.user.id, accountType: "cash" },
       take: 80,
     });
     let gross = 0;
@@ -51,6 +52,7 @@ const patchSchema = z.object({
   maxOrderNotionalPct: z.number().min(1).max(100).nullable().optional(),
   softOnly: z.boolean().optional(),
   requireEmotionCheck: z.boolean().optional(),
+  tradePin: z.string().regex(/^\d{6}$/).optional().nullable(),
 });
 
 export async function PATCH(req: Request) {
@@ -64,9 +66,26 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ error: "Invalid input" }, { status: 400 });
   }
 
-  const settings = await updatePaperRiskSettings(
-    session.user.id,
-    parsed.data,
-  );
+  try {
+    await assertTradePasswordFromRequest(req, session.user.id, parsed.data.tradePin);
+  } catch (err) {
+    const code = (err as Error & { code?: string }).code;
+    if (code === "INVALID_TRADE_PASSWORD") {
+      return NextResponse.json(
+        { error: "Invalid trade password", code },
+        { status: 401 },
+      );
+    }
+    throw err;
+  }
+
+  const settings = await updatePaperRiskSettings(session.user.id, {
+    maxPositionPctPerSymbol: parsed.data.maxPositionPctPerSymbol,
+    maxGrossExposurePct: parsed.data.maxGrossExposurePct,
+    maxDailyLossPct: parsed.data.maxDailyLossPct,
+    maxOrderNotionalPct: parsed.data.maxOrderNotionalPct,
+    softOnly: parsed.data.softOnly,
+    requireEmotionCheck: parsed.data.requireEmotionCheck,
+  });
   return NextResponse.json({ settings });
 }

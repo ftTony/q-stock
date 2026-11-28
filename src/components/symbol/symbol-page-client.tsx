@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { SymbolPageChartSlot } from "@/components/symbol/chart/symbol-page-chart-slot";
 import { SymbolPageOverlays } from "@/components/symbol/page/symbol-page-overlays";
 import { SymbolWorkbenchBody } from "@/components/symbol/page/symbol-workbench-body";
@@ -27,6 +27,7 @@ import { TopToast } from "@/components/ui/top-toast";
 import { LG_MIN, useMinWidth } from "@/hooks/use-min-width";
 import { markPrice } from "@/lib/market/extended-hours";
 import { isMarketIndexSymbol } from "@/lib/market/indices";
+import { localizedNameFromQuote } from "@/lib/market-names";
 import type { SymbolSeoCopy } from "@/lib/seo/symbol-metadata";
 import type { AssetType, OhlcvBar, Quote } from "@/lib/types";
 import type { QuoteHeaderLabels } from "@/components/charts/candle-chart";
@@ -53,6 +54,7 @@ export function SymbolPageClient({
 }: Props) {
   const isIndex = isMarketIndexSymbol(symbol);
   const isDesktop = useMinWidth(LG_MIN);
+  const locale = useLocale();
   const tLayout = useTranslations("symbolLayout");
   const tNav = useTranslations("nav");
   const tSymbol = useTranslations("symbol");
@@ -369,7 +371,7 @@ export function SymbolPageClient({
           isIndex={isIndex}
           lastPrice={markPrice(s.quote)}
           percentChange={s.quote?.percentChange ?? null}
-          quoteName={s.quote?.name ?? null}
+          quoteName={localizedNameFromQuote(s.quote, locale) ?? null}
           bid={s.quote?.bid ?? null}
           ask={s.quote?.ask ?? null}
           boundStrategyId={p.boundStrategyId}

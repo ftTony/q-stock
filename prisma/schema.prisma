@@ -87,6 +87,8 @@ model User {
   email             String             @unique
   /** Null for OAuth-only users (e.g. Google). */
   passwordHash      String?
+  /** Bcrypt hash of the 6-digit trade PIN; null means no trade password set. */
+  tradePasswordHash String?
   name              String?
   locale            LocaleCode         @default(zh_CN)
   theme             ThemeMode          @default(system)
@@ -119,7 +121,7 @@ model User {
   watchlistDigests   WatchlistDigestLog[]
   watchlistClosePushes WatchlistClosePushLog[]
   pushSubscriptions  PushSubscription[]
-  paperAccount       PaperAccount?
+  paperAccounts      PaperAccount[]
   paperPositions     PaperPosition[]
   paperOrders        PaperOrder[]
   reviewNotes        ReviewNote[]
@@ -408,11 +410,23 @@ model ReviewNote {
   @@index([userId, createdAt])
 }
 
+enum AccountType {
+  cash
+  margin
+}
+
 model PaperAccount {
-  id             String    @id @default(cuid())
-  userId         String    @unique
-  cashBalance    Decimal   @db.Decimal(18, 4)
-  currency       String    @default("USD")
+  id             String      @id @default(cuid())
+  userId         String
+  accountType    AccountType @default(cash)
+  cashBalance    Decimal     @db.Decimal(18, 4)
+  currency       String      @default("USD")
+  /** Outstanding margin borrowing (margin accounts only). */
+  borrowedBalance Decimal    @default(0) @db.Decimal(18, 4)
+  /** Accrued interest on borrowed balance (margin accounts only). */
+  interestAccrued Decimal    @default(0) @db.Decimal(18, 4)
+  /** Last time interest was accrued. */
+  interestAccruedAt DateTime?
   /** Equity snapshot at start of risk day (for daily loss circuit). */
   dayStartEquity Decimal?  @db.Decimal(18, 4)
   dayStartDate   DateTime?
@@ -420,6 +434,9 @@ model PaperAccount {
   updatedAt      DateTime  @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, accountType])
+  @@index([userId])
 }
 
 /** Per-user paper-trading risk limits (calm investing). */
@@ -437,24 +454,26 @@ model PaperRiskSettings {
 }
 
 model PaperPosition {
-  id        String    @id @default(cuid())
-  userId    String
-  symbol    String
-  assetType AssetType
-  qty       Decimal   @db.Decimal(18, 8)
-  avgCost   Decimal   @db.Decimal(18, 8)
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
+  id          String      @id @default(cuid())
+  userId      String
+  accountType AccountType @default(cash)
+  symbol      String
+  assetType   AssetType
+  qty         Decimal     @db.Decimal(18, 8)
+  avgCost     Decimal     @db.Decimal(18, 8)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  @@unique([userId, symbol, assetType])
-  @@index([userId])
+  @@unique([userId, accountType, symbol, assetType])
+  @@index([userId, accountType])
 }
 
 model PaperOrder {
   id                String      @id @default(cuid())
   userId            String
+  accountType       AccountType @default(cash)
   symbol            String
   assetType         AssetType
   side              OrderSide
@@ -479,7 +498,7 @@ model PaperOrder {
   strategy Strategy? @relation(fields: [strategyId], references: [id], onDelete: SetNull)
 
   @@index([status])
-  @@index([userId, status])
+  @@index([userId, accountType, status])
   @@index([symbol, assetType, status])
   @@index([strategyId])
 }

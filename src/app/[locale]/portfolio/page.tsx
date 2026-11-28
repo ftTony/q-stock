@@ -32,6 +32,7 @@ import type {
   PortfolioNewsItem,
   PortfolioRow,
 } from "@/components/portfolio/types";
+import { isTradePinCancelled } from "@/components/trading/trade-pin-gate";
 
 const PortfolioAside = dynamic(
   () =>
@@ -149,7 +150,7 @@ export default function PortfolioPage() {
     if (!window.confirm(tTrade("resetConfirm"))) return;
     setTradeMsg(null);
     try {
-      await resetAccountMut.mutateAsync();
+      await resetAccountMut.mutateAsync("cash");
       setTradeMsg(tTrade("resetDone"));
     } catch {
       /* ignore */
@@ -157,7 +158,12 @@ export default function PortfolioPage() {
   }
 
   async function cancelOrder(id: string) {
-    await cancelOrderMut.mutateAsync(id);
+    try {
+      await cancelOrderMut.mutateAsync(id);
+    } catch (err) {
+      if (isTradePinCancelled(err)) return;
+      throw err;
+    }
   }
 
   if (status === "loading") {

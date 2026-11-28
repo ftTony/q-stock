@@ -32,7 +32,6 @@ type Props = {
   percentChange: number | null;
   bid: number | null;
   ask: number | null;
-  loading: boolean;
   loadingLabel: string;
   resultBanner: ReactNode;
   positionLine: ReactNode;
@@ -61,6 +60,11 @@ type Props = {
   cashBalance: number;
   floatingPnl: number;
   marginUsed: number;
+  accountType: "cash" | "margin";
+  onAccountType: (t: "cash" | "margin") => void;
+  borrowedBalance: number;
+  interestAccrued: number;
+  buyingPower: number;
   currency: string;
   qtyMode: QtyMode;
   onQtyMode: (m: QtyMode) => void;
@@ -104,7 +108,6 @@ export function TradePanelFormBody(p: Props) {
     return (
       <TradePanelStackLayout
         symbol={p.symbol}
-        loading={p.loading}
         positionLine={p.positionLine}
         resultBanner={p.resultBanner}
         draftBanner={p.draftBanner}
@@ -154,7 +157,6 @@ export function TradePanelFormBody(p: Props) {
       quoteName={p.quoteName}
       lastPrice={p.lastPrice}
       percentChange={p.percentChange}
-      loading={p.loading}
       loadingLabel={p.loadingLabel}
       resultBanner={p.resultBanner}
       positionLine={p.positionLine}
@@ -186,6 +188,11 @@ export function TradePanelFormBody(p: Props) {
       floatingPnl={p.floatingPnl}
       dayPnl={0}
       marginUsed={p.marginUsed}
+      accountType={p.accountType}
+      onAccountType={p.onAccountType}
+      borrowedBalance={p.borrowedBalance}
+      interestAccrued={p.interestAccrued}
+      buyingPower={p.buyingPower}
       currency={p.currency}
       qtyMode={p.qtyMode}
       onQtyMode={p.onQtyMode}

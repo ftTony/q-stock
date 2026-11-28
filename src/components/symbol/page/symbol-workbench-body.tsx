@@ -1,7 +1,7 @@
 "use client";
 
 import type { CSSProperties, FormEvent, ReactNode } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   SymbolDesktopRail,
   SymbolSideIconRail,
@@ -25,6 +25,7 @@ import type { useWatchlistResize } from "@/components/symbol/hooks/use-watchlist
 import type { FeedStatusKind } from "@/components/symbol/quote/symbol-feed-status";
 import type { SymbolTab } from "@/components/symbol/tabs/symbol-tabs-types";
 import { markPrice } from "@/lib/market/extended-hours";
+import { localizedNameFromQuote } from "@/lib/market-names";
 import type { AssetType } from "@/lib/types";
 
 type SymbolPageState = ReturnType<typeof useSymbolPage>;
@@ -107,6 +108,7 @@ export function SymbolWorkbenchBody({
   onOpenAbout,
   resizing,
 }: Props) {
+  const locale = useLocale();
   const stackBelow = isStack ? (
     <SymbolStackBottomPanel
       key={stackKey}
@@ -116,7 +118,7 @@ export function SymbolWorkbenchBody({
       quote={s.quote}
       lastPrice={markPrice(s.quote)}
       percentChange={s.quote?.percentChange ?? null}
-      quoteName={s.quote?.name ?? null}
+      quoteName={localizedNameFromQuote(s.quote, locale) ?? null}
       bid={s.quote?.bid ?? null}
       ask={s.quote?.ask ?? null}
       boundStrategyId={p.boundStrategyId}

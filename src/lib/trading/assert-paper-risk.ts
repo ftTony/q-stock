@@ -1,13 +1,16 @@
-import type { AssetType } from "@prisma/client";
+import type { AccountType, AssetType } from "@prisma/client";
 import { prisma } from "@/lib/db";
 import { getQuote } from "@/lib/market";
 import { checkOrderRisk } from "@/lib/trading/check-order-risk";
+import { accrueInterest } from "@/lib/trading/account";
+import { accountMetrics } from "@/lib/trading/margin";
 import { TradingError } from "@/lib/trading/execute";
 import { ensurePaperRiskSettings } from "@/lib/trading/paper-risk-settings";
 
 /** Server-side risk gate before creating a paper order. */
 export async function assertPaperRisk(input: {
   userId: string;
+  accountType: AccountType;
   symbol: string;
   assetType: AssetType;
   side: "buy" | "sell";
@@ -19,10 +22,15 @@ export async function assertPaperRisk(input: {
 }) {
   const settings = await ensurePaperRiskSettings(input.userId);
   const account = await prisma.paperAccount.findUniqueOrThrow({
-    where: { userId: input.userId },
+    where: {
+      userId_accountType: {
+        userId: input.userId,
+        accountType: input.accountType,
+      },
+    },
   });
   const positions = await prisma.paperPosition.findMany({
-    where: { userId: input.userId },
+    where: { userId: input.userId, accountType: input.accountType },
     take: 80,
   });
 
@@ -36,8 +44,19 @@ export async function assertPaperRisk(input: {
     }
   }
 
-  const cash = Number(account.cashBalance);
-  const equity = cash + gross;
+  const interest = await accrueInterest(
+    account.accountType,
+    Number(account.borrowedBalance),
+    Number(account.interestAccrued),
+    account.interestAccruedAt,
+  );
+  const { equity } = accountMetrics({
+    accountType: input.accountType,
+    cash: Number(account.cashBalance),
+    gross,
+    borrowed: Number(account.borrowedBalance),
+    interest: interest.interestAccrued,
+  });
 
   let entry =
     input.type === "limit"

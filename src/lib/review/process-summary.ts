@@ -76,10 +76,12 @@ export async function buildProcessSummary(opts: {
       include: { strategy: { select: { id: true, name: true } } },
     }),
     prisma.paperPosition.findMany({
-      where: { userId: opts.userId },
+      where: { userId: opts.userId, accountType: "cash" },
       take: POSITION_TAKE,
     }),
-    prisma.paperAccount.findUnique({ where: { userId: opts.userId } }),
+    prisma.paperAccount.findFirst({
+      where: { userId: opts.userId, accountType: "cash" },
+    }),
   ]);
 
   const fills: ProcessFill[] = orders.map((o) => {

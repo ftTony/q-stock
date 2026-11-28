@@ -5,15 +5,25 @@ import { useSession } from "next-auth/react";
 import { useSearchParams } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { AuthLoginGate } from "@/components/auth/auth-login-gate";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
+import { TradePasswordDialog } from "@/components/trading/trade-password-dialog";
+import {
+  OrderConfirmDetails,
+  type OrderDetailRow,
+} from "@/components/trading/order-confirm-details";
 import { TopToast, type ToastTone } from "@/components/ui/top-toast";
 import { useMounted } from "@/hooks/use-mounted";
 import { useMyStrategies } from "@/hooks/query/use-strategies";
 import {
   useCancelOrder,
   usePlaceOrder,
+  useResetTradePassword,
+  useSetTradePassword,
   useTradingAccount,
   useTradingOrders,
   useTradingPositions,
+  useTradePasswordStatus,
+  useVerifyLoginPassword,
 } from "@/hooks/query/use-trading";
 import { formatNumber } from "@/lib/format-number";
 import { consumePaperDraft } from "@/lib/trading/paper-draft-storage";
@@ -45,7 +55,14 @@ export type TradeAiDraft = {
   nonce: number;
 };
 
-type Account = { cashBalance: number; currency: string };
+type AccountType = "cash" | "margin";
+type Account = {
+  cashBalance: number;
+  currency: string;
+  accountType?: AccountType;
+  borrowedBalance?: number;
+  interestAccrued?: number;
+};
 type Position = { qty: number; avgCost: number };
 type Order = {
   id: string;
@@ -105,10 +122,12 @@ export function TradePanel({
 }) {
   const stack = density === "stack";
   const t = useTranslations("trading");
+  const tPw = useTranslations("tradePassword");
   const { data: session, status } = useSession();
   const searchParams = useSearchParams();
   const mounted = useMounted();
   const [side, setSide] = useState<Side>("buy");
+  const [accountType, setAccountType] = useState<AccountType>("cash");
   const [orderType, setOrderType] = useState<OrderType>("market");
   const [qty, setQty] = useState("1");
   const [limitPrice, setLimitPrice] = useState("");
@@ -118,17 +137,23 @@ export function TradePanel({
   const planStrategyId = planStrategyIdProp || "";
   const signedIn = Boolean(session?.user);
 
-  const accountQuery = useTradingAccount(signedIn);
-  const positionsQuery = useTradingPositions({ enabled: signedIn });
+  const accountQuery = useTradingAccount(signedIn, accountType);
+  const positionsQuery = useTradingPositions({ enabled: signedIn, accountType });
   const ordersQuery = useTradingOrders({
     status: "pending",
     symbol,
     assetType,
+    accountType,
     enabled: signedIn,
   });
   const strategiesQuery = useMyStrategies(signedIn);
   const placeOrder = usePlaceOrder();
   const cancelOrder = useCancelOrder();
+  const tradePwQuery = useTradePasswordStatus(signedIn);
+  const setTradePw = useSetTradePassword();
+  const resetTradePw = useResetTradePassword();
+  const verifyLoginPw = useVerifyLoginPassword();
+  const tradePasswordEnabled = Boolean(tradePwQuery.data?.enabled);
 
   const strategies = strategiesQuery.data?.strategies ?? [];
   const {
@@ -164,13 +189,15 @@ export function TradePanel({
     );
     return pos ? ({ qty: pos.qty, avgCost: pos.avgCost } as Position) : null;
   }, [positionsQuery.data, symbol, assetType]);
+  const grossNum = useMemo(() => {
+    const list =
+      ((positionsQuery.data as { positions?: Array<{ qty: number; avgCost: number }> } | undefined)
+        ?.positions ?? []) as Array<{ qty: number; avgCost: number }>;
+    return list.reduce((s, p) => s + p.qty * p.avgCost, 0);
+  }, [positionsQuery.data]);
   const orders =
     ((ordersQuery.data as { orders?: Order[] } | undefined)?.orders ??
       []) as Order[];
-  const loading =
-    accountQuery.isLoading ||
-    positionsQuery.isLoading ||
-    ordersQuery.isLoading;
   const busy = placeOrder.isPending || cancelOrder.isPending;
 
   const [msg, setMsg] = useState<string | null>(null);
@@ -181,6 +208,14 @@ export function TradePanel({
   );
   const [submitOrderId, setSubmitOrderId] = useState<string | null>(null);
   const [storedDraft, setStoredDraft] = useState<TradeAiDraft | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [passwordOpen, setPasswordOpen] = useState(false);
+  const [passwordMode, setPasswordMode] = useState<
+    "enter" | "set" | "forgot"
+  >("enter");
+  const [passwordError, setPasswordError] = useState<string | null>(null);
+  /** PIN captured in step 1, held until the step-2 confirmation is accepted. */
+  const [pendingPin, setPendingPin] = useState<string | null>(null);
   const effectiveDraft = aiDraft ?? storedDraft;
 
   useEffect(() => {
@@ -247,10 +282,21 @@ export function TradePanel({
     return lastPrice || 0;
   }, [orderType, limitPrice, stopPrice, lastPrice]);
 
-  const equityNum = account?.cashBalance ?? 0;
+  const borrowedNum = account?.borrowedBalance ?? 0;
+  const interestNum = account?.interestAccrued ?? 0;
+  const equityNum =
+    accountType === "margin"
+      ? Math.max(0, (account?.cashBalance ?? 0) + grossNum - borrowedNum - interestNum)
+      : account?.cashBalance ?? 0;
+  // Cash book: power = cash. Margin book: 2×equity minus current exposure.
+  const buyingPowerNum =
+    accountType === "margin"
+      ? Math.max(0, equityNum * 2 - grossNum)
+      : Math.max(0, account?.cashBalance ?? 0);
   const ticket = useTradeTicketQty({
     estimatePrice,
     equity: equityNum,
+    buyingPower: buyingPowerNum,
     side,
     stack,
     qty,
@@ -291,7 +337,58 @@ export function TradePanel({
     setMsgKey((k) => k + 1);
   }
 
-  async function onSubmit(e: FormEvent) {
+  async function submitOrder(pin?: string) {
+    try {
+      const body = buildPlaceOrderBody({
+        accountType,
+        symbol,
+        assetType,
+        side,
+        orderType,
+        qtyNum,
+        estimatePrice,
+        equity: equityNum,
+        emotionTags,
+        orderStrategyId,
+        limitPrice,
+        stopPrice,
+        stopLoss,
+        takeProfit,
+        invalidationPrice,
+        tradePin: pin,
+      });
+
+      const data = (await placeOrder.mutateAsync(body)) as {
+        order?: { id?: string; status?: string };
+        error?: string;
+      };
+      const filled = data.order?.status === "filled";
+      setSubmitOrderId(data.order?.id ?? null);
+      setSubmitResult(filled ? "filled" : "pending");
+      showToast(
+        filled ? t("orderFilledPaper") : t("orderPendingPaper"),
+        "success",
+      );
+      setEmotionTags([]);
+      onDismissAiDraft?.();
+      setPendingPin(null);
+      return true;
+    } catch (err) {
+      const code = (err as Error & { code?: string }).code;
+      if (code === "INVALID_TRADE_PASSWORD") {
+        // Wrong PIN: bounce back to the password sheet for a retry.
+        setConfirmOpen(false);
+        setPendingPin(null);
+        setPasswordError(t("errTradePassword"));
+        setPasswordOpen(true);
+        return false;
+      }
+      showToast(tradingErrorMessage(err, t), "error");
+      return false;
+    }
+  }
+
+  function onSubmit(e: FormEvent) {
     e.preventDefault();
     setMsg(null);
     setSubmitResult(null);
@@ -308,49 +405,33 @@ export function TradePanel({
       showToast(t("errInvalidQty"), "neutral");
       return;
     }
-    if (confirmBefore) {
-      const ok = window.confirm(
-        t("confirmOrderPrompt", {
-          side: side === "buy" ? t("buy") : t("sell"),
-          qty: String(qtyNum),
-          symbol,
-        }),
-      );
-      if (!ok) return;
+    // Step 1: trade password. When none is configured yet the user must
+    // create one (6 digits) first; otherwise ask for the existing PIN.
+    if (pendingPin == null) {
+      if (tradePwQuery.data == null) return; // status not loaded yet
+      setPasswordMode(tradePasswordEnabled ? "enter" : "set");
+      setPasswordError(null);
+      setPasswordOpen(true);
+      return;
     }
-    try {
-      const body = buildPlaceOrderBody({
-        symbol,
-        assetType,
-        side,
-        orderType,
-        qtyNum,
-        estimatePrice,
-        equity: account?.cashBalance ?? 0,
-        emotionTags,
-        orderStrategyId,
-        limitPrice,
-        stopPrice,
-        stopLoss,
-        takeProfit,
-        invalidationPrice,
-      });
+    // Step 2: secondary confirmation (shared by password and no-password flows).
+    if (confirmBefore) {
+      setConfirmOpen(true);
+      return;
+    }
+    // Confirmation disabled: submit directly with the captured PIN (if any).
+    void submitOrder(pendingPin ?? undefined);
+  }
 
-      const data = (await placeOrder.mutateAsync(body)) as {
-        order?: { id?: string; status?: string };
-        error?: string;
-      };
-      const filled = data.order?.status === "filled";
-      setSubmitOrderId(data.order?.id ?? null);
-      setSubmitResult(filled ? "filled" : "pending");
-      showToast(
-        filled ? t("orderFilledPaper") : t("orderPendingPaper"),
-        "success",
-      );
-      setEmotionTags([]);
-      onDismissAiDraft?.();
-    } catch (err) {
-      showToast(tradingErrorMessage(err, t), "error");
+  /** PIN accepted locally → close the sheet, then open secondary confirmation. */
+  function onPinCaptured(pin: string) {
+    setPasswordError(null);
+    setPendingPin(pin);
+    setPasswordOpen(false);
+    if (confirmBefore) {
+      setConfirmOpen(true);
+    } else {
+      void submitOrder(pin);
     }
   }
 
@@ -382,6 +463,42 @@ export function TradePanel({
     symbol,
     type: t(typeKey),
   });
+  const orderDetailRows: OrderDetailRow[] = [
+    {
+      label: t("confirmDetailSymbol"),
+      value: quoteName ? `${quoteName} · ${symbol}` : symbol,
+      kind: "symbol",
+    },
+    {
+      label: t("side"),
+      value: side === "buy" ? t("buy") : t("sell"),
+      kind: "side",
+    },
+    {
+      label: t("orderType"),
+      value: t(typeKey),
+    },
+    {
+      label: t("accountTypeLabel"),
+      value: accountType === "margin" ? t("accountTypeMargin") : t("accountTypeCash"),
+    },
+    {
+      label: t("qty"),
+      value: formatNumber(qtyNum, { maximumFractionDigits: 4 }),
+    },
+    {
+      label: t("confirmDetailPrice"),
+      value: `$${fmtMoney(estimatePrice)}`,
+    },
+    {
+      label: t("estimate"),
+      value: `$${fmtMoney(estimate)}`,
+      kind: "amount",
+    },
+  ];
+  const orderDetails = (
+    <OrderConfirmDetails rows={orderDetailRows} side={side} />
+  );
   const positionLine = (
     <TradePanelPositionLine qty={position?.qty ?? 0} avgCost={position?.avgCost ?? null} fmtMoney={fmtMoney} />
   );
@@ -427,7 +544,6 @@ export function TradePanel({
         percentChange={percentChange}
         bid={bid}
         ask={ask}
-        loading={loading}
         loadingLabel={t("loading")}
         resultBanner={resultBanner}
         positionLine={positionLine}
@@ -456,6 +572,11 @@ export function TradePanel({
         cashBalance={account?.cashBalance ?? 0}
         floatingPnl={floatingPnl}
         marginUsed={marginUsed}
+        accountType={accountType}
+        onAccountType={setAccountType}
+        borrowedBalance={borrowedNum}
+        interestAccrued={interestNum}
+        buyingPower={buyingPowerNum}
         currency={account?.currency ?? "USD"}
         qtyMode={qtyMode}
         onQtyMode={setQtyMode}
@@ -487,6 +608,152 @@ export function TradePanel({
         onEmotionTags={setEmotionTags}
         orders={orders}
         onCancelOrder={(id) => void cancel(id)}
+      />
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title={t("confirmOrderTitle")}
+        details={orderDetails}
+        cancelLabel={t("confirmOrderCancel")}
+        confirmLabel={t("confirmOrderSubmit")}
+        confirmColor={side === "buy" ? "var(--up)" : "var(--down)"}
+        busy={placeOrder.isPending}
+        onCancel={() => {
+          if (!placeOrder.isPending) {
+            setConfirmOpen(false);
+            setPendingPin(null);
+          }
+        }}
+        onConfirm={() => {
+          setConfirmOpen(false);
+          void submitOrder(pendingPin ?? undefined);
+        }}
+      />
+
+      <TradePasswordDialog
+        open={passwordOpen}
+        mode={passwordMode}
+        title={
+          passwordMode === "set"
+            ? tPw("setTitleDialog")
+            : passwordMode === "forgot"
+              ? tPw("forgotTitle")
+              : t("tradePasswordTitle")
+        }
+        hint={
+          passwordMode === "set"
+            ? tPw("setHintDialog")
+            : passwordMode === "forgot"
+              ? tPw("forgotHint1")
+              : t("tradePasswordHint")
+        }
+        step2Hint={tPw("forgotHint2")}
+        stepLabels={[tPw("stepVerify"), tPw("stepNew"), tPw("stepConfirm")]}
+        verifyLabel={tPw("nextStep")}
+        prevLabel={tPw("prevStep")}
+        nextLabel={tPw("nextStep")}
+        doneLabel={tPw("done")}
+        onVerifyLogin={
+          passwordMode === "forgot"
+            ? (lp) =>
+                (async () => {
+                  try {
+                    await verifyLoginPw.mutateAsync(lp);
+                  } catch (err) {
+                    const code = (err as Error & { code?: string }).code;
+                    setPasswordError(
+                      code === "INVALID_LOGIN_PASSWORD"
+                        ? tPw("errLoginPassword")
+                        : code === "NO_LOGIN_PASSWORD"
+                          ? tPw("errNoLoginPassword")
+                          : err instanceof Error && err.message
+                            ? err.message
+                            : tPw("saveFailed"),
+                    );
+                    throw err;
+                  }
+                })()
+            : undefined
+        }
+        submitLabel={
+          passwordMode === "set"
+            ? tPw("setSubmit")
+            : passwordMode === "forgot"
+              ? tPw("resetSubmit")
+              : t("tradePasswordSubmit")
+        }
+        cancelLabel={t("tradePasswordCancel")}
+        errorLabel={t("errTradePassword")}
+        mismatchLabel={tPw("errMismatch")}
+        newPinLabel={tPw("newPin")}
+        confirmPinLabel={tPw("confirmPin")}
+        confirmAriaLabel={tPw("confirmPin")}
+        loginPasswordLabel={tPw("loginPassword")}
+        forgotLinkLabel={tPw("forgotLink")}
+        onForgot={
+          passwordMode === "enter"
+            ? () => {
+                setPasswordError(null);
+                setPasswordMode("forgot");
+              }
+            : undefined
+        }
+        busy={
+          placeOrder.isPending ||
+          setTradePw.isPending ||
+          resetTradePw.isPending
+        }
+        error={passwordError}
+        onCancel={() => {
+          if (
+            !placeOrder.isPending &&
+            !setTradePw.isPending &&
+            !resetTradePw.isPending
+          ) {
+            setPasswordOpen(false);
+            setPasswordError(null);
+            setPendingPin(null);
+          }
+        }}
+        onSubmit={(pin, loginPassword) => {
+          if (passwordMode === "set") {
+            // First-time setup: persist the new PIN, then continue the trade
+            // flow with it (confirm dialog → order).
+            void (async () => {
+              try {
+                await setTradePw.mutateAsync({ pin });
+                onPinCaptured(pin);
+              } catch (err) {
+                setPasswordError(
+                  err instanceof Error && err.message
+                    ? err.message
+                    : tPw("saveFailed"),
+                );
+              }
+            })();
+          } else if (passwordMode === "forgot") {
+            // Forgot PIN: verify the login password, set the new PIN, then
+            // continue the trade flow with it.
+            void (async () => {
+              try {
+                await resetTradePw.mutateAsync({
+                  loginPassword: loginPassword ?? "",
+                  pin,
+                });
+                onPinCaptured(pin);
+              } catch (err) {
+                const code = (err as Error & { code?: string }).code;
+                setPasswordError(
+                  code === "INVALID_LOGIN_PASSWORD"
+                    ? tPw("errLoginPassword")
+                    : tPw("saveFailed"),
+                );
+              }
+            })();
+          } else {
+            onPinCaptured(pin);
+          }
+        }}
       />
     </form>
   );

@@ -2,8 +2,9 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
-import { ensureAccount } from "@/lib/trading/account";
+import { ensureAccounts } from "@/lib/trading/account";
 import { TradingError } from "@/lib/trading/execute";
+import { assertTradePasswordFromRequest } from "@/lib/trading/trade-password";
 import {
   cancelOrder,
   modifyOrder,
@@ -17,16 +18,18 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await ensureAccount(session.user.id);
+  await ensureAccounts(session.user.id);
 
   const url = new URL(req.url);
   const status = url.searchParams.get("status");
   const symbol = url.searchParams.get("symbol");
   const assetType = url.searchParams.get("assetType");
+  const accountType = url.searchParams.get("accountType") === "margin" ? "margin" : "cash";
 
   const orders = await prisma.paperOrder.findMany({
     where: {
       userId: session.user.id,
+      accountType,
       ...(status
         ? {
             status: status as
@@ -58,6 +61,7 @@ export async function GET(req: Request) {
 }
 
 const createSchema = z.object({
+  accountType: z.enum(["cash", "margin"]).optional(),
   symbol: z.string().min(1).max(20),
   assetType: z.enum(["stock", "hk", "crypto", "cn"]),
   side: z.enum(["buy", "sell"]),
@@ -69,6 +73,8 @@ const createSchema = z.object({
   invalidationNote: z.string().max(200).optional().nullable(),
   strategyId: z.string().cuid().optional().nullable(),
   riskSnapshot: z.record(z.string(), z.unknown()).optional().nullable(),
+  /** 6-digit trade PIN; required when the user has enabled a trade password. */
+  tradePin: z.string().regex(/^\d{6}$/).optional().nullable(),
 });
 
 export async function POST(req: Request) {
@@ -83,9 +89,13 @@ export async function POST(req: Request) {
   }
 
   try {
+    // Trade password is verified server-side; never trust the client flag.
+    const { tradePin, accountType, ...orderInput } = parsed.data;
+    await assertTradePasswordFromRequest(req, session.user.id, tradePin);
     const order = await placeOrder({
       userId: session.user.id,
-      ...parsed.data,
+      accountType: accountType ?? "cash",
+      ...orderInput,
     });
     return NextResponse.json(
       { order: serializeOrder(order) },
@@ -93,9 +103,11 @@ export async function POST(req: Request) {
     );
   } catch (err) {
     if (err instanceof TradingError) {
+      const status =
+        err.code === "INVALID_TRADE_PASSWORD" ? 401 : 400;
       return NextResponse.json(
         { error: err.message, code: err.code },
-        { status: 400 },
+        { status },
       );
     }
     console.error("placeOrder", err);
@@ -108,6 +120,7 @@ const modifySchema = z.object({
   qty: z.number().positive(),
   limitPrice: z.number().positive().optional().nullable(),
   stopPrice: z.number().positive().optional().nullable(),
+  tradePin: z.string().regex(/^\d{6}$/).optional().nullable(),
 });
 
 export async function PATCH(req: Request) {
@@ -122,6 +135,7 @@ export async function PATCH(req: Request) {
   }
 
   try {
+    await assertTradePasswordFromRequest(req, session.user.id, parsed.data.tradePin);
     const order = await modifyOrder({
       userId: session.user.id,
       orderId: parsed.data.id,
@@ -132,7 +146,12 @@ export async function PATCH(req: Request) {
     return NextResponse.json({ order: serializeOrder(order) });
   } catch (err) {
     if (err instanceof TradingError) {
-      const status = err.code === "NOT_FOUND" ? 404 : 400;
+      const status =
+        err.code === "NOT_FOUND"
+          ? 404
+          : err.code === "INVALID_TRADE_PASSWORD"
+            ? 401
+            : 400;
       return NextResponse.json(
         { error: err.message, code: err.code },
         { status },
@@ -149,17 +168,25 @@ export async function DELETE(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const id = new URL(req.url).searchParams.get("id");
+  const url = new URL(req.url);
+  const id = url.searchParams.get("id");
   if (!id) {
     return NextResponse.json({ error: "id required" }, { status: 400 });
   }
+  const queryPin = url.searchParams.get("tradePin");
 
   try {
+    await assertTradePasswordFromRequest(req, session.user.id, queryPin);
     const order = await cancelOrder(session.user.id, id);
     return NextResponse.json({ order: serializeOrder(order) });
   } catch (err) {
     if (err instanceof TradingError) {
-      const status = err.code === "NOT_FOUND" ? 404 : 400;
+      const status =
+        err.code === "NOT_FOUND"
+          ? 404
+          : err.code === "INVALID_TRADE_PASSWORD"
+            ? 401
+            : 400;
       return NextResponse.json(
         { error: err.message, code: err.code },
         { status },

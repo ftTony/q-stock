@@ -1,5 +1,6 @@
-import type { AssetType, Prisma } from "@prisma/client";
+import type { AccountType, AssetType, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/db";
+import { accrueInterest } from "@/lib/trading/account";
 
 type Tx = Prisma.TransactionClient;
 
@@ -19,6 +20,7 @@ export async function applyFillInTx(
   params: {
     orderId: string;
     userId: string;
+    accountType: AccountType;
     symbol: string;
     assetType: AssetType;
     side: "buy" | "sell";
@@ -26,37 +28,70 @@ export async function applyFillInTx(
     fillPrice: number;
   },
 ) {
-  const { orderId, userId, symbol, assetType, side, qty, fillPrice } = params;
+  const {
+    orderId,
+    userId,
+    accountType,
+    symbol,
+    assetType,
+    side,
+    qty,
+    fillPrice,
+  } = params;
   if (!(qty > 0) || !(fillPrice > 0)) {
     throw new TradingError("Invalid qty or price", "INVALID_FILL");
   }
 
-  const account = await tx.paperAccount.findUnique({ where: { userId } });
+  const accountWhere = { userId_accountType: { userId, accountType } };
+  const account = await tx.paperAccount.findUnique({ where: accountWhere });
   if (!account) {
     throw new TradingError("Account not found", "NO_ACCOUNT");
   }
 
+  // Lazily accrue interest on any outstanding margin debt before settling.
+  const interest = await accrueInterest(
+    account.accountType,
+    Number(account.borrowedBalance),
+    Number(account.interestAccrued),
+    account.interestAccruedAt,
+  );
+
   const cash = Number(account.cashBalance);
+  const borrowed = Number(account.borrowedBalance);
   const notional = qty * fillPrice;
 
+  const posWhere = {
+    userId_accountType_symbol_assetType: {
+      userId,
+      accountType,
+      symbol,
+      assetType,
+    },
+  };
+
   if (side === "buy") {
-    if (cash + 1e-8 < notional) {
+    // Cash book cannot borrow. Margin book uses cash first, then borrowing.
+    if (accountType === "cash" && cash + 1e-8 < notional) {
       throw new TradingError("Insufficient cash", "INSUFFICIENT_CASH");
     }
+    const cashUse = Math.min(cash, notional);
+    const borrowDelta = Math.max(0, notional - cashUse);
     await tx.paperAccount.update({
-      where: { userId },
-      data: { cashBalance: cash - notional },
-    });
-
-    const pos = await tx.paperPosition.findUnique({
-      where: {
-        userId_symbol_assetType: { userId, symbol, assetType },
+      where: accountWhere,
+      data: {
+        cashBalance: cash - cashUse,
+        borrowedBalance: borrowed + borrowDelta,
+        interestAccrued: interest.interestAccrued,
+        interestAccruedAt: interest.interestAccruedAt,
       },
     });
+
+    const pos = await tx.paperPosition.findUnique({ where: posWhere });
     if (!pos) {
       await tx.paperPosition.create({
         data: {
           userId,
+          accountType,
           symbol,
           assetType,
           qty,
@@ -74,18 +109,21 @@ export async function applyFillInTx(
       });
     }
   } else {
-    const pos = await tx.paperPosition.findUnique({
-      where: {
-        userId_symbol_assetType: { userId, symbol, assetType },
-      },
-    });
+    const pos = await tx.paperPosition.findUnique({ where: posWhere });
     const held = pos ? Number(pos.qty) : 0;
     if (held + 1e-8 < qty) {
       throw new TradingError("Insufficient position", "INSUFFICIENT_POSITION");
     }
+    // Sale proceeds repay margin debt first, remainder returns to cash.
+    const repay = Math.min(borrowed, notional);
     await tx.paperAccount.update({
-      where: { userId },
-      data: { cashBalance: cash + notional },
+      where: accountWhere,
+      data: {
+        borrowedBalance: borrowed - repay,
+        cashBalance: cash + (notional - repay),
+        interestAccrued: interest.interestAccrued,
+        interestAccruedAt: interest.interestAccruedAt,
+      },
     });
     const remain = held - qty;
     if (remain <= 1e-10) {
@@ -117,6 +155,7 @@ export async function fillPendingOrder(orderId: string, fillPrice: number) {
     return applyFillInTx(tx, {
       orderId: order.id,
       userId: order.userId,
+      accountType: order.accountType,
       symbol: order.symbol,
       assetType: order.assetType,
       side: order.side,

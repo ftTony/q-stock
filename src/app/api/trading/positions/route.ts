@@ -3,7 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { getQuotes } from "@/lib/market";
 import { withUserMarket } from "@/lib/market/with-user-market";
-import { ensureAccount } from "@/lib/trading/account";
+import { ensureAccounts } from "@/lib/trading/account";
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -11,13 +11,14 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  await ensureAccount(session.user.id);
+  await ensureAccounts(session.user.id);
 
-  const withQuotes =
-    new URL(req.url).searchParams.get("quotes") === "1";
+  const url = new URL(req.url);
+  const withQuotes = url.searchParams.get("quotes") === "1";
+  const accountType = url.searchParams.get("accountType") === "margin" ? "margin" : "cash";
 
   const positions = await prisma.paperPosition.findMany({
-    where: { userId: session.user.id },
+    where: { userId: session.user.id, accountType },
     orderBy: { updatedAt: "desc" },
     take: 80,
   });
@@ -48,6 +49,7 @@ export async function GET(req: Request) {
 
       return {
         id: p.id,
+        accountType: p.accountType,
         symbol: p.symbol,
         assetType: p.assetType,
         qty,
